@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#2563eb">
@@ -15,33 +15,35 @@
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad active">
-    <!-- Header -->
+    <!-- Compact Header: Sale name | Day X | Discount -->
     <header class="header">
-      <h1 class="header__title" id="sale-name">Estate Sale</h1>
-      <p class="header__subtitle" id="sale-day">Day 1</p>
+      <span class="header__name" id="sale-name">Estate Sale</span>
+      <span class="header__separator">|</span>
+      <span class="header__day" id="sale-day">Day 1</span>
+      <span class="header__separator">|</span>
       <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
     </header>
 
-    <!-- Item List -->
+    <!-- Running Total (compact bar) -->
+    <div class="running-total">
+      <span class="running-total__label">Total:</span>
+      <span class="running-total__amount" id="running-total">$0.00</span>
+    </div>
+
+    <!-- Item List (scrollable, flex-grow) -->
     <div class="item-list-container">
       <ul class="item-list" id="item-list">
         <li class="item-list__empty">No items yet</li>
       </ul>
     </div>
 
-    <!-- Running Total -->
-    <div class="running-total">
-      <span class="running-total__label">Total</span>
-      <span class="running-total__amount" id="running-total">$0.00</span>
-    </div>
-
-    <!-- Input Area -->
+    <!-- Input Area (compact) -->
     <div class="input-area">
       <input
         type="text"
         class="description-input"
         id="description-input"
-        placeholder="Item description (optional)"
+        placeholder="Description (optional)"
         autocomplete="off"
       >
       <div class="price-display">
@@ -52,37 +54,29 @@
       </div>
     </div>
 
-    <!-- Number Pad -->
-    <div class="numpad" id="numpad">
-      <button class="numpad__button" data-value="1">1</button>
-      <button class="numpad__button" data-value="2">2</button>
-      <button class="numpad__button" data-value="3">3</button>
-      <button class="numpad__button" data-value="4">4</button>
-      <button class="numpad__button" data-value="5">5</button>
-      <button class="numpad__button" data-value="6">6</button>
-      <button class="numpad__button" data-value="7">7</button>
-      <button class="numpad__button" data-value="8">8</button>
-      <button class="numpad__button" data-value="9">9</button>
-      <button class="numpad__button" data-value=".">.</button>
-      <button class="numpad__button" data-value="0">0</button>
-      <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
+    <!-- Number Pad + ADD Button (tight grid) -->
+    <div class="numpad-container">
+      <div class="numpad" id="numpad">
+        <button class="numpad__button" data-value="1">1</button>
+        <button class="numpad__button" data-value="2">2</button>
+        <button class="numpad__button" data-value="3">3</button>
+        <button class="numpad__button" data-value="4">4</button>
+        <button class="numpad__button" data-value="5">5</button>
+        <button class="numpad__button" data-value="6">6</button>
+        <button class="numpad__button" data-value="7">7</button>
+        <button class="numpad__button" data-value="8">8</button>
+        <button class="numpad__button" data-value="9">9</button>
+        <button class="numpad__button" data-value=".">.</button>
+        <button class="numpad__button" data-value="0">0</button>
+        <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
+      </div>
+      <button class="add-button" id="add-button">ADD ITEM</button>
     </div>
 
-    <!-- Add Button (separate row for prominence) -->
-    <div class="numpad" style="padding-top: 0;">
-      <button class="numpad__button numpad__button--add" id="add-button" style="grid-column: span 3;">
-        ADD ITEM
-      </button>
-    </div>
-
-    <!-- Action Bar -->
+    <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
-      <button class="action-bar__button action-bar__button--clear" id="clear-button">
-        CLEAR ALL
-      </button>
-      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>
-        DONE
-      </button>
+      <button class="action-bar__button action-bar__button--clear" id="clear-button">CLEAR ALL</button>
+      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>DONE</button>
     </div>
   </div>
 
