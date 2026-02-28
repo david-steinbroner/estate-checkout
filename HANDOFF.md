@@ -115,12 +115,15 @@
 
 1. **QR data format:** Current plan is raw JSON. May need compression for large carts.
 2. **Sale persistence:** Current behavior clears transactions when sale ends. Confirm this is desired.
-3. **Service worker paths:** Currently uses absolute paths (/js/app.js). Verify this works on Cloudflare Pages.
+3. **Service worker caching:** Must bump cache version in sw.js when deploying JS changes, otherwise old code is served from cache.
 
 ---
 
 ## Known Bugs
-None identified yet.
+None currently.
+
+### Fixed Bugs
+- **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version to v2.
 
 ---
 
