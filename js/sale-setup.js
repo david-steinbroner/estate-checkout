@@ -21,19 +21,35 @@ const SaleSetup = {
    * Initialize sale setup screen
    */
   init() {
-    console.log('SaleSetup.init() starting');
-    this.cacheElements();
-    console.log('SaleSetup elements cached:', {
-      discountList: this.elements.discountList,
-      addDayButton: this.elements.addDayButton,
-      startSaleButton: this.elements.startSaleButton
-    });
-    this.bindEvents();
-    this.setDefaultDate();
-    this.resetDiscounts();
-    console.log('SaleSetup.discounts:', this.discounts);
-    this.renderDiscountList();
-    console.log('SaleSetup.init() complete');
+    try {
+      console.log('SaleSetup.init() starting');
+      this.cacheElements();
+      console.log('SaleSetup elements cached:', {
+        discountList: this.elements.discountList,
+        addDayButton: this.elements.addDayButton,
+        startSaleButton: this.elements.startSaleButton
+      });
+
+      // Verify critical elements exist
+      if (!this.elements.discountList) {
+        console.error('CRITICAL: discount-list element not found!');
+      }
+      if (!this.elements.addDayButton) {
+        console.error('CRITICAL: add-day-button element not found!');
+      }
+      if (!this.elements.startSaleButton) {
+        console.error('CRITICAL: start-sale-button element not found!');
+      }
+
+      this.bindEvents();
+      this.setDefaultDate();
+      this.resetDiscounts();
+      console.log('SaleSetup.discounts:', this.discounts);
+      this.renderDiscountList();
+      console.log('SaleSetup.init() complete');
+    } catch (error) {
+      console.error('SaleSetup.init() ERROR:', error);
+    }
   },
 
   /**
@@ -88,13 +104,20 @@ const SaleSetup = {
    * Render the discount list
    */
   renderDiscountList() {
-    console.log('renderDiscountList() called');
-    console.log('this.discounts:', this.discounts);
-    console.log('this.elements.discountList:', this.elements.discountList);
-    const days = Object.keys(this.discounts).map(Number).sort((a, b) => a - b);
-    console.log('days to render:', days);
+    try {
+      console.log('renderDiscountList() called');
+      console.log('this.discounts:', this.discounts);
+      console.log('this.elements.discountList:', this.elements.discountList);
 
-    const html = days.map(day => {
+      if (!this.elements.discountList) {
+        console.error('Cannot render: discountList element is null');
+        return;
+      }
+
+      const days = Object.keys(this.discounts).map(Number).sort((a, b) => a - b);
+      console.log('days to render:', days);
+
+      const html = days.map(day => {
       const discount = this.discounts[day];
       const canRemove = day > 3; // Can only remove Day 4+
 
@@ -136,6 +159,11 @@ const SaleSetup = {
         this.removeDay(day);
       });
     });
+
+    console.log('renderDiscountList() complete, innerHTML:', this.elements.discountList.innerHTML.substring(0, 100));
+    } catch (error) {
+      console.error('renderDiscountList() ERROR:', error);
+    }
   },
 
   /**
