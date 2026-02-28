@@ -27,6 +27,12 @@
 - Created utility functions for currency, discounts, sale day calculation
 - Placeholder SVG icons for PWA
 - Downloaded qrcode.min.js library
+- **Fixed layout to fit single viewport (no scrolling)**:
+  - Header compressed to single line: "Sale Name | Day X | X% off"
+  - Total bar moved above item list, made compact
+  - Item list is only scrollable element (flex-grow)
+  - Numpad buttons reduced to 52px (still easy to tap)
+  - All buttons visible on 375x667 viewport (iPhone SE)
 
 ---
 
@@ -64,7 +70,7 @@
   manifest.json           # PWA manifest (SVG icons)
   sw.js                   # Service worker (cache-first strategy)
   /css/
-    styles.css            # Mobile-first CSS, large touch targets
+    styles.css            # Mobile-first CSS, single-viewport layout
   /js/
     app.js                # App init, service worker registration
     checkout.js           # Checkout pad logic (number pad, items, totals)
@@ -80,6 +86,10 @@
   /lib/
     qrcode.min.js         # QR code library
 ```
+
+**Modified (viewport fix):**
+- `index.html` — Restructured header to single line, moved total above item list
+- `css/styles.css` — Compact spacing, fixed heights, 52px numpad buttons
 
 ---
 
