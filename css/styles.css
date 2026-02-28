@@ -206,6 +206,11 @@ body {
   gap: var(--space-sm);
 }
 
+.item-row__prices--full {
+  flex: 1;
+  justify-content: flex-end;
+}
+
 .item-row__original {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -476,6 +481,166 @@ body {
 .modal__button--confirm {
   background: var(--color-danger);
   color: white;
+}
+
+/* === Sale Setup Screen === */
+.setup-screen {
+  background: var(--color-bg);
+  padding: 0;
+}
+
+.setup-header {
+  height: 48px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.setup-header__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+.setup-form {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+}
+
+.setup-field {
+  margin-bottom: var(--space-lg);
+}
+
+.setup-field__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.setup-field__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-lg);
+  font-size: var(--font-size-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.setup-field__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Discount List */
+.discount-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.discount-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--color-surface);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.discount-row__label {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  min-width: 50px;
+}
+
+.discount-row__input {
+  width: 64px;
+  height: 40px;
+  padding: 0 var(--space-md);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.discount-row__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.discount-row__suffix {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.discount-row__remove {
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--color-danger);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-day-button {
+  width: 100%;
+  height: 40px;
+  margin-top: var(--space-sm);
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-day-button:active {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+/* Setup Actions */
+.setup-actions {
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.start-sale-button {
+  width: 100%;
+  height: 52px;
+  background: var(--color-success);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start-sale-button:active {
+  background: #15803d;
+}
+
+.start-sale-button:disabled {
+  background: var(--color-text-secondary);
+  cursor: not-allowed;
 }
 
 /* === Utility Classes === */

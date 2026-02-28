@@ -4,7 +4,7 @@
  */
 
 const App = {
-  currentScreen: 'checkout',
+  currentScreen: null,
 
   /**
    * Initialize the application
@@ -12,11 +12,7 @@ const App = {
   init() {
     this.registerServiceWorker();
     this.initModules();
-
-    // If no sale exists, create a demo sale for testing
-    if (!Storage.getSale()) {
-      SaleSetup.createDemoSale();
-    }
+    this.route();
 
     console.log('Estate Checkout initialized');
   },
@@ -40,10 +36,25 @@ const App = {
    * Initialize all modules
    */
   initModules() {
+    SaleSetup.init();
     Checkout.init();
     Speech.init();
     QR.init();
-    SaleSetup.init();
+  },
+
+  /**
+   * Route to appropriate screen based on app state
+   */
+  route() {
+    const sale = Storage.getSale();
+
+    if (sale) {
+      // Active sale exists → go to checkout
+      this.showScreen('checkout');
+    } else {
+      // No active sale → show setup
+      this.showScreen('setup');
+    }
   },
 
   /**
@@ -65,8 +76,9 @@ const App = {
       if (screenName === 'checkout') {
         Checkout.loadSale();
         Checkout.render();
+      } else if (screenName === 'setup') {
+        SaleSetup.resetForm();
       }
-      // TODO: Handle other screens
     }
   }
 };

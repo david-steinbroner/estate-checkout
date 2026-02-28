@@ -14,7 +14,7 @@
 <body>
 
   <!-- Checkout Pad Screen -->
-  <div id="screen-checkout" class="screen checkout-pad active">
+  <div id="screen-checkout" class="screen checkout-pad">
     <!-- Compact Header: Sale name | Day X | Discount -->
     <header class="header">
       <span class="header__name" id="sale-name">Estate Sale</span>
@@ -85,9 +85,50 @@
     <!-- Will be built later -->
   </div>
 
-  <!-- Sale Setup Screen (placeholder) -->
-  <div id="screen-setup" class="screen">
-    <!-- Will be built later -->
+  <!-- Sale Setup Screen -->
+  <div id="screen-setup" class="screen setup-screen active">
+    <header class="setup-header">
+      <h1 class="setup-header__title">New Sale</h1>
+    </header>
+
+    <div class="setup-form">
+      <!-- Sale Name -->
+      <div class="setup-field">
+        <label class="setup-field__label" for="setup-sale-name">Sale Name</label>
+        <input
+          type="text"
+          id="setup-sale-name"
+          class="setup-field__input"
+          placeholder="e.g., Johnson Estate - Oak Hill"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <!-- Start Date -->
+      <div class="setup-field">
+        <label class="setup-field__label" for="setup-start-date">Start Date</label>
+        <input
+          type="date"
+          id="setup-start-date"
+          class="setup-field__input"
+        >
+      </div>
+
+      <!-- Discount Schedule -->
+      <div class="setup-field">
+        <label class="setup-field__label">Discount Schedule</label>
+        <div class="discount-list" id="discount-list">
+          <!-- Discount rows added by JS -->
+        </div>
+        <button type="button" class="add-day-button" id="add-day-button">+ Add Day</button>
+      </div>
+    </div>
+
+    <!-- Start Sale Button -->
+    <div class="setup-actions">
+      <button type="button" class="start-sale-button" id="start-sale-button">START SALE</button>
+    </div>
   </div>
 
   <!-- Flash Feedback -->

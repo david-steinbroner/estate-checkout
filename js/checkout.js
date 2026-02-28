@@ -239,12 +239,12 @@ const Checkout = {
 
     const html = this.items.map(item => {
       const showOriginal = item.discount > 0;
-      const desc = item.description || '(no description)';
+      const hasDesc = item.description && item.description.trim().length > 0;
 
       return `
         <li class="item-row" data-id="${item.id}">
-          <span class="item-row__desc">${this.escapeHtml(desc)}</span>
-          <div class="item-row__prices">
+          ${hasDesc ? `<span class="item-row__desc">${this.escapeHtml(item.description)}</span>` : ''}
+          <div class="item-row__prices${hasDesc ? '' : ' item-row__prices--full'}">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
           </div>
