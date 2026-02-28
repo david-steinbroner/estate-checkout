@@ -33,20 +33,30 @@
   - Item list is only scrollable element (flex-grow)
   - Numpad buttons reduced to 52px (still easy to tap)
   - All buttons visible on 375x667 viewport (iPhone SE)
+- **Built Sale Setup screen**:
+  - Sale name input (required)
+  - Start date picker (defaults to today)
+  - Discount schedule: Day 1/2/3 with defaults (0%, 25%, 50%)
+  - "Add Day" button for longer sales (Day 4+)
+  - START SALE button (green, prominent)
+  - Routing: no active sale → setup, active sale → checkout
+- **Fixed checkout pad**: Items without description no longer show "(no description)"
 
 ---
 
 ## Current State
 
 ### What Works
+- **Sale Setup**: Create a new sale with name, start date, discount schedule
+- **Routing**: App opens to setup if no sale, checkout if sale exists
 - **Number pad entry**: Tap digits → price appears → tap ADD → item added to list
-- **Item list rendering**: Shows description (or "no description"), original price, discounted price
+- **Item list rendering**: Shows description (if provided) + original/discounted price
 - **Running total**: Updates automatically as items are added/removed
 - **Remove items**: Tap × to remove individual items
 - **Clear all**: Shows confirmation modal, clears cart on confirm
 - **Discount display**: Header shows sale day and discount percentage
+- **Discount calculation**: Based on start date vs. today, applies correct day's discount
 - **Cart persistence**: Items survive page refresh (localStorage)
-- **Demo sale**: Auto-creates a demo sale if none exists (for testing)
 
 ### What's Broken
 - Nothing is broken, but several features are stubs
@@ -55,7 +65,6 @@
 - **Speech-to-text**: Structure exists, needs full parsing logic
 - **QR generation**: Stub exists, needs to render actual QR codes
 - **QR scan**: Screen placeholder exists, no camera integration yet
-- **Sale setup screen**: Module exists, no UI yet
 - **Dashboard**: Not started
 - **DONE button**: Saves transaction but doesn't navigate to QR screen yet
 
@@ -66,15 +75,15 @@
 **Created:**
 ```
 /estate-checkout/
-  index.html              # Entry point with checkout pad screen
+  index.html              # Entry point with setup + checkout screens
   manifest.json           # PWA manifest (SVG icons)
   sw.js                   # Service worker (cache-first strategy)
   /css/
     styles.css            # Mobile-first CSS, single-viewport layout
   /js/
-    app.js                # App init, service worker registration
+    app.js                # App init, routing, service worker
     checkout.js           # Checkout pad logic (number pad, items, totals)
-    sale-setup.js         # Sale config module (stub with createDemoSale)
+    sale-setup.js         # Sale setup form and discount configuration
     speech.js             # Speech-to-text module (stub)
     qr.js                 # QR generation module (stub)
     storage.js            # localStorage abstraction
@@ -87,21 +96,16 @@
     qrcode.min.js         # QR code library
 ```
 
-**Modified (viewport fix):**
-- `index.html` — Restructured header to single line, moved total above item list
-- `css/styles.css` — Compact spacing, fixed heights, 52px numpad buttons
-
 ---
 
 ## Next Steps (Priority Order)
 
-1. **Build sale setup screen UI** — Form for sale name, dates, discount schedule
-2. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
-3. **Build QR handoff screen** — Generate QR with transaction data, display item summary
-4. **Build QR scan view** — Camera access, decode QR, display total
-5. **Build sale dashboard** — Transaction count, revenue, average ticket
-6. **Test offline mode** — Verify service worker caching works
-7. **End-to-end testing** — Run all test scenarios from CLAUDE_CODE_RULES.md
+1. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
+2. **Build QR handoff screen** — Generate QR with transaction data, display item summary
+3. **Build QR scan view** — Camera access, decode QR, display total
+4. **Build sale dashboard** — Transaction count, revenue, average ticket
+5. **Test offline mode** — Verify service worker caching works
+6. **End-to-end testing** — Run all test scenarios from CLAUDE_CODE_RULES.md
 
 ---
 
@@ -120,22 +124,27 @@ None identified yet.
 
 ## How to Test
 
-### Local Testing
-1. Start a local server in the project directory:
-   ```bash
-   cd estate-checkout
-   python3 -m http.server 8000
-   ```
-2. Open http://localhost:8000 on mobile Chrome or Safari
-3. Test checkout flow:
-   - Type a price using number pad (e.g., 15.00)
-   - Tap ADD — item appears in list with "Added!" flash
-   - Add several items — verify running total updates
-   - Tap × on an item — verify it's removed and total updates
-   - Tap CLEAR ALL — confirm modal appears
-   - Tap Cancel — items remain
-   - Tap CLEAR ALL → Clear — all items removed
+### Sale Setup Flow
+1. Clear localStorage: DevTools > Application > Local Storage > Clear
+2. Refresh page → should see Sale Setup screen
+3. Enter sale name (e.g., "Test Estate")
+4. Set start date to yesterday
+5. Set Day 2 discount to 30%
+6. Tap START SALE
+7. Checkout pad should show: "Test Estate | Day 2 | 30% off"
+8. Add item for $10 → should show $7.00 (30% off)
 
-### PWA Testing
-- Chrome DevTools > Application > Service Workers (verify registered)
-- Manifest shows in Application > Manifest
+### Checkout Flow
+1. Type price on number pad
+2. Tap ADD → item appears in list with "Added!" flash
+3. Add several items → verify running total updates
+4. Tap × on an item → verify it's removed
+5. Close browser, reopen → should go straight to checkout with sale intact
+
+### Local Server
+```bash
+cd estate-checkout
+python3 -m http.server 8000 --bind 0.0.0.0
+```
+- Computer: http://localhost:8000
+- Phone (same WiFi): http://192.168.86.33:8000
