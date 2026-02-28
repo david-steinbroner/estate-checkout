@@ -353,7 +353,14 @@ const Checkout = {
    */
   endSale() {
     this.hideEndSaleModal();
+    // Clear local state
+    this.items = [];
+    this.sale = null;
+    this.currentDiscount = 0;
+    this.priceInput = '';
+    // Clear storage
     SaleSetup.endSale();
+    // Navigate to setup
     App.showScreen('setup');
   },
 
