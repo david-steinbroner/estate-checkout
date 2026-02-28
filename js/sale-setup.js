@@ -210,9 +210,23 @@ const SaleSetup = {
    * End the current sale
    */
   endSale() {
+    console.log('SaleSetup.endSale() starting');
+    console.log('Before clear - localStorage:', {
+      sale: localStorage.getItem('estate_sale'),
+      cart: localStorage.getItem('estate_cart'),
+      transactions: localStorage.getItem('estate_transactions')
+    });
+
     Storage.clearSale();
     Storage.clearCart();
     Storage.clearTransactions();
+
+    console.log('After clear - localStorage:', {
+      sale: localStorage.getItem('estate_sale'),
+      cart: localStorage.getItem('estate_cart'),
+      transactions: localStorage.getItem('estate_transactions')
+    });
+    console.log('SaleSetup.endSale() complete');
   },
 
   /**

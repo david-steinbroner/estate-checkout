@@ -61,6 +61,8 @@ const App = {
    * Switch to a different screen
    */
   showScreen(screenName, data) {
+    console.log('App.showScreen() called with:', screenName);
+
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
       screen.classList.remove('active');
@@ -68,17 +70,24 @@ const App = {
 
     // Show target screen
     const targetScreen = document.getElementById(`screen-${screenName}`);
+    console.log('Target screen element:', targetScreen);
+
     if (targetScreen) {
       targetScreen.classList.add('active');
       this.currentScreen = screenName;
+      console.log('Screen switched to:', screenName);
 
       // Handle screen-specific initialization
       if (screenName === 'checkout') {
         Checkout.loadSale();
         Checkout.render();
       } else if (screenName === 'setup') {
+        console.log('Calling SaleSetup.resetForm()');
         SaleSetup.resetForm();
+        console.log('SaleSetup.resetForm() complete');
       }
+    } else {
+      console.error('Screen not found:', `screen-${screenName}`);
     }
   }
 };

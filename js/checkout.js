@@ -352,16 +352,35 @@ const Checkout = {
    * End the current sale and return to setup
    */
   endSale() {
+    console.log('Checkout.endSale() starting');
+
+    // Hide modal
     this.hideEndSaleModal();
+
     // Clear local state
     this.items = [];
     this.sale = null;
     this.currentDiscount = 0;
     this.priceInput = '';
+
+    // Clear UI inputs
+    if (this.elements.descriptionInput) {
+      this.elements.descriptionInput.value = '';
+    }
+    this.updatePriceDisplay();
+    this.render();
+
+    console.log('Local state cleared, calling SaleSetup.endSale()');
+
     // Clear storage
     SaleSetup.endSale();
+
+    console.log('Storage cleared, calling App.showScreen(setup)');
+
     // Navigate to setup
     App.showScreen('setup');
+
+    console.log('Checkout.endSale() complete');
   },
 
   /**
