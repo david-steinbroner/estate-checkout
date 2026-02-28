@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#2563eb">
+  <title>Estate Checkout</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Checkout Pad Screen -->
+  <div id="screen-checkout" class="screen checkout-pad active">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="header__title" id="sale-name">Estate Sale</h1>
+      <p class="header__subtitle" id="sale-day">Day 1</p>
+      <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
+    </header>
+
+    <!-- Item List -->
+    <div class="item-list-container">
+      <ul class="item-list" id="item-list">
+        <li class="item-list__empty">No items yet</li>
+      </ul>
+    </div>
+
+    <!-- Running Total -->
+    <div class="running-total">
+      <span class="running-total__label">Total</span>
+      <span class="running-total__amount" id="running-total">$0.00</span>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <input
+        type="text"
+        class="description-input"
+        id="description-input"
+        placeholder="Item description (optional)"
+        autocomplete="off"
+      >
+      <div class="price-display">
+        <div class="price-display__value" id="price-display">$0.00</div>
+        <button class="mic-button" id="mic-button" aria-label="Hold to speak">
+          🎤
+        </button>
+      </div>
+    </div>
+
+    <!-- Number Pad -->
+    <div class="numpad" id="numpad">
+      <button class="numpad__button" data-value="1">1</button>
+      <button class="numpad__button" data-value="2">2</button>
+      <button class="numpad__button" data-value="3">3</button>
+      <button class="numpad__button" data-value="4">4</button>
+      <button class="numpad__button" data-value="5">5</button>
+      <button class="numpad__button" data-value="6">6</button>
+      <button class="numpad__button" data-value="7">7</button>
+      <button class="numpad__button" data-value="8">8</button>
+      <button class="numpad__button" data-value="9">9</button>
+      <button class="numpad__button" data-value=".">.</button>
+      <button class="numpad__button" data-value="0">0</button>
+      <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
+    </div>
+
+    <!-- Add Button (separate row for prominence) -->
+    <div class="numpad" style="padding-top: 0;">
+      <button class="numpad__button numpad__button--add" id="add-button" style="grid-column: span 3;">
+        ADD ITEM
+      </button>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="action-bar__button action-bar__button--clear" id="clear-button">
+        CLEAR ALL
+      </button>
+      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>
+        DONE
+      </button>
+    </div>
+  </div>
+
+  <!-- QR Handoff Screen (placeholder) -->
+  <div id="screen-qr" class="screen">
+    <!-- Will be built later -->
+  </div>
+
+  <!-- Sale Setup Screen (placeholder) -->
+  <div id="screen-setup" class="screen">
+    <!-- Will be built later -->
+  </div>
+
+  <!-- Flash Feedback -->
+  <div class="flash flash--success" id="flash-success">Added!</div>
+  <div class="flash flash--error" id="flash-error">Error</div>
+
+  <!-- Clear Confirmation Modal -->
+  <div class="modal-overlay" id="clear-modal">
+    <div class="modal">
+      <h2 class="modal__title">Clear all items?</h2>
+      <div class="modal__buttons">
+        <button class="modal__button modal__button--cancel" id="clear-cancel">Cancel</button>
+        <button class="modal__button modal__button--confirm" id="clear-confirm">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/utils.js"></script>
+  <script src="/js/storage.js"></script>
+  <script src="/js/checkout.js"></script>
+  <script src="/js/speech.js"></script>
+  <script src="/js/qr.js"></script>
+  <script src="/js/sale-setup.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
