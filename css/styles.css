@@ -72,13 +72,13 @@ body {
 
 /* === Screen Container === */
 .screen {
-  display: none;
+  display: none !important;
   height: 100vh;
   height: 100dvh;
 }
 
 .screen.active {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
 }
 
