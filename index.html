@@ -15,13 +15,14 @@
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Compact Header: Sale name | Day X | Discount -->
+    <!-- Compact Header: Sale name | Day X | Discount | End -->
     <header class="header">
       <span class="header__name" id="sale-name">Estate Sale</span>
       <span class="header__separator">|</span>
       <span class="header__day" id="sale-day">Day 1</span>
       <span class="header__separator">|</span>
       <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
+      <button class="header__end" id="end-sale-button">End</button>
     </header>
 
     <!-- Running Total (compact bar) -->
@@ -142,6 +143,17 @@
       <div class="modal__buttons">
         <button class="modal__button modal__button--cancel" id="clear-cancel">Cancel</button>
         <button class="modal__button modal__button--confirm" id="clear-confirm">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Sale Confirmation Modal -->
+  <div class="modal-overlay" id="end-sale-modal">
+    <div class="modal">
+      <h2 class="modal__title">End this sale?</h2>
+      <div class="modal__buttons">
+        <button class="modal__button modal__button--cancel" id="end-sale-cancel">Cancel</button>
+        <button class="modal__button modal__button--confirm" id="end-sale-confirm">End Sale</button>
       </div>
     </div>
   </div>

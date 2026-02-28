@@ -49,6 +49,10 @@ const Checkout = {
       clearModal: document.getElementById('clear-modal'),
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
+      endSaleButton: document.getElementById('end-sale-button'),
+      endSaleModal: document.getElementById('end-sale-modal'),
+      endSaleCancel: document.getElementById('end-sale-cancel'),
+      endSaleConfirm: document.getElementById('end-sale-confirm'),
       flashSuccess: document.getElementById('flash-success'),
       flashError: document.getElementById('flash-error')
     };
@@ -97,6 +101,28 @@ const Checkout = {
     this.elements.clearModal.addEventListener('click', (e) => {
       if (e.target === this.elements.clearModal) {
         this.hideClearModal();
+      }
+    });
+
+    // End sale button
+    this.elements.endSaleButton.addEventListener('click', () => {
+      this.showEndSaleModal();
+    });
+
+    // End sale modal cancel
+    this.elements.endSaleCancel.addEventListener('click', () => {
+      this.hideEndSaleModal();
+    });
+
+    // End sale modal confirm
+    this.elements.endSaleConfirm.addEventListener('click', () => {
+      this.endSale();
+    });
+
+    // Close end sale modal on overlay click
+    this.elements.endSaleModal.addEventListener('click', (e) => {
+      if (e.target === this.elements.endSaleModal) {
+        this.hideEndSaleModal();
       }
     });
   },
@@ -306,6 +332,29 @@ const Checkout = {
     this.elements.descriptionInput.value = '';
     this.updatePriceDisplay();
     this.render();
+  },
+
+  /**
+   * Show the end sale confirmation modal
+   */
+  showEndSaleModal() {
+    this.elements.endSaleModal.classList.add('visible');
+  },
+
+  /**
+   * Hide the end sale confirmation modal
+   */
+  hideEndSaleModal() {
+    this.elements.endSaleModal.classList.remove('visible');
+  },
+
+  /**
+   * End the current sale and return to setup
+   */
+  endSale() {
+    this.hideEndSaleModal();
+    SaleSetup.endSale();
+    App.showScreen('setup');
   },
 
   /**
