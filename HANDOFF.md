@@ -41,6 +41,7 @@
   - START SALE button (green, prominent)
   - Routing: no active sale → setup, active sale → checkout
 - **Fixed checkout pad**: Items without description no longer show "(no description)"
+- **Added End Sale button**: Small button in checkout header top-right, clears sale and returns to setup
 
 ---
 
@@ -57,6 +58,7 @@
 - **Discount display**: Header shows sale day and discount percentage
 - **Discount calculation**: Based on start date vs. today, applies correct day's discount
 - **Cart persistence**: Items survive page refresh (localStorage)
+- **End Sale**: Button in header ends sale and returns to setup (dev convenience)
 
 ### What's Broken
 - Nothing is broken, but several features are stubs
