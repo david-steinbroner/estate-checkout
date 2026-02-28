@@ -124,6 +124,8 @@ None currently.
 
 ### Fixed Bugs
 - **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version to v2.
+- **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`, causing checkout to remain visible when switching to setup. Fixed by removing the display property from `.checkout-pad` (flex layout now comes from `.screen.active`).
+- **Checkout.endSale() firing twice** — Added guard flag and stopPropagation to prevent double execution on mobile.
 
 ---
 

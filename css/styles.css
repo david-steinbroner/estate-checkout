@@ -72,24 +72,19 @@ body {
 
 /* === Screen Container === */
 .screen {
-  display: none !important;
+  display: none;
   height: 100vh;
   height: 100dvh;
 }
 
 .screen.active {
-  display: flex !important;
+  display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
 }
 
 /* === Checkout Pad Layout === */
+/* Note: display:flex comes from .screen.active, NOT here */
 .checkout-pad {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
   overflow: hidden;
 }
 

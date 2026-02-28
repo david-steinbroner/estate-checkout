@@ -114,8 +114,9 @@ const Checkout = {
       this.hideEndSaleModal();
     });
 
-    // End sale modal confirm
-    this.elements.endSaleConfirm.addEventListener('click', () => {
+    // End sale modal confirm (stop propagation to prevent double-fire)
+    this.elements.endSaleConfirm.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.endSale();
     });
 
@@ -352,6 +353,10 @@ const Checkout = {
    * End the current sale and return to setup
    */
   endSale() {
+    // Guard against double execution
+    if (this._endingSale) return;
+    this._endingSale = true;
+
     console.log('Checkout.endSale() starting');
 
     // Hide modal
@@ -381,6 +386,7 @@ const Checkout = {
     App.showScreen('setup');
 
     console.log('Checkout.endSale() complete');
+    this._endingSale = false;
   },
 
   /**
