@@ -3,11 +3,19 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v40
+**Service worker cache:** v41
 
 ---
 
 ## What Was Accomplished
+
+### Session 26 (2026-03-02)
+- **Fixed Edit Order Disabled State** — Edit Order button on Dashboard now only disabled for "paid" tickets. Pending and unpaid tickets have Edit Order enabled (was incorrectly disabled for pending).
+- **Fixed Scan New Customer Z-Index** — Added `position: relative; z-index: 11` to `.scan-actions` so the New Customer button stays visible above the `.scan-error` overlay (z-index 10) when camera permission is denied.
+- **Renamed "Collect Payments" → "Scan Ticket"** — Header nav button text updated. Element id `nav-collect` unchanged.
+- **Renamed "Collect Payment" → "Generate Ticket"** — Dashboard expanded detail button text updated. `data-action="collect"` unchanged.
+- **Added Day Info to Dashboard Rows** — Transaction rows now show "Customer #1 — Day 1 · 2:19 PM" instead of "Customer #1 — 2:19 PM". Uses `txn.saleDay` with fallback to 1.
+- **Service worker** — Bumped to v41
 
 ### Session 25 (2026-03-02)
 - **Fixed Action Bar Button Height** — Increased `--action-bar-height` from 40px to 56px and set `.action-bar__button` height to `var(--btn-height-lg)` (48px) instead of `height: 100%`. Clear All and Ready for Payment buttons now have proper touch target size.

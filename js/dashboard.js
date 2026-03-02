@@ -168,7 +168,7 @@ const Dashboard = {
       <li class="dashboard-txn${voidClass}" data-id="${txn.id}">
         <div class="dashboard-txn__summary">
           <div class="dashboard-txn__header">
-            <span class="dashboard-txn__customer">Customer #${customerNum} — ${time}</span>
+            <span class="dashboard-txn__customer">Customer #${customerNum} — Day ${txn.saleDay || 1} · ${time}</span>
             ${statusBadge}
             <span class="dashboard-txn__total">${total}</span>
           </div>
@@ -222,7 +222,7 @@ const Dashboard = {
     // Action buttons: all 3 shown for non-void, Edit Order disabled for pending/paid
     const status = txn.status || 'unpaid';
     const isVoid = status === 'void';
-    const editDisabled = (status === 'pending' || status === 'paid') ? ' disabled' : '';
+    const editDisabled = status === 'paid' ? ' disabled' : '';
 
     const actionsHtml = isVoid ? '' : `
       <div class="dashboard-detail__actions">
@@ -233,7 +233,7 @@ const Dashboard = {
           Edit Order
         </button>
         <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-          Collect Payment
+          Generate Ticket
         </button>
       </div>
     `;

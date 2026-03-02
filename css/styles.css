@@ -1245,8 +1245,10 @@ body {
   background: var(--color-primary-dark);
 }
 
-/* Scan Actions (bottom bar) */
+/* Scan Actions (bottom bar — z-index above scan-error overlay) */
 .scan-actions {
+  position: relative;
+  z-index: 11;
   padding: var(--space-lg);
   padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
   background: rgba(0, 0, 0, 0.8);
