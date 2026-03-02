@@ -3,11 +3,29 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v27
+**Service worker cache:** v28
 
 ---
 
 ## What Was Accomplished
+
+### Session 13 (2026-03-02)
+- **Fixed Description Prompt Not Showing** — Changed from `hidden` attribute to `.visible` class pattern to avoid browser style conflicts
+- **Fixed NEW CUSTOMER Button Sizing** — Full-width 48px tall green button on QR screen (removed incorrect `flex: 1`)
+- **Fixed BACK Preserves Cart** — Cart no longer cleared on DONE:
+  - Transaction created but items stay in cart
+  - BACK returns to checkout with items intact for review/modification
+  - Only NEW CUSTOMER clears cart
+  - Added `transactionSaved` flag to prevent duplicate transactions
+- **Shared Navigation Bar** — Header moved outside screens:
+  - Same nav bar visible on Checkout, QR, Dashboard, Collect Payments screens
+  - Hidden on Setup screen
+  - Three buttons always in same position: Dashboard | Collect Payments | End Sale
+  - Active button highlighted (blue background) based on current screen
+  - All screens now use consistent navigation
+  - Event handling consolidated in app.js
+- **NEW CUSTOMER Button on Dashboard** — Start fresh checkout from dashboard
+- **Service worker** — Bumped to v28
 
 ### Session 12 (2026-03-02)
 - **Fixed Duplicate Tickets** — Cart clears after DONE:
@@ -322,6 +340,20 @@ None currently.
 /index.html       # QR Dashboard button, speech permission modal
 /sw.js            # Bumped to v27
 /HANDOFF.md       # Updated with session 12 changes
+```
+
+**Session 13:**
+```
+/js/
+  app.js          # Shared header handling, nav events, updateHeader(), updateActiveNavButton()
+  checkout.js     # Removed header elements, desc prompt uses .visible class, transactionSaved flag
+  dashboard.js    # NEW CUSTOMER button handler, removed BACK button
+  qr.js           # No changes (already had correct handlers)
+/css/
+  styles.css      # Body flex layout, header[hidden], .header__btn--active, .dashboard-action--new
+/index.html       # Header moved outside screens, Dashboard NEW CUSTOMER button, desc prompt visible class
+/sw.js            # Bumped to v28
+/HANDOFF.md       # Updated with session 13 changes
 ```
 
 **Session 11:**

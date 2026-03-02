@@ -31,7 +31,7 @@ const Dashboard = {
       avgTicket: document.getElementById('dashboard-avg'),
       transactionList: document.getElementById('dashboard-transactions'),
       emptyState: document.getElementById('dashboard-empty'),
-      backButton: document.getElementById('dashboard-back')
+      newCustomerButton: document.getElementById('dashboard-new-customer')
     };
   },
 
@@ -39,9 +39,11 @@ const Dashboard = {
    * Bind event listeners
    */
   bindEvents() {
-    if (this.elements.backButton) {
-      this.elements.backButton.addEventListener('click', () => {
-        App.showScreen(this.originScreen);
+    // NEW CUSTOMER button - clears cart and navigates to checkout
+    if (this.elements.newCustomerButton) {
+      this.elements.newCustomerButton.addEventListener('click', () => {
+        Checkout.clearAll();
+        App.showScreen('checkout');
       });
     }
   },

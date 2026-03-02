@@ -23,6 +23,9 @@ const Checkout = {
   // Track if we're in the middle of adding from prompt
   pendingAddWithoutDesc: false,
 
+  // Track if current cart has been saved as a transaction (prevents duplicates)
+  transactionSaved: false,
+
   // DOM element references
   elements: {},
 
@@ -42,9 +45,6 @@ const Checkout = {
    */
   cacheElements() {
     this.elements = {
-      saleName: document.getElementById('sale-name'),
-      saleDay: document.getElementById('sale-day'),
-      discountBadge: document.getElementById('discount-badge'),
       itemList: document.getElementById('item-list'),
       runningTotal: document.getElementById('running-total'),
       runningSavings: document.getElementById('running-savings'),
@@ -57,12 +57,6 @@ const Checkout = {
       clearModal: document.getElementById('clear-modal'),
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
-      collectPaymentsButton: document.getElementById('collect-payments-button'),
-      dashboardButton: document.getElementById('checkout-dashboard-button'),
-      endSaleButton: document.getElementById('end-sale-button'),
-      endSaleModal: document.getElementById('end-sale-modal'),
-      endSaleCancel: document.getElementById('end-sale-cancel'),
-      endSaleConfirm: document.getElementById('end-sale-confirm'),
       flashSuccess: document.getElementById('flash-success'),
       flashError: document.getElementById('flash-error'),
       descPrompt: document.getElementById('desc-prompt'),
@@ -117,39 +111,6 @@ const Checkout = {
       }
     });
 
-    // Collect payments button - navigate to QR scan
-    this.elements.collectPaymentsButton.addEventListener('click', () => {
-      App.showScreen('scan');
-    });
-
-    // Dashboard button - navigate to dashboard
-    this.elements.dashboardButton.addEventListener('click', () => {
-      App.showScreen('dashboard', 'checkout');
-    });
-
-    // End sale button
-    this.elements.endSaleButton.addEventListener('click', () => {
-      this.showEndSaleModal();
-    });
-
-    // End sale modal cancel
-    this.elements.endSaleCancel.addEventListener('click', () => {
-      this.hideEndSaleModal();
-    });
-
-    // End sale modal confirm (stop propagation to prevent double-fire)
-    this.elements.endSaleConfirm.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.endSale();
-    });
-
-    // Close end sale modal on overlay click
-    this.elements.endSaleModal.addEventListener('click', (e) => {
-      if (e.target === this.elements.endSaleModal) {
-        this.hideEndSaleModal();
-      }
-    });
-
     // Description prompt buttons
     if (this.elements.descPromptAdd) {
       this.elements.descPromptAdd.addEventListener('click', () => {
@@ -183,24 +144,11 @@ const Checkout = {
     if (this.sale) {
       const dayNumber = Utils.getSaleDay(this.sale.startDate);
       this.currentDiscount = Utils.getDiscountForDay(this.sale, dayNumber);
-
-      this.elements.saleName.textContent = this.sale.name;
-      this.elements.saleDay.textContent = `Day ${dayNumber}`;
-
-      if (this.currentDiscount > 0) {
-        this.elements.discountBadge.textContent = `${this.currentDiscount}% off`;
-        this.elements.discountBadge.classList.remove('header__discount--none');
-      } else {
-        this.elements.discountBadge.textContent = 'No discount';
-        this.elements.discountBadge.classList.add('header__discount--none');
-      }
     } else {
       // No active sale - use defaults for demo/testing
-      this.elements.saleName.textContent = 'Estate Sale';
-      this.elements.saleDay.textContent = 'Day 1';
-      this.elements.discountBadge.textContent = 'No discount';
-      this.elements.discountBadge.classList.add('header__discount--none');
+      this.currentDiscount = 0;
     }
+    // Header content is now updated by App.updateHeaderContent()
   },
 
   /**
@@ -281,6 +229,9 @@ const Checkout = {
     this.items.push(item);
     Storage.saveCart(this.items);
 
+    // Reset transaction saved flag (cart was modified)
+    this.transactionSaved = false;
+
     // Clear inputs
     this.priceInput = '';
     this.elements.descriptionInput.value = '';
@@ -299,6 +250,10 @@ const Checkout = {
   removeItem(itemId) {
     this.items = this.items.filter(item => item.id !== itemId);
     Storage.saveCart(this.items);
+
+    // Reset transaction saved flag (cart was modified)
+    this.transactionSaved = false;
+
     this.render();
   },
 
@@ -392,29 +347,16 @@ const Checkout = {
   },
 
   /**
-   * Clear all items
+   * Clear all items (used by NEW CUSTOMER and CLEAR ALL)
    */
   clearAll() {
     this.items = [];
     Storage.clearCart();
     this.priceInput = '';
     this.elements.descriptionInput.value = '';
+    this.transactionSaved = false;
     this.updatePriceDisplay();
     this.render();
-  },
-
-  /**
-   * Show the end sale confirmation modal
-   */
-  showEndSaleModal() {
-    this.elements.endSaleModal.classList.add('visible');
-  },
-
-  /**
-   * Hide the end sale confirmation modal
-   */
-  hideEndSaleModal() {
-    this.elements.endSaleModal.classList.remove('visible');
   },
 
   /**
@@ -424,9 +366,6 @@ const Checkout = {
     // Guard against double execution
     if (this._endingSale) return;
     this._endingSale = true;
-
-    // Hide modal
-    this.hideEndSaleModal();
 
     // Clear local state
     this.items = [];
@@ -456,6 +395,13 @@ const Checkout = {
   finishCheckout() {
     if (this.items.length === 0) return;
 
+    // Prevent duplicate transactions (user can still go back and modify)
+    if (this.transactionSaved) {
+      // Already saved - just navigate to QR without creating new transaction
+      // The transaction was already created, no need to recreate
+      return;
+    }
+
     // Get next customer number (auto-increments per sale)
     const customerNumber = Storage.getNextCustomerNumber();
 
@@ -480,9 +426,11 @@ const Checkout = {
 
     Storage.saveTransaction(transaction);
 
-    // Clear cart after creating transaction (prevents duplicates)
-    this.items = [];
-    Storage.saveCart([]);
+    // Mark cart as saved (prevents duplicate saves on BACK → DONE)
+    this.transactionSaved = true;
+
+    // DON'T clear cart here - let BACK return to items for review
+    // Cart is cleared only by NEW CUSTOMER
 
     // Navigate to QR screen
     App.showScreen('qr', transaction);
@@ -494,7 +442,7 @@ const Checkout = {
   showDescPrompt() {
     if (!this.elements.descPrompt) return;
 
-    this.elements.descPrompt.hidden = false;
+    this.elements.descPrompt.classList.add('visible');
 
     // Auto-dismiss after 3 seconds (add without description)
     this.noDescPromptTimeout = setTimeout(() => {
@@ -508,7 +456,7 @@ const Checkout = {
   hideDescPrompt() {
     if (!this.elements.descPrompt) return;
 
-    this.elements.descPrompt.hidden = true;
+    this.elements.descPrompt.classList.remove('visible');
 
     // Clear timeout if set
     if (this.noDescPromptTimeout) {

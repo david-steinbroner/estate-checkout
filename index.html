@@ -13,24 +13,24 @@
 </head>
 <body>
 
+  <!-- Shared Header (visible during active sale, hidden during setup) -->
+  <header class="header" id="sale-header" hidden>
+    <div class="header__context">
+      <span class="header__name" id="sale-name">Estate Sale</span>
+      <span class="header__dot">·</span>
+      <span class="header__day" id="sale-day">Day 1</span>
+      <span class="header__dot">·</span>
+      <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
+    </div>
+    <div class="header__buttons">
+      <button class="header__btn" id="nav-dashboard">Dashboard</button>
+      <button class="header__btn" id="nav-collect">Collect Payments</button>
+      <button class="header__btn header__btn--danger" id="nav-end-sale">End Sale</button>
+    </div>
+  </header>
+
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Header: Context strip + button bar -->
-    <header class="header">
-      <div class="header__context">
-        <span class="header__name" id="sale-name">Estate Sale</span>
-        <span class="header__dot">·</span>
-        <span class="header__day" id="sale-day">Day 1</span>
-        <span class="header__dot">·</span>
-        <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
-      </div>
-      <div class="header__buttons">
-        <button class="header__btn" id="checkout-dashboard-button">Dashboard</button>
-        <button class="header__btn" id="collect-payments-button">Collect Payments</button>
-        <button class="header__btn header__btn--danger" id="end-sale-button">End Sale</button>
-      </div>
-    </header>
-
     <!-- Running Total (compact bar) -->
     <div class="running-total">
       <span class="running-total__label">Total:</span>
@@ -232,10 +232,6 @@
 
   <!-- Dashboard Screen -->
   <div id="screen-dashboard" class="screen dashboard-screen">
-    <header class="dashboard-header">
-      <h1 class="dashboard-header__title">Sale Dashboard</h1>
-    </header>
-
     <!-- Summary Stats -->
     <div class="dashboard-stats">
       <div class="dashboard-stat">
@@ -263,9 +259,9 @@
       </div>
     </div>
 
-    <!-- Back Button -->
+    <!-- Actions -->
     <div class="dashboard-actions">
-      <button class="dashboard-action dashboard-action--back" id="dashboard-back">BACK</button>
+      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">NEW CUSTOMER</button>
     </div>
   </div>
 
@@ -274,7 +270,7 @@
   <div class="flash flash--error" id="flash-error">Error</div>
 
   <!-- No Description Prompt (bottom sheet with overlay) -->
-  <div class="desc-prompt-overlay" id="desc-prompt" hidden>
+  <div class="desc-prompt-overlay" id="desc-prompt">
     <div class="desc-prompt-sheet">
       <p class="desc-prompt__text">No description — add anyway?</p>
       <button class="desc-prompt__btn desc-prompt__btn--add" id="desc-prompt-add">Add Without Description</button>
