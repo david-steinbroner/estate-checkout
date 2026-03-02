@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v28
+**Service worker cache:** v29
 
 ---
 
 ## What Was Accomplished
+
+### Session 14 (2026-03-02)
+- **Fixed Camera Not Stopping on Header Navigation** — App.showScreen() now calls Scan.stop() when leaving the scan screen
+- **Fixed Payment Worker Storage Bug** — markPaid() now updates the existing transaction in estate_transactions instead of writing to a separate estate_paid_transactions key that Dashboard never read. Payments from scan/receive flow now appear correctly on Dashboard with green "Paid" badge.
+- **Removed Dead Code** — Deleted Storage.KEYS.PAID_TRANSACTIONS, Storage.savePaidTransaction(), Storage.getPaidTransactions(), Storage.clearPaidTransactions()
+- **Fixed DONE Button Blocking After BACK** — finishCheckout() now stores lastTransaction and re-navigates to QR screen when transactionSaved is true. User can press DONE → BACK → DONE and see the same QR again. Cart modifications (add/remove) still create new transactions.
+- **Service worker** — Bumped to v29
 
 ### Session 13 (2026-03-02)
 - **Fixed Description Prompt Not Showing** — Changed from `hidden` attribute to `.visible` class pattern to avoid browser style conflicts
@@ -328,6 +335,17 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 14:**
+```
+/js/
+  app.js          # Added Scan.stop() call in showScreen() when leaving scan screen
+  checkout.js     # Added lastTransaction property, updated finishCheckout() to re-navigate, clearAll(), endSale()
+  payment.js      # markPaid() now updates estate_transactions via Storage.updateTransaction()
+  storage.js      # Removed PAID_TRANSACTIONS key and related methods (savePaidTransaction, getPaidTransactions, clearPaidTransactions)
+/sw.js            # Bumped to v29
+/HANDOFF.md       # Updated with session 14 changes
+```
 
 **Session 13:**
 ```

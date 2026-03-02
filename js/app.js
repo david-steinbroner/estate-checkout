@@ -161,6 +161,11 @@ const App = {
    * Switch to a different screen
    */
   showScreen(screenName, data) {
+    // Cleanup before leaving current screen
+    if (this.currentScreen === 'scan') {
+      Scan.stop();
+    }
+
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
       screen.classList.remove('active');

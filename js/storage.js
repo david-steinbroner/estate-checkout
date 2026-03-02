@@ -8,8 +8,7 @@ const Storage = {
     SALE: 'estate_sale',
     CART: 'estate_cart',
     TRANSACTIONS: 'estate_transactions',
-    CUSTOMER_COUNTER: 'estate_customer_counter',
-    PAID_TRANSACTIONS: 'estate_paid_transactions'
+    CUSTOMER_COUNTER: 'estate_customer_counter'
   },
 
   /**
@@ -124,7 +123,6 @@ const Storage = {
     this.clearCart();
     this.clearTransactions();
     this.clearCustomerCounter();
-    this.clearPaidTransactions();
   },
 
   /**
@@ -165,29 +163,5 @@ const Storage = {
    */
   clearCustomerCounter() {
     localStorage.removeItem(this.KEYS.CUSTOMER_COUNTER);
-  },
-
-  /**
-   * Save a paid transaction from the payment worker
-   */
-  savePaidTransaction(transaction) {
-    const transactions = this.getPaidTransactions();
-    transactions.push(transaction);
-    localStorage.setItem(this.KEYS.PAID_TRANSACTIONS, JSON.stringify(transactions));
-  },
-
-  /**
-   * Get all paid transactions
-   */
-  getPaidTransactions() {
-    const data = localStorage.getItem(this.KEYS.PAID_TRANSACTIONS);
-    return data ? JSON.parse(data) : [];
-  },
-
-  /**
-   * Clear paid transactions
-   */
-  clearPaidTransactions() {
-    localStorage.removeItem(this.KEYS.PAID_TRANSACTIONS);
   }
 };

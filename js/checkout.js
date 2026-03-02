@@ -26,6 +26,9 @@ const Checkout = {
   // Track if current cart has been saved as a transaction (prevents duplicates)
   transactionSaved: false,
 
+  // Last transaction created (for re-navigation when transactionSaved is true)
+  lastTransaction: null,
+
   // DOM element references
   elements: {},
 
@@ -355,6 +358,7 @@ const Checkout = {
     this.priceInput = '';
     this.elements.descriptionInput.value = '';
     this.transactionSaved = false;
+    this.lastTransaction = null;
     this.updatePriceDisplay();
     this.render();
   },
@@ -372,6 +376,8 @@ const Checkout = {
     this.sale = null;
     this.currentDiscount = 0;
     this.priceInput = '';
+    this.transactionSaved = false;
+    this.lastTransaction = null;
 
     // Clear UI inputs
     if (this.elements.descriptionInput) {
@@ -395,10 +401,9 @@ const Checkout = {
   finishCheckout() {
     if (this.items.length === 0) return;
 
-    // Prevent duplicate transactions (user can still go back and modify)
-    if (this.transactionSaved) {
-      // Already saved - just navigate to QR without creating new transaction
-      // The transaction was already created, no need to recreate
+    // If already saved (no modifications), re-navigate to QR with existing transaction
+    if (this.transactionSaved && this.lastTransaction) {
+      App.showScreen('qr', this.lastTransaction);
       return;
     }
 
@@ -426,7 +431,8 @@ const Checkout = {
 
     Storage.saveTransaction(transaction);
 
-    // Mark cart as saved (prevents duplicate saves on BACK → DONE)
+    // Store transaction for re-navigation and mark as saved
+    this.lastTransaction = transaction;
     this.transactionSaved = true;
 
     // DON'T clear cart here - let BACK return to items for review

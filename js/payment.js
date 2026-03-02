@@ -123,22 +123,20 @@ const Payment = {
     // Disable button to prevent double-tap
     this.elements.markPaidButton.disabled = true;
 
-    // Create transaction record
-    const transaction = {
-      id: Utils.generateId(),
-      customerNumber: this.cartData.customerNumber,
-      timestamp: this.cartData.ts,
-      paidAt: Utils.getTimestamp(),
-      items: this.cartData.items,
-      total: this.cartData.total,
-      saleName: this.cartData.sale,
-      saleDay: this.cartData.day,
-      discount: this.cartData.discount,
-      status: 'paid'
-    };
+    // Find matching transaction in estate_transactions by customerNumber + timestamp
+    const transactions = Storage.getTransactions();
+    const matchingTxn = transactions.find(txn =>
+      txn.customerNumber === this.cartData.customerNumber &&
+      txn.timestamp === this.cartData.ts
+    );
 
-    // Save to localStorage
-    Storage.savePaidTransaction(transaction);
+    if (matchingTxn) {
+      // Update existing transaction to paid status
+      Storage.updateTransaction(matchingTxn.id, {
+        status: 'paid',
+        paidAt: Utils.getTimestamp()
+      });
+    }
 
     // Show success overlay
     this.elements.successOverlay.hidden = false;
