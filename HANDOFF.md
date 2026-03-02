@@ -3,22 +3,19 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
+**Service worker cache:** v12
 
 ---
 
 ## What Was Accomplished
 
 ### Session 2 (2026-03-01)
-- **Fixed day calculation bug**: Was off by one due to timezone parsing. Start date now parsed as local time.
+- **Fixed day calculation bug**: Was off by one due to timezone parsing. Start date now parsed as local time in utils.js.
 - **Added savings display**: Running total bar shows "Saved: $X.XX" when discount is active.
-- **Built QR Handoff screen**:
-  - Tap DONE → saves transaction → shows QR code
-  - QR contains full transaction data (sale name, items, prices, total, timestamp)
-  - Displays itemized summary with original/discounted prices
-  - Total shown in bold at bottom
-  - NEW CUSTOMER button clears cart and returns to checkout
-  - BACK button returns to checkout without clearing
-  - Single viewport layout (QR top half, scrollable summary, fixed buttons)
+- **Built QR Handoff screen** (partially — see Known Bugs):
+  - HTML structure and CSS in place
+  - QR.js module with render logic
+  - NEW CUSTOMER and BACK buttons wired up
 - **Added backlog items** for v0.2: item editing, per-item discount override, toggle day discount, total-level discount
 - **Cleaned up debug logs** from previous debugging session
 
@@ -61,7 +58,7 @@
 
 ## Current State
 
-### What Works
+### What Works (confirmed on Cloudflare Pages)
 - **Sale Setup**: Create a new sale with name, start date, discount schedule
 - **Routing**: App opens to setup if no sale, checkout if sale exists
 - **Number pad entry**: Tap digits → price appears → tap ADD → item added to list
@@ -74,15 +71,58 @@
 - **Discount calculation**: Based on start date vs. today, applies correct day's discount
 - **Cart persistence**: Items survive page refresh (localStorage)
 - **End Sale**: Button in header ends sale and returns to setup
-- **QR Handoff**: Tap DONE → shows QR code with transaction data + item summary
+- **NEW CUSTOMER / BACK buttons**: Work correctly on QR screen
 
 ### What's Broken
-- Nothing is broken
+- See Known Bugs below
 
 ### What's Half-Done
+- **QR Handoff screen**: Structure exists but doesn't render (see bugs)
 - **Speech-to-text**: Structure exists, needs full parsing logic
 - **QR scan**: Screen placeholder exists, no camera integration yet
 - **Dashboard**: Not started
+
+---
+
+## Known Bugs
+
+1. **Date picker defaults to tomorrow instead of today**
+   - Location: `sale-setup.js` → `setDefaultDate()`
+   - Cause: Uses `new Date().toISOString().split('T')[0]` which returns UTC date. In evening US Central time, UTC is already the next day.
+   - Fix: Use local date components instead:
+     ```javascript
+     const today = new Date();
+     const year = today.getFullYear();
+     const month = String(today.getMonth() + 1).padStart(2, '0');
+     const day = String(today.getDate()).padStart(2, '0');
+     this.elements.startDateInput.value = `${year}-${month}-${day}`;
+     ```
+
+2. **QR Handoff screen is blank**
+   - QR code doesn't render, items don't show, total shows $0.00
+   - Debug checklist:
+     - Check `Checkout.finishCheckout()` builds valid transaction with items array and total
+     - Check `App.showScreen('qr', transaction)` passes transaction data through
+     - Check `QR.render(data)` receives the transaction
+     - Check `QRCode` constructor from qrcode.min.js is available (library needs to be loaded)
+     - Check browser console for errors when tapping DONE
+     - Ensure `generateData()` returns `JSON.stringify()` of the data object
+
+### Fixed Bugs
+- **Day calculation off by one** — Timezone parsing issue. Fixed by parsing start date as local time.
+- **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version.
+- **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`. Fixed by removing the display property from `.checkout-pad`.
+- **Checkout.endSale() firing twice** — Added guard flag and stopPropagation to prevent double execution on mobile.
+
+---
+
+## Next Steps (Priority Order)
+
+1. **Fix date picker timezone bug** — Same root cause as day calculation, just in setDefaultDate()
+2. **Fix QR handoff screen rendering** — Debug and fix the blank screen issue
+3. **Build QR scan view** — Camera access, decode QR, display total
+4. **Build sale dashboard** — Transaction count, revenue, average ticket
+5. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
 
 ---
 
@@ -99,19 +139,9 @@
 /css/
   styles.css      # Added savings display styles, QR screen styles
 /index.html       # Added savings span, QR screen HTML
-/sw.js            # Bumped to v12
+/sw.js            # Cache at v12
 /BACKLOG.md       # Added v0.2 items
 ```
-
----
-
-## Next Steps (Priority Order)
-
-1. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
-2. **Build QR scan view** — Camera access, decode QR, display total
-3. **Build sale dashboard** — Transaction count, revenue, average ticket
-4. **Test offline mode** — Verify service worker caching works
-5. **End-to-end testing** — Run all test scenarios from CLAUDE_CODE_RULES.md
 
 ---
 
@@ -123,29 +153,17 @@
 
 ---
 
-## Known Bugs
-None currently.
-
-### Fixed Bugs
-- **Date picker defaults to tomorrow** — Was using UTC which is next day in evening US time. Fixed by using local date components.
-- **QR Handoff screen blank** — qrcode.min.js was corrupted placeholder. Downloaded actual library and added script tag.
-- **Day calculation off by one** — Timezone parsing issue. Fixed by parsing start date as local time.
-- **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version.
-- **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`. Fixed by removing the display property from `.checkout-pad`.
-- **Checkout.endSale() firing twice** — Added guard flag and stopPropagation to prevent double execution on mobile.
-
----
-
 ## How to Test
 
 ### Sale Setup Flow
 1. Clear localStorage: DevTools > Application > Local Storage > Clear
 2. Refresh page → should see Sale Setup screen
 3. Enter sale name (e.g., "Test Estate")
-4. Set start date to today → should show "Day 1" with 0% discount
-5. Set start date to yesterday → should show "Day 2" with 25% discount
-6. Tap START SALE
-7. Checkout pad should show correct day and discount
+4. Verify date picker defaults to TODAY (not tomorrow)
+5. Set start date to today → should show "Day 1" with 0% discount
+6. Set start date to yesterday → should show "Day 2" with 25% discount
+7. Tap START SALE
+8. Checkout pad should show correct day and discount
 
 ### Checkout Flow
 1. Type price on number pad
@@ -153,7 +171,7 @@ None currently.
 3. If discount active, running total bar shows "Saved: $X.XX"
 4. Add several items → verify running total updates
 5. Tap × on an item → verify it's removed
-6. Tap DONE → QR screen appears with QR code and item summary
+6. Tap DONE → QR screen should appear with QR code and item summary
 7. Tap NEW CUSTOMER → clears cart, returns to checkout
 8. Tap BACK → returns to checkout with cart intact
 
@@ -164,3 +182,6 @@ python3 -m http.server 8000 --bind 0.0.0.0
 ```
 - Computer: http://localhost:8000
 - Phone (same WiFi): http://192.168.86.33:8000
+
+### Cloudflare Pages
+- Production: https://estate-checkout.pages.dev (or configured domain)
