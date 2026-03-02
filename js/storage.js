@@ -69,11 +69,44 @@ const Storage = {
   },
 
   /**
-   * Get all transactions
+   * Get all transactions (with migration for old data)
    */
   getTransactions() {
     const data = localStorage.getItem(this.KEYS.TRANSACTIONS);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+
+    const transactions = JSON.parse(data);
+
+    // Migrate old transactions that don't have new fields
+    return transactions.map(txn => ({
+      ...txn,
+      status: txn.status || 'unpaid',
+      paidAt: txn.paidAt || null,
+      voidedAt: txn.voidedAt || null,
+      reopenedFrom: txn.reopenedFrom || null
+    }));
+  },
+
+  /**
+   * Update a specific transaction by ID
+   */
+  updateTransaction(txnId, updates) {
+    const transactions = this.getTransactions();
+    const index = transactions.findIndex(t => t.id === txnId);
+
+    if (index === -1) return false;
+
+    transactions[index] = { ...transactions[index], ...updates };
+    localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify(transactions));
+    return true;
+  },
+
+  /**
+   * Get a specific transaction by ID
+   */
+  getTransaction(txnId) {
+    const transactions = this.getTransactions();
+    return transactions.find(t => t.id === txnId) || null;
   },
 
   /**

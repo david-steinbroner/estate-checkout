@@ -32,7 +32,7 @@
   --font-size-price: 36px;
 
   /* Fixed heights for layout calculation */
-  --header-height: 32px;
+  --header-height: 68px; /* two rows: 32px info + 36px nav */
   --total-height: 36px;
   --input-height: 76px;
   --numpad-button-size: 52px;
@@ -90,18 +90,50 @@ body {
   overflow: hidden;
 }
 
-/* === Header (single line) === */
+/* === Header (two rows) === */
 .header {
-  position: relative;
-  height: var(--header-height);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.header__info {
+  position: relative;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-md);
   padding: 0 var(--space-md);
-  flex-shrink: 0;
+}
+
+.header__nav {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.header__nav-btn {
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.header__nav-btn:active {
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .header__name {
@@ -261,7 +293,6 @@ body {
 
 /* === Input Area (compact) === */
 .input-area {
-  height: var(--input-height);
   background: var(--color-surface);
   padding: var(--space-sm) var(--space-md);
   display: flex;
@@ -272,12 +303,16 @@ body {
 }
 
 .description-input {
-  height: 28px;
+  height: 44px;
   width: 100%;
-  padding: 0 var(--space-md);
-  font-size: var(--font-size-sm);
+  padding: 0 var(--space-lg);
+  font-size: var(--font-size-base);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+}
+
+.description-input::placeholder {
+  color: var(--color-text-secondary);
 }
 
 .description-input:focus {
@@ -289,7 +324,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  flex: 1;
 }
 
 .price-display__value {
@@ -456,32 +490,6 @@ body {
   background: #15803d;
 }
 
-/* === Secondary Actions (Collect Payments + Dashboard) === */
-.secondary-actions {
-  display: flex;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.secondary-action {
-  flex: 1;
-  height: 32px;
-  background: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.secondary-action:active {
-  background: var(--color-bg);
-}
-
 /* === Action Bar === */
 .action-bar {
   height: var(--action-bar-height);
@@ -546,6 +554,82 @@ body {
 
 .flash.visible {
   opacity: 1;
+}
+
+/* === No Description Prompt === */
+.desc-prompt {
+  position: fixed;
+  bottom: calc(var(--action-bar-height) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: calc(100% - 32px);
+  max-width: 320px;
+  animation: prompt-slide-up 0.2s ease-out;
+}
+
+.desc-prompt[hidden] {
+  display: none;
+}
+
+@keyframes prompt-slide-up {
+  from {
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.desc-prompt__text {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.desc-prompt__buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.desc-prompt__btn {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.desc-prompt__btn--add {
+  background: var(--color-success);
+  color: white;
+}
+
+.desc-prompt__btn--add:active {
+  background: #15803d;
+}
+
+.desc-prompt__btn--desc {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.desc-prompt__btn--desc:active {
+  background: #e5e5e5;
 }
 
 /* === Confirmation Modal === */
@@ -1448,6 +1532,44 @@ body {
   color: var(--color-success);
 }
 
+.dashboard-txn__status {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: auto;
+  margin-right: var(--space-sm);
+}
+
+.dashboard-txn__status--paid {
+  background: rgba(22, 163, 74, 0.15);
+  color: var(--color-success);
+}
+
+.dashboard-txn__status--unpaid {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-danger);
+}
+
+.dashboard-txn__status--void {
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+}
+
+/* Voided transaction styling */
+.dashboard-txn--void {
+  opacity: 0.6;
+}
+
+.dashboard-txn--void .dashboard-txn__customer {
+  text-decoration: line-through;
+}
+
+.dashboard-txn--void .dashboard-txn__total {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
 .dashboard-txn__meta {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -1511,6 +1633,55 @@ body {
   color: var(--color-text-secondary);
   font-weight: 400;
   margin-right: var(--space-sm);
+}
+
+/* Dashboard Detail Actions */
+.dashboard-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.dashboard-detail__btn {
+  flex: 1;
+  min-width: 90px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-detail__btn--toggle {
+  background: var(--color-success);
+  color: white;
+}
+
+.dashboard-detail__btn--toggle:active {
+  background: #15803d;
+}
+
+.dashboard-detail__btn--reopen {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.dashboard-detail__btn--reopen:active {
+  background: #e5e5e5;
+}
+
+.dashboard-detail__btn--collect {
+  background: var(--color-primary);
+  color: white;
+}
+
+.dashboard-detail__btn--collect:active {
+  background: #1d4ed8;
 }
 
 /* Dashboard Empty State */

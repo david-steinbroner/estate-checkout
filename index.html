@@ -15,14 +15,20 @@
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Compact Header: Sale name | Day X | Discount | End -->
+    <!-- Header: Two rows - sale info + nav buttons -->
     <header class="header">
-      <span class="header__name" id="sale-name">Estate Sale</span>
-      <span class="header__separator">|</span>
-      <span class="header__day" id="sale-day">Day 1</span>
-      <span class="header__separator">|</span>
-      <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
-      <button class="header__end" id="end-sale-button">End</button>
+      <div class="header__info">
+        <span class="header__name" id="sale-name">Estate Sale</span>
+        <span class="header__separator">|</span>
+        <span class="header__day" id="sale-day">Day 1</span>
+        <span class="header__separator">|</span>
+        <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
+        <button class="header__end" id="end-sale-button">End</button>
+      </div>
+      <div class="header__nav">
+        <button class="header__nav-btn" id="checkout-dashboard-button">Dashboard</button>
+        <button class="header__nav-btn" id="collect-payments-button">Collect Payments</button>
+      </div>
     </header>
 
     <!-- Running Total (compact bar) -->
@@ -41,13 +47,6 @@
 
     <!-- Input Area (compact) -->
     <div class="input-area">
-      <input
-        type="text"
-        class="description-input"
-        id="description-input"
-        placeholder="Description (optional)"
-        autocomplete="off"
-      >
       <div class="price-display">
         <div class="price-display__value" id="price-display">$0.00</div>
         <button class="mic-button" id="mic-button" aria-label="Hold to speak">
@@ -55,6 +54,13 @@
           <span class="mic-button__label">Speak</span>
         </button>
       </div>
+      <input
+        type="text"
+        class="description-input"
+        id="description-input"
+        placeholder="Description (optional)"
+        autocomplete="off"
+      >
       <div class="mic-status" id="mic-status" hidden>
         <span class="mic-status__dot"></span>
         <span class="mic-status__text">Listening...</span>
@@ -78,16 +84,6 @@
         <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
       </div>
       <button class="add-button" id="add-button">ADD ITEM</button>
-    </div>
-
-    <!-- Secondary Actions (Collect Payments + Dashboard) -->
-    <div class="secondary-actions">
-      <button class="secondary-action" id="collect-payments-button">
-        Collect Payments
-      </button>
-      <button class="secondary-action" id="checkout-dashboard-button">
-        Dashboard
-      </button>
     </div>
 
     <!-- Action Bar (compact, bottom) -->
@@ -273,6 +269,15 @@
   <!-- Flash Feedback -->
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
+
+  <!-- No Description Prompt (inline banner) -->
+  <div class="desc-prompt" id="desc-prompt" hidden>
+    <span class="desc-prompt__text">No description — add anyway?</span>
+    <div class="desc-prompt__buttons">
+      <button class="desc-prompt__btn desc-prompt__btn--add" id="desc-prompt-add">Add Without</button>
+      <button class="desc-prompt__btn desc-prompt__btn--desc" id="desc-prompt-desc">Add Description</button>
+    </div>
+  </div>
 
   <!-- Clear Confirmation Modal -->
   <div class="modal-overlay" id="clear-modal">

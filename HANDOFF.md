@@ -3,11 +3,46 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v22
+**Service worker cache:** v23
 
 ---
 
 ## What Was Accomplished
+
+### Session 8 (2026-03-01)
+- **Top Nav Bar Reorganization** — Dashboard and Collect Payments in header:
+  - Header now two rows: sale info row + nav buttons row
+  - Compact outline-styled buttons in nav row
+  - Removed secondary-actions section from bottom of checkout
+  - Cleaner checkout screen layout
+- **Description Input Repositioned** — Better item entry flow:
+  - Description input moved below price display, directly above keypad
+  - Input height increased to 44px for easier typing
+  - Feels like one cohesive input group
+- **"Add Without Description" Prompt** — Smart prompting:
+  - First 3 times per session: shows inline banner prompt
+  - Options: "Add Without" or "Add Description"
+  - Auto-dismisses after 3 seconds (adds without description)
+  - After 3 prompts: adds silently without asking
+- **Transaction Status System** — Full ticket management:
+  - New fields: `status` (unpaid/paid/void), `paidAt`, `voidedAt`, `reopenedFrom`
+  - Automatic migration for existing transactions
+  - Status badges on dashboard: green "Paid", red "Unpaid", gray "Void"
+  - Voided transactions grayed out with strikethrough
+- **Paid/Unpaid Toggle** — Manual status control:
+  - Toggle button in expanded transaction detail
+  - Tracks `paidAt` timestamp when marked paid
+- **Reopen Ticket Flow** — Edit completed transactions:
+  - "Reopen" button in expanded detail
+  - Voids original transaction, loads items to checkout
+  - New transaction tracks `reopenedFrom` customer number
+- **Collect Payment from Dashboard** — Generate QR for any transaction:
+  - "Collect Payment" button in expanded detail
+  - Navigates to QR screen with that transaction's data
+- **Dashboard Stats Exclude Voids** — Accurate reporting:
+  - Customer count, revenue, avg ticket exclude voided transactions
+  - Voided transactions still visible in list for audit trail
+- **Service worker** — Bumped to v23
 
 ### Session 7 (2026-03-01)
 - **Fixed Speech Recognition Timing for Mobile** — Major reliability fix:
@@ -163,17 +198,25 @@
 - **Offline scanning**: html5-qrcode library cached for offline iOS scanning
 - **Dashboard**: Summary stats (customers, revenue, avg ticket) for current sale
 - **Transaction list**: View all transactions with accordion expand for details
-- **Dashboard navigation**: Accessible from checkout and setup screens
+- **Dashboard navigation**: Accessible from top nav bar on checkout screen
 - **Speech-to-text**: Hold mic → speak → release → parsed result shown
 - **Speech parser**: Handles number words, compounds, X-fifty, hundred patterns
 - **Voice confirmation**: CONFIRM adds item, EDIT populates fields, CANCEL dismisses
 - **Descriptions via voice**: Carry through to QR, payment, and dashboard
+- **Top nav bar**: Two-row header with Dashboard and Collect Payments buttons
+- **Description input**: Repositioned below price, 44px tall, closer to keypad
+- **No-description prompt**: Shows first 3 times, then adds silently
+- **Transaction status**: paid/unpaid/void with visual badges
+- **Paid/unpaid toggle**: Toggle status from Dashboard expanded view
+- **Reopen ticket**: Void original, load items to checkout for modification
+- **Collect Payment from Dashboard**: Generate QR for any transaction
+- **Dashboard stats**: Exclude voided transactions from totals
 
 ### What's Broken
 - None currently
 
 ### What's Half-Done
-- **Speech-to-text**: Structure exists, needs full parsing logic
+- None currently
 
 ---
 
@@ -200,6 +243,19 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 8:**
+```
+/js/
+  checkout.js     # No-description prompt logic, reopenedFromCustomer tracking
+  dashboard.js    # Status badges, toggle paid, reopen, collect payment, exclude voids
+  storage.js      # Data migration, updateTransaction(), getTransaction()
+/css/
+  styles.css      # Header two-row layout, description input, prompt banner, status badges, detail actions
+/index.html       # Header restructure, description input moved, no-description prompt element
+/sw.js            # Bumped to v23
+/HANDOFF.md       # Updated with session 8 changes
+```
 
 **Session 6:**
 ```

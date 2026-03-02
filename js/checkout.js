@@ -16,6 +16,13 @@ const Checkout = {
   // Current discount percentage
   currentDiscount: 0,
 
+  // Track "no description" prompts shown this session (not persisted)
+  noDescPromptCount: 0,
+  noDescPromptTimeout: null,
+
+  // Track if we're in the middle of adding from prompt
+  pendingAddWithoutDesc: false,
+
   // DOM element references
   elements: {},
 
@@ -57,7 +64,10 @@ const Checkout = {
       endSaleCancel: document.getElementById('end-sale-cancel'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
       flashSuccess: document.getElementById('flash-success'),
-      flashError: document.getElementById('flash-error')
+      flashError: document.getElementById('flash-error'),
+      descPrompt: document.getElementById('desc-prompt'),
+      descPromptAdd: document.getElementById('desc-prompt-add'),
+      descPromptDesc: document.getElementById('desc-prompt-desc')
     };
   },
 
@@ -139,6 +149,19 @@ const Checkout = {
         this.hideEndSaleModal();
       }
     });
+
+    // Description prompt buttons
+    if (this.elements.descPromptAdd) {
+      this.elements.descPromptAdd.addEventListener('click', () => {
+        this.confirmAddWithoutDesc();
+      });
+    }
+
+    if (this.elements.descPromptDesc) {
+      this.elements.descPromptDesc.addEventListener('click', () => {
+        this.focusDescription();
+      });
+    }
   },
 
   /**
@@ -225,6 +248,16 @@ const Checkout = {
     }
 
     const description = this.elements.descriptionInput.value.trim();
+
+    // Check if no description and we should prompt (first 3 times)
+    if (!description && !this.pendingAddWithoutDesc && this.noDescPromptCount < 3) {
+      this.showDescPrompt();
+      return;
+    }
+
+    // Reset pending flag
+    this.pendingAddWithoutDesc = false;
+
     const discountedPrice = Utils.applyDiscount(price, this.currentDiscount);
 
     const item = {
@@ -424,13 +457,68 @@ const Checkout = {
       items: [...this.items],
       total: this.items.reduce((sum, item) => sum + item.finalPrice, 0),
       discount: this.currentDiscount,
-      saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate) : 1
+      saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate) : 1,
+      // New status fields
+      status: 'unpaid',
+      paidAt: null,
+      voidedAt: null,
+      reopenedFrom: this.reopenedFromCustomer || null
     };
+
+    // Clear reopened tracking
+    this.reopenedFromCustomer = null;
 
     Storage.saveTransaction(transaction);
 
     // Navigate to QR screen
     App.showScreen('qr', transaction);
+  },
+
+  /**
+   * Show the "no description" prompt
+   */
+  showDescPrompt() {
+    if (!this.elements.descPrompt) return;
+
+    this.elements.descPrompt.hidden = false;
+
+    // Auto-dismiss after 3 seconds (add without description)
+    this.noDescPromptTimeout = setTimeout(() => {
+      this.confirmAddWithoutDesc();
+    }, 3000);
+  },
+
+  /**
+   * Hide the "no description" prompt
+   */
+  hideDescPrompt() {
+    if (!this.elements.descPrompt) return;
+
+    this.elements.descPrompt.hidden = true;
+
+    // Clear timeout if set
+    if (this.noDescPromptTimeout) {
+      clearTimeout(this.noDescPromptTimeout);
+      this.noDescPromptTimeout = null;
+    }
+  },
+
+  /**
+   * Confirm adding without description
+   */
+  confirmAddWithoutDesc() {
+    this.hideDescPrompt();
+    this.noDescPromptCount++;
+    this.pendingAddWithoutDesc = true;
+    this.addItem();
+  },
+
+  /**
+   * Focus the description input instead of adding
+   */
+  focusDescription() {
+    this.hideDescPrompt();
+    this.elements.descriptionInput.focus();
   },
 
   /**

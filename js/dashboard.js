@@ -85,11 +85,14 @@ const Dashboard = {
   },
 
   /**
-   * Render summary statistics
+   * Render summary statistics (excluding voided transactions)
    */
   renderStats(transactions) {
-    const customerCount = transactions.length;
-    const totalRevenue = transactions.reduce((sum, txn) => sum + txn.total, 0);
+    // Filter out voided transactions for stats
+    const activeTransactions = transactions.filter(txn => txn.status !== 'void');
+
+    const customerCount = activeTransactions.length;
+    const totalRevenue = activeTransactions.reduce((sum, txn) => sum + txn.total, 0);
     const avgTicket = customerCount > 0 ? totalRevenue / customerCount : 0;
 
     this.elements.customerCount.textContent = customerCount.toString();
@@ -129,6 +132,24 @@ const Dashboard = {
         this.toggleTransaction(row.dataset.id);
       });
     });
+
+    // Bind action button events (using event delegation)
+    this.elements.transactionList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const txnId = btn.dataset.id;
+
+      if (action === 'toggle-paid') {
+        this.togglePaidStatus(txnId);
+      } else if (action === 'reopen') {
+        this.reopenTransaction(txnId);
+      } else if (action === 'collect') {
+        this.collectPayment(txnId);
+      }
+    });
   },
 
   /**
@@ -139,12 +160,20 @@ const Dashboard = {
     const time = this.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
+    const status = txn.status || 'unpaid';
+
+    // Status badge HTML
+    const statusBadge = this.renderStatusBadge(status);
+
+    // Void styling
+    const voidClass = status === 'void' ? ' dashboard-txn--void' : '';
 
     return `
-      <li class="dashboard-txn" data-id="${txn.id}">
+      <li class="dashboard-txn${voidClass}" data-id="${txn.id}">
         <div class="dashboard-txn__summary">
           <div class="dashboard-txn__header">
             <span class="dashboard-txn__customer">Customer #${customerNum} — ${time}</span>
+            ${statusBadge}
             <span class="dashboard-txn__total">${total}</span>
           </div>
           <div class="dashboard-txn__meta">
@@ -156,6 +185,18 @@ const Dashboard = {
         </div>
       </li>
     `;
+  },
+
+  /**
+   * Render status badge
+   */
+  renderStatusBadge(status) {
+    const badges = {
+      'paid': '<span class="dashboard-txn__status dashboard-txn__status--paid">Paid</span>',
+      'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>',
+      'void': '<span class="dashboard-txn__status dashboard-txn__status--void">Void</span>'
+    };
+    return badges[status] || badges['unpaid'];
   },
 
   /**
@@ -181,11 +222,30 @@ const Dashboard = {
       `;
     }).join('');
 
+    // Action buttons (only show for non-void transactions)
+    const status = txn.status || 'unpaid';
+    const isVoid = status === 'void';
+
+    const actionsHtml = isVoid ? '' : `
+      <div class="dashboard-detail__actions">
+        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
+          ${status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+        </button>
+        <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
+          Reopen
+        </button>
+        <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
+          Collect Payment
+        </button>
+      </div>
+    `;
+
     return `
       <div class="dashboard-detail__discount">${discountLabel}</div>
       <ul class="dashboard-detail__items">
         ${itemsHtml}
       </ul>
+      ${actionsHtml}
     `;
   },
 
@@ -232,6 +292,64 @@ const Dashboard = {
     } catch (e) {
       return '--:--';
     }
+  },
+
+  /**
+   * Toggle paid/unpaid status for a transaction
+   */
+  togglePaidStatus(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn) return;
+
+    const newStatus = txn.status === 'paid' ? 'unpaid' : 'paid';
+    const paidAt = newStatus === 'paid' ? Utils.getTimestamp() : null;
+
+    Storage.updateTransaction(txnId, {
+      status: newStatus,
+      paidAt: paidAt
+    });
+
+    // Re-render to update UI
+    this.render();
+  },
+
+  /**
+   * Reopen a transaction (void original, load items to checkout)
+   */
+  reopenTransaction(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn || txn.status === 'void') return;
+
+    // Mark original as void
+    Storage.updateTransaction(txnId, {
+      status: 'void',
+      voidedAt: Utils.getTimestamp()
+    });
+
+    // Load items into checkout
+    Checkout.items = txn.items.map(item => ({
+      ...item,
+      id: Utils.generateId() // New IDs for the reopened items
+    }));
+    Storage.saveCart(Checkout.items);
+
+    // Track that this is a reopened transaction
+    Checkout.reopenedFromCustomer = txn.customerNumber;
+
+    // Navigate to checkout
+    App.showScreen('checkout');
+    Checkout.render();
+  },
+
+  /**
+   * Navigate to QR screen for this transaction
+   */
+  collectPayment(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn) return;
+
+    // Navigate to QR screen with this transaction
+    App.showScreen('qr', txn);
   },
 
   /**
