@@ -3,11 +3,16 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v34
+**Service worker cache:** v35
 
 ---
 
 ## What Was Accomplished
+
+### Session 20 (2026-03-02)
+- **Fixed Touch Target Violations** — Number pad buttons increased from 52px to 64px (spec requires 64x64 minimum). Dashboard detail action buttons (Mark Paid, Reopen, Collect Payment) increased from 36px to 48px (spec requires 48px minimum). Sheet buttons already 48px — verified correct.
+- **Replaced Hardcoded CSS with Variables** — Added 10 new CSS custom properties: `--color-success-dark`, `--color-primary-dark`, `--color-danger-dark`, `--color-bg-hover`, `--overlay-backdrop`, `--radius-lg`, `--sheet-padding`, `--btn-height-lg`, `--numpad-btn-size`. Replaced all hardcoded `:active` state colors, overlay backdrop, sheet border-radius/padding, button heights, and sheet child element font-sizes/margins/gaps with variable references. No visual changes — pure refactor.
+- **Service worker** — Bumped to v35
 
 ### Session 19 (2026-03-02)
 - **Fixed Header Buttons on Scan Permission-Denied Screen** — After denying camera permission, header buttons (← Checkout, Dashboard) did nothing. Root cause: on iOS/Safari fallback path, `startFallbackScanner()` sets `this.html5Scanner = new Html5Qrcode(...)` before calling `start()`. When permission is denied, `start()` rejects but `html5Scanner` remains non-null. When user taps a header button, `showScreen()` calls `Scan.stop()` which tries `this.html5Scanner.stop()` on a never-started scanner — throwing an error that crashes `showScreen()` before the screen transition. Fix: (1) null out `this.html5Scanner` in `start()`'s catch block so `stop()` skips it, (2) wrap `Scan.stop()` in try/catch in `showScreen()` as a defensive safety net.
