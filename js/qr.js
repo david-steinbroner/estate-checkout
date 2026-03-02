@@ -26,9 +26,7 @@ const QR = {
       qrCode: document.getElementById('qr-code'),
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
-      backButton: document.getElementById('qr-back'),
-      newButton: document.getElementById('qr-new'),
-      dashboardButton: document.getElementById('qr-dashboard')
+      newButton: document.getElementById('qr-new')
     };
   },
 
@@ -36,23 +34,11 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
-    // Back button - return to checkout without clearing
-    this.elements.backButton.addEventListener('click', () => {
-      App.showScreen('checkout');
-    });
-
     // New customer button - clear cart and return to checkout
     this.elements.newButton.addEventListener('click', () => {
       Checkout.clearAll();
       App.showScreen('checkout');
     });
-
-    // Dashboard button - navigate to dashboard
-    if (this.elements.dashboardButton) {
-      this.elements.dashboardButton.addEventListener('click', () => {
-        App.showScreen('dashboard', 'qr');
-      });
-    }
   },
 
   /**

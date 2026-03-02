@@ -31,6 +31,7 @@ const App = {
       saleName: document.getElementById('sale-name'),
       saleDay: document.getElementById('sale-day'),
       discountBadge: document.getElementById('discount-badge'),
+      checkoutBtn: document.getElementById('nav-checkout'),
       dashboardBtn: document.getElementById('nav-dashboard'),
       collectBtn: document.getElementById('nav-collect'),
       endSaleBtn: document.getElementById('nav-end-sale'),
@@ -44,6 +45,13 @@ const App = {
    * Bind shared header event listeners
    */
   bindHeaderEvents() {
+    // Checkout button (back to checkout without clearing cart)
+    if (this.headerElements.checkoutBtn) {
+      this.headerElements.checkoutBtn.addEventListener('click', () => {
+        this.showScreen('checkout');
+      });
+    }
+
     // Dashboard button
     if (this.headerElements.dashboardBtn) {
       this.headerElements.dashboardBtn.addEventListener('click', () => {
@@ -223,6 +231,31 @@ const App = {
 
     // Update active button state
     this.updateActiveNavButton(screenName);
+
+    // Show/hide ← Checkout button based on screen
+    this.updateCheckoutButton(screenName);
+  },
+
+  /**
+   * Update ← Checkout button visibility
+   * Shows on scan, payment, qr screens; on dashboard only when cart has items
+   */
+  updateCheckoutButton(screenName) {
+    if (!this.headerElements.checkoutBtn) return;
+
+    // Show on scan, payment, qr screens
+    if (screenName === 'scan' || screenName === 'payment' || screenName === 'qr') {
+      this.headerElements.checkoutBtn.hidden = false;
+    }
+    // Show on dashboard only if cart has items
+    else if (screenName === 'dashboard') {
+      const cart = Storage.getCart();
+      this.headerElements.checkoutBtn.hidden = cart.length === 0;
+    }
+    // Hide on checkout and setup screens
+    else {
+      this.headerElements.checkoutBtn.hidden = true;
+    }
   },
 
   /**

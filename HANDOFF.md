@@ -3,11 +3,17 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v30
+**Service worker cache:** v31
 
 ---
 
 ## What Was Accomplished
+
+### Session 16 (2026-03-02)
+- **Added ← Checkout Button to Header** — New back button in shared header navigates to checkout without clearing cart. Visible on Scan, Payment, QR screens, and on Dashboard only when cart has items.
+- **Removed Duplicate QR Buttons** — Removed DASHBOARD and BACK buttons from QR screen action area. Header now handles all navigation; QR screen only shows NEW CUSTOMER button.
+- **Added Safe Area Insets** — Checkout action bar, Dashboard actions, and QR actions now have padding-bottom for iPhone home indicator via `env(safe-area-inset-bottom)`
+- **Service worker** — Bumped to v31
 
 ### Session 15 (2026-03-02)
 - **Fixed Speech Confirm Description Prompt Bypass** — Speech confirmAdd() now sets `Checkout.pendingAddWithoutDesc = true` before calling addItem(), preventing the redundant description prompt after user already confirmed via speech modal
@@ -342,6 +348,17 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 16:**
+```
+/index.html         # Added ← Checkout button to header, removed QR DASHBOARD/BACK buttons
+/js/
+  app.js            # Cache checkoutBtn, bind click, add updateCheckoutButton() for show/hide logic
+  qr.js             # Removed dead button references and event bindings
+/css/styles.css     # Added .header__btn--back style, safe area insets for action-bar, qr-actions, dashboard-actions
+/sw.js              # Bumped to v31
+/HANDOFF.md         # Updated with session 16 changes
+```
 
 **Session 15:**
 ```
