@@ -71,20 +71,31 @@ const QR = {
    * Render the QR handoff screen
    */
   render(transaction) {
-    if (!transaction) return;
+    if (!transaction) {
+      console.error('QR.render() called with no transaction');
+      return;
+    }
+
+    // Ensure elements are cached (in case init wasn't called)
+    if (!this.elements.qrCode) {
+      this.cacheElements();
+    }
 
     this.transaction = transaction;
     const sale = Storage.getSale();
 
-    // Generate QR code
-    const qrData = this.generateData(transaction, sale);
-    this.renderQRCode(qrData);
-
-    // Render item summary
+    // Render item summary and total first (these should always work)
     this.renderItemSummary(transaction);
-
-    // Render total
     this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
+
+    // Generate and render QR code (may fail on very large transactions)
+    try {
+      const qrData = this.generateData(transaction, sale);
+      this.renderQRCode(qrData);
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+      this.elements.qrCode.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">QR code unavailable</div>';
+    }
   },
 
   /**
@@ -94,8 +105,12 @@ const QR = {
     // Clear previous QR code
     this.elements.qrCode.innerHTML = '';
 
+    // Check if QRCode library is loaded
+    if (typeof QRCode === 'undefined') {
+      throw new Error('QRCode library not loaded');
+    }
+
     // Generate new QR code
-    // qrcode.min.js creates a QRCode object
     new QRCode(this.elements.qrCode, {
       text: data,
       width: 200,

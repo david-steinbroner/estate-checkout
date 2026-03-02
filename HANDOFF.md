@@ -3,7 +3,7 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v12
+**Service worker cache:** v14
 
 ---
 
@@ -74,10 +74,9 @@
 - **NEW CUSTOMER / BACK buttons**: Work correctly on QR screen
 
 ### What's Broken
-- See Known Bugs below
+- None currently
 
 ### What's Half-Done
-- **QR Handoff screen**: Structure exists but doesn't render (see bugs)
 - **Speech-to-text**: Structure exists, needs full parsing logic
 - **QR scan**: Screen placeholder exists, no camera integration yet
 - **Dashboard**: Not started
@@ -86,29 +85,11 @@
 
 ## Known Bugs
 
-1. **Date picker defaults to tomorrow instead of today**
-   - Location: `sale-setup.js` → `setDefaultDate()`
-   - Cause: Uses `new Date().toISOString().split('T')[0]` which returns UTC date. In evening US Central time, UTC is already the next day.
-   - Fix: Use local date components instead:
-     ```javascript
-     const today = new Date();
-     const year = today.getFullYear();
-     const month = String(today.getMonth() + 1).padStart(2, '0');
-     const day = String(today.getDate()).padStart(2, '0');
-     this.elements.startDateInput.value = `${year}-${month}-${day}`;
-     ```
-
-2. **QR Handoff screen is blank**
-   - QR code doesn't render, items don't show, total shows $0.00
-   - Debug checklist:
-     - Check `Checkout.finishCheckout()` builds valid transaction with items array and total
-     - Check `App.showScreen('qr', transaction)` passes transaction data through
-     - Check `QR.render(data)` receives the transaction
-     - Check `QRCode` constructor from qrcode.min.js is available (library needs to be loaded)
-     - Check browser console for errors when tapping DONE
-     - Ensure `generateData()` returns `JSON.stringify()` of the data object
+None currently.
 
 ### Fixed Bugs
+- **Date picker defaults to tomorrow** — Same UTC timezone issue as day calculation. Fixed by using local date components in `setDefaultDate()`.
+- **QR Handoff screen blank** — Render order issue and missing error handling. Fixed by rendering items/total first, adding try/catch around QR code generation, and defensive element caching.
 - **Day calculation off by one** — Timezone parsing issue. Fixed by parsing start date as local time.
 - **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version.
 - **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`. Fixed by removing the display property from `.checkout-pad`.
@@ -118,11 +99,9 @@
 
 ## Next Steps (Priority Order)
 
-1. **Fix date picker timezone bug** — Same root cause as day calculation, just in setDefaultDate()
-2. **Fix QR handoff screen rendering** — Debug and fix the blank screen issue
-3. **Build QR scan view** — Camera access, decode QR, display total
-4. **Build sale dashboard** — Transaction count, revenue, average ticket
-5. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
+1. **Build QR scan view** — Camera access, decode QR, display total
+2. **Build sale dashboard** — Transaction count, revenue, average ticket
+3. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
 
 ---
 
@@ -133,13 +112,13 @@
 /js/
   utils.js        # Fixed day calculation timezone bug
   checkout.js     # Added savings display, QR navigation
-  qr.js           # Full QR handoff implementation
+  qr.js           # Full QR handoff implementation, fixed rendering order and error handling
   app.js          # Cleaned up debug logs, added QR screen routing
-  sale-setup.js   # Cleaned up debug logs
+  sale-setup.js   # Fixed date picker timezone bug (local date components)
 /css/
   styles.css      # Added savings display styles, QR screen styles
 /index.html       # Added savings span, QR screen HTML
-/sw.js            # Cache at v12
+/sw.js            # Cache at v14
 /BACKLOG.md       # Added v0.2 items
 ```
 
