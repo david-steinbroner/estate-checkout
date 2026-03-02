@@ -268,6 +268,7 @@ body {
   flex-direction: column;
   gap: var(--space-sm);
   flex-shrink: 0;
+  position: relative;
 }
 
 .description-input {
@@ -353,11 +354,15 @@ body {
 
 /* Listening Status Indicator */
 .mic-status {
+  position: absolute;
+  right: var(--space-md);
+  top: 2px;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-sm);
-  padding: var(--space-sm) 0;
+  padding: 2px 8px;
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: var(--radius-sm);
   animation: status-pulse 1s ease-in-out infinite;
 }
 
