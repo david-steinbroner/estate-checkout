@@ -3,11 +3,20 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v39
+**Service worker cache:** v40
 
 ---
 
 ## What Was Accomplished
+
+### Session 25 (2026-03-02)
+- **Fixed Action Bar Button Height** — Increased `--action-bar-height` from 40px to 56px and set `.action-bar__button` height to `var(--btn-height-lg)` (48px) instead of `height: 100%`. Clear All and Ready for Payment buttons now have proper touch target size.
+- **Removed ← Checkout Header Button** — Removed `#nav-checkout` button from shared header entirely. Header now has 3 equal buttons: Dashboard, Collect Payments, End Estate Sale. Deleted all related JS: `checkoutBtn` caching, click handler, `updateCheckoutButton()`, `reopenFromQR()`. Removed `.header__btn--back` CSS.
+- **Moved Edit Order to QR Screen** — Added "Edit Order" button alongside "New Customer" in QR actions area (row layout). Reopen logic (void original, load items, navigate to checkout) moved from `App.reopenFromQR()` to `QR.reopenTransaction()`.
+- **Added New Customer to Scan and Payment** — Both screens now have a "New Customer" button at the bottom that clears the cart and navigates to checkout. Scan button uses dark background to match scan screen theme. Payment button uses secondary style below Mark Paid.
+- **Renamed End Estate Sale** — "Close Sale" → "End Estate Sale" in header button, confirmation sheet title ("End this estate sale?"), body ("This will clear all sale data."), and confirm button.
+- **Dashboard Button States** — All 3 action buttons (Mark as Paid/Unpaid, Edit Order, Collect Payment) now always show for non-void transactions. Edit Order is disabled (opacity 0.4, no pointer events) when status is "pending" or "paid". "Mark Paid"/"Mark Unpaid" renamed to "Mark as Paid"/"Mark as Unpaid".
+- **Service worker** — Bumped to v40
 
 ### Session 24 (2026-03-02)
 - **Removed Dev Title Bar** — Deleted the black screen-name bar and all related code (HTML element, CSS class, JS caching and update logic) marked "DEV ONLY — remove before production".

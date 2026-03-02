@@ -23,10 +23,9 @@
       <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
     </div>
     <div class="header__buttons">
-      <button class="header__btn header__btn--back" id="nav-checkout" hidden>← Checkout</button>
       <button class="header__btn" id="nav-dashboard">Dashboard</button>
       <button class="header__btn" id="nav-collect">Collect Payments</button>
-      <button class="header__btn header__btn--danger" id="nav-end-sale">Close Sale</button>
+      <button class="header__btn header__btn--danger" id="nav-end-sale">End Estate Sale</button>
     </div>
   </header>
 
@@ -115,7 +114,10 @@
 
     <!-- Action Buttons -->
     <div class="qr-actions">
-      <button type="button" class="qr-action qr-action--new" id="qr-new">New Customer</button>
+      <div class="qr-actions__row">
+        <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Order</button>
+        <button type="button" class="qr-action qr-action--new" id="qr-new">New Customer</button>
+      </div>
     </div>
   </div>
 
@@ -191,6 +193,11 @@
       <p class="scan-error__help">Enable camera permissions in your browser settings</p>
       <button class="scan-error__retry" id="scan-retry">Retry</button>
     </div>
+
+    <!-- Actions -->
+    <div class="scan-actions">
+      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Customer</button>
+    </div>
   </div>
 
   <!-- Payment Receive Screen -->
@@ -215,6 +222,9 @@
     <div class="payment-actions">
       <button class="payment-action payment-action--paid" id="payment-mark-paid">
         Mark Paid
+      </button>
+      <button class="payment-action payment-action--new" id="payment-new-customer">
+        New Customer
       </button>
     </div>
 
@@ -286,13 +296,13 @@
     </div>
   </div>
 
-  <!-- Close Sale Confirmation Sheet -->
+  <!-- End Estate Sale Confirmation Sheet -->
   <div class="overlay" id="end-sale-modal">
     <div class="sheet">
-      <p class="sheet__title">Close this sale?</p>
-      <p class="sheet__text">This will end the current sale and clear all data.</p>
+      <p class="sheet__title">End this estate sale?</p>
+      <p class="sheet__text">This will clear all sale data.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">Close Sale</button>
+        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">End Estate Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>

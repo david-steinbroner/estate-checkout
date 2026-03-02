@@ -26,6 +26,7 @@ const QR = {
       qrCode: document.getElementById('qr-code'),
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
+      editButton: document.getElementById('qr-edit'),
       newButton: document.getElementById('qr-new')
     };
   },
@@ -34,11 +35,53 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
+    // Edit Order button - reopen current transaction
+    this.elements.editButton.addEventListener('click', () => {
+      this.reopenTransaction();
+    });
+
     // New customer button - clear cart and return to checkout
     this.elements.newButton.addEventListener('click', () => {
       Checkout.clearAll();
       App.showScreen('checkout');
     });
+  },
+
+  /**
+   * Reopen the current transaction from QR screen
+   * Voids the original, creates a new transaction with same items, navigates to checkout
+   */
+  reopenTransaction() {
+    const txn = Checkout.lastTransaction;
+    if (!txn) return;
+
+    // Don't reopen already-voided transactions
+    const current = Storage.getTransaction(txn.id);
+    if (!current || current.status === 'void') return;
+
+    // Void the original transaction
+    Storage.updateTransaction(txn.id, {
+      status: 'void',
+      voidedAt: Utils.getTimestamp()
+    });
+
+    // Load items into checkout with new IDs
+    Checkout.items = txn.items.map(item => ({
+      ...item,
+      id: Utils.generateId()
+    }));
+    Storage.saveCart(Checkout.items);
+
+    // Track that this is a reopened transaction
+    Checkout.reopenedFromCustomer = txn.customerNumber;
+
+    // Reset transaction saved state so a new transaction will be created on DONE
+    Checkout.transactionSaved = false;
+    Checkout.lastTransaction = null;
+
+    // Navigate to checkout
+    App.showScreen('checkout');
+    Checkout.render();
   },
 
   /**

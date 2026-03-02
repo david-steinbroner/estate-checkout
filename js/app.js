@@ -29,7 +29,6 @@ const App = {
       saleName: document.getElementById('sale-name'),
       saleDay: document.getElementById('sale-day'),
       discountBadge: document.getElementById('discount-badge'),
-      checkoutBtn: document.getElementById('nav-checkout'),
       dashboardBtn: document.getElementById('nav-dashboard'),
       collectBtn: document.getElementById('nav-collect'),
       endSaleBtn: document.getElementById('nav-end-sale'),
@@ -43,17 +42,6 @@ const App = {
    * Bind shared header event listeners
    */
   bindHeaderEvents() {
-    // Checkout/Edit Order button — on QR screen, performs reopen; otherwise navigates to checkout
-    if (this.headerElements.checkoutBtn) {
-      this.headerElements.checkoutBtn.addEventListener('click', () => {
-        if (this.currentScreen === 'qr') {
-          this.reopenFromQR();
-        } else {
-          this.showScreen('checkout');
-        }
-      });
-    }
-
     // Dashboard button
     if (this.headerElements.dashboardBtn) {
       this.headerElements.dashboardBtn.addEventListener('click', () => {
@@ -230,73 +218,6 @@ const App = {
 
     // Update active button state
     this.updateActiveNavButton(screenName);
-
-    // Show/hide ← Checkout button based on screen
-    this.updateCheckoutButton(screenName);
-  },
-
-  /**
-   * Update ← Checkout / Edit Order button visibility and text
-   * On QR screen: shows as "Edit Order". On scan/payment: shows as "← Checkout".
-   * On dashboard: shows as "← Checkout" only when cart has items.
-   */
-  updateCheckoutButton(screenName) {
-    if (!this.headerElements.checkoutBtn) return;
-
-    // Show on scan, payment, qr screens
-    if (screenName === 'scan' || screenName === 'payment' || screenName === 'qr') {
-      this.headerElements.checkoutBtn.hidden = false;
-      // On QR screen, show "Edit Order" instead of "← Checkout"
-      this.headerElements.checkoutBtn.textContent = screenName === 'qr' ? 'Edit Order' : '← Checkout';
-    }
-    // Show on dashboard only if cart has items
-    else if (screenName === 'dashboard') {
-      const cart = Storage.getCart();
-      this.headerElements.checkoutBtn.hidden = cart.length === 0;
-      this.headerElements.checkoutBtn.textContent = '← Checkout';
-    }
-    // Hide on checkout and setup screens
-    else {
-      this.headerElements.checkoutBtn.hidden = true;
-      this.headerElements.checkoutBtn.textContent = '← Checkout';
-    }
-  },
-
-  /**
-   * Reopen the current transaction from QR screen
-   * Voids the original, creates a new transaction with same items, navigates to checkout
-   */
-  reopenFromQR() {
-    const txn = Checkout.lastTransaction;
-    if (!txn) return;
-
-    // Don't reopen already-voided transactions
-    const current = Storage.getTransaction(txn.id);
-    if (!current || current.status === 'void') return;
-
-    // Void the original transaction
-    Storage.updateTransaction(txn.id, {
-      status: 'void',
-      voidedAt: Utils.getTimestamp()
-    });
-
-    // Load items into checkout with new IDs
-    Checkout.items = txn.items.map(item => ({
-      ...item,
-      id: Utils.generateId()
-    }));
-    Storage.saveCart(Checkout.items);
-
-    // Track that this is a reopened transaction
-    Checkout.reopenedFromCustomer = txn.customerNumber;
-
-    // Reset transaction saved state so a new transaction will be created on DONE
-    Checkout.transactionSaved = false;
-    Checkout.lastTransaction = null;
-
-    // Navigate to checkout
-    this.showScreen('checkout');
-    Checkout.render();
   },
 
   /**

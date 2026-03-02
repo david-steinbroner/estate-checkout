@@ -27,6 +27,7 @@ const Payment = {
       items: document.getElementById('payment-items'),
       total: document.getElementById('payment-total'),
       markPaidButton: document.getElementById('payment-mark-paid'),
+      newCustomerButton: document.getElementById('payment-new-customer'),
       successOverlay: document.getElementById('payment-success')
     };
   },
@@ -38,6 +39,14 @@ const Payment = {
     if (this.elements.markPaidButton) {
       this.elements.markPaidButton.addEventListener('click', () => {
         this.markPaid();
+      });
+    }
+
+    // New Customer button - clear cart and navigate to checkout
+    if (this.elements.newCustomerButton) {
+      this.elements.newCustomerButton.addEventListener('click', () => {
+        Checkout.clearAll();
+        App.showScreen('checkout');
       });
     }
   },

@@ -43,7 +43,7 @@
   --numpad-btn-size: 56px;
   --numpad-gap: 4px;
   --add-button-height: 44px;
-  --action-bar-height: 40px;
+  --action-bar-height: 56px;
   --btn-height-lg: 48px;
   --sheet-padding: 24px;
 
@@ -200,16 +200,6 @@ body {
 
 .header__btn--active:active {
   background: var(--color-primary-dark);
-}
-
-.header__btn--back {
-  flex: none;
-  width: auto;
-  padding: 0 var(--space-md);
-}
-
-.header__btn--back[hidden] {
-  display: none;
 }
 
 /* === Running Total === */
@@ -617,7 +607,7 @@ body {
 
 .action-bar__button {
   flex: 1;
-  height: 100%;
+  height: var(--btn-height-lg);
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
@@ -1255,6 +1245,30 @@ body {
   background: var(--color-primary-dark);
 }
 
+/* Scan Actions (bottom bar) */
+.scan-actions {
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  background: rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
+}
+
+.scan-action--new {
+  width: 100%;
+  height: 48px;
+  background: var(--color-success);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scan-action--new:active {
+  background: var(--color-success-dark);
+}
+
 /* === Payment Receive Screen === */
 .payment-screen {
   background: var(--color-bg);
@@ -1340,10 +1354,30 @@ body {
 }
 
 .payment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
   padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
+}
+
+.payment-action--new {
+  width: 100%;
+  height: 48px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-action--new:active {
+  background: var(--color-bg-hover);
 }
 
 .payment-action--paid {
@@ -1622,6 +1656,11 @@ body {
 
 .dashboard-detail__btn--reopen:active {
   background: var(--color-bg-hover);
+}
+
+.dashboard-detail__btn--reopen:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .dashboard-detail__btn--collect {

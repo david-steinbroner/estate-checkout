@@ -219,21 +219,17 @@ const Dashboard = {
       `;
     }).join('');
 
-    // Action buttons (only show for non-void transactions)
+    // Action buttons: all 3 shown for non-void, Edit Order disabled for pending/paid
     const status = txn.status || 'unpaid';
     const isVoid = status === 'void';
-    const isPending = status === 'pending';
-
-    // Hide Mark Paid toggle for pending transactions — payment happens via scan/receive flow
-    const toggleBtn = isPending ? '' : `
-        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
-          ${status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
-        </button>`;
+    const editDisabled = (status === 'pending' || status === 'paid') ? ' disabled' : '';
 
     const actionsHtml = isVoid ? '' : `
       <div class="dashboard-detail__actions">
-        ${toggleBtn}
-        <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
+        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
+          ${status === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid'}
+        </button>
+        <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}"${editDisabled}>
           Edit Order
         </button>
         <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
