@@ -55,6 +55,7 @@ const QR = {
       sale: sale ? sale.name : 'Estate Sale',
       day: transaction.saleDay,
       discount: transaction.discount,
+      customerNumber: transaction.customerNumber,
       items: transaction.items.map(item => ({
         desc: item.description || '',
         orig: item.originalPrice,

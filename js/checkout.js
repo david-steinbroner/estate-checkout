@@ -401,10 +401,14 @@ const Checkout = {
   finishCheckout() {
     if (this.items.length === 0) return;
 
+    // Get next customer number (auto-increments per sale)
+    const customerNumber = Storage.getNextCustomerNumber();
+
     // Save transaction for dashboard
     const transaction = {
       id: Utils.generateId(),
       timestamp: Utils.getTimestamp(),
+      customerNumber: customerNumber,
       items: [...this.items],
       total: this.items.reduce((sum, item) => sum + item.finalPrice, 0),
       discount: this.currentDiscount,

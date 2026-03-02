@@ -7,7 +7,9 @@ const Storage = {
   KEYS: {
     SALE: 'estate_sale',
     CART: 'estate_cart',
-    TRANSACTIONS: 'estate_transactions'
+    TRANSACTIONS: 'estate_transactions',
+    CUSTOMER_COUNTER: 'estate_customer_counter',
+    PAID_TRANSACTIONS: 'estate_paid_transactions'
   },
 
   /**
@@ -88,5 +90,71 @@ const Storage = {
     this.clearSale();
     this.clearCart();
     this.clearTransactions();
+    this.clearCustomerCounter();
+    this.clearPaidTransactions();
+  },
+
+  /**
+   * Get the next customer number for the current sale
+   * Auto-increments and resets when sale changes
+   */
+  getNextCustomerNumber() {
+    const sale = this.getSale();
+    const data = localStorage.getItem(this.KEYS.CUSTOMER_COUNTER);
+
+    if (data) {
+      const counter = JSON.parse(data);
+      // If same sale, increment and return
+      if (counter.saleId === sale?.id) {
+        const next = counter.counter + 1;
+        this.saveCustomerCounter(sale.id, next);
+        return next;
+      }
+    }
+
+    // New sale or first customer - start at 1
+    this.saveCustomerCounter(sale?.id, 1);
+    return 1;
+  },
+
+  /**
+   * Save the customer counter state
+   */
+  saveCustomerCounter(saleId, counter) {
+    localStorage.setItem(this.KEYS.CUSTOMER_COUNTER, JSON.stringify({
+      saleId: saleId,
+      counter: counter
+    }));
+  },
+
+  /**
+   * Clear the customer counter (called when sale ends)
+   */
+  clearCustomerCounter() {
+    localStorage.removeItem(this.KEYS.CUSTOMER_COUNTER);
+  },
+
+  /**
+   * Save a paid transaction from the payment worker
+   */
+  savePaidTransaction(transaction) {
+    const transactions = this.getPaidTransactions();
+    transactions.push(transaction);
+    localStorage.setItem(this.KEYS.PAID_TRANSACTIONS, JSON.stringify(transactions));
+  },
+
+  /**
+   * Get all paid transactions
+   */
+  getPaidTransactions() {
+    const data = localStorage.getItem(this.KEYS.PAID_TRANSACTIONS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  /**
+   * Clear paid transactions
+   */
+  clearPaidTransactions() {
+    localStorage.removeItem(this.KEYS.PAID_TRANSACTIONS);
   }
 };

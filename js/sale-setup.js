@@ -216,6 +216,7 @@ const SaleSetup = {
     Storage.clearSale();
     Storage.clearCart();
     Storage.clearTransactions();
+    Storage.clearCustomerCounter();
   },
 
   /**
