@@ -3,7 +3,7 @@
  * Provides offline support via cache-first strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v14';
+const CACHE_NAME = 'estate-checkout-v15';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -13,10 +13,13 @@ const ASSETS_TO_CACHE = [
   '/js/sale-setup.js',
   '/js/speech.js',
   '/js/qr.js',
+  '/js/scan.js',
+  '/js/payment.js',
   '/js/storage.js',
   '/js/utils.js',
   '/lib/qrcode.min.js',
-  '/manifest.json'
+  '/manifest.json',
+  'https://unpkg.com/html5-qrcode'
 ];
 
 // Install: cache all static assets

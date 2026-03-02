@@ -3,11 +3,25 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v14
+**Service worker cache:** v15
 
 ---
 
 ## What Was Accomplished
+
+### Session 3 (2026-03-01)
+- **Built QR Scan/Receive View** — Complete two-person checkout workflow:
+  - Added "Collect Payments" button to checkout screen (secondary styling)
+  - Built QR scan screen with full-screen camera viewfinder
+  - Native BarcodeDetector for Chrome/Edge with html5-qrcode fallback for iOS Safari
+  - Camera permission denied handling with retry option
+  - Built Payment Receive screen showing customer #, timestamp, itemized list, total
+  - Original prices crossed out when discounted
+  - "Mark Paid" button saves transaction to localStorage and returns to scan
+  - Green success overlay animation on payment confirmation
+- **Updated QR data format** — Added customerNumber (auto-incrementing per sale)
+- **Added storage methods** — getNextCustomerNumber(), savePaidTransaction(), getPaidTransactions()
+- **Service worker** — Bumped to v15, added scan.js, payment.js, and html5-qrcode CDN to cache
 
 ### Session 2 (2026-03-01)
 - **Fixed day calculation bug**: Was off by one due to timezone parsing. Start date now parsed as local time in utils.js.
@@ -72,14 +86,20 @@
 - **Cart persistence**: Items survive page refresh (localStorage)
 - **End Sale**: Button in header ends sale and returns to setup
 - **NEW CUSTOMER / BACK buttons**: Work correctly on QR screen
+- **QR data format**: Includes customerNumber and timestamp
+- **Collect Payments button**: Opens QR scan view from checkout screen
+- **QR Scan view**: Camera viewfinder, native BarcodeDetector or html5-qrcode fallback
+- **Payment Receive screen**: Shows customer #, time, itemized list with discounts, total
+- **Mark Paid**: Saves transaction to localStorage, shows confirmation, returns to scan
+- **Customer numbering**: Auto-increments per sale, resets when sale ends
+- **Offline scanning**: html5-qrcode library cached for offline iOS scanning
 
 ### What's Broken
 - None currently
 
 ### What's Half-Done
 - **Speech-to-text**: Structure exists, needs full parsing logic
-- **QR scan**: Screen placeholder exists, no camera integration yet
-- **Dashboard**: Not started
+- **Dashboard**: Not started (data is being stored in localStorage)
 
 ---
 
@@ -99,15 +119,32 @@ None currently.
 
 ## Next Steps (Priority Order)
 
-1. **Build QR scan view** — Camera access, decode QR, display total
-2. **Build sale dashboard** — Transaction count, revenue, average ticket
-3. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
+1. **Build sale dashboard** — Transaction count, revenue, average ticket (data is being stored)
+2. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
+3. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
 
 ---
 
 ## Files Changed This Session
 
-**Modified:**
+**Session 3:**
+```
+/js/
+  scan.js         # NEW - QR scanning with BarcodeDetector + html5-qrcode fallback
+  payment.js      # NEW - Payment receive screen, Mark Paid functionality
+  storage.js      # Added customer counter and paid transactions methods
+  checkout.js     # Added customerNumber to transaction, Collect Payments button
+  qr.js           # Added customerNumber to QR data
+  sale-setup.js   # Clear customer counter on end sale
+  app.js          # Register Scan and Payment modules, routing
+/css/
+  styles.css      # Added scan screen and payment screen styles
+/index.html       # Added Collect Payments button, scan screen, payment screen HTML
+/sw.js            # Bumped to v15, added scan.js, payment.js, html5-qrcode CDN
+/HANDOFF.md       # Updated with session 3 changes
+```
+
+**Session 2:**
 ```
 /js/
   utils.js        # Fixed day calculation timezone bug
@@ -153,6 +190,28 @@ None currently.
 6. Tap DONE → QR screen should appear with QR code and item summary
 7. Tap NEW CUSTOMER → clears cart, returns to checkout
 8. Tap BACK → returns to checkout with cart intact
+
+### QR Scan/Payment Flow (Two-Person Workflow)
+1. **Checkout Worker:** Add 3 items → tap DONE → QR code shows
+2. **Payment Worker:** Tap "Collect Payments" → camera opens
+3. Point camera at QR code → Payment screen shows
+4. Verify: Customer # and timestamp at top
+5. Verify: All 3 items listed with correct prices
+6. Verify: Total matches checkout total
+7. Tap "MARK PAID" → green checkmark flashes → returns to scan view
+8. Check localStorage: `estate_paid_transactions` should have the transaction
+
+### Customer Number Test
+1. Checkout 3 customers in sequence
+2. Verify QR codes show Customer #1, #2, #3
+3. End sale → start new sale
+4. Checkout 1 customer → should show Customer #1 (reset)
+
+### Camera Permission Test
+1. Tap "Collect Payments"
+2. Deny camera permission when prompted
+3. Should see error message with "Retry" button
+4. Tap Retry → grant permission → camera should start
 
 ### Local Server
 ```bash
