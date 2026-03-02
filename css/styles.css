@@ -1723,3 +1723,120 @@ body {
   background: var(--color-success-dark);
 }
 
+/* === "How It Works" Link on Setup Screen === */
+.setup-help-link {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.setup-help-link:active {
+  color: var(--color-text);
+}
+
+/* === Onboarding Walkthrough === */
+.onboarding {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: var(--space-lg);
+}
+
+.onboarding.visible {
+  display: flex;
+}
+
+.onboarding__card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  animation: onboarding-fade-in 0.2s ease-out;
+  transition: opacity 0.15s ease;
+}
+
+.onboarding__card--fading {
+  opacity: 0;
+}
+
+@keyframes onboarding-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.onboarding__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.onboarding__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.onboarding__dot--active {
+  background: var(--color-primary);
+}
+
+.onboarding__icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.onboarding__title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.onboarding__body {
+  font-size: var(--font-size-lg);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin-bottom: 28px;
+}
+
+.onboarding__next {
+  width: 100%;
+  height: var(--btn-height-lg);
+  background: var(--color-success);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding__next:active {
+  background: var(--color-success-dark);
+}
+
+.onboarding__skip {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 8px;
+}
+

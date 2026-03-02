@@ -18,6 +18,11 @@ const App = {
     this.bindHeaderEvents();
     this.initModules();
     this.route();
+
+    // Show onboarding walkthrough on first launch
+    if (Onboarding.shouldShow()) {
+      Onboarding.show('single');
+    }
   },
 
   /**
@@ -135,6 +140,7 @@ const App = {
     Scan.init();
     Payment.init();
     Dashboard.init();
+    Onboarding.init();
   },
 
   /**

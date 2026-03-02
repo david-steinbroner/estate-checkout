@@ -3,11 +3,17 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v42
+**Service worker cache:** v43
 
 ---
 
 ## What Was Accomplished
+
+### Session 27 (2026-03-02)
+- **Added First-Run Onboarding Walkthrough** — Three-card overlay walkthrough shown on first app launch. Cards: "Set Up Your Sale" (📋), "Ring Up Items" (💰), "Mark It Paid" (✅). Centered white card with step indicator dots, fade transitions between cards, Next/Get Started and Skip buttons. Uses `estate_onboarding_seen` localStorage flag.
+- **Added "How It Works" Link** — Subtle underlined text link on Setup screen below Start Sale button. Replays the walkthrough overlay on tap regardless of seen state.
+- **New Module: onboarding.js** — Standalone module with card sets structured for future flow selection (single-person vs. two-person). `cardSets.single` holds current 3 cards. Module exposes `shouldShow()`, `show(cardSetName)`, `dismiss()`.
+- **Service worker** — Bumped to v43, added `/js/onboarding.js` to cache list
 
 ### Session 26 (2026-03-02)
 - **Fixed Edit Order Disabled State** — Edit Order button on Dashboard now only disabled for "paid" tickets. Pending and unpaid tickets have Edit Order enabled (was incorrectly disabled for pending).
