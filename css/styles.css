@@ -1086,6 +1086,213 @@ body {
   font-weight: 700;
 }
 
+/* === Dashboard Screen === */
+.dashboard-screen {
+  background: var(--color-bg);
+}
+
+.dashboard-header {
+  height: 48px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboard-header__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+/* Dashboard Stats */
+.dashboard-stats {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.dashboard-stat {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.dashboard-stat__value {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+.dashboard-stat__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Dashboard Transaction List */
+.dashboard-list-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-surface);
+}
+
+.dashboard-list {
+  list-style: none;
+}
+
+.dashboard-txn {
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.dashboard-txn:last-child {
+  border-bottom: none;
+}
+
+.dashboard-txn__summary {
+  padding: var(--space-md);
+}
+
+.dashboard-txn__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.dashboard-txn__customer {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.dashboard-txn__total {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.dashboard-txn__meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Transaction Detail (expanded) */
+.dashboard-txn__detail {
+  padding: 0 var(--space-md) var(--space-md);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.dashboard-txn__detail[hidden] {
+  display: none;
+}
+
+.dashboard-txn.expanded {
+  background: var(--color-bg);
+}
+
+.dashboard-detail__discount {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-md) 0 var(--space-sm);
+  font-weight: 500;
+}
+
+.dashboard-detail__items {
+  list-style: none;
+}
+
+.dashboard-detail__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dashboard-detail__item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-detail__desc {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: var(--space-md);
+}
+
+.dashboard-detail__price {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-detail__original {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  margin-right: var(--space-sm);
+}
+
+/* Dashboard Empty State */
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-secondary);
+  height: 100%;
+}
+
+.dashboard-empty[hidden] {
+  display: none;
+}
+
+.dashboard-empty__hint {
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-sm);
+}
+
+/* Dashboard Actions */
+.dashboard-actions {
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.dashboard-action--back {
+  width: 100%;
+  height: 48px;
+  background: var(--color-border);
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-action--back:active {
+  background: #d4d4d4;
+}
+
 /* === Utility Classes === */
 .visually-hidden {
   position: absolute;

@@ -222,6 +222,45 @@
     </div>
   </div>
 
+  <!-- Dashboard Screen -->
+  <div id="screen-dashboard" class="screen dashboard-screen">
+    <header class="dashboard-header">
+      <h1 class="dashboard-header__title">Sale Dashboard</h1>
+    </header>
+
+    <!-- Summary Stats -->
+    <div class="dashboard-stats">
+      <div class="dashboard-stat">
+        <span class="dashboard-stat__value" id="dashboard-customers">0</span>
+        <span class="dashboard-stat__label">Customers</span>
+      </div>
+      <div class="dashboard-stat">
+        <span class="dashboard-stat__value" id="dashboard-revenue">$0.00</span>
+        <span class="dashboard-stat__label">Revenue</span>
+      </div>
+      <div class="dashboard-stat">
+        <span class="dashboard-stat__value" id="dashboard-avg">$0.00</span>
+        <span class="dashboard-stat__label">Avg Ticket</span>
+      </div>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="dashboard-list-container">
+      <ul class="dashboard-list" id="dashboard-transactions">
+        <!-- Transactions rendered by JS -->
+      </ul>
+      <div class="dashboard-empty" id="dashboard-empty" hidden>
+        <p>No transactions yet.</p>
+        <p class="dashboard-empty__hint">Complete a checkout to see data here.</p>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="dashboard-actions">
+      <button class="dashboard-action dashboard-action--back" id="dashboard-back">BACK</button>
+    </div>
+  </div>
+
   <!-- Flash Feedback -->
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
@@ -257,6 +296,7 @@
   <script src="/js/qr.js"></script>
   <script src="/js/scan.js"></script>
   <script src="/js/payment.js"></script>
+  <script src="/js/dashboard.js"></script>
   <script src="/js/sale-setup.js"></script>
   <script src="/js/app.js"></script>
 </body>

@@ -42,6 +42,7 @@ const App = {
     QR.init();
     Scan.init();
     Payment.init();
+    Dashboard.init();
   },
 
   /**
@@ -87,6 +88,8 @@ const App = {
         Scan.onActivate();
       } else if (screenName === 'payment') {
         Payment.render(data);
+      } else if (screenName === 'dashboard') {
+        Dashboard.render(data);
       }
     }
   }
