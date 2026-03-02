@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v38
+**Service worker cache:** v39
 
 ---
 
 ## What Was Accomplished
+
+### Session 24 (2026-03-02)
+- **Removed Dev Title Bar** — Deleted the black screen-name bar and all related code (HTML element, CSS class, JS caching and update logic) marked "DEV ONLY — remove before production".
+- **Renamed Buttons to Title Case** — Standardized all button labels from ALL CAPS to Title Case: DONE→"Ready for Payment", End Sale→"Close Sale", ADD ITEM→"Add Item", CLEAR ALL→"Clear All", NEW CUSTOMER→"New Customer", MARK PAID→"Mark Paid", CONFIRM/EDIT/CANCEL/TRY AGAIN→Title Case, START SALE→"Start Sale". Reopen→"Edit Order" on QR header and Dashboard detail.
+- **Close Sale Confirmation** — Updated "End this sale?" → "Close this sale?" with new body text "This will end the current sale and clear all data." and "Close Sale" confirm button.
+- **Sale Starts Today Default** — Added "Sale starts today" checkbox (checked by default) on Setup screen. When checked, date picker is hidden and today's date is used. Unchecking reveals the date picker for custom dates. Checkbox resets on form reset.
+- **Service worker** — Bumped to v39
 
 ### Session 23 (2026-03-02)
 - **Added "Pending" Ticket Status** — Tapping DONE now creates transactions with status "pending" instead of "unpaid". This represents a finalized ticket waiting for the payment worker to confirm payment.
@@ -399,6 +406,17 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 24:**
+```
+/index.html         # Removed dev title bar, renamed all button labels to Title Case, updated Close Sale sheet, added today checkbox
+/css/styles.css     # Removed .dev-title-bar, added .setup-field__checkbox styles
+/js/app.js          # Removed devTitleBar caching and screen name mapping, "Edit Order" on QR screen
+/js/dashboard.js    # "Edit Order" in expanded detail (was "Reopen")
+/js/sale-setup.js   # Cached todayCheckbox/datePicker, checkbox toggle logic, resetForm resets checkbox
+/sw.js              # Bumped to v39
+/HANDOFF.md         # Session 24 entry
+```
 
 **Session 23:**
 ```

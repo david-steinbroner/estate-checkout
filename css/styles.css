@@ -4,17 +4,6 @@
  * Target: 375x667 viewport (iPhone SE) as minimum
  */
 
-/* DEV ONLY — remove before production */
-.dev-title-bar {
-  height: 20px;
-  background: #111;
-  color: white;
-  font-size: 12px;
-  text-align: center;
-  line-height: 20px;
-  flex-shrink: 0;
-}
-
 /* === CSS Variables === */
 :root {
   /* Colors */
@@ -890,6 +879,23 @@ body {
   margin-bottom: var(--space-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.setup-field__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  margin-bottom: var(--space-sm);
+}
+
+.setup-field__checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
 }
 
 .setup-field__input {

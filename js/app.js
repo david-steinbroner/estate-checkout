@@ -33,7 +33,6 @@ const App = {
       dashboardBtn: document.getElementById('nav-dashboard'),
       collectBtn: document.getElementById('nav-collect'),
       endSaleBtn: document.getElementById('nav-end-sale'),
-      devTitleBar: document.getElementById('dev-title-bar'), // DEV ONLY — remove before production
       endSaleModal: document.getElementById('end-sale-modal'),
       endSaleCancel: document.getElementById('end-sale-cancel'),
       endSaleConfirm: document.getElementById('end-sale-confirm')
@@ -44,7 +43,7 @@ const App = {
    * Bind shared header event listeners
    */
   bindHeaderEvents() {
-    // Checkout/Reopen button — on QR screen, performs reopen; otherwise navigates to checkout
+    // Checkout/Edit Order button — on QR screen, performs reopen; otherwise navigates to checkout
     if (this.headerElements.checkoutBtn) {
       this.headerElements.checkoutBtn.addEventListener('click', () => {
         if (this.currentScreen === 'qr') {
@@ -186,12 +185,6 @@ const App = {
       targetScreen.classList.add('active');
       this.currentScreen = screenName;
 
-      // DEV ONLY — remove before production
-      const devScreenNames = { setup: 'SETUP', checkout: 'CHECKOUT', qr: 'QR HANDOFF', scan: 'COLLECT PAYMENTS', payment: 'PAYMENT', dashboard: 'DASHBOARD' };
-      if (this.headerElements.devTitleBar) {
-        this.headerElements.devTitleBar.textContent = devScreenNames[screenName] || screenName.toUpperCase();
-      }
-
       // Update shared header visibility and state
       this.updateHeader(screenName);
 
@@ -243,8 +236,8 @@ const App = {
   },
 
   /**
-   * Update ← Checkout / Reopen button visibility and text
-   * On QR screen: shows as "Reopen". On scan/payment: shows as "← Checkout".
+   * Update ← Checkout / Edit Order button visibility and text
+   * On QR screen: shows as "Edit Order". On scan/payment: shows as "← Checkout".
    * On dashboard: shows as "← Checkout" only when cart has items.
    */
   updateCheckoutButton(screenName) {
@@ -253,8 +246,8 @@ const App = {
     // Show on scan, payment, qr screens
     if (screenName === 'scan' || screenName === 'payment' || screenName === 'qr') {
       this.headerElements.checkoutBtn.hidden = false;
-      // On QR screen, show "Reopen" instead of "← Checkout"
-      this.headerElements.checkoutBtn.textContent = screenName === 'qr' ? 'Reopen' : '← Checkout';
+      // On QR screen, show "Edit Order" instead of "← Checkout"
+      this.headerElements.checkoutBtn.textContent = screenName === 'qr' ? 'Edit Order' : '← Checkout';
     }
     // Show on dashboard only if cart has items
     else if (screenName === 'dashboard') {

@@ -234,7 +234,7 @@ const Dashboard = {
       <div class="dashboard-detail__actions">
         ${toggleBtn}
         <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
-          Reopen
+          Edit Order
         </button>
         <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
           Collect Payment

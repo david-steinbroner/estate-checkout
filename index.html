@@ -13,9 +13,6 @@
 </head>
 <body>
 
-  <!-- DEV ONLY — remove before production -->
-  <div class="dev-title-bar" id="dev-title-bar">SETUP</div>
-
   <!-- Shared Header (visible during active sale, hidden during setup) -->
   <header class="header" id="sale-header" hidden>
     <div class="header__context">
@@ -29,7 +26,7 @@
       <button class="header__btn header__btn--back" id="nav-checkout" hidden>← Checkout</button>
       <button class="header__btn" id="nav-dashboard">Dashboard</button>
       <button class="header__btn" id="nav-collect">Collect Payments</button>
-      <button class="header__btn header__btn--danger" id="nav-end-sale">End Sale</button>
+      <button class="header__btn header__btn--danger" id="nav-end-sale">Close Sale</button>
     </div>
   </header>
 
@@ -74,7 +71,7 @@
       </div>
     </div>
 
-    <!-- Number Pad + ADD Button (tight grid) -->
+    <!-- Number Pad + Add Item Button (tight grid) -->
     <div class="numpad-container">
       <div class="numpad" id="numpad">
         <button class="numpad__button" data-value="1">1</button>
@@ -90,13 +87,13 @@
         <button class="numpad__button" data-value="0">0</button>
         <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
       </div>
-      <button class="add-button" id="add-button">ADD ITEM</button>
+      <button class="add-button" id="add-button">Add Item</button>
     </div>
 
     <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
-      <button class="action-bar__button action-bar__button--clear" id="clear-button">CLEAR ALL</button>
-      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>DONE</button>
+      <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
+      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Ready for Payment</button>
     </div>
   </div>
 
@@ -118,7 +115,7 @@
 
     <!-- Action Buttons -->
     <div class="qr-actions">
-      <button type="button" class="qr-action qr-action--new" id="qr-new">NEW CUSTOMER</button>
+      <button type="button" class="qr-action qr-action--new" id="qr-new">New Customer</button>
     </div>
   </div>
 
@@ -144,12 +141,18 @@
 
       <!-- Start Date -->
       <div class="setup-field">
-        <label class="setup-field__label" for="setup-start-date">Start Date</label>
-        <input
-          type="date"
-          id="setup-start-date"
-          class="setup-field__input"
-        >
+        <label class="setup-field__checkbox">
+          <input type="checkbox" id="setup-today-checkbox" checked>
+          Sale starts today
+        </label>
+        <div id="setup-date-picker" hidden>
+          <label class="setup-field__label" for="setup-start-date">Start Date</label>
+          <input
+            type="date"
+            id="setup-start-date"
+            class="setup-field__input"
+          >
+        </div>
       </div>
 
       <!-- Discount Schedule -->
@@ -165,7 +168,7 @@
     <!-- Start Sale Button -->
     <div class="setup-actions">
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
-      <button type="button" class="start-sale-button" id="start-sale-button">START SALE</button>
+      <button type="button" class="start-sale-button" id="start-sale-button">Start Sale</button>
     </div>
   </div>
 
@@ -211,7 +214,7 @@
     <!-- Actions -->
     <div class="payment-actions">
       <button class="payment-action payment-action--paid" id="payment-mark-paid">
-        MARK PAID
+        Mark Paid
       </button>
     </div>
 
@@ -253,7 +256,7 @@
 
     <!-- Actions -->
     <div class="dashboard-actions">
-      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">NEW CUSTOMER</button>
+      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Customer</button>
     </div>
   </div>
 
@@ -283,12 +286,13 @@
     </div>
   </div>
 
-  <!-- End Sale Confirmation Sheet -->
+  <!-- Close Sale Confirmation Sheet -->
   <div class="overlay" id="end-sale-modal">
     <div class="sheet">
-      <p class="sheet__title">End this sale?</p>
+      <p class="sheet__title">Close this sale?</p>
+      <p class="sheet__text">This will end the current sale and clear all data.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">End Sale</button>
+        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">Close Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>
@@ -300,9 +304,9 @@
       <p class="sheet__text" id="speech-confirm-desc">Add item</p>
       <p class="sheet__price" id="speech-confirm-price">$0.00</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
-        <button class="sheet__btn sheet__btn--primary" id="speech-edit-btn">EDIT</button>
-        <button class="sheet__btn sheet__btn--secondary" id="speech-cancel-btn">CANCEL</button>
+        <button class="sheet__btn sheet__btn--confirm" id="speech-confirm-btn">Confirm</button>
+        <button class="sheet__btn sheet__btn--primary" id="speech-edit-btn">Edit</button>
+        <button class="sheet__btn sheet__btn--secondary" id="speech-cancel-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -314,8 +318,8 @@
       <p class="sheet__heard" id="speech-fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
       <p class="sheet__tip" id="speech-fail-tip">Hold the button, speak clearly, then release.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--primary" id="speech-retry-btn">TRY AGAIN</button>
-        <button class="sheet__btn sheet__btn--secondary" id="speech-fail-cancel-btn">CANCEL</button>
+        <button class="sheet__btn sheet__btn--primary" id="speech-retry-btn">Try Again</button>
+        <button class="sheet__btn sheet__btn--secondary" id="speech-fail-cancel-btn">Cancel</button>
       </div>
     </div>
   </div>

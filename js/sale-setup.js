@@ -35,6 +35,8 @@ const SaleSetup = {
     this.elements = {
       saleNameInput: document.getElementById('setup-sale-name'),
       startDateInput: document.getElementById('setup-start-date'),
+      todayCheckbox: document.getElementById('setup-today-checkbox'),
+      datePicker: document.getElementById('setup-date-picker'),
       discountList: document.getElementById('discount-list'),
       addDayButton: document.getElementById('add-day-button'),
       dashboardButton: document.getElementById('setup-dashboard-button'),
@@ -59,6 +61,15 @@ const SaleSetup = {
     // Dashboard button
     this.elements.dashboardButton.addEventListener('click', () => {
       App.showScreen('dashboard', 'setup');
+    });
+
+    // "Sale starts today" checkbox
+    this.elements.todayCheckbox.addEventListener('change', () => {
+      const checked = this.elements.todayCheckbox.checked;
+      this.elements.datePicker.hidden = checked;
+      if (checked) {
+        this.setDefaultDate();
+      }
     });
 
     // Validate on input
@@ -230,6 +241,8 @@ const SaleSetup = {
    */
   resetForm() {
     this.elements.saleNameInput.value = '';
+    this.elements.todayCheckbox.checked = true;
+    this.elements.datePicker.hidden = true;
     this.setDefaultDate();
     this.resetDiscounts();
     this.renderDiscountList();
