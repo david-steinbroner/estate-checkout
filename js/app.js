@@ -41,6 +41,7 @@ const App = {
     Speech.init();
     QR.init();
     Scan.init();
+    Payment.init();
   },
 
   /**
@@ -84,6 +85,8 @@ const App = {
         QR.render(data);
       } else if (screenName === 'scan') {
         Scan.onActivate();
+      } else if (screenName === 'payment') {
+        Payment.render(data);
       }
     }
   }
