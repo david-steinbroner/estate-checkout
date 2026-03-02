@@ -3,11 +3,25 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v31
+**Service worker cache:** v32
 
 ---
 
 ## What Was Accomplished
+
+### Session 17 (2026-03-02)
+- **Removed Scan and Payment Screen Headers** — Deleted redundant `.scan-header` and `.payment-header` elements since Session 16 added ← Checkout to the shared header. Now only one navigation bar per screen.
+- **Added Payment Info Bar** — Replaced payment header with a simple centered info bar showing "Customer #X — time"
+- **Unified All Overlays to Bottom Sheets** — Standardized all 6 interactive overlays to use shared `.overlay` + `.sheet` + `.sheet__btn` classes:
+  - Clear All confirmation → bottom sheet
+  - End Sale confirmation → bottom sheet
+  - No-description prompt → already bottom sheet, updated class names
+  - Speech confirm/fail/permission → already bottom sheets, standardized
+  - All backdrops now use consistent `rgba(0,0,0,0.5)`
+  - All buttons now 48px height with 16px font
+  - All z-index set to 100
+- **Removed Old CSS** — Deleted deprecated `.modal-overlay`, `.modal`, `.desc-prompt-*`, `.speech-overlay`, `.speech-sheet` classes. Kept `.speech-processing` (spinner) and `.payment-success` (flash) unchanged.
+- **Service worker** — Bumped to v32
 
 ### Session 16 (2026-03-02)
 - **Added ← Checkout Button to Header** — New back button in shared header navigates to checkout without clearing cart. Visible on Scan, Payment, QR screens, and on Dashboard only when cart has items.
@@ -348,6 +362,30 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 17:**
+```
+/index.html
+  - Removed .scan-header (screen-scan)
+  - Removed .payment-header, added .payment-info bar (screen-payment)
+  - Updated Clear All and End Sale modals to bottom sheet pattern
+  - Updated No-desc prompt to use .overlay + .sheet classes
+  - Updated all 3 Speech modals to use .overlay + .sheet classes
+/css/styles.css
+  - Added unified .overlay, .sheet, .sheet__* classes
+  - Added .payment-info style
+  - Removed .scan-header__*, .payment-header__* styles
+  - Removed .modal-overlay, .modal, .modal__* styles
+  - Removed .desc-prompt-*, .speech-overlay, .speech-sheet__* styles
+/js/scan.js
+  - Removed backButton from cacheElements and bindEvents
+/js/payment.js
+  - Removed backButton from cacheElements and bindEvents
+/sw.js
+  - Bumped to v32
+/HANDOFF.md
+  - Updated with session 17 changes
+```
 
 **Session 16:**
 ```

@@ -26,7 +26,6 @@ const Payment = {
       title: document.getElementById('payment-title'),
       items: document.getElementById('payment-items'),
       total: document.getElementById('payment-total'),
-      backButton: document.getElementById('payment-back'),
       markPaidButton: document.getElementById('payment-mark-paid'),
       successOverlay: document.getElementById('payment-success')
     };
@@ -36,12 +35,6 @@ const Payment = {
    * Bind event listeners
    */
   bindEvents() {
-    if (this.elements.backButton) {
-      this.elements.backButton.addEventListener('click', () => {
-        App.showScreen('scan');
-      });
-    }
-
     if (this.elements.markPaidButton) {
       this.elements.markPaidButton.addEventListener('click', () => {
         this.markPaid();

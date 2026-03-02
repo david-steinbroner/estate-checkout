@@ -34,7 +34,6 @@ const Scan = {
       video: document.getElementById('scan-video'),
       status: document.getElementById('scan-status'),
       error: document.getElementById('scan-error'),
-      backButton: document.getElementById('scan-back'),
       retryButton: document.getElementById('scan-retry')
     };
   },
@@ -43,13 +42,6 @@ const Scan = {
    * Bind event listeners
    */
   bindEvents() {
-    if (this.elements.backButton) {
-      this.elements.backButton.addEventListener('click', () => {
-        this.stop();
-        App.showScreen('checkout');
-      });
-    }
-
     if (this.elements.retryButton) {
       this.elements.retryButton.addEventListener('click', () => {
         this.elements.error.hidden = true;

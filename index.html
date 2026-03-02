@@ -165,13 +165,6 @@
 
   <!-- QR Scan Screen -->
   <div id="screen-scan" class="screen scan-screen">
-    <header class="scan-header">
-      <button class="scan-header__back" id="scan-back">
-        <span aria-hidden="true">&larr;</span> Back
-      </button>
-      <h1 class="scan-header__title">Scan Customer QR Code</h1>
-    </header>
-
     <!-- Camera Viewfinder -->
     <div class="scan-viewfinder" id="scan-viewfinder">
       <video id="scan-video" autoplay playsinline></video>
@@ -193,12 +186,8 @@
 
   <!-- Payment Receive Screen -->
   <div id="screen-payment" class="screen payment-screen">
-    <header class="payment-header">
-      <button class="payment-header__back" id="payment-back">
-        <span aria-hidden="true">&larr;</span> Back
-      </button>
-      <h1 class="payment-header__title" id="payment-title">Customer #1 — 10:42 AM</h1>
-    </header>
+    <!-- Customer Info Bar -->
+    <div class="payment-info" id="payment-title">Customer #1 — 10:42 AM</div>
 
     <!-- Item List -->
     <div class="payment-items-container">
@@ -266,59 +255,61 @@
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
 
-  <!-- No Description Prompt (bottom sheet with overlay) -->
-  <div class="desc-prompt-overlay" id="desc-prompt">
-    <div class="desc-prompt-sheet">
-      <p class="desc-prompt__text">No description — add anyway?</p>
-      <button class="desc-prompt__btn desc-prompt__btn--add" id="desc-prompt-add">Add Without Description</button>
-      <button class="desc-prompt__btn desc-prompt__btn--desc" id="desc-prompt-desc">Add Description</button>
-    </div>
-  </div>
-
-  <!-- Clear Confirmation Modal -->
-  <div class="modal-overlay" id="clear-modal">
-    <div class="modal">
-      <h2 class="modal__title">Clear all items?</h2>
-      <div class="modal__buttons">
-        <button class="modal__button modal__button--cancel" id="clear-cancel">Cancel</button>
-        <button class="modal__button modal__button--confirm" id="clear-confirm">Clear</button>
+  <!-- No Description Prompt Sheet -->
+  <div class="overlay" id="desc-prompt">
+    <div class="sheet">
+      <p class="sheet__title">No description — add anyway?</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="desc-prompt-add">Add Without Description</button>
+        <button class="sheet__btn sheet__btn--secondary" id="desc-prompt-desc">Add Description</button>
       </div>
     </div>
   </div>
 
-  <!-- End Sale Confirmation Modal -->
-  <div class="modal-overlay" id="end-sale-modal">
-    <div class="modal">
-      <h2 class="modal__title">End this sale?</h2>
-      <div class="modal__buttons">
-        <button class="modal__button modal__button--cancel" id="end-sale-cancel">Cancel</button>
-        <button class="modal__button modal__button--confirm" id="end-sale-confirm">End Sale</button>
+  <!-- Clear Confirmation Sheet -->
+  <div class="overlay" id="clear-modal">
+    <div class="sheet">
+      <p class="sheet__title">Clear all items?</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--danger" id="clear-confirm">Clear All</button>
+        <button class="sheet__btn sheet__btn--secondary" id="clear-cancel">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Speech Confirmation Modal (Bottom Sheet) -->
-  <div class="speech-overlay" id="speech-confirm-modal">
-    <div class="speech-sheet">
-      <p class="speech-sheet__desc" id="speech-confirm-desc">Add item</p>
-      <p class="speech-sheet__price" id="speech-confirm-price">$0.00</p>
-      <div class="speech-sheet__buttons">
-        <button class="speech-sheet__btn speech-sheet__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
-        <button class="speech-sheet__btn speech-sheet__btn--edit" id="speech-edit-btn">EDIT</button>
-        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-cancel-btn">CANCEL</button>
+  <!-- End Sale Confirmation Sheet -->
+  <div class="overlay" id="end-sale-modal">
+    <div class="sheet">
+      <p class="sheet__title">End this sale?</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">End Sale</button>
+        <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Speech Failure Modal (Bottom Sheet) -->
-  <div class="speech-overlay" id="speech-fail-modal">
-    <div class="speech-sheet">
-      <p class="speech-sheet__fail-title" id="speech-fail-title">Couldn't understand that</p>
-      <p class="speech-sheet__fail-heard" id="speech-fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
-      <p class="speech-sheet__fail-tip" id="speech-fail-tip">💡 Hold the button, speak clearly, then release.</p>
-      <div class="speech-sheet__buttons">
-        <button class="speech-sheet__btn speech-sheet__btn--retry" id="speech-retry-btn">TRY AGAIN</button>
-        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-fail-cancel-btn">CANCEL</button>
+  <!-- Speech Confirmation Sheet -->
+  <div class="overlay" id="speech-confirm-modal">
+    <div class="sheet">
+      <p class="sheet__text" id="speech-confirm-desc">Add item</p>
+      <p class="sheet__price" id="speech-confirm-price">$0.00</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
+        <button class="sheet__btn sheet__btn--primary" id="speech-edit-btn">EDIT</button>
+        <button class="sheet__btn sheet__btn--secondary" id="speech-cancel-btn">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speech Failure Sheet -->
+  <div class="overlay" id="speech-fail-modal">
+    <div class="sheet">
+      <p class="sheet__title" id="speech-fail-title">Couldn't understand that</p>
+      <p class="sheet__heard" id="speech-fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
+      <p class="sheet__tip" id="speech-fail-tip">Hold the button, speak clearly, then release.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--primary" id="speech-retry-btn">TRY AGAIN</button>
+        <button class="sheet__btn sheet__btn--secondary" id="speech-fail-cancel-btn">CANCEL</button>
       </div>
     </div>
   </div>
@@ -331,14 +322,14 @@
     </div>
   </div>
 
-  <!-- Speech Permission Modal (Bottom Sheet) -->
-  <div class="speech-overlay" id="speech-permission-modal">
-    <div class="speech-sheet">
-      <p class="speech-sheet__fail-title" id="speech-permission-title">Voice Input</p>
-      <p class="speech-sheet__fail-tip" id="speech-permission-body">Voice input needs microphone access to work.</p>
-      <div class="speech-sheet__buttons">
-        <button class="speech-sheet__btn speech-sheet__btn--confirm" id="speech-permission-allow">Allow Microphone</button>
-        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-permission-dismiss">Use Number Pad Instead</button>
+  <!-- Speech Permission Sheet -->
+  <div class="overlay" id="speech-permission-modal">
+    <div class="sheet">
+      <p class="sheet__title" id="speech-permission-title">Voice Input</p>
+      <p class="sheet__text" id="speech-permission-body">Voice input needs microphone access to work.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="speech-permission-allow">Allow Microphone</button>
+        <button class="sheet__btn sheet__btn--secondary" id="speech-permission-dismiss">Use Number Pad Instead</button>
       </div>
     </div>
   </div>
