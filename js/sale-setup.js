@@ -62,11 +62,14 @@ const SaleSetup = {
   },
 
   /**
-   * Set default date to today
+   * Set default date to today (using local time, not UTC)
    */
   setDefaultDate() {
-    const today = new Date().toISOString().split('T')[0];
-    this.elements.startDateInput.value = today;
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    this.elements.startDateInput.value = `${year}-${month}-${day}`;
   },
 
   /**
