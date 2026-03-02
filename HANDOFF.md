@@ -3,11 +3,28 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v16
+**Service worker cache:** v17
 
 ---
 
 ## What Was Accomplished
+
+### Session 5 (2026-03-01)
+- **Built Speech-to-Text Item Entry** — Complete voice input system:
+  - Hold-to-talk mic button with pulsing red animation while recording
+  - Web Speech API integration with proper error handling
+  - Natural language parser for price extraction:
+    - Number words: "one" through "nineteen", "twenty" through "ninety", "hundred"
+    - Compound numbers: "twenty five" → $25, "thirty two" → $32
+    - X-fifty pattern: "seven fifty" → $7.50, "fifteen fifty" → $15.50
+    - Hundred pattern: "two hundred" → $200, "three hundred fifty" → $350
+    - Filler word stripping: "dollars", "bucks", "and", "cents"
+  - Description extraction: "blue vase fifteen dollars" → desc: "blue vase", price: $15.00
+  - Confirmation overlay with CONFIRM / EDIT / CANCEL buttons
+  - Parse failure modal showing transcript with TRY AGAIN / CANCEL
+  - Parser exported as `Speech.parse()` for console testing
+- **Cross-device support** — Pointer events (not mouse events) for hold-to-talk
+- **Service worker** — Bumped to v17
 
 ### Session 4 (2026-03-01)
 - **Built Sale Dashboard** — Complete performance metrics screen:
@@ -110,6 +127,10 @@
 - **Dashboard**: Summary stats (customers, revenue, avg ticket) for current sale
 - **Transaction list**: View all transactions with accordion expand for details
 - **Dashboard navigation**: Accessible from checkout and setup screens
+- **Speech-to-text**: Hold mic → speak → release → parsed result shown
+- **Speech parser**: Handles number words, compounds, X-fifty, hundred patterns
+- **Voice confirmation**: CONFIRM adds item, EDIT populates fields, CANCEL dismisses
+- **Descriptions via voice**: Carry through to QR, payment, and dashboard
 
 ### What's Broken
 - None currently
@@ -135,13 +156,24 @@ None currently.
 
 ## Next Steps (Priority Order)
 
-1. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
-2. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
-3. **Dashboard enhancements** — Date range filtering, export (backlogged)
+1. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
+2. **Dashboard enhancements** — Date range filtering, export (backlogged)
+3. **Item editing** — Tap item in cart to edit price/description
 
 ---
 
 ## Files Changed This Session
+
+**Session 5:**
+```
+/js/
+  speech.js       # Complete rewrite - parser, Web Speech API, confirmation flow
+/css/
+  styles.css      # Added speech modal styles, mic button pulsing animation
+/index.html       # Added speech confirmation and failure modals
+/sw.js            # Bumped to v17
+/HANDOFF.md       # Updated with session 5 changes
+```
 
 **Session 4:**
 ```
@@ -242,6 +274,18 @@ None currently.
 2. Deny camera permission when prompted
 3. Should see error message with "Retry" button
 4. Tap Retry → grant permission → camera should start
+
+### Speech-to-Text Test
+1. **Happy path:** Hold mic → say "blue vase fifteen dollars" → release → confirmation shows "Add 'blue vase' — $15.00?" → tap CONFIRM → item added with description
+2. **Price only:** Hold mic → say "twenty five" → confirmation shows "Add item — $25.00?" → CONFIRM
+3. **Compound price:** Hold mic → say "seven fifty" → confirmation shows "$7.50" → CONFIRM
+4. **Large number:** Hold mic → say "two hundred" → confirmation shows "$200.00" → CONFIRM
+5. **Edit flow:** Hold mic → say something → EDIT → number pad populated with price, description in field → adjust → ADD ITEM
+6. **Cancel flow:** Hold mic → say something → CANCEL → nothing happens
+7. **Parse failure:** Hold mic → say gibberish → shows "Couldn't understand" with transcript → TRY AGAIN or CANCEL
+8. **No speech:** Hold mic → say nothing → release → error flash "Didn't catch that"
+9. **API not supported:** Load on browser without Web Speech API → mic button hidden
+10. **Console test:** Open DevTools → `Speech.parse("blue vase fifteen dollars")` → returns `{price: 15, description: "blue vase"}`
 
 ### Dashboard Test
 1. **Empty state:** Clear localStorage → start sale → tap Dashboard → shows zeros and "No transactions yet"
