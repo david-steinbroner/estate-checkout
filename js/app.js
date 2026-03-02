@@ -40,6 +40,7 @@ const App = {
     Checkout.init();
     Speech.init();
     QR.init();
+    Scan.init();
   },
 
   /**
@@ -81,6 +82,8 @@ const App = {
         SaleSetup.resetForm();
       } else if (screenName === 'qr') {
         QR.render(data);
+      } else if (screenName === 'scan') {
+        Scan.onActivate();
       }
     }
   }

@@ -50,6 +50,7 @@ const Checkout = {
       clearModal: document.getElementById('clear-modal'),
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
+      collectPaymentsButton: document.getElementById('collect-payments-button'),
       endSaleButton: document.getElementById('end-sale-button'),
       endSaleModal: document.getElementById('end-sale-modal'),
       endSaleCancel: document.getElementById('end-sale-cancel'),
@@ -103,6 +104,11 @@ const Checkout = {
       if (e.target === this.elements.clearModal) {
         this.hideClearModal();
       }
+    });
+
+    // Collect payments button - navigate to QR scan
+    this.elements.collectPaymentsButton.addEventListener('click', () => {
+      App.showScreen('scan');
     });
 
     // End sale button

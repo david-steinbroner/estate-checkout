@@ -75,6 +75,13 @@
       <button class="add-button" id="add-button">ADD ITEM</button>
     </div>
 
+    <!-- Collect Payments Button (secondary action) -->
+    <div class="collect-payments-container">
+      <button class="collect-payments-button" id="collect-payments-button">
+        Collect Payments
+      </button>
+    </div>
+
     <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
       <button class="action-bar__button action-bar__button--clear" id="clear-button">CLEAR ALL</button>
@@ -151,6 +158,34 @@
     </div>
   </div>
 
+  <!-- QR Scan Screen -->
+  <div id="screen-scan" class="screen scan-screen">
+    <header class="scan-header">
+      <button class="scan-header__back" id="scan-back">
+        <span aria-hidden="true">&larr;</span> Back
+      </button>
+      <h1 class="scan-header__title">Scan Customer QR Code</h1>
+    </header>
+
+    <!-- Camera Viewfinder -->
+    <div class="scan-viewfinder" id="scan-viewfinder">
+      <video id="scan-video" autoplay playsinline></video>
+      <div class="scan-target"></div>
+    </div>
+
+    <!-- Status Message -->
+    <div class="scan-status" id="scan-status">
+      Point camera at QR code
+    </div>
+
+    <!-- Camera Permission Error -->
+    <div class="scan-error" id="scan-error" hidden>
+      <p class="scan-error__message">Camera access denied</p>
+      <p class="scan-error__help">Enable camera permissions in your browser settings</p>
+      <button class="scan-error__retry" id="scan-retry">Retry</button>
+    </div>
+  </div>
+
   <!-- Flash Feedback -->
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
@@ -184,6 +219,7 @@
   <script src="/js/speech.js"></script>
   <script src="/lib/qrcode.min.js"></script>
   <script src="/js/qr.js"></script>
+  <script src="/js/scan.js"></script>
   <script src="/js/sale-setup.js"></script>
   <script src="/js/app.js"></script>
 </body>
