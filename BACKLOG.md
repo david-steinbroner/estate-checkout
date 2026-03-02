@@ -13,6 +13,10 @@
 - [ ] Item categories/tags for basic reporting
 - [ ] Undo last transaction (not just last item)
 - [ ] Larger QR codes or alternative handoff method for large carts (50+ items)
+- [ ] Edit already-entered items (tap to adjust description, price, or discount)
+- [ ] Per-item manual discount override for haggling
+- [ ] Toggle to apply/not apply day discount per item
+- [ ] Total-level discount (% or $ off entire cart)
 
 ### v0.3 — Pre-Sale Inventory System
 - [ ] Photo capture of items during estate sale setup
