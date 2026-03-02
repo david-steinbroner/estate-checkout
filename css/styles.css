@@ -306,38 +306,87 @@ body {
 }
 
 .mic-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  min-width: 72px;
+  height: 48px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-md);
   border: none;
   background: var(--color-text-secondary);
   color: white;
-  font-size: var(--font-size-lg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-sm);
   flex-shrink: 0;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
+.mic-button__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.mic-button__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
 .mic-button:active,
 .mic-button.listening {
   background: var(--color-danger);
-  animation: mic-pulse 1s ease-in-out infinite;
+  animation: mic-pulse 0.8s ease-in-out infinite;
 }
 
 @keyframes mic-pulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
   }
   50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+    transform: scale(1.03);
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
   }
+}
+
+/* Listening Status Indicator */
+.mic-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  animation: status-pulse 1s ease-in-out infinite;
+}
+
+.mic-status[hidden] {
+  display: none;
+}
+
+.mic-status__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  animation: dot-blink 0.6s ease-in-out infinite alternate;
+}
+
+.mic-status__text {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+@keyframes dot-blink {
+  from { opacity: 1; }
+  to { opacity: 0.4; }
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
 }
 
 /* === Numpad Container === */
@@ -547,93 +596,164 @@ body {
   color: white;
 }
 
-/* === Speech Confirmation Modal === */
-.speech-modal {
+/* === Speech Bottom Sheet Overlay === */
+.speech-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+}
+
+.speech-overlay.visible {
+  display: flex;
+}
+
+.speech-sheet {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: 16px 16px 0 0;
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   text-align: center;
-  padding: var(--space-lg);
+  animation: sheet-slide-up 0.2s ease-out;
 }
 
-.speech-modal__desc {
-  font-size: var(--font-size-lg);
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.speech-sheet__desc {
+  font-size: 20px;
   color: var(--color-text);
-  margin-bottom: var(--space-sm);
+  margin-bottom: 8px;
 }
 
-.speech-modal__price {
-  font-size: var(--font-size-2xl);
+.speech-sheet__price {
+  font-size: 40px;
   font-weight: 700;
   color: var(--color-success);
-  margin-bottom: var(--space-lg);
+  margin-bottom: 24px;
 }
 
-.speech-modal__buttons {
+.speech-sheet__buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 12px;
 }
 
-.speech-modal__buttons--two {
-  flex-direction: row;
-}
-
-.speech-modal__btn {
-  height: 44px;
+.speech-sheet__btn {
+  width: 100%;
+  height: 56px;
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
-  flex: 1;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.speech-modal__btn--confirm {
+.speech-sheet__btn--confirm {
   background: var(--color-success);
   color: white;
 }
 
-.speech-modal__btn--confirm:active {
+.speech-sheet__btn--confirm:active {
   background: #15803d;
 }
 
-.speech-modal__btn--edit {
+.speech-sheet__btn--edit {
   background: var(--color-primary);
   color: white;
 }
 
-.speech-modal__btn--edit:active {
+.speech-sheet__btn--edit:active {
   background: #1d4ed8;
 }
 
-.speech-modal__btn--cancel {
+.speech-sheet__btn--cancel {
   background: var(--color-bg);
   color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
-.speech-modal__btn--cancel:active {
+.speech-sheet__btn--cancel:active {
   background: #e5e5e5;
 }
 
-.speech-modal__btn--retry {
+.speech-sheet__btn--retry {
   background: var(--color-primary);
   color: white;
 }
 
-.speech-modal__btn--retry:active {
+.speech-sheet__btn--retry:active {
   background: #1d4ed8;
 }
 
-.speech-modal__fail-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
+.speech-sheet__fail-title {
+  font-size: 22px;
+  font-weight: 700;
   color: var(--color-text);
-  margin-bottom: var(--space-md);
+  margin-bottom: 12px;
 }
 
-.speech-modal__fail-heard {
-  font-size: var(--font-size-base);
+.speech-sheet__fail-heard {
+  font-size: 16px;
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-lg);
+  font-style: italic;
+  margin-bottom: 24px;
   word-break: break-word;
+}
+
+/* === Speech Processing Overlay === */
+.speech-processing {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 210;
+}
+
+.speech-processing[hidden] {
+  display: none;
+}
+
+.speech-processing__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.speech-processing__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.speech-processing__text {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
 }
 
 /* === Sale Setup Screen === */

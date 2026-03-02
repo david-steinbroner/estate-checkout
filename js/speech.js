@@ -75,6 +75,8 @@ const Speech = {
   cacheElements() {
     this.elements = {
       micButton: document.getElementById('mic-button'),
+      micStatus: document.getElementById('mic-status'),
+      processingOverlay: document.getElementById('speech-processing'),
       confirmModal: document.getElementById('speech-confirm-modal'),
       confirmDesc: document.getElementById('speech-confirm-desc'),
       confirmPrice: document.getElementById('speech-confirm-price'),
@@ -167,6 +169,10 @@ const Speech = {
       this.recognition.start();
       this.isListening = true;
       this.elements.micButton.classList.add('listening');
+      // Show listening indicator
+      if (this.elements.micStatus) {
+        this.elements.micStatus.hidden = false;
+      }
     } catch (e) {
       // Recognition might already be running
     }
@@ -188,6 +194,10 @@ const Speech = {
     if (this.elements.micButton) {
       this.elements.micButton.classList.remove('listening');
     }
+    // Hide listening indicator
+    if (this.elements.micStatus) {
+      this.elements.micStatus.hidden = true;
+    }
   },
 
   /**
@@ -196,11 +206,35 @@ const Speech = {
   handleResult(transcript) {
     const result = this.parse(transcript);
 
-    if (result.price > 0) {
-      this.pendingResult = result;
-      this.showConfirmModal(result);
-    } else {
-      this.showFailModal(transcript);
+    // Show processing briefly
+    this.showProcessing();
+
+    setTimeout(() => {
+      this.hideProcessing();
+      if (result.price > 0) {
+        this.pendingResult = result;
+        this.showConfirmModal(result);
+      } else {
+        this.showFailModal(transcript);
+      }
+    }, 400);
+  },
+
+  /**
+   * Show processing overlay
+   */
+  showProcessing() {
+    if (this.elements.processingOverlay) {
+      this.elements.processingOverlay.hidden = false;
+    }
+  },
+
+  /**
+   * Hide processing overlay
+   */
+  hideProcessing() {
+    if (this.elements.processingOverlay) {
+      this.elements.processingOverlay.hidden = true;
     }
   },
 

@@ -3,11 +3,25 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v17
+**Service worker cache:** v18
 
 ---
 
 ## What Was Accomplished
+
+### Session 6 (2026-03-01)
+- **Improved Speech UI for Mobile** — Major visual updates:
+  - Confirmation overlay now full-width bottom sheet (not small floating card)
+  - Large price text (40px, green, bold) clearly visible
+  - Full-width buttons (56px height) easy to tap on mobile
+  - 12px vertical spacing between buttons prevents mis-taps
+  - Smooth slide-up animation on modal open
+  - Safe area inset padding for iPhone notch/home indicator
+- **Bigger mic button** — Now 72x48px rounded rectangle with "🎤 Speak" label
+- **Listening indicator** — Red pulsing "Listening..." text appears below price when recording
+- **Processing state** — Brief "Processing..." spinner overlay before confirmation appears
+- **Parse failure modal** — Same large bottom sheet style with 22px title and large buttons
+- **Service worker** — Bumped to v18
 
 ### Session 5 (2026-03-01)
 - **Built Speech-to-Text Item Entry** — Complete voice input system:
@@ -163,6 +177,17 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 6:**
+```
+/js/
+  speech.js       # Added mic status, processing overlay, updated element caching
+/css/
+  styles.css      # Rewrote speech modals as bottom sheets, enlarged mic button, added status indicator
+/index.html       # Updated mic button with label, added mic status, processing overlay, bottom sheet structure
+/sw.js            # Bumped to v18
+/HANDOFF.md       # Updated with session 6 changes
+```
 
 **Session 5:**
 ```

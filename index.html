@@ -51,8 +51,13 @@
       <div class="price-display">
         <div class="price-display__value" id="price-display">$0.00</div>
         <button class="mic-button" id="mic-button" aria-label="Hold to speak">
-          🎤
+          <span class="mic-button__icon">🎤</span>
+          <span class="mic-button__label">Speak</span>
         </button>
+      </div>
+      <div class="mic-status" id="mic-status" hidden>
+        <span class="mic-status__dot"></span>
+        <span class="mic-status__text">Listening...</span>
       </div>
     </div>
 
@@ -291,28 +296,36 @@
     </div>
   </div>
 
-  <!-- Speech Confirmation Modal -->
-  <div class="modal-overlay" id="speech-confirm-modal">
-    <div class="modal speech-modal">
-      <p class="speech-modal__desc" id="speech-confirm-desc">Add item</p>
-      <p class="speech-modal__price" id="speech-confirm-price">$0.00</p>
-      <div class="speech-modal__buttons">
-        <button class="speech-modal__btn speech-modal__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
-        <button class="speech-modal__btn speech-modal__btn--edit" id="speech-edit-btn">EDIT</button>
-        <button class="speech-modal__btn speech-modal__btn--cancel" id="speech-cancel-btn">CANCEL</button>
+  <!-- Speech Confirmation Modal (Bottom Sheet) -->
+  <div class="speech-overlay" id="speech-confirm-modal">
+    <div class="speech-sheet">
+      <p class="speech-sheet__desc" id="speech-confirm-desc">Add item</p>
+      <p class="speech-sheet__price" id="speech-confirm-price">$0.00</p>
+      <div class="speech-sheet__buttons">
+        <button class="speech-sheet__btn speech-sheet__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
+        <button class="speech-sheet__btn speech-sheet__btn--edit" id="speech-edit-btn">EDIT</button>
+        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-cancel-btn">CANCEL</button>
       </div>
     </div>
   </div>
 
-  <!-- Speech Failure Modal -->
-  <div class="modal-overlay" id="speech-fail-modal">
-    <div class="modal speech-modal">
-      <p class="speech-modal__fail-title">Couldn't understand that</p>
-      <p class="speech-modal__fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
-      <div class="speech-modal__buttons speech-modal__buttons--two">
-        <button class="speech-modal__btn speech-modal__btn--retry" id="speech-retry-btn">TRY AGAIN</button>
-        <button class="speech-modal__btn speech-modal__btn--cancel" id="speech-fail-cancel-btn">CANCEL</button>
+  <!-- Speech Failure Modal (Bottom Sheet) -->
+  <div class="speech-overlay" id="speech-fail-modal">
+    <div class="speech-sheet">
+      <p class="speech-sheet__fail-title">Couldn't understand that</p>
+      <p class="speech-sheet__fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
+      <div class="speech-sheet__buttons">
+        <button class="speech-sheet__btn speech-sheet__btn--retry" id="speech-retry-btn">TRY AGAIN</button>
+        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-fail-cancel-btn">CANCEL</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Speech Processing Overlay -->
+  <div class="speech-processing" id="speech-processing" hidden>
+    <div class="speech-processing__content">
+      <span class="speech-processing__spinner"></span>
+      <span class="speech-processing__text">Processing...</span>
     </div>
   </div>
 
