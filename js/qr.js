@@ -1,16 +1,50 @@
 /**
  * qr.js - QR Code Generation Module for Estate Checkout
- *
- * TODO: Full implementation in next session
- * This is a stub that sets up the structure
+ * Handles QR code generation, display, and handoff screen
  */
 
 const QR = {
+  // Current transaction data
+  transaction: null,
+
+  // DOM element references
+  elements: {},
+
   /**
    * Initialize QR module
    */
   init() {
-    // Will load qrcode.min.js when needed
+    this.cacheElements();
+    this.bindEvents();
+  },
+
+  /**
+   * Cache DOM element references
+   */
+  cacheElements() {
+    this.elements = {
+      qrCode: document.getElementById('qr-code'),
+      qrItems: document.getElementById('qr-items'),
+      qrTotal: document.getElementById('qr-total'),
+      backButton: document.getElementById('qr-back'),
+      newButton: document.getElementById('qr-new')
+    };
+  },
+
+  /**
+   * Bind event listeners
+   */
+  bindEvents() {
+    // Back button - return to checkout without clearing
+    this.elements.backButton.addEventListener('click', () => {
+      App.showScreen('checkout');
+    });
+
+    // New customer button - clear cart and return to checkout
+    this.elements.newButton.addEventListener('click', () => {
+      Checkout.clearAll();
+      App.showScreen('checkout');
+    });
   },
 
   /**
@@ -34,11 +68,73 @@ const QR = {
   },
 
   /**
-   * Render QR code to a canvas element
+   * Render the QR handoff screen
    */
-  render(containerId, data) {
-    // TODO: Use qrcode.min.js to render
-    console.log('QR data:', data);
+  render(transaction) {
+    if (!transaction) return;
+
+    this.transaction = transaction;
+    const sale = Storage.getSale();
+
+    // Generate QR code
+    const qrData = this.generateData(transaction, sale);
+    this.renderQRCode(qrData);
+
+    // Render item summary
+    this.renderItemSummary(transaction);
+
+    // Render total
+    this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
+  },
+
+  /**
+   * Render QR code using qrcode.min.js
+   */
+  renderQRCode(data) {
+    // Clear previous QR code
+    this.elements.qrCode.innerHTML = '';
+
+    // Generate new QR code
+    // qrcode.min.js creates a QRCode object
+    new QRCode(this.elements.qrCode, {
+      text: data,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  },
+
+  /**
+   * Render item summary list
+   */
+  renderItemSummary(transaction) {
+    const html = transaction.items.map(item => {
+      const desc = item.description || 'Item';
+      const showOriginal = item.discount > 0;
+
+      return `
+        <li class="qr-item">
+          <span class="qr-item__desc">${this.escapeHtml(desc)}</span>
+          <span class="qr-item__price">
+            ${showOriginal ? `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
+            ${Utils.formatCurrency(item.finalPrice)}
+          </span>
+        </li>
+      `;
+    }).join('');
+
+    this.elements.qrItems.innerHTML = html;
+  },
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   },
 
   /**

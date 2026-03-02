@@ -666,6 +666,125 @@ body {
   cursor: not-allowed;
 }
 
+/* === QR Handoff Screen === */
+.qr-screen {
+  background: var(--color-bg);
+}
+
+.qr-code-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.qr-code {
+  background: white;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-summary {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  min-height: 0;
+}
+
+.qr-items {
+  list-style: none;
+  margin-bottom: var(--space-lg);
+}
+
+.qr-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.qr-item__desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: var(--space-md);
+}
+
+.qr-item__price {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.qr-item__original {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  margin-right: var(--space-sm);
+}
+
+.qr-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) 0;
+  border-top: 2px solid var(--color-text);
+}
+
+.qr-total__label {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.qr-total__amount {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.qr-actions {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.qr-action {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qr-action--back {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.qr-action--back:active {
+  background: #d4d4d4;
+}
+
+.qr-action--new {
+  background: var(--color-success);
+  color: white;
+}
+
+.qr-action--new:active {
+  background: #15803d;
+}
+
 /* === Utility Classes === */
 .visually-hidden {
   position: absolute;

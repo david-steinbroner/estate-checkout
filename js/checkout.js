@@ -413,12 +413,8 @@ const Checkout = {
 
     Storage.saveTransaction(transaction);
 
-    // Navigate to QR screen (will be implemented later)
-    // For now, just show a flash
-    this.showFlash('success', 'Checkout complete!');
-
-    // TODO: App.showScreen('qr', transaction);
-    console.log('Transaction saved:', transaction);
+    // Navigate to QR screen
+    App.showScreen('qr', transaction);
   },
 
   /**

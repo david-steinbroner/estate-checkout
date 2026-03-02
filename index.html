@@ -83,8 +83,26 @@
   </div>
 
   <!-- QR Handoff Screen (placeholder) -->
-  <div id="screen-qr" class="screen">
-    <!-- Will be built later -->
+  <div id="screen-qr" class="screen qr-screen">
+    <!-- QR Code Display -->
+    <div class="qr-code-container">
+      <div id="qr-code" class="qr-code"></div>
+    </div>
+
+    <!-- Transaction Summary -->
+    <div class="qr-summary">
+      <ul id="qr-items" class="qr-items"></ul>
+      <div class="qr-total">
+        <span class="qr-total__label">Total:</span>
+        <span id="qr-total" class="qr-total__amount">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="qr-actions">
+      <button type="button" class="qr-action qr-action--back" id="qr-back">BACK</button>
+      <button type="button" class="qr-action qr-action--new" id="qr-new">NEW CUSTOMER</button>
+    </div>
   </div>
 
   <!-- Sale Setup Screen -->
