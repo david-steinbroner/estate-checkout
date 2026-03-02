@@ -37,6 +37,7 @@ const SaleSetup = {
       startDateInput: document.getElementById('setup-start-date'),
       discountList: document.getElementById('discount-list'),
       addDayButton: document.getElementById('add-day-button'),
+      dashboardButton: document.getElementById('setup-dashboard-button'),
       startSaleButton: document.getElementById('start-sale-button')
     };
   },
@@ -53,6 +54,11 @@ const SaleSetup = {
     // Start sale button
     this.elements.startSaleButton.addEventListener('click', () => {
       this.startSale();
+    });
+
+    // Dashboard button
+    this.elements.dashboardButton.addEventListener('click', () => {
+      App.showScreen('dashboard', 'setup');
     });
 
     // Validate on input
@@ -228,5 +234,14 @@ const SaleSetup = {
     this.resetDiscounts();
     this.renderDiscountList();
     this.validateForm();
+    this.updateDashboardButton();
+  },
+
+  /**
+   * Show/hide dashboard button based on sale state
+   */
+  updateDashboardButton() {
+    const sale = Storage.getSale();
+    this.elements.dashboardButton.hidden = !sale;
   }
 };

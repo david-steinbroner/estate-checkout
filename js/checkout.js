@@ -51,6 +51,7 @@ const Checkout = {
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
       collectPaymentsButton: document.getElementById('collect-payments-button'),
+      dashboardButton: document.getElementById('checkout-dashboard-button'),
       endSaleButton: document.getElementById('end-sale-button'),
       endSaleModal: document.getElementById('end-sale-modal'),
       endSaleCancel: document.getElementById('end-sale-cancel'),
@@ -109,6 +110,11 @@ const Checkout = {
     // Collect payments button - navigate to QR scan
     this.elements.collectPaymentsButton.addEventListener('click', () => {
       App.showScreen('scan');
+    });
+
+    // Dashboard button - navigate to dashboard
+    this.elements.dashboardButton.addEventListener('click', () => {
+      App.showScreen('dashboard', 'checkout');
     });
 
     // End sale button
