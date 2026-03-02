@@ -127,6 +127,8 @@
 None currently.
 
 ### Fixed Bugs
+- **Date picker defaults to tomorrow** — Was using UTC which is next day in evening US time. Fixed by using local date components.
+- **QR Handoff screen blank** — qrcode.min.js was corrupted placeholder. Downloaded actual library and added script tag.
 - **Day calculation off by one** — Timezone parsing issue. Fixed by parsing start date as local time.
 - **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version.
 - **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`. Fixed by removing the display property from `.checkout-pad`.
