@@ -46,6 +46,26 @@ const Dashboard = {
         App.showScreen('checkout');
       });
     }
+
+    // Action button events (using event delegation) - bound once here, not in render
+    if (this.elements.transactionList) {
+      this.elements.transactionList.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const txnId = btn.dataset.id;
+
+        if (action === 'toggle-paid') {
+          this.togglePaidStatus(txnId);
+        } else if (action === 'reopen') {
+          this.reopenTransaction(txnId);
+        } else if (action === 'collect') {
+          this.collectPayment(txnId);
+        }
+      });
+    }
   },
 
   /**
@@ -133,24 +153,6 @@ const Dashboard = {
         if (e.target.closest('.dashboard-txn__detail')) return;
         this.toggleTransaction(row.dataset.id);
       });
-    });
-
-    // Bind action button events (using event delegation)
-    this.elements.transactionList.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-
-      e.stopPropagation();
-      const action = btn.dataset.action;
-      const txnId = btn.dataset.id;
-
-      if (action === 'toggle-paid') {
-        this.togglePaidStatus(txnId);
-      } else if (action === 'reopen') {
-        this.reopenTransaction(txnId);
-      } else if (action === 'collect') {
-        this.collectPayment(txnId);
-      }
     });
   },
 

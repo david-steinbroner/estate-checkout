@@ -759,6 +759,9 @@ const Speech = {
     Checkout.updatePriceDisplay();
     Checkout.elements.descriptionInput.value = description;
 
+    // Skip description prompt since user already confirmed via speech modal
+    Checkout.pendingAddWithoutDesc = true;
+
     // Add the item
     Checkout.addItem();
 

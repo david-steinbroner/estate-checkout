@@ -11,6 +11,7 @@ const Scan = {
   html5Scanner: null,
   useFallback: false,
   animationFrameId: null,
+  restartTimeout: null,
 
   // DOM element references
   elements: {},
@@ -189,7 +190,13 @@ const Scan = {
       // Validate expected structure
       if (!data.items || typeof data.total !== 'number') {
         this.elements.status.textContent = 'Invalid QR code';
-        setTimeout(() => this.start(), 1500);
+        this.restartTimeout = setTimeout(() => {
+          // Only restart if scan screen is still active
+          const scanScreen = document.getElementById('screen-scan');
+          if (scanScreen && scanScreen.classList.contains('active')) {
+            this.start();
+          }
+        }, 1500);
         return;
       }
 
@@ -198,7 +205,13 @@ const Scan = {
     } catch (error) {
       console.error('Invalid QR data:', error);
       this.elements.status.textContent = 'Could not read QR code';
-      setTimeout(() => this.start(), 1500);
+      this.restartTimeout = setTimeout(() => {
+        // Only restart if scan screen is still active
+        const scanScreen = document.getElementById('screen-scan');
+        if (scanScreen && scanScreen.classList.contains('active')) {
+          this.start();
+        }
+      }, 1500);
     }
   },
 
@@ -207,6 +220,12 @@ const Scan = {
    */
   stop() {
     this.isScanning = false;
+
+    // Clear restart timeout
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
+    }
 
     // Cancel animation frame
     if (this.animationFrameId) {

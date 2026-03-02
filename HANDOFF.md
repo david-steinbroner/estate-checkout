@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v29
+**Service worker cache:** v30
 
 ---
 
 ## What Was Accomplished
+
+### Session 15 (2026-03-02)
+- **Fixed Speech Confirm Description Prompt Bypass** — Speech confirmAdd() now sets `Checkout.pendingAddWithoutDesc = true` before calling addItem(), preventing the redundant description prompt after user already confirmed via speech modal
+- **Fixed sw.js Null Accept Header** — Service worker fetch handler now uses `(event.request.headers.get('accept') || '')` to prevent TypeError when accept header is null (e.g., manifest fetches)
+- **Fixed Scan Timeout Race Condition** — handleScan() now stores timeout ID in `this.restartTimeout`, checks screen is still active before calling start(), and stop() clears the timeout. Prevents camera restart when user navigates away during invalid QR retry delay.
+- **Fixed Dashboard Event Listener Accumulation** — Moved `[data-action]` delegated event listener from renderTransactionList() to bindEvents() so it's bound exactly once instead of on every render
+- **Service worker** — Bumped to v30
 
 ### Session 14 (2026-03-02)
 - **Fixed Camera Not Stopping on Header Navigation** — App.showScreen() now calls Scan.stop() when leaving the scan screen
@@ -335,6 +342,16 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 15:**
+```
+/js/
+  speech.js       # confirmAdd() sets pendingAddWithoutDesc before addItem
+  scan.js         # Added restartTimeout property, store/clear timeout in handleScan/stop, check screen active
+  dashboard.js    # Moved [data-action] event listener from renderTransactionList to bindEvents
+/sw.js            # Null check for accept header, bumped to v30
+/HANDOFF.md       # Updated with session 15 changes
+```
 
 **Session 14:**
 ```

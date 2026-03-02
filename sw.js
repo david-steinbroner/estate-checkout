@@ -3,7 +3,7 @@
  * Provides offline support via cache-first strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v29';
+const CACHE_NAME = 'estate-checkout-v30';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -57,7 +57,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // If both cache and network fail, return offline fallback for HTML
-        if (event.request.headers.get('accept').includes('text/html')) {
+        if ((event.request.headers.get('accept') || '').includes('text/html')) {
           return caches.match('/index.html');
         }
       })
