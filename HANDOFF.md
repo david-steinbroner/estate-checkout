@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v37
+**Service worker cache:** v38
 
 ---
 
 ## What Was Accomplished
+
+### Session 23 (2026-03-02)
+- **Added "Pending" Ticket Status** — Tapping DONE now creates transactions with status "pending" instead of "unpaid". This represents a finalized ticket waiting for the payment worker to confirm payment.
+- **Reopen from QR Screen** — Header button on QR screen now says "Reopen" instead of "← Checkout". Tapping it voids the current transaction, creates a new transaction with the same items (linked via `reopenedFrom`), and navigates back to checkout for editing. Same logic as the Dashboard reopen flow.
+- **Dashboard Pending Badge** — Pending transactions show an orange "Pending" badge (distinct from green Paid, red Unpaid, gray Void). Pending transactions hide the "Mark Paid" toggle in expanded detail since payment happens through the scan/receive flow. "Reopen" and "Collect Payment" buttons remain visible.
+- **Status values** — Now: unpaid, pending, paid, void. The `markPaid()` flow in payment.js already sets status to "paid" regardless of prior status, so pending→paid works correctly.
+- **Service worker** — Bumped to v38
 
 ### Session 22 (2026-03-02)
 - **Reduced Numpad Button Size** — Changed `--numpad-btn-size` from 64px to 56px to reclaim vertical space on the checkout screen.
@@ -392,6 +399,16 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 23:**
+```
+/js/checkout.js     # finishCheckout() status 'unpaid' → 'pending'
+/js/app.js          # Checkout button shows "Reopen" on QR screen, reopenFromQR() method
+/js/dashboard.js    # Pending badge in renderStatusBadge(), hide Mark Paid toggle for pending
+/css/styles.css     # .dashboard-txn__status--pending orange badge style
+/sw.js              # Bumped to v38
+/HANDOFF.md         # Session 23 entry
+```
 
 **Session 22:**
 ```

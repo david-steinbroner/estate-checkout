@@ -523,7 +523,7 @@ const Checkout = {
       discount: this.currentDiscount,
       saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate) : 1,
       // New status fields
-      status: 'unpaid',
+      status: 'pending',
       paidAt: null,
       voidedAt: null,
       reopenedFrom: this.reopenedFromCustomer || null

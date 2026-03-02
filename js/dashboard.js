@@ -190,6 +190,7 @@ const Dashboard = {
     const badges = {
       'paid': '<span class="dashboard-txn__status dashboard-txn__status--paid">Paid</span>',
       'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>',
+      'pending': '<span class="dashboard-txn__status dashboard-txn__status--pending">Pending</span>',
       'void': '<span class="dashboard-txn__status dashboard-txn__status--void">Void</span>'
     };
     return badges[status] || badges['unpaid'];
@@ -221,12 +222,17 @@ const Dashboard = {
     // Action buttons (only show for non-void transactions)
     const status = txn.status || 'unpaid';
     const isVoid = status === 'void';
+    const isPending = status === 'pending';
+
+    // Hide Mark Paid toggle for pending transactions — payment happens via scan/receive flow
+    const toggleBtn = isPending ? '' : `
+        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
+          ${status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+        </button>`;
 
     const actionsHtml = isVoid ? '' : `
       <div class="dashboard-detail__actions">
-        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
-          ${status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
-        </button>
+        ${toggleBtn}
         <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
           Reopen
         </button>

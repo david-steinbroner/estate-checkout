@@ -1489,6 +1489,11 @@ body {
   color: var(--color-danger);
 }
 
+.dashboard-txn__status--pending {
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+}
+
 .dashboard-txn__status--void {
   background: var(--color-bg);
   color: var(--color-text-secondary);
