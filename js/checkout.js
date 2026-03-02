@@ -357,8 +357,6 @@ const Checkout = {
     if (this._endingSale) return;
     this._endingSale = true;
 
-    console.log('Checkout.endSale() starting');
-
     // Hide modal
     this.hideEndSaleModal();
 
@@ -375,17 +373,12 @@ const Checkout = {
     this.updatePriceDisplay();
     this.render();
 
-    console.log('Local state cleared, calling SaleSetup.endSale()');
-
     // Clear storage
     SaleSetup.endSale();
-
-    console.log('Storage cleared, calling App.showScreen(setup)');
 
     // Navigate to setup
     App.showScreen('setup');
 
-    console.log('Checkout.endSale() complete');
     this._endingSale = false;
   },
 

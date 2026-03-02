@@ -26,7 +26,9 @@ const Utils = {
    * Returns 0 if sale hasn't started yet
    */
   getSaleDay(startDate) {
-    const start = new Date(startDate);
+    // Parse start date as local time (not UTC) to avoid timezone issues
+    const [year, month, day] = startDate.split('-').map(Number);
+    const start = new Date(year, month - 1, day); // month is 0-indexed
     start.setHours(0, 0, 0, 0);
 
     const today = new Date();
@@ -36,6 +38,8 @@ const Utils = {
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     // Day 1 is the first day, not day 0
+    // If sale hasn't started, return 0
+    if (diffDays < 0) return 0;
     return diffDays + 1;
   },
 

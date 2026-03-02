@@ -120,7 +120,7 @@
 ---
 
 ## Known Bugs
-None currently.
+- **Setup screen elements not visible** — Investigating. Labels show but discount rows, Add Day button, and START SALE button don't appear. Added debugging to console output.
 
 ### Fixed Bugs
 - **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version to v2.
