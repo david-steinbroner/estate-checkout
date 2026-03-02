@@ -291,6 +291,31 @@
     </div>
   </div>
 
+  <!-- Speech Confirmation Modal -->
+  <div class="modal-overlay" id="speech-confirm-modal">
+    <div class="modal speech-modal">
+      <p class="speech-modal__desc" id="speech-confirm-desc">Add item</p>
+      <p class="speech-modal__price" id="speech-confirm-price">$0.00</p>
+      <div class="speech-modal__buttons">
+        <button class="speech-modal__btn speech-modal__btn--confirm" id="speech-confirm-btn">CONFIRM</button>
+        <button class="speech-modal__btn speech-modal__btn--edit" id="speech-edit-btn">EDIT</button>
+        <button class="speech-modal__btn speech-modal__btn--cancel" id="speech-cancel-btn">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speech Failure Modal -->
+  <div class="modal-overlay" id="speech-fail-modal">
+    <div class="modal speech-modal">
+      <p class="speech-modal__fail-title">Couldn't understand that</p>
+      <p class="speech-modal__fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
+      <div class="speech-modal__buttons speech-modal__buttons--two">
+        <button class="speech-modal__btn speech-modal__btn--retry" id="speech-retry-btn">TRY AGAIN</button>
+        <button class="speech-modal__btn speech-modal__btn--cancel" id="speech-fail-cancel-btn">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="/js/utils.js"></script>
   <script src="/js/storage.js"></script>

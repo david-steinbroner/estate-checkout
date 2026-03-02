@@ -318,11 +318,26 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .mic-button:active,
 .mic-button.listening {
   background: var(--color-danger);
+  animation: mic-pulse 1s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
 }
 
 /* === Numpad Container === */
@@ -530,6 +545,95 @@ body {
 .modal__button--confirm {
   background: var(--color-danger);
   color: white;
+}
+
+/* === Speech Confirmation Modal === */
+.speech-modal {
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+.speech-modal__desc {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.speech-modal__price {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-success);
+  margin-bottom: var(--space-lg);
+}
+
+.speech-modal__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.speech-modal__buttons--two {
+  flex-direction: row;
+}
+
+.speech-modal__btn {
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+}
+
+.speech-modal__btn--confirm {
+  background: var(--color-success);
+  color: white;
+}
+
+.speech-modal__btn--confirm:active {
+  background: #15803d;
+}
+
+.speech-modal__btn--edit {
+  background: var(--color-primary);
+  color: white;
+}
+
+.speech-modal__btn--edit:active {
+  background: #1d4ed8;
+}
+
+.speech-modal__btn--cancel {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.speech-modal__btn--cancel:active {
+  background: #e5e5e5;
+}
+
+.speech-modal__btn--retry {
+  background: var(--color-primary);
+  color: white;
+}
+
+.speech-modal__btn--retry:active {
+  background: #1d4ed8;
+}
+
+.speech-modal__fail-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+}
+
+.speech-modal__fail-heard {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  word-break: break-word;
 }
 
 /* === Sale Setup Screen === */
