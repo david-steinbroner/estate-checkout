@@ -191,6 +191,23 @@ const Speech = {
         }
       });
     }
+
+    // Release microphone when page loses focus
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.isListening) {
+        this.abortListening();
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      this.abortListening();
+    });
+
+    window.addEventListener('blur', () => {
+      if (this.isListening) {
+        this.abortListening();
+      }
+    });
   },
 
   /**
@@ -271,6 +288,23 @@ const Speech = {
     this.hideProcessing();
     try {
       if (this.recognition) this.recognition.stop();
+    } catch (e) {}
+  },
+
+  /**
+   * Abort listening immediately (releases mic without waiting for results)
+   * Used when page loses focus to free the microphone
+   */
+  abortListening() {
+    if (!this.recognition) return;
+
+    this.clearResultTimeout();
+    this.waitingForResult = false;
+    this.isListening = false;
+    this.updateMicUI(false);
+    this.hideProcessing();
+    try {
+      this.recognition.abort();
     } catch (e) {}
   },
 

@@ -3,7 +3,7 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v21
+**Service worker cache:** v22
 
 ---
 
@@ -26,7 +26,11 @@
   - After 5 failures: suggests using number pad instead
   - Error-specific messages: no-speech, network, timeout
 - **Removed Tap Sound** — Added `-webkit-touch-callout: none` to mic button
-- **Service worker** — Bumped to v21
+- **Release Mic on Page Hide** — Frees microphone when user leaves page:
+  - Listens for `visibilitychange`, `pagehide`, and `blur` events
+  - Calls `recognition.abort()` for immediate mic release (no waiting for results)
+  - Fixes phone status bar showing active microphone after switching tabs
+- **Service worker** — Bumped to v22
 
 ### Session 6 (2026-03-01)
 - **Improved Speech UI for Mobile** — Major visual updates:
