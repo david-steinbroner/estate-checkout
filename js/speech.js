@@ -62,6 +62,13 @@ const Speech = {
     this.recognition.interimResults = false;
     this.recognition.lang = 'en-US';
 
+    this.recognition.onstart = () => {
+      // Mic is now active (permission granted) - start the timeout if user released button
+      if (this.waitingForResult) {
+        this.startResultTimeout();
+      }
+    };
+
     this.recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       this.clearResultTimeout();
@@ -76,7 +83,9 @@ const Speech = {
       this.hideProcessing();
       this.updateMicUI(false);
 
-      if (event.error === 'no-speech') {
+      if (event.error === 'not-allowed') {
+        this.showPermissionDeniedModal();
+      } else if (event.error === 'no-speech') {
         this.showFailModalWithTip('', 'no-speech');
       } else if (event.error === 'network') {
         this.showFailModalWithTip('', 'network');
@@ -211,10 +220,23 @@ const Speech = {
   },
 
   /**
-   * Start listening
+   * Start listening (checks permission state first)
    */
-  startListening() {
+  async startListening() {
     if (!this.recognition || this.isListening) return;
+
+    // Check permission state first (if API available)
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' });
+        if (result.state === 'denied') {
+          this.showPermissionDeniedModal(true); // true = previously denied
+          return;
+        }
+      } catch (e) {
+        // Permission API not available or error, fall through to try anyway
+      }
+    }
 
     try {
       this.recognition.start();
@@ -238,7 +260,14 @@ const Speech = {
     this.showProcessing();
     this.waitingForResult = true;
 
-    // Safety timeout - if no result in 5 seconds, fail gracefully
+    // Timeout will be started by recognition.onstart (after permission is granted)
+    // This prevents timeout racing with permission popup
+  },
+
+  /**
+   * Start the result timeout (called from onstart after mic is active)
+   */
+  startResultTimeout() {
     this.resultTimeout = setTimeout(() => {
       if (this.waitingForResult) {
         this.waitingForResult = false;
@@ -600,11 +629,22 @@ const Speech = {
   },
 
   /**
-   * Hide parse failure modal
+   * Hide parse failure modal and reset UI state
    */
   hideFailModal() {
     if (this.elements.failModal) {
       this.elements.failModal.classList.remove('visible');
+    }
+
+    // Reset retry button visibility (may have been hidden for permission errors)
+    if (this.elements.retryButton) {
+      this.elements.retryButton.style.display = '';
+    }
+
+    // Reset title to default
+    const title = document.getElementById('speech-fail-title');
+    if (title) {
+      title.textContent = 'Couldn\'t understand that';
     }
   },
 
@@ -644,14 +684,59 @@ const Speech = {
   },
 
   /**
-   * Retry listening after failure
+   * Retry after failure - highlight button instead of auto-starting
    */
   retryListening() {
     this.hideFailModal();
-    // Small delay to let modal close
+    this.highlightMicButton();
+  },
+
+  /**
+   * Highlight the mic button to draw attention to it
+   */
+  highlightMicButton() {
+    if (!this.elements.micButton) return;
+
+    this.elements.micButton.classList.add('highlight');
     setTimeout(() => {
-      this.startListening();
-    }, 100);
+      this.elements.micButton.classList.remove('highlight');
+    }, 2000);
+  },
+
+  /**
+   * Show permission denied modal
+   * @param {boolean} previouslyDenied - true if permission was denied earlier
+   */
+  showPermissionDeniedModal(previouslyDenied = false) {
+    if (!this.elements.failModal) return;
+
+    // Hide "Heard:" section
+    if (this.elements.failHeard) {
+      this.elements.failHeard.style.display = 'none';
+    }
+
+    // Hide "Try Again" button for permission errors
+    if (this.elements.retryButton) {
+      this.elements.retryButton.style.display = 'none';
+    }
+
+    // Set appropriate message
+    const title = document.getElementById('speech-fail-title');
+    if (title) {
+      title.textContent = 'Microphone access required';
+    }
+
+    if (this.elements.failTip) {
+      if (previouslyDenied) {
+        this.elements.failTip.textContent =
+          'Microphone access was previously denied. To re-enable, go to your browser\'s site settings for this page and allow microphone access. Or use the number pad to enter prices.';
+      } else {
+        this.elements.failTip.textContent =
+          'To use voice input, allow microphone access in your browser settings. Or use the number pad to enter prices.';
+      }
+    }
+
+    this.elements.failModal.classList.add('visible');
   },
 
   /**

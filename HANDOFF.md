@@ -3,11 +3,31 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v23
+**Service worker cache:** v24
 
 ---
 
 ## What Was Accomplished
+
+### Session 9 (2026-03-01)
+- **Fixed Speech Permission Timing** — No more race with permission popup:
+  - Timeout now starts in `recognition.onstart` (after mic is active)
+  - Previously started on button release, racing with permission popup
+  - Permission popup no longer causes false timeout failures
+- **Fixed Try Again Behavior** — No auto-recording:
+  - "Try Again" now highlights Speak button with pulsing animation
+  - User must tap Speak themselves when ready
+  - Removes confusing auto-start behavior
+- **Permission Denied Handling** — Clear feedback:
+  - Shows "Microphone access required" message when denied
+  - Specific message for first-time denial vs previously denied
+  - Hides "Try Again" button (won't help until settings changed)
+  - Guides user to browser settings or number pad
+- **Pre-check Permission State** — Detect previous denial:
+  - Checks `navigator.permissions.query()` before starting
+  - If previously denied, shows message immediately
+  - Prevents attempting recognition that will fail
+- **Service worker** — Bumped to v24
 
 ### Session 8 (2026-03-01)
 - **Top Nav Bar Reorganization** — Dashboard and Collect Payments in header:
@@ -243,6 +263,17 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 9:**
+```
+/js/
+  speech.js       # onstart handler, permission check, retry highlight, permission denied modal
+/css/
+  styles.css      # mic-button.highlight animation
+/index.html       # Added id to speech-fail-title element
+/sw.js            # Bumped to v24
+/HANDOFF.md       # Updated with session 9 changes
+```
 
 **Session 8:**
 ```
