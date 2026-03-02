@@ -32,7 +32,7 @@
   --font-size-price: 36px;
 
   /* Fixed heights for layout calculation */
-  --header-height: 68px; /* two rows: 32px info + 36px nav */
+  --header-height: 72px; /* context strip 24px + button bar 48px */
   --total-height: 36px;
   --input-height: 76px;
   --numpad-button-size: 52px;
@@ -90,7 +90,7 @@ body {
   overflow: hidden;
 }
 
-/* === Header (two rows) === */
+/* === Header (context strip + button bar) === */
 .header {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
@@ -99,54 +99,29 @@ body {
   flex-shrink: 0;
 }
 
-.header__info {
-  position: relative;
-  height: 32px;
+/* Thin context strip - sale info */
+.header__context {
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   padding: 0 var(--space-md);
-}
-
-.header__nav {
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  padding: 0 var(--space-md);
-  border-top: 1px solid var(--color-border);
   background: var(--color-bg);
-}
-
-.header__nav-btn {
-  padding: var(--space-sm) var(--space-lg);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.header__nav-btn:active {
-  background: var(--color-bg);
-  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .header__name {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 120px;
 }
 
-.header__separator {
-  color: var(--color-border);
+.header__dot {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
@@ -167,20 +142,38 @@ body {
   color: var(--color-text-secondary);
 }
 
-.header__end {
-  position: absolute;
-  right: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
+/* Button bar - 3 equal buttons */
+.header__buttons {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+}
+
+.header__btn {
+  flex: 1;
+  height: 40px;
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  background: transparent;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
-.header__end:active {
+.header__btn:active {
   background: var(--color-bg);
+}
+
+.header__btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.header__btn--danger:active {
+  background: #fef2f2;
 }
 
 /* === Running Total === */

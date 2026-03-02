@@ -15,19 +15,19 @@
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Header: Two rows - sale info + nav buttons -->
+    <!-- Header: Context strip + button bar -->
     <header class="header">
-      <div class="header__info">
+      <div class="header__context">
         <span class="header__name" id="sale-name">Estate Sale</span>
-        <span class="header__separator">|</span>
+        <span class="header__dot">·</span>
         <span class="header__day" id="sale-day">Day 1</span>
-        <span class="header__separator">|</span>
+        <span class="header__dot">·</span>
         <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
-        <button class="header__end" id="end-sale-button">End</button>
       </div>
-      <div class="header__nav">
-        <button class="header__nav-btn" id="checkout-dashboard-button">Dashboard</button>
-        <button class="header__nav-btn" id="collect-payments-button">Collect Payments</button>
+      <div class="header__buttons">
+        <button class="header__btn" id="checkout-dashboard-button">Dashboard</button>
+        <button class="header__btn" id="collect-payments-button">Collect Payments</button>
+        <button class="header__btn header__btn--danger" id="end-sale-button">End Sale</button>
       </div>
     </header>
 

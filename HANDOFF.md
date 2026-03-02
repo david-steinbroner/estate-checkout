@@ -3,11 +3,20 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v24
+**Service worker cache:** v25
 
 ---
 
 ## What Was Accomplished
+
+### Session 10 (2026-03-01)
+- **Consolidated Header Layout** — Cleaner, more tappable design:
+  - Thin context strip (24px) with sale info: "Sale Name · Day X · X% off"
+  - Middle dots (·) as separators instead of pipe characters
+  - Single button bar (48px) with three equal-width buttons
+  - All buttons 40px tall for easy tapping
+  - End Sale button now in button bar with danger/red styling
+- **Service worker** — Bumped to v25
 
 ### Session 9 (2026-03-01)
 - **Fixed Speech Permission Timing** — No more race with permission popup:
@@ -223,7 +232,7 @@
 - **Speech parser**: Handles number words, compounds, X-fifty, hundred patterns
 - **Voice confirmation**: CONFIRM adds item, EDIT populates fields, CANCEL dismisses
 - **Descriptions via voice**: Carry through to QR, payment, and dashboard
-- **Top nav bar**: Two-row header with Dashboard and Collect Payments buttons
+- **Header layout**: Context strip + button bar with Dashboard, Collect Payments, End Sale
 - **Description input**: Repositioned below price, 44px tall, closer to keypad
 - **No-description prompt**: Shows first 3 times, then adds silently
 - **Transaction status**: paid/unpaid/void with visual badges
@@ -263,6 +272,15 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 10:**
+```
+/index.html       # Header restructured: context strip + button bar
+/css/
+  styles.css      # New header styles, context strip, equal-width buttons
+/sw.js            # Bumped to v25
+/HANDOFF.md       # Updated with session 10 changes
+```
 
 **Session 9:**
 ```
