@@ -40,6 +40,7 @@ const Checkout = {
       discountBadge: document.getElementById('discount-badge'),
       itemList: document.getElementById('item-list'),
       runningTotal: document.getElementById('running-total'),
+      runningSavings: document.getElementById('running-savings'),
       descriptionInput: document.getElementById('description-input'),
       priceDisplay: document.getElementById('price-display'),
       numpad: document.getElementById('numpad'),
@@ -294,11 +295,23 @@ const Checkout = {
   },
 
   /**
-   * Render the running total
+   * Render the running total and savings
    */
   renderRunningTotal() {
     const total = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const originalTotal = this.items.reduce((sum, item) => sum + item.originalPrice, 0);
+    const savings = originalTotal - total;
+
     this.elements.runningTotal.textContent = Utils.formatCurrency(total);
+
+    // Only show savings if there's a discount active and items in cart
+    if (savings > 0 && this.currentDiscount > 0) {
+      this.elements.runningSavings.textContent = `Saved: ${Utils.formatCurrency(savings)}`;
+      this.elements.runningSavings.style.display = '';
+    } else {
+      this.elements.runningSavings.textContent = '';
+      this.elements.runningSavings.style.display = 'none';
+    }
   },
 
   /**
