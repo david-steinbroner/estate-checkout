@@ -1,12 +1,26 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-02-27
+**Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
 
 ---
 
 ## What Was Accomplished
+
+### Session 2 (2026-03-01)
+- **Fixed day calculation bug**: Was off by one due to timezone parsing. Start date now parsed as local time.
+- **Added savings display**: Running total bar shows "Saved: $X.XX" when discount is active.
+- **Built QR Handoff screen**:
+  - Tap DONE → saves transaction → shows QR code
+  - QR contains full transaction data (sale name, items, prices, total, timestamp)
+  - Displays itemized summary with original/discounted prices
+  - Total shown in bold at bottom
+  - NEW CUSTOMER button clears cart and returns to checkout
+  - BACK button returns to checkout without clearing
+  - Single viewport layout (QR top half, scrollable summary, fixed buttons)
+- **Added backlog items** for v0.2: item editing, per-item discount override, toggle day discount, total-level discount
+- **Cleaned up debug logs** from previous debugging session
 
 ### Session 1 (2026-02-27)
 - Initialized git repo and pushed to GitHub: https://github.com/david-steinbroner/estate-checkout
@@ -53,49 +67,40 @@
 - **Number pad entry**: Tap digits → price appears → tap ADD → item added to list
 - **Item list rendering**: Shows description (if provided) + original/discounted price
 - **Running total**: Updates automatically as items are added/removed
+- **Savings display**: Shows "Saved: $X.XX" when discount is active
 - **Remove items**: Tap × to remove individual items
 - **Clear all**: Shows confirmation modal, clears cart on confirm
 - **Discount display**: Header shows sale day and discount percentage
 - **Discount calculation**: Based on start date vs. today, applies correct day's discount
 - **Cart persistence**: Items survive page refresh (localStorage)
-- **End Sale**: Button in header ends sale and returns to setup (dev convenience)
+- **End Sale**: Button in header ends sale and returns to setup
+- **QR Handoff**: Tap DONE → shows QR code with transaction data + item summary
 
 ### What's Broken
-- Nothing is broken, but several features are stubs
+- Nothing is broken
 
 ### What's Half-Done
 - **Speech-to-text**: Structure exists, needs full parsing logic
-- **QR generation**: Stub exists, needs to render actual QR codes
 - **QR scan**: Screen placeholder exists, no camera integration yet
 - **Dashboard**: Not started
-- **DONE button**: Saves transaction but doesn't navigate to QR screen yet
 
 ---
 
 ## Files Changed This Session
 
-**Created:**
+**Modified:**
 ```
-/estate-checkout/
-  index.html              # Entry point with setup + checkout screens
-  manifest.json           # PWA manifest (SVG icons)
-  sw.js                   # Service worker (cache-first strategy)
-  /css/
-    styles.css            # Mobile-first CSS, single-viewport layout
-  /js/
-    app.js                # App init, routing, service worker
-    checkout.js           # Checkout pad logic (number pad, items, totals)
-    sale-setup.js         # Sale setup form and discount configuration
-    speech.js             # Speech-to-text module (stub)
-    qr.js                 # QR generation module (stub)
-    storage.js            # localStorage abstraction
-    utils.js              # Currency formatting, discount helpers
-  /assets/
-    icons/
-      icon-192.svg        # Placeholder PWA icon
-      icon-512.svg        # Placeholder PWA icon
-  /lib/
-    qrcode.min.js         # QR code library
+/js/
+  utils.js        # Fixed day calculation timezone bug
+  checkout.js     # Added savings display, QR navigation
+  qr.js           # Full QR handoff implementation
+  app.js          # Cleaned up debug logs, added QR screen routing
+  sale-setup.js   # Cleaned up debug logs
+/css/
+  styles.css      # Added savings display styles, QR screen styles
+/index.html       # Added savings span, QR screen HTML
+/sw.js            # Bumped to v12
+/BACKLOG.md       # Added v0.2 items
 ```
 
 ---
@@ -103,28 +108,28 @@
 ## Next Steps (Priority Order)
 
 1. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
-2. **Build QR handoff screen** — Generate QR with transaction data, display item summary
-3. **Build QR scan view** — Camera access, decode QR, display total
-4. **Build sale dashboard** — Transaction count, revenue, average ticket
-5. **Test offline mode** — Verify service worker caching works
-6. **End-to-end testing** — Run all test scenarios from CLAUDE_CODE_RULES.md
+2. **Build QR scan view** — Camera access, decode QR, display total
+3. **Build sale dashboard** — Transaction count, revenue, average ticket
+4. **Test offline mode** — Verify service worker caching works
+5. **End-to-end testing** — Run all test scenarios from CLAUDE_CODE_RULES.md
 
 ---
 
 ## Open Questions
 
-1. **QR data format:** Current plan is raw JSON. May need compression for large carts.
+1. **QR data format:** Currently raw JSON. May need compression for large carts (50+ items).
 2. **Sale persistence:** Current behavior clears transactions when sale ends. Confirm this is desired.
-3. **Service worker caching:** Must bump cache version in sw.js when deploying JS changes, otherwise old code is served from cache.
+3. **Service worker caching:** Must bump cache version in sw.js when deploying JS changes.
 
 ---
 
 ## Known Bugs
-- **Setup screen elements not visible** — Investigating. Labels show but discount rows, Add Day button, and START SALE button don't appear. Added debugging to console output.
+None currently.
 
 ### Fixed Bugs
-- **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version to v2.
-- **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`, causing checkout to remain visible when switching to setup. Fixed by removing the display property from `.checkout-pad` (flex layout now comes from `.screen.active`).
+- **Day calculation off by one** — Timezone parsing issue. Fixed by parsing start date as local time.
+- **End Sale button not working** — Service worker was caching old JS. Fixed by bumping cache version.
+- **Screen switching broken** — The `.checkout-pad` CSS class had `display: flex` which overrode `.screen { display: none }`. Fixed by removing the display property from `.checkout-pad`.
 - **Checkout.endSale() firing twice** — Added guard flag and stopPropagation to prevent double execution on mobile.
 
 ---
@@ -135,18 +140,20 @@
 1. Clear localStorage: DevTools > Application > Local Storage > Clear
 2. Refresh page → should see Sale Setup screen
 3. Enter sale name (e.g., "Test Estate")
-4. Set start date to yesterday
-5. Set Day 2 discount to 30%
+4. Set start date to today → should show "Day 1" with 0% discount
+5. Set start date to yesterday → should show "Day 2" with 25% discount
 6. Tap START SALE
-7. Checkout pad should show: "Test Estate | Day 2 | 30% off"
-8. Add item for $10 → should show $7.00 (30% off)
+7. Checkout pad should show correct day and discount
 
 ### Checkout Flow
 1. Type price on number pad
 2. Tap ADD → item appears in list with "Added!" flash
-3. Add several items → verify running total updates
-4. Tap × on an item → verify it's removed
-5. Close browser, reopen → should go straight to checkout with sale intact
+3. If discount active, running total bar shows "Saved: $X.XX"
+4. Add several items → verify running total updates
+5. Tap × on an item → verify it's removed
+6. Tap DONE → QR screen appears with QR code and item summary
+7. Tap NEW CUSTOMER → clears cart, returns to checkout
+8. Tap BACK → returns to checkout with cart intact
 
 ### Local Server
 ```bash
