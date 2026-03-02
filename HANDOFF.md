@@ -3,11 +3,20 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v36
+**Service worker cache:** v37
 
 ---
 
 ## What Was Accomplished
+
+### Session 22 (2026-03-02)
+- **Reduced Numpad Button Size** — Changed `--numpad-btn-size` from 64px to 56px to reclaim vertical space on the checkout screen.
+- **Added Expandable Item List** — Item list on checkout screen now has tap-to-expand behavior:
+  - **Collapsed (default):** Items fill their flex-allocated space. When items overflow, a hint strip appears below showing "X items — tap to see all".
+  - **Expanded:** Tapping the item list or hint strip expands it as an absolute overlay downward from the running-total bar, covering the numpad/input but not the action bar. A "✕ Close" strip at the bottom and a semi-transparent backdrop allow collapsing.
+  - **Auto-collapse triggers:** Adding an item, tapping DONE, tapping CLEAR ALL, tapping the close strip or backdrop. Removing items auto-collapses if remaining items fit.
+  - Action bar stays above the expanded list (z-index 51) so DONE/CLEAR ALL are always accessible.
+- **Service worker** — Bumped to v37
 
 ### Session 21 (2026-03-02)
 - **Removed Dead JS** — Deleted `QR.parseData()` (unused, scan.js does its own parsing), `Dashboard.originScreen` (set but never read, back button removed in Session 13), `Utils.parseCurrency()` (never called), `Scan.onDeactivate()` (never called, cleanup handled by `Scan.stop()` from `showScreen()`), `Storage.clearAll()` (never called by any module)
@@ -383,6 +392,15 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 22:**
+```
+/css/styles.css     # --numpad-btn-size 64→56px, position:relative on .checkout-pad, expandable item list CSS (.expanded, .item-list-hint, .item-list-close, .item-list-backdrop), action-bar z-index/margin-top
+/index.html         # Added id to item-list-container, added close strip, hint strip, backdrop elements
+/js/checkout.js     # isExpanded/collapsedHeight state, cached new elements, expand/collapse/checkOverflow methods, modified addItem/removeItem/clearAll/finishCheckout/showClearModal to collapse first
+/sw.js              # Bumped to v37
+/HANDOFF.md         # Session 22 entry
+```
 
 **Session 17:**
 ```

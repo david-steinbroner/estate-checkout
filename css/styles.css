@@ -51,7 +51,7 @@
   --header-height: 72px; /* context strip 24px + button bar 48px */
   --total-height: 36px;
   --input-height: 76px;
-  --numpad-btn-size: 64px;
+  --numpad-btn-size: 56px;
   --numpad-gap: 4px;
   --add-button-height: 44px;
   --action-bar-height: 40px;
@@ -114,6 +114,7 @@ body {
 /* Note: display:flex comes from .screen.active, NOT here */
 .checkout-pad {
   overflow: hidden;
+  position: relative;
 }
 
 /* === Header (context strip + button bar) === */
@@ -328,6 +329,74 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* === Expandable Item List === */
+.item-list-container.expanded {
+  position: absolute;
+  top: var(--total-height);
+  left: 0;
+  right: 0;
+  max-height: calc(100% - var(--total-height));
+  z-index: 50;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.item-list-container.expanded .item-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.item-list-hint {
+  height: 24px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  line-height: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: none;
+}
+
+.item-list-hint.visible {
+  display: block;
+}
+
+.item-list-close {
+  height: 32px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  line-height: 32px;
+  cursor: pointer;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  display: none;
+}
+
+.item-list-container.expanded .item-list-close {
+  display: block;
+}
+
+.item-list-backdrop {
+  position: absolute;
+  top: var(--total-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 49;
+  display: none;
+}
+
+.item-list-backdrop.visible {
+  display: block;
 }
 
 /* === Input Area (compact) === */
@@ -552,6 +621,9 @@ body {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
+  position: relative;
+  z-index: 51;
+  margin-top: auto;
 }
 
 .action-bar__button {

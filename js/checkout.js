@@ -29,6 +29,10 @@ const Checkout = {
   // Last transaction created (for re-navigation when transactionSaved is true)
   lastTransaction: null,
 
+  // Expandable item list state
+  isExpanded: false,
+  collapsedHeight: 0,
+
   // DOM element references
   elements: {},
 
@@ -49,6 +53,10 @@ const Checkout = {
   cacheElements() {
     this.elements = {
       itemList: document.getElementById('item-list'),
+      itemListContainer: document.getElementById('item-list-container'),
+      itemListHint: document.getElementById('item-list-hint'),
+      itemListClose: document.getElementById('item-list-close'),
+      itemListBackdrop: document.getElementById('item-list-backdrop'),
       runningTotal: document.getElementById('running-total'),
       runningSavings: document.getElementById('running-savings'),
       descriptionInput: document.getElementById('description-input'),
@@ -136,6 +144,39 @@ const Checkout = {
         }
       });
     }
+
+    // Expandable item list: tap container to expand (skip if clicking remove button or close strip)
+    if (this.elements.itemListContainer) {
+      this.elements.itemListContainer.addEventListener('click', (e) => {
+        if (e.target.closest('[data-remove]') || e.target.closest('.item-list-close')) return;
+        if (!this.isExpanded && this.items.length > 0) {
+          this.expandItemList();
+        }
+      });
+    }
+
+    // Hint strip tap to expand
+    if (this.elements.itemListHint) {
+      this.elements.itemListHint.addEventListener('click', () => {
+        if (!this.isExpanded && this.items.length > 0) {
+          this.expandItemList();
+        }
+      });
+    }
+
+    // Close strip tap to collapse
+    if (this.elements.itemListClose) {
+      this.elements.itemListClose.addEventListener('click', () => {
+        this.collapseItemList();
+      });
+    }
+
+    // Backdrop tap to collapse
+    if (this.elements.itemListBackdrop) {
+      this.elements.itemListBackdrop.addEventListener('click', () => {
+        this.collapseItemList();
+      });
+    }
   },
 
   /**
@@ -201,6 +242,9 @@ const Checkout = {
    * Add an item to the cart
    */
   addItem() {
+    // Collapse expanded item list before adding
+    this.collapseItemList();
+
     const price = parseFloat(this.priceInput);
 
     if (!price || price <= 0) {
@@ -258,6 +302,21 @@ const Checkout = {
     this.transactionSaved = false;
 
     this.render();
+
+    // Auto-collapse if remaining items would fit in collapsed view
+    if (this.isExpanded) {
+      const container = this.elements.itemListContainer;
+      // Temporarily remove expanded to measure collapsed fit
+      requestAnimationFrame(() => {
+        container.classList.remove('expanded');
+        const fits = container.scrollHeight <= container.clientHeight;
+        if (fits) {
+          this.collapseItemList();
+        } else {
+          container.classList.add('expanded');
+        }
+      });
+    }
   },
 
   /**
@@ -267,6 +326,7 @@ const Checkout = {
     this.renderItemList();
     this.renderRunningTotal();
     this.updateDoneButton();
+    this.checkItemOverflow();
   },
 
   /**
@@ -335,10 +395,51 @@ const Checkout = {
   },
 
   /**
+   * Expand the item list overlay
+   */
+  expandItemList() {
+    if (this.isExpanded) return;
+    this.isExpanded = true;
+    this.elements.itemListContainer.classList.add('expanded');
+    this.elements.itemListBackdrop.classList.add('visible');
+    this.elements.itemListHint.classList.remove('visible');
+
+    // Scroll to bottom to show newest items
+    this.elements.itemListContainer.scrollTop = this.elements.itemListContainer.scrollHeight;
+  },
+
+  /**
+   * Collapse the item list overlay
+   */
+  collapseItemList() {
+    if (!this.isExpanded) return;
+    this.isExpanded = false;
+    this.elements.itemListContainer.classList.remove('expanded');
+    this.elements.itemListBackdrop.classList.remove('visible');
+    this.checkItemOverflow();
+  },
+
+  /**
+   * Check if the item list overflows its container and show/hide hint strip
+   */
+  checkItemOverflow() {
+    if (this.isExpanded) return;
+    const container = this.elements.itemListContainer;
+    const overflows = container.scrollHeight > container.clientHeight;
+    if (overflows && this.items.length > 0) {
+      this.elements.itemListHint.textContent = `${this.items.length} items — tap to see all`;
+      this.elements.itemListHint.classList.add('visible');
+    } else {
+      this.elements.itemListHint.classList.remove('visible');
+    }
+  },
+
+  /**
    * Show the clear confirmation modal
    */
   showClearModal() {
     if (this.items.length === 0) return;
+    this.collapseItemList();
     this.elements.clearModal.classList.add('visible');
   },
 
@@ -353,6 +454,7 @@ const Checkout = {
    * Clear all items (used by NEW CUSTOMER and CLEAR ALL)
    */
   clearAll() {
+    this.collapseItemList();
     this.items = [];
     Storage.clearCart();
     this.priceInput = '';
@@ -400,6 +502,7 @@ const Checkout = {
    */
   finishCheckout() {
     if (this.items.length === 0) return;
+    this.collapseItemList();
 
     // If already saved (no modifications), re-navigate to QR with existing transaction
     if (this.transactionSaved && this.lastTransaction) {
