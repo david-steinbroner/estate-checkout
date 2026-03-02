@@ -1,13 +1,34 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-01
+**Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v26
+**Service worker cache:** v27
 
 ---
 
 ## What Was Accomplished
+
+### Session 12 (2026-03-02)
+- **Fixed Duplicate Tickets** — Cart clears after DONE:
+  - Cart items and localStorage cleared after creating transaction
+  - Navigating back to checkout shows empty cart
+  - Prevents duplicate tickets when returning from QR or Dashboard
+- **Dashboard Button on QR Screen** — Quick access to transaction status:
+  - NEW CUSTOMER button on top (green, primary)
+  - DASHBOARD and BACK buttons side by side below (outline style)
+  - Dashboard button navigates to Dashboard from QR screen
+- **Redesigned Mic Permission Flow** — Proactive permission handling:
+  - Permission state checked on page load via `navigator.permissions.query()`
+  - State tracked in `Speech.micPermissionState` ('granted', 'denied', 'prompt')
+  - Listens for permission changes via `change` event
+  - When permission is 'prompt': shows custom "Voice Input" modal instead of starting recording
+  - "Allow Microphone" button triggers `getUserMedia()` to show browser's native popup
+  - After granting: Speak button pulses to indicate ready
+  - "Use Number Pad Instead" dismisses modal without action
+  - When permission is 'denied': shows settings instructions immediately
+  - Falls back to existing behavior if Permissions API unavailable
+- **Service worker** — Bumped to v27
 
 ### Session 11 (2026-03-02)
 - **Fixed Mic Release on Page Leave** — Comprehensive cleanup:
@@ -289,6 +310,19 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 12:**
+```
+/js/
+  checkout.js     # Clear cart after finishCheckout() to prevent duplicates
+  qr.js           # Added dashboard button caching and event handler
+  speech.js       # Mic permission flow: checkPermissionState(), showPermissionModal(), requestMicrophonePermission()
+/css/
+  styles.css      # QR action buttons layout with new Dashboard button
+/index.html       # QR Dashboard button, speech permission modal
+/sw.js            # Bumped to v27
+/HANDOFF.md       # Updated with session 12 changes
+```
 
 **Session 11:**
 ```

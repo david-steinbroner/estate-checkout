@@ -27,7 +27,8 @@ const QR = {
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
       backButton: document.getElementById('qr-back'),
-      newButton: document.getElementById('qr-new')
+      newButton: document.getElementById('qr-new'),
+      dashboardButton: document.getElementById('qr-dashboard')
     };
   },
 
@@ -45,6 +46,13 @@ const QR = {
       Checkout.clearAll();
       App.showScreen('checkout');
     });
+
+    // Dashboard button - navigate to dashboard
+    if (this.elements.dashboardButton) {
+      this.elements.dashboardButton.addEventListener('click', () => {
+        App.showScreen('dashboard', 'qr');
+      });
+    }
   },
 
   /**

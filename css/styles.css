@@ -1119,11 +1119,17 @@ body {
 
 .qr-actions {
   display: flex;
+  flex-direction: column;
   gap: var(--space-md);
   padding: var(--space-lg);
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
+}
+
+.qr-actions__row {
+  display: flex;
+  gap: var(--space-md);
 }
 
 .qr-action {
@@ -1136,15 +1142,6 @@ body {
   cursor: pointer;
 }
 
-.qr-action--back {
-  background: var(--color-border);
-  color: var(--color-text);
-}
-
-.qr-action--back:active {
-  background: #d4d4d4;
-}
-
 .qr-action--new {
   background: var(--color-success);
   color: white;
@@ -1152,6 +1149,16 @@ body {
 
 .qr-action--new:active {
   background: #15803d;
+}
+
+.qr-action--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.qr-action--secondary:active {
+  background: var(--color-bg);
 }
 
 /* === QR Scan Screen === */

@@ -18,6 +18,7 @@ const Speech = {
   resultTimeout: null,
   processingHardTimeout: null,
   consecutiveFailures: 0,
+  micPermissionState: 'prompt', // 'granted', 'denied', or 'prompt'
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
@@ -114,6 +115,27 @@ const Speech = {
 
     this.cacheElements();
     this.bindEvents();
+    this.checkPermissionState();
+  },
+
+  /**
+   * Check microphone permission state on init
+   */
+  async checkPermissionState() {
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' });
+        this.micPermissionState = result.state;
+
+        // Listen for permission changes (user might change in settings)
+        result.addEventListener('change', () => {
+          this.micPermissionState = result.state;
+        });
+      } catch (e) {
+        // Permission API not available, assume 'prompt'
+        this.micPermissionState = 'prompt';
+      }
+    }
   },
 
   /**
@@ -135,7 +157,12 @@ const Speech = {
       failTranscript: document.getElementById('speech-fail-transcript'),
       failTip: document.getElementById('speech-fail-tip'),
       retryButton: document.getElementById('speech-retry-btn'),
-      failCancelButton: document.getElementById('speech-fail-cancel-btn')
+      failCancelButton: document.getElementById('speech-fail-cancel-btn'),
+      permissionModal: document.getElementById('speech-permission-modal'),
+      permissionTitle: document.getElementById('speech-permission-title'),
+      permissionBody: document.getElementById('speech-permission-body'),
+      permissionAllowBtn: document.getElementById('speech-permission-allow'),
+      permissionDismissBtn: document.getElementById('speech-permission-dismiss')
     };
   },
 
@@ -207,6 +234,25 @@ const Speech = {
       });
     }
 
+    // Permission modal buttons
+    if (this.elements.permissionAllowBtn) {
+      this.elements.permissionAllowBtn.addEventListener('click', () => {
+        this.requestMicrophonePermission();
+      });
+    }
+    if (this.elements.permissionDismissBtn) {
+      this.elements.permissionDismissBtn.addEventListener('click', () => {
+        this.hidePermissionModal();
+      });
+    }
+    if (this.elements.permissionModal) {
+      this.elements.permissionModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.permissionModal) {
+          this.hidePermissionModal();
+        }
+      });
+    }
+
     // Release microphone when page loses focus
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -229,18 +275,28 @@ const Speech = {
   async startListening() {
     if (!this.recognition || this.isListening) return;
 
-    // Check permission state first (if API available)
-    if (navigator.permissions && navigator.permissions.query) {
-      try {
-        const result = await navigator.permissions.query({ name: 'microphone' });
-        if (result.state === 'denied') {
-          this.showPermissionDeniedModal(true); // true = previously denied
-          return;
-        }
-      } catch (e) {
-        // Permission API not available or error, fall through to try anyway
-      }
+    // Check permission state
+    if (this.micPermissionState === 'denied') {
+      // Permission was previously denied - show settings message
+      this.showPermissionDeniedModal(true);
+      return;
     }
+
+    if (this.micPermissionState === 'prompt') {
+      // Permission not yet asked - show custom modal instead of starting recording
+      this.showPermissionModal();
+      return;
+    }
+
+    // Permission is granted - start recording normally
+    this.doStartListening();
+  },
+
+  /**
+   * Actually start the speech recognition (called after permission is confirmed)
+   */
+  doStartListening() {
+    if (!this.recognition || this.isListening) return;
 
     try {
       this.recognition.start();
@@ -341,6 +397,7 @@ const Speech = {
     this.hideProcessing();
     this.hideConfirmModal();
     this.hideFailModal();
+    this.hidePermissionModal();
 
     // Update mic UI
     this.updateMicUI(false);
@@ -796,6 +853,64 @@ const Speech = {
     } else {
       const btn = document.getElementById('mic-button');
       if (btn) btn.style.display = 'none';
+    }
+  },
+
+  /**
+   * Show the permission request modal
+   */
+  showPermissionModal() {
+    if (!this.elements.permissionModal) return;
+
+    // Reset to default content
+    if (this.elements.permissionTitle) {
+      this.elements.permissionTitle.textContent = 'Voice Input';
+    }
+    if (this.elements.permissionBody) {
+      this.elements.permissionBody.textContent = 'Voice input needs microphone access to work.';
+    }
+
+    this.elements.permissionModal.classList.add('visible');
+  },
+
+  /**
+   * Hide the permission request modal
+   */
+  hidePermissionModal() {
+    if (this.elements.permissionModal) {
+      this.elements.permissionModal.classList.remove('visible');
+    }
+  },
+
+  /**
+   * Request microphone permission via getUserMedia
+   * This triggers the browser's native permission popup
+   */
+  async requestMicrophonePermission() {
+    this.hidePermissionModal();
+
+    try {
+      // Request mic access - this triggers the browser's permission popup
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Permission granted - stop the stream immediately (we just needed the permission)
+      stream.getTracks().forEach(track => track.stop());
+
+      // Update permission state
+      this.micPermissionState = 'granted';
+
+      // Highlight the Speak button to indicate it's ready
+      this.highlightMicButton();
+
+    } catch (e) {
+      // Permission denied or error
+      if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+        this.micPermissionState = 'denied';
+        this.showPermissionDeniedModal(false);
+      } else {
+        // Other error (e.g., no microphone available)
+        this.showPermissionDeniedModal(false);
+      }
     }
   }
 };

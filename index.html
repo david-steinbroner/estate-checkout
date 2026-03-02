@@ -111,8 +111,11 @@
 
     <!-- Action Buttons -->
     <div class="qr-actions">
-      <button type="button" class="qr-action qr-action--back" id="qr-back">BACK</button>
       <button type="button" class="qr-action qr-action--new" id="qr-new">NEW CUSTOMER</button>
+      <div class="qr-actions__row">
+        <button type="button" class="qr-action qr-action--secondary" id="qr-dashboard">DASHBOARD</button>
+        <button type="button" class="qr-action qr-action--secondary" id="qr-back">BACK</button>
+      </div>
     </div>
   </div>
 
@@ -332,6 +335,18 @@
     <div class="speech-processing__content">
       <span class="speech-processing__spinner"></span>
       <span class="speech-processing__text">Processing...</span>
+    </div>
+  </div>
+
+  <!-- Speech Permission Modal (Bottom Sheet) -->
+  <div class="speech-overlay" id="speech-permission-modal">
+    <div class="speech-sheet">
+      <p class="speech-sheet__fail-title" id="speech-permission-title">Voice Input</p>
+      <p class="speech-sheet__fail-tip" id="speech-permission-body">Voice input needs microphone access to work.</p>
+      <div class="speech-sheet__buttons">
+        <button class="speech-sheet__btn speech-sheet__btn--confirm" id="speech-permission-allow">Allow Microphone</button>
+        <button class="speech-sheet__btn speech-sheet__btn--cancel" id="speech-permission-dismiss">Use Number Pad Instead</button>
+      </div>
     </div>
   </div>
 

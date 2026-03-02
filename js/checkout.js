@@ -480,6 +480,10 @@ const Checkout = {
 
     Storage.saveTransaction(transaction);
 
+    // Clear cart after creating transaction (prevents duplicates)
+    this.items = [];
+    Storage.saveCart([]);
+
     // Navigate to QR screen
     App.showScreen('qr', transaction);
   },
