@@ -3,11 +3,25 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v15
+**Service worker cache:** v16
 
 ---
 
 ## What Was Accomplished
+
+### Session 4 (2026-03-01)
+- **Built Sale Dashboard** — Complete performance metrics screen:
+  - Summary stats: customer count, total revenue, average ticket
+  - Transaction list showing all transactions for current sale
+  - Accordion expand/collapse to view itemized details
+  - Discounted items show original price crossed out
+  - Filter transactions to current sale only (by createdAt timestamp)
+  - Empty state when no transactions
+- **Added Dashboard buttons** — Accessible from both screens:
+  - Checkout screen: secondary button grouped with Collect Payments
+  - Setup screen: shown when a sale is active
+  - Back button returns to correct origin screen
+- **Service worker** — Bumped to v16, added dashboard.js to cache
 
 ### Session 3 (2026-03-01)
 - **Built QR Scan/Receive View** — Complete two-person checkout workflow:
@@ -93,13 +107,15 @@
 - **Mark Paid**: Saves transaction to localStorage, shows confirmation, returns to scan
 - **Customer numbering**: Auto-increments per sale, resets when sale ends
 - **Offline scanning**: html5-qrcode library cached for offline iOS scanning
+- **Dashboard**: Summary stats (customers, revenue, avg ticket) for current sale
+- **Transaction list**: View all transactions with accordion expand for details
+- **Dashboard navigation**: Accessible from checkout and setup screens
 
 ### What's Broken
 - None currently
 
 ### What's Half-Done
 - **Speech-to-text**: Structure exists, needs full parsing logic
-- **Dashboard**: Not started (data is being stored in localStorage)
 
 ---
 
@@ -119,13 +135,27 @@ None currently.
 
 ## Next Steps (Priority Order)
 
-1. **Build sale dashboard** — Transaction count, revenue, average ticket (data is being stored)
-2. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
-3. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
+1. **Complete speech-to-text** — Parse "blue vase fifteen dollars" into description + price
+2. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
+3. **Dashboard enhancements** — Date range filtering, export (backlogged)
 
 ---
 
 ## Files Changed This Session
+
+**Session 4:**
+```
+/js/
+  dashboard.js    # NEW - Dashboard screen with stats and transaction list
+  checkout.js     # Added Dashboard button
+  sale-setup.js   # Added Dashboard button with show/hide logic
+  app.js          # Register Dashboard module, add routing
+/css/
+  styles.css      # Added dashboard styles, updated secondary actions layout
+/index.html       # Added Dashboard screen, Dashboard buttons
+/sw.js            # Bumped to v16, added dashboard.js to cache
+/HANDOFF.md       # Updated with session 4 changes
+```
 
 **Session 3:**
 ```
@@ -212,6 +242,15 @@ None currently.
 2. Deny camera permission when prompted
 3. Should see error message with "Retry" button
 4. Tap Retry → grant permission → camera should start
+
+### Dashboard Test
+1. **Empty state:** Clear localStorage → start sale → tap Dashboard → shows zeros and "No transactions yet"
+2. **With data:** Complete 3 checkouts → tap Dashboard → shows 3 customers, correct revenue, correct average
+3. **Transaction detail:** Tap a transaction row → expands to show items → tap again → collapses
+4. **Accordion:** Expand transaction #1 → tap transaction #2 → #1 collapses, #2 expands
+5. **Discounted items:** Verify crossed-out original prices and discount label in expanded view
+6. **Navigation from checkout:** Tap Dashboard from checkout → Back returns to checkout
+7. **Data freshness:** Complete a checkout → open Dashboard → new transaction appears
 
 ### Local Server
 ```bash
