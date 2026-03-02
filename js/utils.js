@@ -11,16 +11,6 @@ const Utils = {
   },
 
   /**
-   * Parse a currency string to a number
-   * Handles "$12.50", "12.50", "12", etc.
-   */
-  parseCurrency(str) {
-    if (!str) return 0;
-    const cleaned = str.replace(/[^0-9.]/g, '');
-    return parseFloat(cleaned) || 0;
-  },
-
-  /**
    * Calculate the current day of a sale
    * Returns 1 for first day, 2 for second, etc.
    * Returns 0 if sale hasn't started yet
@@ -86,5 +76,30 @@ const Utils = {
    */
   getTimestamp() {
     return new Date().toISOString();
+  },
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  },
+
+  /**
+   * Format ISO timestamp to time string (e.g., "10:42 AM")
+   */
+  formatTime(isoTimestamp) {
+    try {
+      const date = new Date(isoTimestamp);
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (e) {
+      return '--:--';
+    }
   }
 };

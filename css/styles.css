@@ -1321,21 +1321,6 @@ body {
   background: var(--color-bg);
 }
 
-.dashboard-header {
-  height: 48px;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.dashboard-header__title {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-}
-
 /* Dashboard Stats */
 .dashboard-stats {
   display: flex;
@@ -1614,27 +1599,3 @@ body {
   background: var(--color-success-dark);
 }
 
-.dashboard-action--back {
-  background: var(--color-border);
-  color: var(--color-text);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.dashboard-action--back:active {
-  background: #d4d4d4;
-}
-
-/* === Utility Classes === */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}

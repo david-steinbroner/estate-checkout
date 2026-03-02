@@ -4,9 +4,6 @@
  */
 
 const Dashboard = {
-  // Track which screen the user came from for Back navigation
-  originScreen: 'checkout',
-
   // Currently expanded transaction (for accordion behavior)
   expandedTransactionId: null,
 
@@ -71,12 +68,7 @@ const Dashboard = {
   /**
    * Render the dashboard with fresh data
    */
-  render(originScreen) {
-    // Remember where user came from
-    if (originScreen) {
-      this.originScreen = originScreen;
-    }
-
+  render() {
     // Get transactions for current sale
     const transactions = this.getTransactionsForCurrentSale();
 
@@ -161,7 +153,7 @@ const Dashboard = {
    */
   renderTransactionRow(txn) {
     const customerNum = txn.customerNumber || '?';
-    const time = this.formatTime(txn.timestamp);
+    const time = Utils.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
     const status = txn.status || 'unpaid';
@@ -217,7 +209,7 @@ const Dashboard = {
 
       return `
         <li class="dashboard-detail__item">
-          <span class="dashboard-detail__desc">${this.escapeHtml(desc)}</span>
+          <span class="dashboard-detail__desc">${Utils.escapeHtml(desc)}</span>
           <span class="dashboard-detail__price">
             ${hasDiscount ? `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             ${Utils.formatCurrency(item.finalPrice)}
@@ -283,22 +275,6 @@ const Dashboard = {
   },
 
   /**
-   * Format ISO timestamp to time string (e.g., "10:42 AM")
-   */
-  formatTime(isoTimestamp) {
-    try {
-      const date = new Date(isoTimestamp);
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (e) {
-      return '--:--';
-    }
-  },
-
-  /**
    * Toggle paid/unpaid status for a transaction
    */
   togglePaidStatus(txnId) {
@@ -356,12 +332,4 @@ const Dashboard = {
     App.showScreen('qr', txn);
   },
 
-  /**
-   * Escape HTML to prevent XSS
-   */
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 };

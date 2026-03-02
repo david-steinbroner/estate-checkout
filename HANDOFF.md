@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v35
+**Service worker cache:** v36
 
 ---
 
 ## What Was Accomplished
+
+### Session 21 (2026-03-02)
+- **Removed Dead JS** — Deleted `QR.parseData()` (unused, scan.js does its own parsing), `Dashboard.originScreen` (set but never read, back button removed in Session 13), `Utils.parseCurrency()` (never called), `Scan.onDeactivate()` (never called, cleanup handled by `Scan.stop()` from `showScreen()`), `Storage.clearAll()` (never called by any module)
+- **Extracted Duplicate Functions to Utils** — Moved `escapeHtml()` from checkout.js, dashboard.js, qr.js, payment.js → `Utils.escapeHtml()`. Moved `formatTime()` from dashboard.js, payment.js → `Utils.formatTime()`. All call sites updated from `this.` to `Utils.` references.
+- **Removed Dead CSS** — Deleted `.dashboard-header`, `.dashboard-header__title` (no HTML uses them, dashboard uses shared header), `.dashboard-action--back` (back button removed in Session 13), `.visually-hidden` (never used)
+- **Removed console.logs** — Deleted `console.log('Estate Checkout initialized')` and `console.log('Service Worker registered:')` per CLAUDE_CODE_RULES.md. All `console.error()` calls retained.
+- **Service worker** — Bumped to v36
 
 ### Session 20 (2026-03-02)
 - **Fixed Touch Target Violations** — Number pad buttons increased from 52px to 64px (spec requires 64x64 minimum). Dashboard detail action buttons (Mark Paid, Reopen, Collect Payment) increased from 36px to 48px (spec requires 48px minimum). Sheet buttons already 48px — verified correct.

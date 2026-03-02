@@ -55,7 +55,7 @@ const Payment = {
 
     // Format customer header: "Customer #3 — 10:42 AM"
     const customerNum = data.customerNumber || '?';
-    const time = this.formatTime(data.ts);
+    const time = Utils.formatTime(data.ts);
     this.elements.title.textContent = `Customer #${customerNum} — ${time}`;
 
     // Render items
@@ -79,7 +79,7 @@ const Payment = {
 
       return `
         <li class="payment-item">
-          <span class="payment-item__desc">${this.escapeHtml(desc)}</span>
+          <span class="payment-item__desc">${Utils.escapeHtml(desc)}</span>
           <span class="payment-item__price">
             ${hasDiscount ? `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>` : ''}
             ${Utils.formatCurrency(item.final)}
@@ -89,22 +89,6 @@ const Payment = {
     }).join('');
 
     this.elements.items.innerHTML = html;
-  },
-
-  /**
-   * Format ISO timestamp to time string (e.g., "10:42 AM")
-   */
-  formatTime(isoTimestamp) {
-    try {
-      const date = new Date(isoTimestamp);
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (e) {
-      return '--:--';
-    }
   },
 
   /**
@@ -141,12 +125,4 @@ const Payment = {
     }, 800);
   },
 
-  /**
-   * Escape HTML to prevent XSS
-   */
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 };

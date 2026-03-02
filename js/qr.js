@@ -126,7 +126,7 @@ const QR = {
 
       return `
         <li class="qr-item">
-          <span class="qr-item__desc">${this.escapeHtml(desc)}</span>
+          <span class="qr-item__desc">${Utils.escapeHtml(desc)}</span>
           <span class="qr-item__price">
             ${showOriginal ? `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             ${Utils.formatCurrency(item.finalPrice)}
@@ -138,24 +138,4 @@ const QR = {
     this.elements.qrItems.innerHTML = html;
   },
 
-  /**
-   * Escape HTML to prevent XSS
-   */
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  },
-
-  /**
-   * Parse QR code data back to transaction
-   */
-  parseData(jsonString) {
-    try {
-      return JSON.parse(jsonString);
-    } catch (e) {
-      console.error('Failed to parse QR data:', e);
-      return null;
-    }
-  }
 };

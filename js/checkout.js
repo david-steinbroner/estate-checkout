@@ -284,7 +284,7 @@ const Checkout = {
 
       return `
         <li class="item-row" data-id="${item.id}">
-          ${hasDesc ? `<span class="item-row__desc">${this.escapeHtml(item.description)}</span>` : ''}
+          ${hasDesc ? `<span class="item-row__desc">${Utils.escapeHtml(item.description)}</span>` : ''}
           <div class="item-row__prices${hasDesc ? '' : ' item-row__prices--full'}">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
@@ -500,15 +500,6 @@ const Checkout = {
     setTimeout(() => {
       flash.classList.remove('visible');
     }, 800);
-  },
-
-  /**
-   * Escape HTML to prevent XSS
-   */
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   },
 
   /**

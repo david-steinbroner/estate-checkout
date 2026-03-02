@@ -116,16 +116,6 @@ const Storage = {
   },
 
   /**
-   * Clear all app data
-   */
-  clearAll() {
-    this.clearSale();
-    this.clearCart();
-    this.clearTransactions();
-    this.clearCustomerCounter();
-  },
-
-  /**
    * Get the next customer number for the current sale
    * Auto-increments and resets when sale changes
    */

@@ -266,12 +266,5 @@ const Scan = {
    */
   onActivate() {
     this.start();
-  },
-
-  /**
-   * Called when scan screen becomes inactive
-   */
-  onDeactivate() {
-    this.stop();
   }
 };
