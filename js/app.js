@@ -172,7 +172,7 @@ const App = {
   showScreen(screenName, data) {
     // Cleanup before leaving current screen
     if (this.currentScreen === 'scan') {
-      Scan.stop();
+      try { Scan.stop(); } catch (e) { /* safe — scanner may not have started */ }
     }
 
     // Hide all screens

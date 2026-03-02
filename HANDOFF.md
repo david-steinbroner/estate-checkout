@@ -3,11 +3,15 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v33
+**Service worker cache:** v34
 
 ---
 
 ## What Was Accomplished
+
+### Session 19 (2026-03-02)
+- **Fixed Header Buttons on Scan Permission-Denied Screen** — After denying camera permission, header buttons (← Checkout, Dashboard) did nothing. Root cause: on iOS/Safari fallback path, `startFallbackScanner()` sets `this.html5Scanner = new Html5Qrcode(...)` before calling `start()`. When permission is denied, `start()` rejects but `html5Scanner` remains non-null. When user taps a header button, `showScreen()` calls `Scan.stop()` which tries `this.html5Scanner.stop()` on a never-started scanner — throwing an error that crashes `showScreen()` before the screen transition. Fix: (1) null out `this.html5Scanner` in `start()`'s catch block so `stop()` skips it, (2) wrap `Scan.stop()` in try/catch in `showScreen()` as a defensive safety net.
+- **Service worker** — Bumped to v34
 
 ### Session 18 (2026-03-02)
 - **Fixed Scan Permission Trap** — `.scan-error` overlay used `position: absolute; inset: 0` but `.scan-screen` had no `position: relative`, so the error covered the entire viewport including the shared header. Added `position: relative` to `.scan-screen` to constrain the error overlay within the scan area, keeping header navigation accessible when camera permission is denied.

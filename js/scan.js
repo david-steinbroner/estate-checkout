@@ -103,6 +103,7 @@ const Scan = {
       }
     } catch (error) {
       console.error('Camera access failed:', error);
+      this.html5Scanner = null;
       this.showError(error.message || 'Camera access denied');
     }
   },
