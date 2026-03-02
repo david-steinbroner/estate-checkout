@@ -16,10 +16,13 @@ const Speech = {
   isSupported: false,
   waitingForResult: false,
   resultTimeout: null,
+  processingHardTimeout: null,
   consecutiveFailures: 0,
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
+  // Hard safety timeout for processing overlay (ms)
+  PROCESSING_HARD_TIMEOUT: 8000,
 
   // Tips for struggling users (indexed by failure count - 1)
   failureTips: [
@@ -78,6 +81,7 @@ const Speech = {
 
     this.recognition.onerror = (event) => {
       this.clearResultTimeout();
+      this.clearProcessingHardTimeout();
       this.isListening = false;
       this.waitingForResult = false;
       this.hideProcessing();
@@ -96,12 +100,14 @@ const Speech = {
 
     this.recognition.onend = () => {
       this.isListening = false;
+      // Always clean up when recognition ends for any reason
+      this.clearResultTimeout();
+      this.updateMicUI(false);
+
       // If we were waiting for a result and didn't get one, show failure
       if (this.waitingForResult) {
-        this.clearResultTimeout();
         this.waitingForResult = false;
         this.hideProcessing();
-        this.updateMicUI(false);
         this.showFailModalWithTip('', 'no-speech');
       }
     };
@@ -203,19 +209,17 @@ const Speech = {
 
     // Release microphone when page loses focus
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.isListening) {
-        this.abortListening();
+      if (document.hidden) {
+        this.forceStopRecognition();
       }
     });
 
     window.addEventListener('pagehide', () => {
-      this.abortListening();
+      this.forceStopRecognition();
     });
 
     window.addEventListener('blur', () => {
-      if (this.isListening) {
-        this.abortListening();
-      }
+      this.forceStopRecognition();
     });
   },
 
@@ -321,26 +325,49 @@ const Speech = {
   },
 
   /**
-   * Abort listening immediately (releases mic without waiting for results)
-   * Used when page loses focus to free the microphone
+   * Force stop all recognition activity and clean up UI completely
+   * Used when page loses focus or needs immediate cleanup
    */
-  abortListening() {
-    if (!this.recognition) return;
-
+  forceStopRecognition() {
+    // Clear all timeouts
     this.clearResultTimeout();
+    this.clearProcessingHardTimeout();
+
+    // Reset state
     this.waitingForResult = false;
     this.isListening = false;
-    this.updateMicUI(false);
+
+    // Hide all overlays and modals
     this.hideProcessing();
-    try {
-      this.recognition.abort();
-    } catch (e) {}
+    this.hideConfirmModal();
+    this.hideFailModal();
+
+    // Update mic UI
+    this.updateMicUI(false);
+
+    // Abort recognition (releases mic immediately without waiting for results)
+    if (this.recognition) {
+      try {
+        this.recognition.abort();
+      } catch (e) {}
+    }
+  },
+
+  /**
+   * Clear the hard processing timeout
+   */
+  clearProcessingHardTimeout() {
+    if (this.processingHardTimeout) {
+      clearTimeout(this.processingHardTimeout);
+      this.processingHardTimeout = null;
+    }
   },
 
   /**
    * Handle speech recognition result
    */
   handleResult(transcript) {
+    this.clearProcessingHardTimeout();
     this.hideProcessing();
     const result = this.parse(transcript);
 
@@ -355,18 +382,32 @@ const Speech = {
   },
 
   /**
-   * Show processing overlay
+   * Show processing overlay with hard safety timeout
    */
   showProcessing() {
     if (this.elements.processingOverlay) {
       this.elements.processingOverlay.hidden = false;
     }
+
+    // Hard safety timeout - processing should never stay visible more than 8 seconds
+    this.clearProcessingHardTimeout();
+    this.processingHardTimeout = setTimeout(() => {
+      if (this.waitingForResult) {
+        this.waitingForResult = false;
+        this.isListening = false;
+        this.clearResultTimeout();
+        this.hideProcessing();
+        this.updateMicUI(false);
+        this.showFailModalWithTip('', 'timeout');
+      }
+    }, this.PROCESSING_HARD_TIMEOUT);
   },
 
   /**
    * Hide processing overlay
    */
   hideProcessing() {
+    this.clearProcessingHardTimeout();
     if (this.elements.processingOverlay) {
       this.elements.processingOverlay.hidden = true;
     }

@@ -562,61 +562,51 @@ body {
   opacity: 1;
 }
 
-/* === No Description Prompt === */
-.desc-prompt {
+/* === No Description Prompt (Bottom Sheet) === */
+.desc-prompt-overlay {
   position: fixed;
-  bottom: calc(var(--action-bar-height) + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 50;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  width: calc(100% - 32px);
-  max-width: 320px;
-  animation: prompt-slide-up 0.2s ease-out;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
 }
 
-.desc-prompt[hidden] {
+.desc-prompt-overlay[hidden] {
   display: none;
 }
 
-@keyframes prompt-slide-up {
-  from {
-    transform: translateX(-50%) translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
+.desc-prompt-sheet {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: 16px 16px 0 0;
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: sheet-slide-up 0.2s ease-out;
 }
 
 .desc-prompt__text {
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--color-text);
-}
-
-.desc-prompt__buttons {
-  display: flex;
-  gap: var(--space-sm);
+  margin-bottom: 8px;
 }
 
 .desc-prompt__btn {
-  flex: 1;
-  height: 40px;
+  width: 100%;
+  height: 48px;
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .desc-prompt__btn--add {

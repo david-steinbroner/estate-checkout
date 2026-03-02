@@ -270,11 +270,11 @@
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
 
-  <!-- No Description Prompt (inline banner) -->
-  <div class="desc-prompt" id="desc-prompt" hidden>
-    <span class="desc-prompt__text">No description — add anyway?</span>
-    <div class="desc-prompt__buttons">
-      <button class="desc-prompt__btn desc-prompt__btn--add" id="desc-prompt-add">Add Without</button>
+  <!-- No Description Prompt (bottom sheet with overlay) -->
+  <div class="desc-prompt-overlay" id="desc-prompt" hidden>
+    <div class="desc-prompt-sheet">
+      <p class="desc-prompt__text">No description — add anyway?</p>
+      <button class="desc-prompt__btn desc-prompt__btn--add" id="desc-prompt-add">Add Without Description</button>
       <button class="desc-prompt__btn desc-prompt__btn--desc" id="desc-prompt-desc">Add Description</button>
     </div>
   </div>

@@ -162,6 +162,16 @@ const Checkout = {
         this.focusDescription();
       });
     }
+
+    // Description prompt overlay backdrop tap (add without description)
+    if (this.elements.descPrompt) {
+      this.elements.descPrompt.addEventListener('click', (e) => {
+        // Only trigger if clicking the overlay itself, not the sheet
+        if (e.target === this.elements.descPrompt) {
+          this.confirmAddWithoutDesc();
+        }
+      });
+    }
   },
 
   /**

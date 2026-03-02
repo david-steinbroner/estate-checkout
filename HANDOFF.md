@@ -3,11 +3,28 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v25
+**Service worker cache:** v26
 
 ---
 
 ## What Was Accomplished
+
+### Session 11 (2026-03-02)
+- **Fixed Mic Release on Page Leave** — Comprehensive cleanup:
+  - New `forceStopRecognition()` method aborts mic, clears all timeouts, hides overlays/modals
+  - Event listeners for `visibilitychange`, `pagehide`, `blur` now call forceStopRecognition
+  - Orange mic indicator in status bar disappears when leaving page
+- **Fixed Processing Hang** — Multiple safety nets:
+  - Hard 8-second timeout on processing overlay (regardless of API state)
+  - `onend` handler always cleans up and shows failure modal if no result
+  - Processing overlay can never hang indefinitely
+- **Restyled Description Prompt** — Matches speech modal pattern:
+  - Dark semi-transparent backdrop overlay
+  - Bottom sheet style with rounded top corners
+  - Full-width stacked buttons (48px tall) for easy tapping
+  - Backdrop tap dismisses and adds without description
+  - Consistent "the app is asking you something" visual language
+- **Service worker** — Bumped to v26
 
 ### Session 10 (2026-03-01)
 - **Consolidated Header Layout** — Cleaner, more tappable design:
@@ -234,7 +251,7 @@
 - **Descriptions via voice**: Carry through to QR, payment, and dashboard
 - **Header layout**: Context strip + button bar with Dashboard, Collect Payments, End Sale
 - **Description input**: Repositioned below price, 44px tall, closer to keypad
-- **No-description prompt**: Shows first 3 times, then adds silently
+- **No-description prompt**: Bottom sheet with overlay, shows first 3 times, backdrop tap dismisses
 - **Transaction status**: paid/unpaid/void with visual badges
 - **Paid/unpaid toggle**: Toggle status from Dashboard expanded view
 - **Reopen ticket**: Void original, load items to checkout for modification
@@ -272,6 +289,18 @@ None currently.
 ---
 
 ## Files Changed This Session
+
+**Session 11:**
+```
+/js/
+  speech.js       # forceStopRecognition(), hard 8s timeout, clearProcessingHardTimeout()
+  checkout.js     # Backdrop tap event listener for desc prompt
+/css/
+  styles.css      # Desc prompt restyled as bottom sheet with overlay
+/index.html       # Desc prompt HTML restructured with overlay
+/sw.js            # Bumped to v26
+/HANDOFF.md       # Updated with session 11 changes
+```
 
 **Session 10:**
 ```
