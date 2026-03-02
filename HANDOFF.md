@@ -329,19 +329,6 @@ None currently.
 
 ## Files Changed This Session
 
-**Session 12:**
-```
-/js/
-  checkout.js     # Clear cart after finishCheckout() to prevent duplicates
-  qr.js           # Added dashboard button caching and event handler
-  speech.js       # Mic permission flow: checkPermissionState(), showPermissionModal(), requestMicrophonePermission()
-/css/
-  styles.css      # QR action buttons layout with new Dashboard button
-/index.html       # QR Dashboard button, speech permission modal
-/sw.js            # Bumped to v27
-/HANDOFF.md       # Updated with session 12 changes
-```
-
 **Session 13:**
 ```
 /js/
@@ -354,6 +341,19 @@ None currently.
 /index.html       # Header moved outside screens, Dashboard NEW CUSTOMER button, desc prompt visible class
 /sw.js            # Bumped to v28
 /HANDOFF.md       # Updated with session 13 changes
+```
+
+**Session 12:**
+```
+/js/
+  checkout.js     # Clear cart after finishCheckout() to prevent duplicates
+  qr.js           # Added dashboard button caching and event handler
+  speech.js       # Mic permission flow: checkPermissionState(), showPermissionModal(), requestMicrophonePermission()
+/css/
+  styles.css      # QR action buttons layout with new Dashboard button
+/index.html       # QR Dashboard button, speech permission modal
+/sw.js            # Bumped to v27
+/HANDOFF.md       # Updated with session 12 changes
 ```
 
 **Session 11:**
