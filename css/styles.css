@@ -324,6 +324,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .mic-button__icon {
@@ -718,8 +719,18 @@ body {
   font-size: 16px;
   color: var(--color-text-secondary);
   font-style: italic;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   word-break: break-word;
+}
+
+.speech-sheet__fail-tip {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+  line-height: 1.4;
 }
 
 /* === Speech Processing Overlay === */

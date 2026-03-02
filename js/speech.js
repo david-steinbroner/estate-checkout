@@ -14,6 +14,21 @@ const Speech = {
   recognition: null,
   isListening: false,
   isSupported: false,
+  waitingForResult: false,
+  resultTimeout: null,
+  consecutiveFailures: 0,
+
+  // Timeout before giving up on result (ms)
+  RESULT_TIMEOUT: 5000,
+
+  // Tips for struggling users (indexed by failure count - 1)
+  failureTips: [
+    'Hold the button, speak clearly, then release.',
+    'Try speaking slower and closer to the microphone.',
+    'Say the item and price like: "blue vase fifteen dollars"',
+    'Make sure you\'re in a quiet area. Background noise can interfere.',
+    'Having trouble? Use the number pad instead — tap CANCEL and enter the price manually.'
+  ],
 
   // Number word mappings
   numberWords: {
@@ -49,20 +64,37 @@ const Speech = {
 
     this.recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
+      this.clearResultTimeout();
+      this.waitingForResult = false;
       this.handleResult(transcript);
     };
 
     this.recognition.onerror = (event) => {
-      this.stopListening();
+      this.clearResultTimeout();
+      this.isListening = false;
+      this.waitingForResult = false;
+      this.hideProcessing();
+      this.updateMicUI(false);
+
       if (event.error === 'no-speech') {
-        this.showError("Didn't catch that — try again");
+        this.showFailModalWithTip('', 'no-speech');
+      } else if (event.error === 'network') {
+        this.showFailModalWithTip('', 'network');
       } else if (event.error !== 'aborted') {
-        this.showError("Didn't catch that — try again");
+        this.showFailModalWithTip('', 'error');
       }
     };
 
     this.recognition.onend = () => {
-      this.stopListening();
+      this.isListening = false;
+      // If we were waiting for a result and didn't get one, show failure
+      if (this.waitingForResult) {
+        this.clearResultTimeout();
+        this.waitingForResult = false;
+        this.hideProcessing();
+        this.updateMicUI(false);
+        this.showFailModalWithTip('', 'no-speech');
+      }
     };
 
     this.cacheElements();
@@ -84,7 +116,9 @@ const Speech = {
       editButton: document.getElementById('speech-edit-btn'),
       cancelButton: document.getElementById('speech-cancel-btn'),
       failModal: document.getElementById('speech-fail-modal'),
+      failHeard: document.getElementById('speech-fail-heard'),
       failTranscript: document.getElementById('speech-fail-transcript'),
+      failTip: document.getElementById('speech-fail-tip'),
       retryButton: document.getElementById('speech-retry-btn'),
       failCancelButton: document.getElementById('speech-fail-cancel-btn')
     };
@@ -105,18 +139,18 @@ const Speech = {
 
     btn.addEventListener('pointerup', (e) => {
       e.preventDefault();
-      this.stopListening();
+      this.onButtonRelease();
     });
 
     btn.addEventListener('pointerleave', (e) => {
       if (this.isListening) {
-        this.stopListening();
+        this.onButtonRelease();
       }
     });
 
     btn.addEventListener('pointercancel', (e) => {
       if (this.isListening) {
-        this.stopListening();
+        this.onButtonRelease();
       }
     });
 
@@ -168,56 +202,93 @@ const Speech = {
     try {
       this.recognition.start();
       this.isListening = true;
-      this.elements.micButton.classList.add('listening');
-      // Show listening indicator
-      if (this.elements.micStatus) {
-        this.elements.micStatus.hidden = false;
-      }
+      this.waitingForResult = false;
+      this.updateMicUI(true);
     } catch (e) {
       // Recognition might already be running
     }
   },
 
   /**
-   * Stop listening
+   * Called when user releases the mic button
+   * Don't stop recognition - let it end naturally after detecting silence
    */
-  stopListening() {
-    if (!this.recognition) return;
+  onButtonRelease() {
+    if (!this.isListening) return;
 
-    try {
-      this.recognition.stop();
-    } catch (e) {
-      // Ignore errors when stopping
-    }
+    // Update UI to show we're processing
+    this.updateMicUI(false);
+    this.showProcessing();
+    this.waitingForResult = true;
 
-    this.isListening = false;
+    // Safety timeout - if no result in 5 seconds, fail gracefully
+    this.resultTimeout = setTimeout(() => {
+      if (this.waitingForResult) {
+        this.waitingForResult = false;
+        try {
+          this.recognition.stop();
+        } catch (e) {}
+        this.hideProcessing();
+        this.showFailModalWithTip('', 'timeout');
+      }
+    }, this.RESULT_TIMEOUT);
+  },
+
+  /**
+   * Update mic button UI state
+   */
+  updateMicUI(isListening) {
     if (this.elements.micButton) {
-      this.elements.micButton.classList.remove('listening');
+      if (isListening) {
+        this.elements.micButton.classList.add('listening');
+      } else {
+        this.elements.micButton.classList.remove('listening');
+      }
     }
-    // Hide listening indicator
     if (this.elements.micStatus) {
-      this.elements.micStatus.hidden = true;
+      this.elements.micStatus.hidden = !isListening;
     }
+  },
+
+  /**
+   * Clear the result timeout
+   */
+  clearResultTimeout() {
+    if (this.resultTimeout) {
+      clearTimeout(this.resultTimeout);
+      this.resultTimeout = null;
+    }
+  },
+
+  /**
+   * Force stop listening (for cancellation)
+   */
+  forceStopListening() {
+    this.clearResultTimeout();
+    this.waitingForResult = false;
+    this.isListening = false;
+    this.updateMicUI(false);
+    this.hideProcessing();
+    try {
+      if (this.recognition) this.recognition.stop();
+    } catch (e) {}
   },
 
   /**
    * Handle speech recognition result
    */
   handleResult(transcript) {
+    this.hideProcessing();
     const result = this.parse(transcript);
 
-    // Show processing briefly
-    this.showProcessing();
-
-    setTimeout(() => {
-      this.hideProcessing();
-      if (result.price > 0) {
-        this.pendingResult = result;
-        this.showConfirmModal(result);
-      } else {
-        this.showFailModal(transcript);
-      }
-    }, 400);
+    if (result.price > 0) {
+      // Success - reset failure counter
+      this.consecutiveFailures = 0;
+      this.pendingResult = result;
+      this.showConfirmModal(result);
+    } else {
+      this.showFailModalWithTip(transcript, 'parse');
+    }
   },
 
   /**
@@ -246,9 +317,28 @@ const Speech = {
     let text = transcript.toLowerCase().trim();
 
     // Handle direct numeric input (speech API sometimes returns digits)
-    const directNumber = text.match(/^\$?(\d+(?:\.\d{1,2})?)\s*$/);
+    // Matches: "$25", "$5.50", "25", "5.50", "$1,000", "1,000"
+    const directNumber = text.match(/^\$?([\d,]+(?:\.\d{1,2})?)\s*$/);
     if (directNumber) {
-      return { price: parseFloat(directNumber[1]), description: '' };
+      const priceStr = directNumber[1].replace(/,/g, '');
+      return { price: parseFloat(priceStr), description: '' };
+    }
+
+    // Check for $-prefixed price anywhere in the transcript
+    // e.g., "rug $25" or "blue vase $5.50" or "lamp $1,000"
+    const dollarMatch = text.match(/^(.+?)\s*\$([\d,]+(?:\.\d{1,2})?)\s*$/);
+    if (dollarMatch) {
+      const description = dollarMatch[1].trim();
+      const priceStr = dollarMatch[2].replace(/,/g, '');
+      return { price: parseFloat(priceStr), description: description };
+    }
+
+    // Also check for $ at the start with description after (less common but possible)
+    const dollarStartMatch = text.match(/^\$([\d,]+(?:\.\d{1,2})?)\s+(.+)$/);
+    if (dollarStartMatch) {
+      const priceStr = dollarStartMatch[1].replace(/,/g, '');
+      const description = dollarStartMatch[2].trim();
+      return { price: parseFloat(priceStr), description: description };
     }
 
     // Tokenize the transcript
@@ -418,13 +508,61 @@ const Speech = {
   },
 
   /**
-   * Show parse failure modal
+   * Show parse failure modal with contextual tip
    */
-  showFailModal(transcript) {
+  showFailModalWithTip(transcript, errorType) {
     if (!this.elements.failModal) return;
 
-    this.elements.failTranscript.textContent = `"${transcript}"`;
+    // Increment failure counter
+    this.consecutiveFailures++;
+
+    // Set the transcript text
+    if (transcript) {
+      this.elements.failTranscript.textContent = `"${transcript}"`;
+      if (this.elements.failHeard) {
+        this.elements.failHeard.style.display = '';
+      }
+    } else {
+      this.elements.failTranscript.textContent = '';
+      if (this.elements.failHeard) {
+        this.elements.failHeard.style.display = 'none';
+      }
+    }
+
+    // Set the tip based on error type and failure count
+    let tip = this.getTipForFailure(errorType);
+    if (this.elements.failTip) {
+      this.elements.failTip.textContent = tip;
+    }
+
     this.elements.failModal.classList.add('visible');
+  },
+
+  /**
+   * Get appropriate tip based on error type and failure count
+   */
+  getTipForFailure(errorType) {
+    // Error-specific messages take priority
+    if (errorType === 'no-speech' || errorType === 'timeout') {
+      return 'No speech detected. Make sure your microphone is working and try again.';
+    }
+    if (errorType === 'network') {
+      return 'Speech recognition requires an internet connection. Use the number pad while offline.';
+    }
+    if (errorType === 'not-supported') {
+      return 'Speech recognition isn\'t supported on this browser. Use the number pad to enter prices.';
+    }
+
+    // Progressive tips based on failure count
+    const tipIndex = Math.min(this.consecutiveFailures - 1, this.failureTips.length - 1);
+    return this.failureTips[tipIndex];
+  },
+
+  /**
+   * Show parse failure modal (legacy, calls new method)
+   */
+  showFailModal(transcript) {
+    this.showFailModalWithTip(transcript, 'parse');
   },
 
   /**

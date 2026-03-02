@@ -3,11 +3,30 @@
 **Last updated:** 2026-03-01
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v18
+**Service worker cache:** v21
 
 ---
 
 ## What Was Accomplished
+
+### Session 7 (2026-03-01)
+- **Fixed Speech Recognition Timing for Mobile** — Major reliability fix:
+  - No longer calls `recognition.stop()` on button release
+  - Let Web Speech API end naturally after detecting silence
+  - Shows "Processing..." overlay while waiting for result
+  - 5-second timeout safety net if no result arrives
+  - Works on mobile where processing latency was causing failures
+- **Fixed Parser for $-Prefixed Prices** — Handles mobile speech API output:
+  - Now parses: "$25", "$5.50", "$1,000" formats
+  - "rug $25" → description: "rug", price: $25.00
+  - Strips commas from numbers
+- **Added Helpful Error Guidance** — Progressive tips for struggling users:
+  - Tracks consecutive failures (resets on success)
+  - Shows contextual tips: "Hold the button...", "Try speaking slower...", etc.
+  - After 5 failures: suggests using number pad instead
+  - Error-specific messages: no-speech, network, timeout
+- **Removed Tap Sound** — Added `-webkit-touch-callout: none` to mic button
+- **Service worker** — Bumped to v21
 
 ### Session 6 (2026-03-01)
 - **Improved Speech UI for Mobile** — Major visual updates:
