@@ -35,6 +35,7 @@ const App = {
       dashboardBtn: document.getElementById('nav-dashboard'),
       collectBtn: document.getElementById('nav-collect'),
       endSaleBtn: document.getElementById('nav-end-sale'),
+      devTitleBar: document.getElementById('dev-title-bar'), // DEV ONLY — remove before production
       endSaleModal: document.getElementById('end-sale-modal'),
       endSaleCancel: document.getElementById('end-sale-cancel'),
       endSaleConfirm: document.getElementById('end-sale-confirm')
@@ -185,6 +186,12 @@ const App = {
     if (targetScreen) {
       targetScreen.classList.add('active');
       this.currentScreen = screenName;
+
+      // DEV ONLY — remove before production
+      const devScreenNames = { setup: 'SETUP', checkout: 'CHECKOUT', qr: 'QR HANDOFF', scan: 'COLLECT PAYMENTS', payment: 'PAYMENT', dashboard: 'DASHBOARD' };
+      if (this.headerElements.devTitleBar) {
+        this.headerElements.devTitleBar.textContent = devScreenNames[screenName] || screenName.toUpperCase();
+      }
 
       // Update shared header visibility and state
       this.updateHeader(screenName);

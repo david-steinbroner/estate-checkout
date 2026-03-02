@@ -3,11 +3,16 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v32
+**Service worker cache:** v33
 
 ---
 
 ## What Was Accomplished
+
+### Session 18 (2026-03-02)
+- **Fixed Scan Permission Trap** — `.scan-error` overlay used `position: absolute; inset: 0` but `.scan-screen` had no `position: relative`, so the error covered the entire viewport including the shared header. Added `position: relative` to `.scan-screen` to constrain the error overlay within the scan area, keeping header navigation accessible when camera permission is denied.
+- **Added Dev Page Title Bar** — Thin black bar at top of every screen showing the current page name (SETUP, CHECKOUT, QR HANDOFF, COLLECT PAYMENTS, PAYMENT, DASHBOARD) for QA identification during build phase. Title updates on every screen transition via `showScreen()`. Marked as DEV ONLY in all files for easy removal before production.
+- **Service worker** — Bumped to v33
 
 ### Session 17 (2026-03-02)
 - **Removed Scan and Payment Screen Headers** — Deleted redundant `.scan-header` and `.payment-header` elements since Session 16 added ← Checkout to the shared header. Now only one navigation bar per screen.
