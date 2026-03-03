@@ -168,7 +168,6 @@ These CSS variables are the foundation. **Every** color, size, spacing, font, an
   --height-header-buttons: 48px;  /* Header button bar */
   --height-header: 72px;          /* Total header (context + buttons) */
   --height-total-bar: 36px;       /* Running total bar */
-  --height-action-bar: 56px;      /* Bottom action bar */
 
   /* === Spacing for Modals === */
   --sheet-padding: 24px;       /* Bottom sheet internal padding */

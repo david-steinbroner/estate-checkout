@@ -7,19 +7,18 @@
 
 ## Current Project Status
 
-**Version:** v0.1 (features ~95% complete, design system overhaul in progress)
+**Version:** v0.1 (features and design system complete, entering end-to-end testing)
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v57
-**Development sessions:** 32 (2026-02-27 through 2026-03-02)
-**Commits:** 68
+**Service worker cache:** v58
+**Development sessions:** 32+ (2026-02-27 through 2026-03-03, plus design system implementation session)
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
 
 ### What's Working (confirmed through Session 32)
 - **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day, Start Sale, "How It Works" link
 - **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from "How It Works"
-- **Checkout pad** — number pad, price display, Add Item, description field, running total, savings display, expandable item list with hint strip, Clear All (confirmation sheet), Create Ticket
+- **Checkout pad** — number pad (48px keys), price display, Add Item, description field, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), bottom sheet overlay for full item list with remove buttons, inline "Added!" flash animation, Clear All (confirmation sheet), Create Ticket
 - **No-description prompt** — bottom sheet every time item added without description (no limit)
 - **Speech-to-text** — hold-to-talk, natural language parser (number words, compound prices, description extraction), confirm/edit/cancel flow, post-permission guide sheet, quick-tap detection ("Hold the button longer"), progressive failure tips, mic permission flow with custom modal
 - **QR Handoff** — QR code, itemized summary, Edit Order (voids + reloads), New Customer
@@ -36,14 +35,13 @@
 
 ### What's Left Before Ship
 
-1. **🟢 Design system overhaul** — Design system implementation complete — ready for end-to-end testing. See DESIGN_SYSTEM.md.
-2. **End-to-end test pass** on mobile Chrome and mobile Safari (after design system)
+1. **✅ Design system overhaul** — Complete. All 10 implementation prompts executed. Full token system, component library, screen-by-screen rebuild, item list UX overhaul, and final audit/cleanup done. See DESIGN_SYSTEM.md.
+2. **End-to-end test pass** on mobile Chrome and mobile Safari
 3. **Offline test** — airplane mode full checkout flow
 4. **Alissa's independent walkthrough** — can she complete the full flow with zero instruction?
 5. **Field test** at real estate sale with Alissa's contact
 
 ### Known Issues / Tech Debt
-- ~~Design system inconsistency across screens~~ — Resolved. All 10 prompts executed, system fully tokenized.
 - QR data may hit size limits for 50+ item carts (raw JSON, no compression) — needs field validation
 - Offline airplane mode never tested live
 
@@ -53,14 +51,14 @@
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| PRODUCT_STRATEGY.md | Strategic positioning, release phases, roadmap, business model | Updated 2026-03-03 — aligned with MARKET_INTEL.md |
-| MARKET_INTEL.md | Competitive research, market data, positioning, GTM | Updated 2026-03-03 |
-| DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | **NEW** 2026-03-03 — current build priority |
-| PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current |
+| PRODUCT_STRATEGY.md | Strategic positioning, release phases, roadmap, business model | Updated 2026-03-03 — design system marked complete, Phase 1 checklist updated |
+| MARKET_INTEL.md | Competitive research, market data, positioning, GTM | Updated 2026-03-03 — Aravenda deep-dive findings added |
+| DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
+| PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (v48) |
-| BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — aligned with new roadmap |
-| COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | **NEW** 2026-03-03 |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (v57) |
+| BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
+| COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 
 **Deleted:** COMBINED_DOCS.md (stale duplicate of HANDOFF), VERSION_LOG.md (duplicated HANDOFF + PRODUCT_STRATEGY)
 
@@ -79,12 +77,13 @@ Sessions 25–26: More UI cleanup — removed ← Checkout header button, Edit O
 Session 27: First-run onboarding walkthrough + "How It Works" replay
 Sessions 28–30: Edit Order void loop fix, removed description prompt limit, speech UX fixes (mic guide, quick-tap, blur handler)
 Sessions 31–32: Void reason labels on dashboard, filter pills, sort toggle, filter-specific empty states
+Session 33 (2026-03-03): **Design system overhaul** — 10-prompt implementation sequence. Token system replacement, button standardization (single 48px height, 4 color variants), input standardization, hardcoded color/size replacement, item list UX overhaul (bottom sheet + inline preview + numbering + inline Added flash), numpad resize to 48px, status badge standardization, bottom sheet polish, final audit + comment cleanup. Service worker bumped from v48 to v57.
 
 ---
 
 ## Discovery & Validation
 
-**Status:** Waiting on Alissa's conversation with her estate sale contact. Competitive research demos scheduled for SimpleConsign and Aravenda (see COMPETITIVE_RESEARCH_QUESTIONS.md).
+**Status:** Waiting on Alissa's conversation with her estate sale contact. Aravenda demo missed and rescheduling (sent technical questions to Carolyn Thompson, President — see COMPETITIVE_RESEARCH_QUESTIONS.md for pre-demo findings from website analysis). SimpleConsign demo still to be scheduled.
 
 **Discovery opener:** "I've been noticing at every estate sale — the checkout person punching every item into that adding machine, printing tape, writing tickets, especially on Day 2 when they manually calculate discounts. Is that as painful on your end as it looks?"
 

@@ -113,7 +113,6 @@
   --height-header-buttons: 48px;
   --height-header: 72px;
   --height-total-bar: 36px;
-  --height-action-bar: 56px;
 
   /* === Shadows === */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -711,11 +710,10 @@ body {
 
 /* === Action Bar === */
 .action-bar {
-  height: var(--height-action-bar);
   display: flex;
   gap: var(--space-sm);
-  padding: var(--space-sm);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
