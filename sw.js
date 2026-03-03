@@ -3,7 +3,7 @@
  * Provides offline support via cache-first strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v51';
+const CACHE_NAME = 'estate-checkout-v52';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

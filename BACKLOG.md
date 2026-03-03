@@ -77,7 +77,7 @@ These were previously on the roadmap but removed because they conflict with our 
 
 | Date | Issue | Severity | Notes |
 |------|-------|----------|-------|
-| 2026-03-03 | Design system inconsistency across screens | High | Prompts 1-3 done: token system replaced, buttons standardized to 48px (1 height), inputs standardized to 48px. Remaining: hardcoded colors/sizes, status badges, bottom sheets, screen polish, final audit. **Still the current priority.** |
+| 2026-03-03 | Design system inconsistency across screens | High | Prompts 1-4 done: tokens, buttons (1 height), inputs, touch targets, all hardcoded colors eliminated. Remaining: hardcoded sizes, status badges, bottom sheets, screen polish, final audit. **Still the current priority.** |
 | 2026-03-02 | QR data may hit size limits for 50+ item carts | Low | Raw JSON, no compression. Needs field test data to validate real-world cart sizes. |
 | 2026-03-02 | Offline airplane mode not tested | Medium | Service worker caches all assets but no live test has been done in airplane mode. |
 

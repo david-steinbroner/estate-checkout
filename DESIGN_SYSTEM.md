@@ -586,15 +586,8 @@ These are structured prompts for a coding session. Each prompt is a self-contain
 ### Prompt 3: Flatten Button Heights + Standardize Inputs ✅
 **Status:** Complete. Simplified to one button height (48px). `--height-button-lg` removed. All inputs standardized to 48px with consistent focus states.
 
-### Prompt 4: Fix Touch Targets
-**What:** Fix every element that's below 48px minimum: remove buttons (32→48px), filter pills (36→48px), sort toggle, item-list-hint, item-list-close, discount remove buttons, checkbox tap targets.
-**Files:** `css/styles.css`, possibly `index.html` if markup changes needed for tap targets
-**Verify:** Inspect every interactive element on every screen — none shorter than 48px.
-
-### Prompt 5: Replace All Hardcoded Colors
-**What:** Find every hardcoded hex, rgb, or rgba value in the stylesheet and replace with the appropriate token from §1. Use the grep list in §4 as a checklist.
-**Files:** `css/styles.css`
-**Verify:** `grep -E '#[0-9a-fA-F]{3,6}|rgba?\(' css/styles.css` returns only the `:root` block.
+### Prompt 4: Fix Touch Targets + Replace Hardcoded Colors ✅
+**Status:** Complete (Prompts 4+5 combined). Checkbox tap target increased to 48px. All hardcoded colors outside `:root` replaced with tokens. Added animation-specific tokens (`--color-mic-highlight`, `--color-mic-pulse`, `--color-scan-border`, `--color-spinner-track`). Dashboard status badges now use semantic tokens. Zero hardcoded colors outside `:root`.
 
 ### Prompt 6: Replace All Hardcoded Sizes
 **What:** Find every hardcoded px value for font-size, padding, margin, gap, height, and width that isn't using a CSS variable. Replace with the appropriate token. Use the grep list in §4.
