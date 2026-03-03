@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v47
+**Service worker cache:** v48
 
 ---
 
 ## What Was Accomplished
+
+### Session 32 (2026-03-02)
+- **Added Dashboard Filter Pills** — Horizontal row of pill-shaped buttons (All, Pending, Paid, Void) above the transaction list. Each pill shows a live count in parentheses. Single-select with filled background in status color when active (blue/orange/green/gray). Filters the transaction list instantly on tap. Summary stats (customers, revenue, avg ticket) always reflect full sale totals regardless of active filter.
+- **Added Dashboard Sort Toggle** — "Newest First" / "Oldest First" text toggle right-aligned next to filter pills. Toggles sort direction with arrow indicator. Applies to the currently filtered list. Defaults to Newest First on every Dashboard open.
+- **Filter-Specific Empty State** — When a filter has 0 matching transactions, shows "No [status] tickets" instead of the generic "No transactions yet" message.
+- **Filter/Sort Reset on Navigation** — `Dashboard.resetFilters()` called from `App.showScreen()` resets to All filter and Newest First sort each time Dashboard is opened.
+- **Service worker** — Bumped to v48
 
 ### Session 31 (2026-03-02)
 - **Added Void Reason Labels to Dashboard Badges** — Voided transactions now show "Void — Edited Order" instead of just "Void". Added `voidReason` field to transaction data model, set at void time in both `qr.js:reopenTransaction()` and `dashboard.js:reopenTransaction()`. `renderStatusBadge()` displays the reason with em dash separator, falling back to plain "Void" for legacy data without `voidReason`. Code comments document future void reason values (Cancelled, Refunded, Duplicate).

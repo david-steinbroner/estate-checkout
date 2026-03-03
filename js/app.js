@@ -195,6 +195,7 @@ const App = {
       } else if (screenName === 'payment') {
         Payment.render(data);
       } else if (screenName === 'dashboard') {
+        Dashboard.resetFilters();
         Dashboard.render(data);
       }
     }

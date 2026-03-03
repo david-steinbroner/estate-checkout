@@ -7,6 +7,10 @@ const Dashboard = {
   // Currently expanded transaction (for accordion behavior)
   expandedTransactionId: null,
 
+  // Filter and sort state (reset on each Dashboard open)
+  activeFilter: 'all',
+  sortNewestFirst: true,
+
   // DOM element references
   elements: {},
 
@@ -19,6 +23,14 @@ const Dashboard = {
   },
 
   /**
+   * Reset filter and sort to defaults (called on each Dashboard navigation)
+   */
+  resetFilters() {
+    this.activeFilter = 'all';
+    this.sortNewestFirst = true;
+  },
+
+  /**
    * Cache DOM element references
    */
   cacheElements() {
@@ -26,6 +38,8 @@ const Dashboard = {
       customerCount: document.getElementById('dashboard-customers'),
       revenue: document.getElementById('dashboard-revenue'),
       avgTicket: document.getElementById('dashboard-avg'),
+      filtersContainer: document.getElementById('dashboard-filters'),
+      sortButton: document.getElementById('dashboard-sort'),
       transactionList: document.getElementById('dashboard-transactions'),
       emptyState: document.getElementById('dashboard-empty'),
       newCustomerButton: document.getElementById('dashboard-new-customer')
@@ -41,6 +55,24 @@ const Dashboard = {
       this.elements.newCustomerButton.addEventListener('click', () => {
         Checkout.clearAll();
         App.showScreen('checkout');
+      });
+    }
+
+    // Filter pill clicks (event delegation)
+    if (this.elements.filtersContainer) {
+      this.elements.filtersContainer.addEventListener('click', (e) => {
+        const pill = e.target.closest('.dashboard-filter');
+        if (!pill) return;
+        this.activeFilter = pill.dataset.filter;
+        this.render();
+      });
+    }
+
+    // Sort toggle
+    if (this.elements.sortButton) {
+      this.elements.sortButton.addEventListener('click', () => {
+        this.sortNewestFirst = !this.sortNewestFirst;
+        this.render();
       });
     }
 
@@ -72,11 +104,18 @@ const Dashboard = {
     // Get transactions for current sale
     const transactions = this.getTransactionsForCurrentSale();
 
-    // Render summary stats
+    // Summary stats always reflect full sale data (unfiltered)
     this.renderStats(transactions);
 
-    // Render transaction list
-    this.renderTransactionList(transactions);
+    // Render filter pills with counts
+    this.renderFilterPills(transactions);
+
+    // Update sort toggle text
+    this.renderSortToggle();
+
+    // Apply filter then sort, render the resulting list
+    const filtered = this.applyFilter(transactions);
+    this.renderTransactionList(filtered, transactions.length);
   },
 
   /**
@@ -115,24 +154,81 @@ const Dashboard = {
   },
 
   /**
-   * Render the transaction list
+   * Render filter pills with live counts
    */
-  renderTransactionList(transactions) {
+  renderFilterPills(transactions) {
+    if (!this.elements.filtersContainer) return;
+
+    const counts = {
+      all: transactions.length,
+      pending: transactions.filter(t => t.status === 'pending').length,
+      paid: transactions.filter(t => t.status === 'paid').length,
+      void: transactions.filter(t => t.status === 'void').length
+    };
+
+    const pills = [
+      { key: 'all', label: 'All' },
+      { key: 'pending', label: 'Pending' },
+      { key: 'paid', label: 'Paid' },
+      { key: 'void', label: 'Void' }
+    ];
+
+    this.elements.filtersContainer.innerHTML = pills.map(pill => {
+      const active = this.activeFilter === pill.key ? ' dashboard-filter--active' : '';
+      return `<button class="dashboard-filter dashboard-filter--${pill.key}${active}" data-filter="${pill.key}" type="button">${pill.label} (${counts[pill.key]})</button>`;
+    }).join('');
+  },
+
+  /**
+   * Update sort toggle button text
+   */
+  renderSortToggle() {
+    if (!this.elements.sortButton) return;
+    this.elements.sortButton.textContent = this.sortNewestFirst
+      ? 'Newest First \u2193'
+      : 'Oldest First \u2191';
+  },
+
+  /**
+   * Apply the active status filter to transactions
+   */
+  applyFilter(transactions) {
+    if (this.activeFilter === 'all') return transactions;
+    return transactions.filter(t => (t.status || 'unpaid') === this.activeFilter);
+  },
+
+  /**
+   * Render the transaction list
+   * @param {Array} transactions - Filtered transactions to display
+   * @param {number} totalCount - Total unfiltered count (to distinguish empty filter vs empty sale)
+   */
+  renderTransactionList(transactions, totalCount) {
     // Reset expanded state
     this.expandedTransactionId = null;
 
-    // Show empty state if no transactions
+    // Handle empty states
     if (transactions.length === 0) {
-      this.elements.emptyState.hidden = false;
       this.elements.transactionList.innerHTML = '';
+      if (totalCount === 0) {
+        // No transactions at all — show generic empty state
+        this.elements.emptyState.hidden = false;
+      } else {
+        // Transactions exist but none match filter — show filter-specific message
+        this.elements.emptyState.hidden = true;
+        const filterLabels = { pending: 'pending', paid: 'paid', void: 'void' };
+        const label = filterLabels[this.activeFilter] || this.activeFilter;
+        this.elements.transactionList.innerHTML =
+          `<li class="dashboard-filter-empty">No ${label} tickets</li>`;
+      }
       return;
     }
 
     this.elements.emptyState.hidden = true;
 
-    // Sort by timestamp, most recent first
+    // Sort by timestamp based on sort toggle
     const sorted = [...transactions].sort((a, b) => {
-      return new Date(b.timestamp) - new Date(a.timestamp);
+      const diff = new Date(b.timestamp) - new Date(a.timestamp);
+      return this.sortNewestFirst ? diff : -diff;
     });
 
     const html = sorted.map(txn => this.renderTransactionRow(txn)).join('');
