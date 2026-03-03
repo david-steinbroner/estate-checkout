@@ -77,7 +77,7 @@ These were previously on the roadmap but removed because they conflict with our 
 
 | Date | Issue | Severity | Notes |
 |------|-------|----------|-------|
-| 2026-03-03 | Design system inconsistency across screens | High | Prompts 1-6 done: tokens, buttons, inputs, touch targets, colors, numpad resize, item list UX, hardcoded sizes, item numbering, inline flash. Remaining: status badges, bottom sheets, screen polish, final audit. **Still the current priority.** |
+| 2026-03-03 | Design system inconsistency across screens | High | Prompts 1-7 done: tokens, buttons, inputs, touch targets, colors, numpad, item list UX, hardcoded sizes, item numbering, inline flash, status badges. Remaining: bottom sheets, screen polish, final audit. **Still the current priority.** |
 | 2026-03-02 | QR data may hit size limits for 50+ item carts | Low | Raw JSON, no compression. Needs field test data to validate real-world cart sizes. |
 | 2026-03-02 | Offline airplane mode not tested | Medium | Service worker caches all assets but no live test has been done in airplane mode. |
 

@@ -589,10 +589,8 @@ These are structured prompts for a coding session. Each prompt is a self-contain
 ### Prompt 6: Replace All Hardcoded Sizes + Item Numbering + Inline Flash ✅
 **Status:** Complete. All hardcoded px values outside `:root` replaced with tokens or annotated with `/* intentional: ... */` comments. Added `--font-size-icon` (48px) and `--font-size-icon-lg` (72px) tokens. All font-weight and line-height values use tokens. Items without descriptions show "Item N" (1-indexed). Floating "Added!" flash replaced with inline row highlight animation.
 
-### Prompt 7: Standardize Status Badges
-**What:** Rebuild status badges (paid, pending, unpaid, void) to use the component spec from §2. All badges should look consistent in size, padding, border-radius, and color mapping.
-**Files:** `css/styles.css`
-**Verify:** View dashboard with transactions in all 4 statuses — badges look consistent.
+### Prompt 7: Fix Item Numbering + Standardize Status Badges ✅
+**Status:** Complete. Item rows now show "1. Book" or "2. No description" (italic/muted) format in both inline list and sheet. Status badges standardized to pill shape (`--radius-pill`), `display: inline-flex`, void bg changed to `--color-bg-hover` per §2 spec.
 
 ### Prompt 8: Standardize Bottom Sheets
 **What:** All bottom sheets/modals use the sheet spec from §2. Consistent padding, border-radius, title styling, button layout.

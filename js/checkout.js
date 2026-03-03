@@ -349,11 +349,13 @@ const Checkout = {
     const html = this.items.map((item, index) => {
       const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
-      const displayText = hasDesc ? Utils.escapeHtml(item.description) : `Item ${index + 1}`;
+      const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
+      const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
 
       return `
         <li class="item-row" data-id="${item.id}">
-          <span class="item-row__desc">${displayText}</span>
+          <span class="item-row__number">${index + 1}.</span>
+          <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
@@ -424,11 +426,13 @@ const Checkout = {
     const html = this.items.map((item, index) => {
       const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
-      const displayText = hasDesc ? Utils.escapeHtml(item.description) : `Item ${index + 1}`;
+      const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
+      const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
 
       return `
         <li class="item-row" data-id="${item.id}">
-          <span class="item-row__desc">${displayText}</span>
+          <span class="item-row__number">${index + 1}.</span>
+          <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
