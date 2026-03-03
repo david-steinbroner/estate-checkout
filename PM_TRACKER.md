@@ -11,7 +11,7 @@
 **Current priority:** Design system overhaul — see DESIGN_SYSTEM.md
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v55
+**Service worker cache:** v56
 **Development sessions:** 32 (2026-02-27 through 2026-03-02)
 **Commits:** 68
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
@@ -36,7 +36,7 @@
 
 ### What's Left Before Ship
 
-1. **🟡 Design system overhaul** — Prompts 1-7 of 10 complete. Item numbering with "No description" styling, status badges standardized to pill shape. Remaining: bottom sheets, screen polish, final audit. See DESIGN_SYSTEM.md §6.
+1. **🟡 Design system overhaul** — Prompts 1-9 of 10 complete (8+9 combined). Bottom sheets standardized, screen-by-screen polish done. Remaining: final audit only. See DESIGN_SYSTEM.md §6.
 2. **End-to-end test pass** on mobile Chrome and mobile Safari (after design system)
 3. **Offline test** — airplane mode full checkout flow
 4. **Alissa's independent walkthrough** — can she complete the full flow with zero instruction?

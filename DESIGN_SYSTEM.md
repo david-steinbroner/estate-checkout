@@ -592,15 +592,8 @@ These are structured prompts for a coding session. Each prompt is a self-contain
 ### Prompt 7: Fix Item Numbering + Standardize Status Badges ✅
 **Status:** Complete. Item rows now show "1. Book" or "2. No description" (italic/muted) format in both inline list and sheet. Status badges standardized to pill shape (`--radius-pill`), `display: inline-flex`, void bg changed to `--color-bg-hover` per §2 spec.
 
-### Prompt 8: Standardize Bottom Sheets
-**What:** All bottom sheets/modals use the sheet spec from §2. Consistent padding, border-radius, title styling, button layout.
-**Files:** `css/styles.css`
-**Verify:** Trigger every sheet in the app (no-description prompt, clear all confirm, end sale confirm, mic guide, speech confirmation). All look consistent.
-
-### Prompt 9: Screen-by-Screen Polish
-**What:** Walk through each screen against the §3 tables. Fix anything remaining. Particular attention to: checkout screen layout after touch target increases (things may shift — verify viewport still fits on 375px without scrolling), dashboard filter/sort layout at new 48px heights, setup screen flow with larger inputs.
-**Files:** `css/styles.css`, `index.html`
-**Verify:** Every screen on 375px viewport. Nothing scrolls that shouldn't. No overlapping elements. Everything looks like part of the same app.
+### Prompt 8: Standardize Bottom Sheets + Screen-by-Screen Polish ✅
+**Status:** Complete (Prompts 8+9 combined). All sheets now use `--color-surface-raised`, `max-height: 80vh`, `overflow-y: auto`. Sheet titles standardized to `--font-size-xl` / `--font-weight-bold`. Clear All uses danger-outline style, End Estate Sale keeps filled danger. Speech retry changed from Primary to Success. Scan error help text uses `--color-text-secondary`. All screens verified against §3 tables.
 
 ### Prompt 10: Final Audit
 **What:** Full grep audit for hardcoded values. Full visual test on mobile Chrome and Safari. Check every screen, every modal, every state (empty cart, full cart, active discount, no discount, all dashboard filters, all transaction statuses).
