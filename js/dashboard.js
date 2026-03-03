@@ -159,7 +159,7 @@ const Dashboard = {
     const status = txn.status || 'unpaid';
 
     // Status badge HTML
-    const statusBadge = this.renderStatusBadge(status);
+    const statusBadge = this.renderStatusBadge(status, txn.voidReason);
 
     // Void styling
     const voidClass = status === 'void' ? ' dashboard-txn--void' : '';
@@ -185,13 +185,19 @@ const Dashboard = {
 
   /**
    * Render status badge
+   * @param {string} status - Transaction status
+   * @param {string} [voidReason] - Reason for voiding (only used when status is 'void')
    */
-  renderStatusBadge(status) {
+  renderStatusBadge(status, voidReason) {
+    if (status === 'void') {
+      const label = voidReason ? `Void \u2014 ${Utils.escapeHtml(voidReason)}` : 'Void';
+      return `<span class="dashboard-txn__status dashboard-txn__status--void">${label}</span>`;
+    }
+
     const badges = {
       'paid': '<span class="dashboard-txn__status dashboard-txn__status--paid">Paid</span>',
       'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>',
-      'pending': '<span class="dashboard-txn__status dashboard-txn__status--pending">Pending</span>',
-      'void': '<span class="dashboard-txn__status dashboard-txn__status--void">Void</span>'
+      'pending': '<span class="dashboard-txn__status dashboard-txn__status--pending">Pending</span>'
     };
     return badges[status] || badges['unpaid'];
   },
@@ -303,9 +309,11 @@ const Dashboard = {
     if (!txn || txn.status === 'void') return;
 
     // Mark original as void
+    // voidReason values: 'Edited Order', 'Cancelled', 'Refunded', 'Duplicate' (future)
     Storage.updateTransaction(txnId, {
       status: 'void',
-      voidedAt: Utils.getTimestamp()
+      voidedAt: Utils.getTimestamp(),
+      voidReason: 'Edited Order'
     });
 
     // Load items into checkout

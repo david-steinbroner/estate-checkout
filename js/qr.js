@@ -60,9 +60,11 @@ const QR = {
     if (!current || current.status === 'void') return;
 
     // Void the original transaction
+    // voidReason values: 'Edited Order', 'Cancelled', 'Refunded', 'Duplicate' (future)
     Storage.updateTransaction(txn.id, {
       status: 'void',
-      voidedAt: Utils.getTimestamp()
+      voidedAt: Utils.getTimestamp(),
+      voidReason: 'Edited Order'
     });
 
     // Load items into checkout with new IDs

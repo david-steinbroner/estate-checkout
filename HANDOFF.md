@@ -3,11 +3,15 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v46
+**Service worker cache:** v47
 
 ---
 
 ## What Was Accomplished
+
+### Session 31 (2026-03-02)
+- **Added Void Reason Labels to Dashboard Badges** — Voided transactions now show "Void — Edited Order" instead of just "Void". Added `voidReason` field to transaction data model, set at void time in both `qr.js:reopenTransaction()` and `dashboard.js:reopenTransaction()`. `renderStatusBadge()` displays the reason with em dash separator, falling back to plain "Void" for legacy data without `voidReason`. Code comments document future void reason values (Cancelled, Refunded, Duplicate).
+- **Service worker** — Bumped to v47
 
 ### Session 30 (2026-03-02)
 - **Fixed Mic Guide Flag Poisoning** — `hideMicTooltip()` unconditionally set the `estate_mic_tooltip_seen` localStorage flag every time it was called, even when the tooltip was never shown. This was triggered by `window.blur` during the browser permission dialog and by `doStartListening()` calling it on every mic press. Replaced with `hideMicGuide()` that only sets the flag if the guide was actually visible.
