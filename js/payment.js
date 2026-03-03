@@ -62,10 +62,10 @@ const Payment = {
 
     this.cartData = data;
 
-    // Format customer header: "Customer #3 — 10:42 AM"
-    const customerNum = data.customerNumber || '?';
+    // Format order header: "Sarah — 10:42 AM" or "Order #3 — 10:42 AM"
+    const orderLabel = data.orderName || ('Order #' + (data.customerNumber || '?'));
     const time = Utils.formatTime(data.ts);
-    this.elements.title.textContent = `Customer #${customerNum} — ${time}`;
+    this.elements.title.textContent = `${orderLabel} — ${time}`;
 
     // Render items
     this.renderItems(data.items);

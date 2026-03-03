@@ -82,7 +82,8 @@ const Storage = {
       status: txn.status || 'unpaid',
       paidAt: txn.paidAt || null,
       voidedAt: txn.voidedAt || null,
-      reopenedFrom: txn.reopenedFrom || null
+      reopenedFrom: txn.reopenedFrom || null,
+      orderName: txn.orderName || ''
     }));
   },
 
@@ -135,6 +136,24 @@ const Storage = {
 
     // New sale or first customer - start at 1
     this.saveCustomerCounter(sale?.id, 1);
+    return 1;
+  },
+
+  /**
+   * Peek at the next customer number without incrementing
+   * Used for placeholder text (e.g., "Order #3 (tap to name)")
+   */
+  peekNextCustomerNumber() {
+    const sale = this.getSale();
+    const data = localStorage.getItem(this.KEYS.CUSTOMER_COUNTER);
+
+    if (data) {
+      const counter = JSON.parse(data);
+      if (counter.saleId === sale?.id) {
+        return counter.counter + 1;
+      }
+    }
+
     return 1;
   },
 

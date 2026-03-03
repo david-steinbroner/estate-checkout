@@ -43,6 +43,7 @@ const Checkout = {
     this.loadSale();
     this.loadCart();
     this.render();
+    this.updateOrderNamePlaceholder();
   },
 
   /**
@@ -73,7 +74,8 @@ const Checkout = {
       flashError: document.getElementById('flash-error'),
       descPrompt: document.getElementById('desc-prompt'),
       descPromptAdd: document.getElementById('desc-prompt-add'),
-      descPromptDesc: document.getElementById('desc-prompt-desc')
+      descPromptDesc: document.getElementById('desc-prompt-desc'),
+      orderNameInput: document.getElementById('order-name-input')
     };
   },
 
@@ -335,6 +337,16 @@ const Checkout = {
     this.renderRunningTotal();
     this.updateDoneButton();
     this.checkItemOverflow();
+    this.updateOrderNamePlaceholder();
+  },
+
+  /**
+   * Update the order name input placeholder with the next order number
+   */
+  updateOrderNamePlaceholder() {
+    if (!this.elements.orderNameInput) return;
+    const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
+    this.elements.orderNameInput.placeholder = `Order #${num} (tap to name)`;
   },
 
   /**
@@ -496,6 +508,7 @@ const Checkout = {
     Storage.clearCart();
     this.priceInput = '';
     this.elements.descriptionInput.value = '';
+    this.elements.orderNameInput.value = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
@@ -523,6 +536,9 @@ const Checkout = {
     // Clear UI inputs
     if (this.elements.descriptionInput) {
       this.elements.descriptionInput.value = '';
+    }
+    if (this.elements.orderNameInput) {
+      this.elements.orderNameInput.value = '';
     }
     this.updatePriceDisplay();
     this.render();
@@ -558,6 +574,7 @@ const Checkout = {
       id: Utils.generateId(),
       timestamp: Utils.getTimestamp(),
       customerNumber: customerNumber,
+      orderName: this.elements.orderNameInput.value.trim() || '',
       items: [...this.items],
       total: this.items.reduce((sum, item) => sum + item.finalPrice, 0),
       discount: this.currentDiscount,

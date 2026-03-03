@@ -187,13 +187,23 @@ const Scan = {
     this.stop();
 
     try {
-      const data = JSON.parse(rawData);
+      let data;
+
+      // Dual-format detection: URL format (new) vs raw JSON (legacy)
+      if (rawData.includes('/ticket.html?d=')) {
+        const url = new URL(rawData);
+        const encoded = url.searchParams.get('d');
+        if (!encoded) throw new Error('Missing d parameter');
+        const jsonStr = decodeURIComponent(escape(atob(encoded)));
+        data = JSON.parse(jsonStr);
+      } else {
+        data = JSON.parse(rawData);
+      }
 
       // Validate expected structure
       if (!data.items || typeof data.total !== 'number') {
         this.elements.status.textContent = 'Invalid QR code';
         this.restartTimeout = setTimeout(() => {
-          // Only restart if scan screen is still active
           const scanScreen = document.getElementById('screen-scan');
           if (scanScreen && scanScreen.classList.contains('active')) {
             this.start();
@@ -208,7 +218,6 @@ const Scan = {
       console.error('Invalid QR data:', error);
       this.elements.status.textContent = 'Could not read QR code';
       this.restartTimeout = setTimeout(() => {
-        // Only restart if scan screen is still active
         const scanScreen = document.getElementById('screen-scan');
         if (scanScreen && scanScreen.classList.contains('active')) {
           this.start();

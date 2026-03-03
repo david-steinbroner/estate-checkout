@@ -82,6 +82,9 @@ const QR = {
     Checkout.transactionSaved = false;
     Checkout.lastTransaction = null;
 
+    // Preserve order name
+    Checkout.elements.orderNameInput.value = txn.orderName || '';
+
     // Navigate to checkout
     App.showScreen('checkout');
     Checkout.render();
@@ -96,6 +99,7 @@ const QR = {
       day: transaction.saleDay,
       discount: transaction.discount,
       customerNumber: transaction.customerNumber,
+      orderName: transaction.orderName || '',
       items: transaction.items.map(item => ({
         desc: item.description || '',
         orig: item.originalPrice,
@@ -105,7 +109,9 @@ const QR = {
       ts: transaction.timestamp
     };
 
-    return JSON.stringify(data);
+    const jsonStr = JSON.stringify(data);
+    // Encode as URL pointing to standalone ticket page
+    return window.location.origin + '/ticket.html?d=' + btoa(unescape(encodeURIComponent(jsonStr)));
   },
 
   /**
@@ -124,6 +130,13 @@ const QR = {
 
     this.transaction = transaction;
     const sale = Storage.getSale();
+
+    // Update QR helper text with order label
+    const helperEl = document.getElementById('qr-helper-text');
+    if (helperEl) {
+      const orderLabel = transaction.orderName || ('Order #' + (transaction.customerNumber || '?'));
+      helperEl.textContent = `${orderLabel} — customer can scan with their phone camera`;
+    }
 
     // Render item summary and total first (these should always work)
     this.renderItemSummary(transaction);

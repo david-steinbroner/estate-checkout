@@ -344,6 +344,21 @@ background: var(--color-surface)
 
 Active state uses the corresponding status color as background with white text. **Current 36px height must increase to 48px.**
 
+### Order Name Input
+
+```
+height: 28px              /* intentional: supplementary input, not primary interactive element */
+font-size: var(--font-size-sm)
+color: var(--color-text-secondary)
+background: var(--color-bg)
+border: 1px solid var(--color-border)
+border-radius: var(--radius-sm)
+```
+
+**Note:** This is an intentional exception to the 48px minimum height rule. The order name input is supplementary — the primary workflow doesn't require naming orders. The 28px height keeps it visually subordinate to the running total bar and item list.
+
+**Note:** `ticket.html` is a standalone customer-facing page with its own inline styles. It is intentionally outside the design system — it must render without importing app CSS/JS.
+
 ### Remove / Delete Buttons (Item List)
 
 ```

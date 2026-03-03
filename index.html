@@ -38,6 +38,12 @@
       <span class="running-total__savings" id="running-savings"></span>
     </div>
 
+    <!-- Order Name Input -->
+    <div class="order-name-bar">
+      <input type="text" class="order-name-input" id="order-name-input"
+        placeholder="Order #1 (tap to name)" maxlength="30" autocomplete="off">
+    </div>
+
     <!-- Item List (inline preview — shows last 2-3 items) -->
     <div class="item-list-container" id="item-list-container">
       <ul class="item-list" id="item-list">
@@ -100,6 +106,7 @@
     <div class="qr-code-container">
       <div id="qr-code" class="qr-code"></div>
     </div>
+    <p class="qr-helper-text" id="qr-helper-text">Customer can scan this with their phone camera</p>
 
     <!-- Transaction Summary -->
     <div class="qr-summary">
@@ -114,7 +121,7 @@
     <div class="qr-actions">
       <div class="qr-actions__row">
         <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Order</button>
-        <button type="button" class="qr-action qr-action--new" id="qr-new">New Customer</button>
+        <button type="button" class="qr-action qr-action--new" id="qr-new">New Order</button>
       </div>
     </div>
   </div>
@@ -195,14 +202,14 @@
 
     <!-- Actions -->
     <div class="scan-actions">
-      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Customer</button>
+      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Order</button>
     </div>
   </div>
 
   <!-- Payment Receive Screen -->
   <div id="screen-payment" class="screen payment-screen">
-    <!-- Customer Info Bar -->
-    <div class="payment-info" id="payment-title">Customer #1 — 10:42 AM</div>
+    <!-- Order Info Bar -->
+    <div class="payment-info" id="payment-title">Order #1 — 10:42 AM</div>
 
     <!-- Item List -->
     <div class="payment-items-container">
@@ -223,7 +230,7 @@
         Mark Paid
       </button>
       <button class="payment-action payment-action--new" id="payment-new-customer">
-        New Customer
+        New Order
       </button>
     </div>
 
@@ -240,7 +247,7 @@
     <div class="dashboard-stats">
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-customers">0</span>
-        <span class="dashboard-stat__label">Customers</span>
+        <span class="dashboard-stat__label">Orders</span>
       </div>
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-revenue">$0.00</span>
@@ -273,7 +280,7 @@
 
     <!-- Actions -->
     <div class="dashboard-actions">
-      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Customer</button>
+      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Order</button>
     </div>
   </div>
 

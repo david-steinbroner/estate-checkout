@@ -305,6 +305,37 @@ body {
   font-weight: var(--font-weight-semibold);
 }
 
+/* === Order Name Input === */
+.order-name-bar {
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.order-name-input {
+  width: 100%;
+  height: 28px; /* intentional: supplementary input, not primary interactive element */
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-md);
+  box-sizing: border-box;
+}
+
+.order-name-input::placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.order-name-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  color: var(--color-text);
+}
+
 /* === Item List (inline preview — shows last 2-3 items) === */
 .item-list-container {
   flex: 1;
@@ -1192,6 +1223,14 @@ body {
   padding: var(--space-md);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-qr);
+}
+
+.qr-helper-text {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-sm) var(--space-lg);
+  margin: 0;
 }
 
 .qr-summary {

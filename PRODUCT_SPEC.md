@@ -29,25 +29,27 @@ FIRST-RUN ONBOARDING (once per device)
   → 3-card walkthrough: Set Up Your Sale → Ring Up Items → Mark It Paid
   → Can be replayed from "How It Works" link on Setup screen
 
-CHECKOUT WORKER FLOW (repeated per customer)
+CHECKOUT WORKER FLOW (repeated per order)
   → Open checkout pad (shared header shows sale name, day, discount)
+  → Optionally name the order (e.g., "Sarah") or leave as auto-numbered "Order #1"
   → Enter item price via number pad → tap Add Item
   → OR hold 🎤 Speak → say "blue vase twelve dollars" → confirm/edit/cancel
   → If no description entered, a prompt asks to add one or continue
   → Repeat for each item
   → See running item list with discounted prices and savings
   → Tap Create Ticket → QR code appears with transaction summary
-  → Hand device to customer or payment worker scans QR
-  → Tap New Customer → pad resets for next customer
+  → Customer can scan QR with their phone camera → opens ticket page with receipt + QR
+  → OR payment worker scans QR from checkout device or customer's phone
+  → Tap New Order → pad resets for next order
   → OR tap Edit Order → voids current ticket, reloads items for editing
 
 PAYMENT WORKER FLOW
   → Tap Scan Ticket in header → camera opens
-  → Scan QR code from checkout worker's screen
-  → See itemized list + total due
+  → Scan QR code from checkout worker's screen or from customer's phone
+  → See itemized list + total due (shows order name if set)
   → Enter total into POS (Square/Clover) manually
   → Tap Mark Paid → transaction saved
-  → Tap New Customer → return to scan for next customer
+  → Tap New Order → return to scan for next order
 
 OPERATOR REVIEW (during or end of day)
   → Tap Dashboard in header
@@ -117,7 +119,8 @@ OPERATOR REVIEW (during or end of day)
    - Context strip: sale name, day number, current discount
    - Button bar: Dashboard, Scan Ticket, End Estate Sale
 2. **Running total bar:** Shows "Total: $X.XX" and "Saved: $X.XX" when discount is active
-3. **Item list** (scrollable, expandable):
+3. **Order name input:** Optional — placeholder shows "Order #N (tap to name)", user can type a custom name (e.g., "Sarah"). 28px height (intentional exception — supplementary, not primary input).
+4. **Item list** (scrollable, expandable):
    - Each row: description (if given), original price (struck through if discounted), final price, remove button (×)
    - Tappable to expand when items overflow the visible area
    - Close strip and backdrop overlay when expanded
@@ -152,20 +155,33 @@ OPERATOR REVIEW (during or end of day)
 **Purpose:** Transfer the itemized list to the payment worker or customer.
 
 **Elements:**
-- Large QR code (centered)
+- Large QR code (centered) — encodes a URL to ticket.html
+- Helper text showing order name and "customer can scan with their phone camera"
 - Itemized list summary below:
   - Each item: description (or "Item"), original price (struck through if discounted), final price
   - Total at bottom
-- "Edit Order" button — voids current ticket, reloads items into checkout for editing
-- "New Customer" button — clears cart, returns to checkout pad
+- "Edit Order" button — voids current ticket, reloads items into checkout for editing (preserves order name)
+- "New Order" button — clears cart, returns to checkout pad
+
+**Customer Ticket Page (ticket.html):**
+- Standalone page, no app CSS/JS imports (inline styles only)
+- Customer scans QR with phone camera → opens receipt page
+- Shows: order name, sale info, itemized list with prices, total, timestamp
+- Renders a self-referential QR code (payment worker can scan from customer's phone)
+- Error state for missing/malformed data
 
 **QR Data Format:**
+
+The QR code encodes a URL: `https://[origin]/ticket.html?d=[base64-encoded-json]`
+
+When decoded, the JSON payload:
 ```json
 {
   "sale": "Johnson Estate",
   "day": 2,
   "discount": 25,
   "customerNumber": 1,
+  "orderName": "Sarah",
   "items": [
     {"desc": "brass lamp", "orig": 15.00, "final": 11.25},
     {"desc": "", "orig": 8.00, "final": 6.00}
@@ -189,11 +205,12 @@ OPERATOR REVIEW (during or end of day)
 - Full-screen camera viewfinder with scan target overlay
 - Status text: "Point camera at QR code"
 - Camera permission error state with retry button
-- "New Customer" button (navigates to checkout to create a new order)
+- "New Order" button (navigates to checkout to create a new order)
 
 **Behavior:**
 - Uses native BarcodeDetector API where available (Chrome/Edge)
 - Falls back to html5-qrcode library for iOS Safari
+- Dual-format detection: URL format (new, `ticket.html?d=...`) and legacy raw JSON
 - Camera permission denied shows error with "Retry" button and help text
 - On successful scan, navigates to Payment screen with decoded transaction data
 
@@ -204,7 +221,7 @@ OPERATOR REVIEW (during or end of day)
 **Purpose:** Show the payment worker what the customer owes.
 
 **Elements:**
-- Customer info bar: "Customer #X — HH:MM AM/PM"
+- Order info bar: "OrderName — HH:MM AM/PM" (shows custom name or "Order #X" fallback)
 - Itemized list with descriptions and prices (discounted items show original struck through)
 - Total due (large, prominent)
 - "Mark Paid" button (green)
@@ -231,7 +248,7 @@ OPERATOR REVIEW (during or end of day)
   - Single-select, active pill fills with status color (blue/orange/green/gray)
 - Sort toggle: "Newest First ↓" / "Oldest First ↑" (text link, right-aligned)
 - Transaction list:
-  - Each row: "Customer #X — Day Y · HH:MM AM/PM", status badge, total
+  - Each row: "OrderName — Day Y · HH:MM AM/PM" (or "Order #X" fallback), status badge, total
   - Item count in secondary text
   - Tap to expand/collapse (accordion — only one expanded at a time)
 - Expanded detail:
@@ -317,7 +334,7 @@ Voided transactions include a `voidReason` string:
 - **PWA:** Installable on home screen, works like a native app
 - **Browser targets:** Mobile Chrome (Android), Mobile Safari (iOS)
 - **Performance:** Checkout pad must render and respond to taps in under 100ms
-- **QR size limit:** Standard QR codes max out around 4,296 alphanumeric characters. For a typical transaction of 20 items, the JSON should be well under this. For edge cases (50+ items), truncate descriptions.
+- **QR size limit:** QR codes now encode a URL with base64-encoded JSON. Standard QR codes max out around 4,296 alphanumeric characters. For a typical transaction of 20 items, the encoded URL should be well under this. For edge cases (50+ items), truncate descriptions.
 
 ---
 

@@ -11,7 +11,7 @@
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v58
+**Service worker cache:** v59
 **Development sessions:** 32+ (2026-02-27 through 2026-03-03, plus design system implementation session)
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
 
@@ -42,7 +42,7 @@
 5. **Field test** at real estate sale with Alissa's contact
 
 ### Known Issues / Tech Debt
-- QR data may hit size limits for 50+ item carts (raw JSON, no compression) — needs field validation
+- QR data now encoded as base64 URL; may hit size limits for 50+ item carts — needs field validation
 - Offline airplane mode never tested live
 
 ---
@@ -78,6 +78,7 @@ Session 27: First-run onboarding walkthrough + "How It Works" replay
 Sessions 28–30: Edit Order void loop fix, removed description prompt limit, speech UX fixes (mic guide, quick-tap, blur handler)
 Sessions 31–32: Void reason labels on dashboard, filter pills, sort toggle, filter-specific empty states
 Session 33 (2026-03-03): **Design system overhaul** — 10-prompt implementation sequence. Token system replacement, button standardization (single 48px height, 4 color variants), input standardization, hardcoded color/size replacement, item list UX overhaul (bottom sheet + inline preview + numbering + inline Added flash), numpad resize to 48px, status badge standardization, bottom sheet polish, final audit + comment cleanup. Service worker bumped from v48 to v57.
+Session 34 (2026-03-03): **Order naming + customer ticket page** — Optional order name input (replaces auto "Customer #X"), QR codes now encode URLs to standalone `ticket.html` (customers scan with phone camera to see receipt + QR), renamed "Customer" → "Order" throughout UI, dual-format scanner (URL + legacy JSON), orderName preserved through Edit Order cycle, service worker bumped to v59.
 
 ---
 

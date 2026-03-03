@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+  <title>Your Ticket — Estate Checkout</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .ticket {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      padding: 24px;
+      margin-top: 8px;
+    }
+
+    .ticket__header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .ticket__order-name {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .ticket__sale-info {
+      font-size: 13px;
+      color: #666666;
+    }
+
+    .ticket__items {
+      list-style: none;
+      margin-bottom: 12px;
+    }
+
+    .ticket__item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .ticket__item:last-child {
+      border-bottom: none;
+    }
+
+    .ticket__item-desc {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+
+    .ticket__item-price {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .ticket__item-original {
+      text-decoration: line-through;
+      color: #999999;
+      font-weight: 400;
+      margin-right: 6px;
+    }
+
+    .ticket__total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 2px solid #1a1a1a;
+      margin-top: 4px;
+    }
+
+    .ticket__total-label {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .ticket__total-amount {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .ticket__timestamp {
+      text-align: center;
+      font-size: 12px;
+      color: #999999;
+      margin-top: 12px;
+    }
+
+    .ticket__qr {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .ticket__qr-code {
+      padding: 8px;
+      background: #ffffff;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .ticket__footer {
+      text-align: center;
+      font-size: 11px;
+      color: #bbbbbb;
+      margin-top: 20px;
+    }
+
+    .ticket__error {
+      text-align: center;
+      padding: 32px 16px;
+    }
+
+    .ticket__error-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .ticket__error-msg {
+      font-size: 14px;
+      color: #666666;
+    }
+  </style>
+</head>
+<body>
+  <div class="ticket" id="ticket">
+    <!-- Rendered by JS -->
+  </div>
+  <div class="ticket__footer">Powered by Estate Checkout</div>
+
+  <script src="/lib/qrcode.min.js"></script>
+  <script>
+    (function() {
+      const ticketEl = document.getElementById('ticket');
+
+      function formatCurrency(amount) {
+        return '$' + (typeof amount === 'number' ? amount.toFixed(2) : '0.00');
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function formatTime(ts) {
+        if (!ts) return '';
+        try {
+          const d = new Date(ts);
+          return d.toLocaleString('en-US', {
+            month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+
+      function renderError(msg) {
+        ticketEl.innerHTML = `
+          <div class="ticket__error">
+            <div class="ticket__error-title">Ticket Not Found</div>
+            <div class="ticket__error-msg">${escapeHtml(msg || 'This link may be invalid or expired.')}</div>
+          </div>
+        `;
+      }
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const encoded = params.get('d');
+
+        if (!encoded) {
+          renderError('No ticket data in this link.');
+          return;
+        }
+
+        const jsonStr = decodeURIComponent(escape(atob(encoded)));
+        const data = JSON.parse(jsonStr);
+
+        if (!data.items || typeof data.total !== 'number') {
+          renderError('This ticket data is incomplete.');
+          return;
+        }
+
+        // Build header
+        const orderName = data.orderName || ('Order #' + (data.customerNumber || '?'));
+        const saleName = data.sale || 'Estate Sale';
+        const dayLabel = data.day ? `Day ${data.day}` : '';
+        const discountLabel = data.discount > 0 ? `${data.discount}% off` : '';
+        const saleInfo = [saleName, dayLabel, discountLabel].filter(Boolean).join(' · ');
+
+        // Build items
+        const itemsHtml = data.items.map(item => {
+          const desc = item.desc || 'Item';
+          const hasDiscount = item.orig !== item.final;
+          return `
+            <li class="ticket__item">
+              <span class="ticket__item-desc">${escapeHtml(desc)}</span>
+              <span class="ticket__item-price">
+                ${hasDiscount ? `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>` : ''}
+                ${formatCurrency(item.final)}
+              </span>
+            </li>
+          `;
+        }).join('');
+
+        const timeStr = formatTime(data.ts);
+
+        ticketEl.innerHTML = `
+          <div class="ticket__header">
+            <div class="ticket__order-name">${escapeHtml(orderName)}</div>
+            <div class="ticket__sale-info">${escapeHtml(saleInfo)}</div>
+          </div>
+          <ul class="ticket__items">${itemsHtml}</ul>
+          <div class="ticket__total">
+            <span class="ticket__total-label">Total</span>
+            <span class="ticket__total-amount">${formatCurrency(data.total)}</span>
+          </div>
+          ${timeStr ? `<div class="ticket__timestamp">${escapeHtml(timeStr)}</div>` : ''}
+          <div class="ticket__qr">
+            <div class="ticket__qr-code" id="ticket-qr"></div>
+          </div>
+        `;
+
+        // Render self-referential QR code (so payment worker can scan the customer's phone)
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(document.getElementById('ticket-qr'), {
+            text: window.location.href,
+            width: 160,
+            height: 160,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+      } catch (e) {
+        console.error('Ticket parse error:', e);
+        renderError('Could not read ticket data.');
+      }
+    })();
+  </script>
+</body>
+</html>

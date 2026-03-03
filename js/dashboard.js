@@ -248,7 +248,7 @@ const Dashboard = {
    * Render a single transaction row
    */
   renderTransactionRow(txn) {
-    const customerNum = txn.customerNumber || '?';
+    const orderLabel = Utils.escapeHtml(txn.orderName || ('Order #' + (txn.customerNumber || '?')));
     const time = Utils.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
@@ -264,7 +264,7 @@ const Dashboard = {
       <li class="dashboard-txn${voidClass}" data-id="${txn.id}">
         <div class="dashboard-txn__summary">
           <div class="dashboard-txn__header">
-            <span class="dashboard-txn__customer">Customer #${customerNum} — Day ${txn.saleDay || 1} · ${time}</span>
+            <span class="dashboard-txn__customer">${orderLabel} — Day ${txn.saleDay || 1} · ${time}</span>
             ${statusBadge}
             <span class="dashboard-txn__total">${total}</span>
           </div>
@@ -421,6 +421,9 @@ const Dashboard = {
 
     // Track that this is a reopened transaction
     Checkout.reopenedFromCustomer = txn.customerNumber;
+
+    // Preserve order name
+    Checkout.elements.orderNameInput.value = txn.orderName || '';
 
     // Navigate to checkout
     App.showScreen('checkout');
