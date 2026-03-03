@@ -19,8 +19,8 @@ const Speech = {
   processingHardTimeout: null,
   consecutiveFailures: 0,
   micPermissionState: 'prompt', // 'granted', 'denied', or 'prompt'
-  recordingStartTime: null,
-  micTooltipTimeout: null,
+  buttonPressTime: null,
+  buttonReleaseTime: null,
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
@@ -73,9 +73,6 @@ const Speech = {
     this.recognition.lang = 'en-US';
 
     this.recognition.onstart = () => {
-      // Track when recording actually started (for quick-tap detection)
-      this.recordingStartTime = Date.now();
-
       // Mic is now active (permission granted) - start the timeout if user released button
       if (this.waitingForResult) {
         this.startResultTimeout();
@@ -180,8 +177,8 @@ const Speech = {
       permissionBody: document.getElementById('speech-permission-body'),
       permissionAllowBtn: document.getElementById('speech-permission-allow'),
       permissionDismissBtn: document.getElementById('speech-permission-dismiss'),
-      micTooltip: document.getElementById('mic-tooltip'),
-      micTooltipDismiss: document.getElementById('mic-tooltip-dismiss')
+      micGuideModal: document.getElementById('mic-guide-modal'),
+      micGuideBtn: document.getElementById('mic-guide-btn')
     };
   },
 
@@ -272,10 +269,17 @@ const Speech = {
       });
     }
 
-    // Mic tooltip dismiss
-    if (this.elements.micTooltipDismiss) {
-      this.elements.micTooltipDismiss.addEventListener('click', () => {
-        this.hideMicTooltip();
+    // Mic guide sheet dismiss
+    if (this.elements.micGuideBtn) {
+      this.elements.micGuideBtn.addEventListener('click', () => {
+        this.hideMicGuide();
+      });
+    }
+    if (this.elements.micGuideModal) {
+      this.elements.micGuideModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.micGuideModal) {
+          this.hideMicGuide();
+        }
       });
     }
 
@@ -287,10 +291,6 @@ const Speech = {
     });
 
     window.addEventListener('pagehide', () => {
-      this.forceStopRecognition();
-    });
-
-    window.addEventListener('blur', () => {
       this.forceStopRecognition();
     });
   },
@@ -324,8 +324,15 @@ const Speech = {
   doStartListening() {
     if (!this.recognition || this.isListening) return;
 
-    // Dismiss tooltip if visible (user figured out the button)
-    this.hideMicTooltip();
+    // Show guide sheet on first mic use after permission grant (one-time)
+    if (!localStorage.getItem(this.MIC_TOOLTIP_KEY)) {
+      this.showMicGuide();
+      return; // Don't start recognition — user reads guide first, then presses again
+    }
+
+    // Track button press time for quick-tap detection
+    this.buttonPressTime = Date.now();
+    this.buttonReleaseTime = null;
 
     try {
       this.recognition.start();
@@ -343,6 +350,9 @@ const Speech = {
    */
   onButtonRelease() {
     if (!this.isListening) return;
+
+    // Track release time for quick-tap detection
+    this.buttonReleaseTime = Date.now();
 
     // Update UI to show we're processing
     this.updateMicUI(false);
@@ -421,14 +431,15 @@ const Speech = {
     // Reset state
     this.waitingForResult = false;
     this.isListening = false;
-    this.recordingStartTime = null;
+    this.buttonPressTime = null;
+    this.buttonReleaseTime = null;
 
     // Hide all overlays and modals
     this.hideProcessing();
     this.hideConfirmModal();
     this.hideFailModal();
     this.hidePermissionModal();
-    this.hideMicTooltip();
+    this.hideMicGuide();
 
     // Update mic UI
     this.updateMicUI(false);
@@ -936,11 +947,6 @@ const Speech = {
       // Highlight the Speak button to indicate it's ready
       this.highlightMicButton();
 
-      // Show tooltip if not seen before
-      if (!localStorage.getItem(this.MIC_TOOLTIP_KEY)) {
-        this.showMicTooltip();
-      }
-
     } catch (e) {
       // Permission denied or error
       if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
@@ -957,8 +963,8 @@ const Speech = {
    * Check if the recording was too short (quick tap instead of hold)
    */
   isQuickTap() {
-    if (!this.recordingStartTime) return false;
-    return (Date.now() - this.recordingStartTime) < this.QUICK_TAP_THRESHOLD;
+    if (!this.buttonPressTime || !this.buttonReleaseTime) return false;
+    return (this.buttonReleaseTime - this.buttonPressTime) < this.QUICK_TAP_THRESHOLD;
   },
 
   /**
@@ -993,31 +999,25 @@ const Speech = {
   },
 
   /**
-   * Show mic tooltip (one-time, after first permission grant)
+   * Show mic guide sheet (one-time, on first mic use after permission grant)
    */
-  showMicTooltip() {
-    if (!this.elements.micTooltip) return;
-
-    this.elements.micTooltip.classList.add('visible');
-
-    // Auto-dismiss after 6 seconds
-    this.micTooltipTimeout = setTimeout(() => {
-      this.hideMicTooltip();
-    }, 6000);
+  showMicGuide() {
+    if (!this.elements.micGuideModal) return;
+    this.elements.micGuideModal.classList.add('visible');
   },
 
   /**
-   * Hide mic tooltip and mark as seen
+   * Hide mic guide sheet and mark as seen (only sets flag if actually visible)
    */
-  hideMicTooltip() {
-    if (this.micTooltipTimeout) {
-      clearTimeout(this.micTooltipTimeout);
-      this.micTooltipTimeout = null;
+  hideMicGuide() {
+    if (!this.elements.micGuideModal) return;
+
+    const wasVisible = this.elements.micGuideModal.classList.contains('visible');
+    this.elements.micGuideModal.classList.remove('visible');
+
+    // Only mark as seen if the guide was actually displayed
+    if (wasVisible) {
+      localStorage.setItem(this.MIC_TOOLTIP_KEY, '1');
     }
-
-    if (!this.elements.micTooltip) return;
-
-    this.elements.micTooltip.classList.remove('visible');
-    localStorage.setItem(this.MIC_TOOLTIP_KEY, '1');
   }
 };

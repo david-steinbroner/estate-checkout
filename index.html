@@ -68,12 +68,6 @@
         <span class="mic-status__dot"></span>
         <span class="mic-status__text">Listening...</span>
       </div>
-      <!-- Mic Tooltip (shown once after first mic permission grant) -->
-      <div class="mic-tooltip" id="mic-tooltip">
-        <p class="mic-tooltip__text">Hold this button and say a price — like "chair twelve dollars"</p>
-        <button class="mic-tooltip__dismiss" id="mic-tooltip-dismiss">Got it</button>
-        <div class="mic-tooltip__arrow"></div>
-      </div>
     </div>
 
     <!-- Number Pad + Add Item Button (tight grid) -->
@@ -353,6 +347,17 @@
     <div class="speech-processing__content">
       <span class="speech-processing__spinner"></span>
       <span class="speech-processing__text">Processing...</span>
+    </div>
+  </div>
+
+  <!-- Voice Input Guide Sheet (shown once on first mic use after permission) -->
+  <div class="overlay" id="mic-guide-modal">
+    <div class="sheet">
+      <p class="sheet__title">How to Use Voice Input</p>
+      <p class="sheet__text">Press and hold the 🎤 Speak button while you say a price. Try something like "twenty five dollars" or "chair twelve dollars" to include a description. Release when you're done.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="mic-guide-btn">Got It</button>
+      </div>
     </div>
   </div>
 

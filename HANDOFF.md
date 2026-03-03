@@ -3,11 +3,18 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v45
+**Service worker cache:** v46
 
 ---
 
 ## What Was Accomplished
+
+### Session 30 (2026-03-02)
+- **Fixed Mic Guide Flag Poisoning** — `hideMicTooltip()` unconditionally set the `estate_mic_tooltip_seen` localStorage flag every time it was called, even when the tooltip was never shown. This was triggered by `window.blur` during the browser permission dialog and by `doStartListening()` calling it on every mic press. Replaced with `hideMicGuide()` that only sets the flag if the guide was actually visible.
+- **Fixed Quick-Tap Detection** — `isQuickTap()` was measuring `Date.now() - recordingStartTime` at the moment the error handler fires, but the Web Speech API's silence timeout (2-5s) meant elapsed time always exceeded the 1500ms threshold. Now tracks `buttonPressTime` (on pointerdown) and `buttonReleaseTime` (on pointerup) to measure actual hold duration.
+- **Removed window.blur Handler** — The `window.addEventListener('blur', ...)` handler called `forceStopRecognition()` which silently aborted recognition on mobile (system mic indicators, notifications cause blur). `visibilitychange` + `pagehide` already cover the real use case (page hidden/navigated away).
+- **Converted Mic Tooltip to Bottom Sheet** — Replaced the positioned `.mic-tooltip` element with a standard `.overlay` + `.sheet` bottom sheet (`#mic-guide-modal`). Now shown on first mic press after permission grant (blocks recognition until dismissed). Uses existing sheet CSS classes. Removed all `.mic-tooltip` CSS.
+- **Service worker** — Bumped to v46
 
 ### Session 29 (2026-03-02)
 - **Updated Onboarding Card 2 Copy** — "Ring Up Items" card now explains hold-to-speak gesture and gives examples ("twelve dollars", "chair fifteen dollars"). Previously just said "tap 🎤 Speak."
