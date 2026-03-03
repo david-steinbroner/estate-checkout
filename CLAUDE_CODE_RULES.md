@@ -92,29 +92,35 @@ A feature is DONE when:
 - All JS, CSS, HTML, and external libraries are listed in `ASSETS_TO_CACHE`
 
 ### CSS Rules
+- **Read DESIGN_SYSTEM.md before making ANY CSS changes.** That document is the authoritative spec for all visual decisions.
 - Mobile-first. Default styles ARE the mobile styles.
 - No CSS frameworks. No Tailwind. No Bootstrap.
-- Large touch targets: minimum 48px height for anything tappable
-- High contrast text. Minimum 16px font size for body text.
-- Number pad buttons: minimum 64px x 64px
-- Use CSS custom properties (variables) for colors and spacing
+- **Minimum 48px height for anything tappable. No exceptions.**
+- High contrast text. Minimum 14px font size for body text, 16px for buttons.
+- Number pad buttons: 48px x 48px (same as all interactive elements)
+- **Every** color, font-size, spacing, and radius value must use a CSS custom property from `:root`. No hardcoded values.
 - Max 1 stylesheet file
+- When adding new styles, use existing component patterns from DESIGN_SYSTEM.md §2. Do not create one-off styles.
 
 ---
 
 ## 4. DESIGN PRINCIPLES
 
+**Read DESIGN_SYSTEM.md for the complete design system spec, token definitions, component standards, and screen-by-screen requirements.** The principles below are the summary. The design system document has the exact values.
+
 **This app will be used by non-technical people aged 40-70 in a loud, busy, stressful environment (an estate sale). Design for that.**
 
-- BIG buttons, BIG text, BIG touch targets
+- BIG buttons, BIG text, BIG touch targets (48px minimum, always)
 - Minimal choices per screen — one primary action per view
 - No jargon. Button says "Add Item" not "Append Entry"
 - Obvious feedback — item added? Flash green. Error? Flash red. Always confirm.
 - No modals or popups unless absolutely critical (confirmation of clearing all items)
 - Number pad is the hero element of the checkout screen — it dominates the viewport
 - The app must be usable with one hand on a phone
-- Color is used for function, not decoration (green = success, red = warning/delete)
+- Color communicates function: green = success/positive, red = destructive/negative, blue = navigation, orange = pending, gray = neutral
 - No loading spinners in offline mode — everything is instant
+- **Fewer unique values = better.** One height for everything interactive (48px). Buttons, inputs, numpad keys — all 48px. That's it.
+- **Every value from a token.** If you need a value that doesn't exist in `:root`, add it to DESIGN_SYSTEM.md first, then to the CSS.
 
 ---
 
@@ -160,8 +166,9 @@ If the user asks for something out of scope, acknowledge it, note it in BACKLOG.
 1. Read this file (CLAUDE_CODE_RULES.md)
 2. Read HANDOFF.md for current state
 3. Read BACKLOG.md for known issues
-4. Confirm with the user what you'll be working on this session
-5. State what files you expect to touch
+4. If doing CSS/UI work, read DESIGN_SYSTEM.md
+5. Confirm with the user what you'll be working on this session
+6. State what files you expect to touch
 
 ### During a Session
 - Commit logical chunks of work with clear commit messages — not giant blobs
@@ -178,7 +185,9 @@ If the user asks for something out of scope, acknowledge it, note it in BACKLOG.
 - Never commit broken code to main — if something is half-done, say so and keep it local or use a branch
 
 ### Ending a Session — MANDATORY HANDOFF
-Before the session ends, you MUST update HANDOFF.md with:
+Before the session ends, you MUST update these docs:
+
+**HANDOFF.md** (always):
 1. **What was accomplished** — specific features/fixes completed
 2. **Current state** — what works, what's broken, what's half-done
 3. **Files changed** — list every file modified or created
@@ -186,6 +195,15 @@ Before the session ends, you MUST update HANDOFF.md with:
 5. **Open questions** — anything unresolved that needs a decision
 6. **Known bugs** — anything broken that you're aware of
 7. **How to test** — specific steps to verify what was built
+
+**PM_TRACKER.md** (quick updates only — don't re-read the whole doc):
+- Update "Service worker cache" version if bumped
+- Update "What's Left Before Ship" if items were completed or new blockers found
+- Update "Known Issues / Tech Debt" if issues were fixed or discovered
+
+**BACKLOG.md** (only if relevant):
+- Add new items if out-of-scope requests came up during the session
+- Update "Known Issues / Tech Debt" if issues were fixed or discovered
 
 **Do not end a session without updating HANDOFF.md. This is non-negotiable.**
 

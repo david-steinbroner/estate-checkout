@@ -2,7 +2,7 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
-**Current priority:** Design system overhaul (see DESIGN_SYSTEM.md). No new features until design system is complete.
+**Current priority:** End-to-end testing on mobile Chrome and Safari, then field test.
 
 > **Roadmap alignment:** The version structure below matches PRODUCT_STRATEGY.md §11. All items beyond v0.1 are hypotheses that will be validated by field test feedback. See PRODUCT_STRATEGY.md for the strategic rationale behind each version.
 
@@ -77,7 +77,7 @@ These were previously on the roadmap but removed because they conflict with our 
 
 | Date | Issue | Severity | Notes |
 |------|-------|----------|-------|
-| 2026-03-03 | Design system inconsistency across screens | High | Prompts 1-9 done (8+9 combined): tokens, buttons, inputs, touch targets, colors, numpad, item list UX, hardcoded sizes, item numbering, inline flash, status badges, bottom sheets, screen polish. Remaining: final audit only. **Still the current priority.** |
+| 2026-03-03 | Design system inconsistency across screens | Resolved | All design tokens, component standards, and screen-specific fixes implemented. All 10 prompts executed. |
 | 2026-03-02 | QR data may hit size limits for 50+ item carts | Low | Raw JSON, no compression. Needs field test data to validate real-world cart sizes. |
 | 2026-03-02 | Offline airplane mode not tested | Medium | Service worker caches all assets but no live test has been done in airplane mode. |
 

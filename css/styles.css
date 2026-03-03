@@ -104,7 +104,7 @@
   --radius-pill: 999px;
 
   /* === Component Heights === */
-  /* One button height (48px). Numpad keys are 56px but they're calculator keys, not buttons. */
+  /* 48px for all interactive elements: buttons, inputs, numpad keys */
   --height-touch-min: 48px;
   --height-button: 48px;
   --height-input: 48px;
@@ -125,17 +125,6 @@
   --transition-fast: 100ms ease;
   --transition-normal: 200ms ease;
 
-  /* === Legacy Aliases (will be removed after component migration) === */
-  --header-height: var(--height-header);
-  --total-height: var(--height-total-bar);
-  --input-height: 76px;
-  --numpad-btn-size: var(--height-numpad-btn);
-  --numpad-gap: 4px;
-  --add-button-height: var(--height-button);
-  --action-bar-height: var(--height-action-bar);
-  --btn-height-lg: var(--height-button);
-  --sheet-padding: var(--space-2xl);
-  --overlay-backdrop: var(--overlay-medium);
 }
 
 /* === Reset & Base === */
@@ -290,7 +279,7 @@ body {
 
 /* === Running Total === */
 .running-total {
-  height: var(--total-height);
+  height: var(--height-total-bar);
   background: var(--color-text);
   color: var(--color-text-on-dark);
   display: flex;
@@ -672,7 +661,7 @@ body {
 .numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--numpad-gap);
+  gap: var(--space-sm);
 }
 
 .numpad__button {
@@ -703,7 +692,7 @@ body {
 .add-button {
   width: 100%;
   height: var(--height-button);
-  margin-top: var(--numpad-gap);
+  margin-top: var(--space-sm);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -722,7 +711,7 @@ body {
 
 /* === Action Bar === */
 .action-bar {
-  height: var(--action-bar-height);
+  height: var(--height-action-bar);
   display: flex;
   gap: var(--space-sm);
   padding: var(--space-sm);
@@ -818,8 +807,8 @@ body {
   width: 100%;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: var(--sheet-padding);
-  padding-bottom: calc(var(--sheet-padding) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-2xl);
+  padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
   max-height: 80vh;
   overflow-y: auto;
   text-align: center;
@@ -854,7 +843,7 @@ body {
   font-size: var(--font-size-price);
   font-weight: var(--font-weight-bold);
   color: var(--color-success);
-  margin-bottom: var(--sheet-padding);
+  margin-bottom: var(--space-2xl);
 }
 
 .sheet__heard {
@@ -871,7 +860,7 @@ body {
   background: var(--color-bg);
   padding: var(--space-lg);
   border-radius: var(--radius-sm);
-  margin-bottom: var(--sheet-padding);
+  margin-bottom: var(--space-2xl);
   line-height: var(--line-height-relaxed);
 }
 

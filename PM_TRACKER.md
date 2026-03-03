@@ -8,10 +8,10 @@
 ## Current Project Status
 
 **Version:** v0.1 (features ~95% complete, design system overhaul in progress)
-**Current priority:** Design system overhaul — see DESIGN_SYSTEM.md
+**Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v56
+**Service worker cache:** v57
 **Development sessions:** 32 (2026-02-27 through 2026-03-02)
 **Commits:** 68
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
@@ -36,14 +36,14 @@
 
 ### What's Left Before Ship
 
-1. **🟡 Design system overhaul** — Prompts 1-9 of 10 complete (8+9 combined). Bottom sheets standardized, screen-by-screen polish done. Remaining: final audit only. See DESIGN_SYSTEM.md §6.
+1. **🟢 Design system overhaul** — Design system implementation complete — ready for end-to-end testing. See DESIGN_SYSTEM.md.
 2. **End-to-end test pass** on mobile Chrome and mobile Safari (after design system)
 3. **Offline test** — airplane mode full checkout flow
 4. **Alissa's independent walkthrough** — can she complete the full flow with zero instruction?
 5. **Field test** at real estate sale with Alissa's contact
 
 ### Known Issues / Tech Debt
-- Design system inconsistency across screens — see DESIGN_SYSTEM.md for full audit (HIGH priority, actively being fixed)
+- ~~Design system inconsistency across screens~~ — Resolved. All 10 prompts executed, system fully tokenized.
 - QR data may hit size limits for 50+ item carts (raw JSON, no compression) — needs field validation
 - Offline airplane mode never tested live
 

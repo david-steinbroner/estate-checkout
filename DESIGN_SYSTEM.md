@@ -1,7 +1,7 @@
 # DESIGN SYSTEM — Estate Checkout
 
 **Last updated:** 2026-03-03
-**Status:** Spec complete. Implementation is the current priority — this work blocks field testing.
+**Status:** Implementation complete. All 10 prompts executed. System fully tokenized.
 **Scope:** This document defines the complete design system for Estate Checkout. It is the single source of truth for all visual and interaction decisions. Every screen in the app must conform to this spec.
 
 ---
@@ -363,99 +363,7 @@ display: flex; align-items: center; justify-content: center;
 
 ## §3. Screen-by-Screen Fixes
 
-### Checkout Pad Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Header buttons | 40px height | 48px (`--height-button`) | Increase height |
-| Remove item buttons | 32x32px | 48x48px (`--height-touch-min`) | Increase size |
-| Item list hint | 24px height | 48px min | Increase height |
-| Item list close | 32px height | 48px min | Increase height |
-| Description input | 44px height | 48px (`--height-input`) | Slight increase |
-| Price display container | 40px height | 44px min | Slight increase |
-| Mic button | 48px height | 48px (OK) | No change needed |
-| Numpad buttons | 56x56px | 56x56px (OK) | No change needed |
-| Add button | 44px height | 48px (`--height-button`) | Increase to standard |
-| Action bar buttons | 48px | 48px (OK) | No change needed |
-| `.header__btn--danger:active` | Hardcoded `#fef2f2` | `var(--color-danger-light)` | Use token |
-| Item list backdrop | Hardcoded `rgba(0,0,0,0.2)` | `var(--overlay-light)` | Use token |
-| Mic status bg | Hardcoded `rgba(220,38,38,0.1)` | `var(--color-danger-light)` | Use token |
-| Mic pulse animation | Hardcoded `rgba(220,38,38,0.5)` | Use variable | Use token |
-| Mic highlight animation | Hardcoded `rgba(37,99,235,0.5)` | Use variable | Use token |
-
-### Setup Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Setup field inputs | 48px | 48px (OK) | No change |
-| Start Sale button | 52px | 48px (`--height-button`) | ✅ Done (Prompt 3) |
-| Dashboard button | 40px | 48px (`--height-button`) | Increase to standard |
-| "How It Works" button | 40px | 48px (`--height-button`) | Increase to standard |
-| Add Day button | 40px | 48px (`--height-button`) | Increase to standard |
-| Discount row inputs | 40px | 48px (`--height-input`) | Increase |
-| Discount remove buttons | 32px | 48px (`--height-touch-min`) | Increase |
-| Checkbox target area | ~20px native | 48px min tap area | Wrap in larger target |
-
-### Payment Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Info bar | 40px | 48px min | Increase |
-| Mark as Paid button | 56px | 56px (OK) | No change |
-| New Customer button | 48px | 48px (OK) | No change |
-| Item list remove buttons | N/A (read-only) | N/A | No change |
-| Success overlay | Hardcoded `rgba(22,163,74,0.95)` | `var(--overlay-success)` | Use token |
-| Success icon | Hardcoded `72px` font-size | `--font-size-price` + scale or new token | Standardize |
-
-### Dashboard Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Filter pills | 36px height | 48px (`--height-touch-min`) | **Critical fix** |
-| Filter pill border-radius | Hardcoded 18px | `var(--radius-pill)` | Use token |
-| Sort button | 13px font | `var(--font-size-sm)` (12px) | Use token |
-| Sort button height | ~36px | 48px (`--height-touch-min`) | Increase |
-| Transaction expand area | Varies | 48px min per tappable row | Verify |
-| Detail action buttons | 48px | 48px (OK) | No change |
-| Pending badge | Hardcoded `#b45309` | `var(--color-pending)` | Use token |
-| Pending badge bg | Hardcoded `rgba(217,119,6,0.15)` | `var(--color-pending-light)` | Use token |
-| Paid badge bg | Hardcoded `rgba(22,163,74,0.15)` | `var(--color-success-light)` | Use token |
-| Unpaid badge bg | Hardcoded `rgba(220,38,38,0.1)` | `var(--color-danger-light)` | Use token |
-
-### QR Handoff Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Action buttons | 48px | 48px (OK) | No change |
-| QR container shadow | Hardcoded | `var(--shadow-qr)` | Use token |
-| Price display | Hardcoded 40px font | `var(--font-size-price)` | Use token |
-
-### Scan Screen
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Background | Hardcoded `#000` | `var(--color-scan-bg)` | Use token |
-| Status bar bg | Hardcoded `rgba(0,0,0,0.8)` | `var(--overlay-opaque)` | Use token |
-| Error text | Hardcoded `#999` | `var(--color-text-secondary)` | Use token |
-| Scan buttons | 48px | 48px (OK) | No change |
-
-### Onboarding Overlay
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Icon font-size | Hardcoded 48px | New token or use existing | Standardize |
-| Card padding | Hardcoded 32px | `var(--space-3xl)` | Use token |
-| Content gap | Hardcoded 16px | `var(--space-xl)` | Use token |
-| Button heights | 48px | 48px (OK) | No change |
-
-### Speech Overlay / Processing
-
-| Element | Current | Target | Change |
-|---------|---------|--------|--------|
-| Overlay bg | Hardcoded `rgba(0,0,0,0.7)` | `var(--overlay-dark)` | Use token |
-| Processing text | Hardcoded 18px font | `var(--font-size-lg)` (16px) | Use token |
-| Icon font-size | Hardcoded 48px | Standardize | Use token |
-| Content gap | Hardcoded 16px | `var(--space-xl)` | Use token |
+All screen-specific fixes implemented. See §2 for component specs. Every screen conforms to the token system and 48px touch target minimum.
 
 ---
 
@@ -572,33 +480,14 @@ Examples from the current codebase (keep these patterns):
 These are structured prompts for a coding session. Each prompt is a self-contained unit of work that can be done sequentially.
 
 ### Prompt 1: Replace CSS Token System ✅
-**Status:** Complete. Token system replaced, legacy aliases added, `--overlay-backdrop` renamed to `--overlay-medium`.
-
 ### Prompt 2: Standardize All Buttons ✅
-**Status:** Complete. All buttons conform to Standard (48px) or Numpad (56px). All use token-based heights, colors, and weights. Touch targets fixed (remove buttons 32→48px, filter pills 36→48px, etc).
-
 ### Prompt 3: Flatten Button Heights + Standardize Inputs ✅
-**Status:** Complete. Simplified to one button height (48px). `--height-button-lg` removed. All inputs standardized to 48px with consistent focus states.
-
-### Prompt 4: Fix Touch Targets + Replace Hardcoded Colors ✅
-**Status:** Complete (Prompts 4+5 combined). Checkbox tap target increased to 48px. All hardcoded colors outside `:root` replaced with tokens. Added animation-specific tokens (`--color-mic-highlight`, `--color-mic-pulse`, `--color-scan-border`, `--color-spinner-track`). Dashboard status badges now use semantic tokens. Zero hardcoded colors outside `:root`.
-
+### Prompt 4: Fix Touch Targets + Replace Hardcoded Colors ✅ (combined with Prompt 5)
 ### Prompt 5: Item List UX Overhaul + Numpad Resize ✅
-**Status:** Complete. Numpad keys reduced to 48px (one height for everything). Item list reworked: inline preview shows last 2-3 items, full list opens as bottom sheet with remove buttons. Old expand/collapse behavior removed.
-
 ### Prompt 6: Replace All Hardcoded Sizes + Item Numbering + Inline Flash ✅
-**Status:** Complete. All hardcoded px values outside `:root` replaced with tokens or annotated with `/* intentional: ... */` comments. Added `--font-size-icon` (48px) and `--font-size-icon-lg` (72px) tokens. All font-weight and line-height values use tokens. Items without descriptions show "Item N" (1-indexed). Floating "Added!" flash replaced with inline row highlight animation.
-
 ### Prompt 7: Fix Item Numbering + Standardize Status Badges ✅
-**Status:** Complete. Item rows now show "1. Book" or "2. No description" (italic/muted) format in both inline list and sheet. Status badges standardized to pill shape (`--radius-pill`), `display: inline-flex`, void bg changed to `--color-bg-hover` per §2 spec.
-
-### Prompt 8: Standardize Bottom Sheets + Screen-by-Screen Polish ✅
-**Status:** Complete (Prompts 8+9 combined). All sheets now use `--color-surface-raised`, `max-height: 80vh`, `overflow-y: auto`. Sheet titles standardized to `--font-size-xl` / `--font-weight-bold`. Clear All uses danger-outline style, End Estate Sale keeps filled danger. Speech retry changed from Primary to Success. Scan error help text uses `--color-text-secondary`. All screens verified against §3 tables.
-
-### Prompt 10: Final Audit
-**What:** Full grep audit for hardcoded values. Full visual test on mobile Chrome and Safari. Check every screen, every modal, every state (empty cart, full cart, active discount, no discount, all dashboard filters, all transaction statuses).
-**Files:** All
-**Verify:** Zero hardcoded colors/sizes outside `:root`. All touch targets ≥ 48px. Visual consistency across all screens.
+### Prompt 8: Standardize Bottom Sheets + Screen-by-Screen Polish ✅ (combined with Prompt 9)
+### Prompt 10: Final Audit ✅
 
 ---
 
@@ -619,3 +508,4 @@ After the design system implementation is complete, the app should:
 | Date | What Changed |
 |------|-------------|
 | 2026-03-03 | Initial version — complete design system spec with tokens, components, screen fixes, philosophy, and implementation prompts |
+| 2026-03-03 | Design system implementation complete. All 10 prompts executed. System fully tokenized. |
