@@ -18,7 +18,7 @@ const Onboarding = {
       {
         icon: '💰',
         title: 'Ring Up Items',
-        body: 'Tap in prices and hit Add Item. You can also tap \uD83C\uDFA4 Speak to say prices out loud. When the customer is done, tap Create Ticket.'
+        body: 'Tap in prices and hit Add Item. You can also hold the \uD83C\uDFA4 Speak button and say a price \u2014 like \u201Ctwelve dollars\u201D or \u201Cchair fifteen dollars\u201D to include a description. Release the button when you\u2019re done.'
       },
       {
         icon: '✅',

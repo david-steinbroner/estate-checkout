@@ -19,11 +19,17 @@ const Speech = {
   processingHardTimeout: null,
   consecutiveFailures: 0,
   micPermissionState: 'prompt', // 'granted', 'denied', or 'prompt'
+  recordingStartTime: null,
+  micTooltipTimeout: null,
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
   // Hard safety timeout for processing overlay (ms)
   PROCESSING_HARD_TIMEOUT: 8000,
+  // Quick-tap threshold — under this duration, show hold guidance (ms)
+  QUICK_TAP_THRESHOLD: 1500,
+  // localStorage key for mic tooltip one-time display
+  MIC_TOOLTIP_KEY: 'estate_mic_tooltip_seen',
 
   // Tips for struggling users (indexed by failure count - 1)
   failureTips: [
@@ -67,6 +73,9 @@ const Speech = {
     this.recognition.lang = 'en-US';
 
     this.recognition.onstart = () => {
+      // Track when recording actually started (for quick-tap detection)
+      this.recordingStartTime = Date.now();
+
       // Mic is now active (permission granted) - start the timeout if user released button
       if (this.waitingForResult) {
         this.startResultTimeout();
@@ -91,7 +100,11 @@ const Speech = {
       if (event.error === 'not-allowed') {
         this.showPermissionDeniedModal();
       } else if (event.error === 'no-speech') {
-        this.showFailModalWithTip('', 'no-speech');
+        if (this.isQuickTap()) {
+          this.showQuickTapModal();
+        } else {
+          this.showFailModalWithTip('', 'no-speech');
+        }
       } else if (event.error === 'network') {
         this.showFailModalWithTip('', 'network');
       } else if (event.error !== 'aborted') {
@@ -109,7 +122,11 @@ const Speech = {
       if (this.waitingForResult) {
         this.waitingForResult = false;
         this.hideProcessing();
-        this.showFailModalWithTip('', 'no-speech');
+        if (this.isQuickTap()) {
+          this.showQuickTapModal();
+        } else {
+          this.showFailModalWithTip('', 'no-speech');
+        }
       }
     };
 
@@ -162,7 +179,9 @@ const Speech = {
       permissionTitle: document.getElementById('speech-permission-title'),
       permissionBody: document.getElementById('speech-permission-body'),
       permissionAllowBtn: document.getElementById('speech-permission-allow'),
-      permissionDismissBtn: document.getElementById('speech-permission-dismiss')
+      permissionDismissBtn: document.getElementById('speech-permission-dismiss'),
+      micTooltip: document.getElementById('mic-tooltip'),
+      micTooltipDismiss: document.getElementById('mic-tooltip-dismiss')
     };
   },
 
@@ -253,6 +272,13 @@ const Speech = {
       });
     }
 
+    // Mic tooltip dismiss
+    if (this.elements.micTooltipDismiss) {
+      this.elements.micTooltipDismiss.addEventListener('click', () => {
+        this.hideMicTooltip();
+      });
+    }
+
     // Release microphone when page loses focus
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -297,6 +323,9 @@ const Speech = {
    */
   doStartListening() {
     if (!this.recognition || this.isListening) return;
+
+    // Dismiss tooltip if visible (user figured out the button)
+    this.hideMicTooltip();
 
     try {
       this.recognition.start();
@@ -392,12 +421,14 @@ const Speech = {
     // Reset state
     this.waitingForResult = false;
     this.isListening = false;
+    this.recordingStartTime = null;
 
     // Hide all overlays and modals
     this.hideProcessing();
     this.hideConfirmModal();
     this.hideFailModal();
     this.hidePermissionModal();
+    this.hideMicTooltip();
 
     // Update mic UI
     this.updateMicUI(false);
@@ -905,6 +936,11 @@ const Speech = {
       // Highlight the Speak button to indicate it's ready
       this.highlightMicButton();
 
+      // Show tooltip if not seen before
+      if (!localStorage.getItem(this.MIC_TOOLTIP_KEY)) {
+        this.showMicTooltip();
+      }
+
     } catch (e) {
       // Permission denied or error
       if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
@@ -915,5 +951,73 @@ const Speech = {
         this.showPermissionDeniedModal(false);
       }
     }
+  },
+
+  /**
+   * Check if the recording was too short (quick tap instead of hold)
+   */
+  isQuickTap() {
+    if (!this.recordingStartTime) return false;
+    return (Date.now() - this.recordingStartTime) < this.QUICK_TAP_THRESHOLD;
+  },
+
+  /**
+   * Show quick-tap guidance modal (reuses fail modal with custom copy)
+   */
+  showQuickTapModal() {
+    if (!this.elements.failModal) return;
+
+    // Hide "Heard:" section
+    if (this.elements.failHeard) {
+      this.elements.failHeard.style.display = 'none';
+    }
+
+    // Set title
+    const title = document.getElementById('speech-fail-title');
+    if (title) {
+      title.textContent = 'Hold the button longer';
+    }
+
+    // Set guidance text
+    if (this.elements.failTip) {
+      this.elements.failTip.textContent =
+        'Press and hold \uD83C\uDFA4 Speak while you say the price. Try something like \u201Ctwenty five dollars\u201D or \u201Clamp ten dollars.\u201D';
+    }
+
+    // Hide "Try Again" — user needs to learn the hold gesture first
+    if (this.elements.retryButton) {
+      this.elements.retryButton.style.display = 'none';
+    }
+
+    this.elements.failModal.classList.add('visible');
+  },
+
+  /**
+   * Show mic tooltip (one-time, after first permission grant)
+   */
+  showMicTooltip() {
+    if (!this.elements.micTooltip) return;
+
+    this.elements.micTooltip.classList.add('visible');
+
+    // Auto-dismiss after 6 seconds
+    this.micTooltipTimeout = setTimeout(() => {
+      this.hideMicTooltip();
+    }, 6000);
+  },
+
+  /**
+   * Hide mic tooltip and mark as seen
+   */
+  hideMicTooltip() {
+    if (this.micTooltipTimeout) {
+      clearTimeout(this.micTooltipTimeout);
+      this.micTooltipTimeout = null;
+    }
+
+    if (!this.elements.micTooltip) return;
+
+    this.elements.micTooltip.classList.remove('visible');
+    localStorage.setItem(this.MIC_TOOLTIP_KEY, '1');
   }
 };

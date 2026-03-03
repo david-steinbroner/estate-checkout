@@ -1840,3 +1840,53 @@ body {
   padding: 8px;
 }
 
+/* === Mic Tooltip (post-permission, shown once) === */
+.mic-tooltip {
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateY(-100%);
+  margin-top: -8px;
+  max-width: 260px;
+  background: var(--color-text);
+  color: white;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  z-index: 60;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.mic-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mic-tooltip__text {
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.mic-tooltip__dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.mic-tooltip__arrow {
+  position: absolute;
+  bottom: -5px;
+  right: 28px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-text);
+  transform: rotate(45deg);
+}
+

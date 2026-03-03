@@ -3,11 +3,17 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v44
+**Service worker cache:** v45
 
 ---
 
 ## What Was Accomplished
+
+### Session 29 (2026-03-02)
+- **Updated Onboarding Card 2 Copy** — "Ring Up Items" card now explains hold-to-speak gesture and gives examples ("twelve dollars", "chair fifteen dollars"). Previously just said "tap 🎤 Speak."
+- **Added Post-Permission Mic Tooltip** — After granting mic permission for the first time, a small dark tooltip appears near the Speak button: "Hold this button and say a price — like 'chair twelve dollars'" with "Got it" dismiss link. Auto-dismisses after 6 seconds. Uses `estate_mic_tooltip_seen` localStorage flag — shown only once.
+- **Added Quick-Tap Guidance** — Tapping and immediately releasing the Speak button (< 1.5s recording duration) now shows "Hold the button longer" with instructions instead of the generic no-speech error. Only "Got It" button shown (no "Try Again"). Normal hold-and-silence still shows the standard no-speech error.
+- **Service worker** — Bumped to v45
 
 ### Session 28 (2026-03-02)
 - **Fixed Edit Order / Create Ticket Void Loop** — Repeatedly cycling Edit Order → Create Ticket no longer increments customer numbers. Added `Checkout.reuseCustomerNumber` property: `reopenTransaction()` stores the original customer number, `finishCheckout()` reuses it instead of calling `Storage.getNextCustomerNumber()`. Also preserves the `reopenedFrom` chain (carries forward root customer number instead of overwriting each cycle). Reset in `clearAll()` and `endSale()`.
