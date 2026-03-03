@@ -291,11 +291,18 @@ const Checkout = {
     this.elements.descriptionInput.value = '';
     this.updatePriceDisplay();
 
-    // Show feedback
-    this.showFlash('success', 'Added!');
-
     // Re-render
     this.render();
+
+    // Flash the newly added item row in the inline list
+    const rows = this.elements.itemList.querySelectorAll('.item-row');
+    if (rows.length > 0) {
+      const lastRow = rows[rows.length - 1];
+      lastRow.classList.add('item-row--just-added');
+      lastRow.addEventListener('animationend', () => {
+        lastRow.classList.remove('item-row--just-added');
+      }, { once: true });
+    }
   },
 
   /**
@@ -339,14 +346,15 @@ const Checkout = {
       return;
     }
 
-    const html = this.items.map(item => {
+    const html = this.items.map((item, index) => {
       const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
+      const displayText = hasDesc ? Utils.escapeHtml(item.description) : `Item ${index + 1}`;
 
       return `
         <li class="item-row" data-id="${item.id}">
-          ${hasDesc ? `<span class="item-row__desc">${Utils.escapeHtml(item.description)}</span>` : ''}
-          <div class="item-row__prices${hasDesc ? '' : ' item-row__prices--full'}">
+          <span class="item-row__desc">${displayText}</span>
+          <div class="item-row__prices">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
           </div>
@@ -413,14 +421,15 @@ const Checkout = {
   renderItemSheet() {
     this.elements.itemSheetTitle.textContent = `All Items (${this.items.length})`;
 
-    const html = this.items.map(item => {
+    const html = this.items.map((item, index) => {
       const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
+      const displayText = hasDesc ? Utils.escapeHtml(item.description) : `Item ${index + 1}`;
 
       return `
         <li class="item-row" data-id="${item.id}">
-          ${hasDesc ? `<span class="item-row__desc">${Utils.escapeHtml(item.description)}</span>` : ''}
-          <div class="item-row__prices${hasDesc ? '' : ' item-row__prices--full'}">
+          <span class="item-row__desc">${displayText}</span>
+          <div class="item-row__prices">
             ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
             <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
           </div>

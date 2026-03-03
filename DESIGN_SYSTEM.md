@@ -586,10 +586,8 @@ These are structured prompts for a coding session. Each prompt is a self-contain
 ### Prompt 5: Item List UX Overhaul + Numpad Resize ✅
 **Status:** Complete. Numpad keys reduced to 48px (one height for everything). Item list reworked: inline preview shows last 2-3 items, full list opens as bottom sheet with remove buttons. Old expand/collapse behavior removed.
 
-### Prompt 6: Replace All Hardcoded Sizes
-**What:** Find every hardcoded px value for font-size, padding, margin, gap, height, and width that isn't using a CSS variable. Replace with the appropriate token. Use the grep list in §4.
-**Files:** `css/styles.css`
-**Verify:** Every size value references a `var()` except where truly one-off (e.g., QR code dimensions). Justify any remaining hardcoded values with a comment.
+### Prompt 6: Replace All Hardcoded Sizes + Item Numbering + Inline Flash ✅
+**Status:** Complete. All hardcoded px values outside `:root` replaced with tokens or annotated with `/* intentional: ... */` comments. Added `--font-size-icon` (48px) and `--font-size-icon-lg` (72px) tokens. All font-weight and line-height values use tokens. Items without descriptions show "Item N" (1-indexed). Floating "Added!" flash replaced with inline row highlight animation.
 
 ### Prompt 7: Standardize Status Badges
 **What:** Rebuild status badges (paid, pending, unpaid, void) to use the component spec from §2. All badges should look consistent in size, padding, border-radius, and color mapping.
