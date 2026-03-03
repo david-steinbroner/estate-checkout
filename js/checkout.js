@@ -28,9 +28,8 @@ const Checkout = {
   // Last transaction created (for re-navigation when transactionSaved is true)
   lastTransaction: null,
 
-  // Expandable item list state
-  isExpanded: false,
-  collapsedHeight: 0,
+  // Item sheet state
+  isSheetOpen: false,
 
   // DOM element references
   elements: {},
@@ -54,8 +53,11 @@ const Checkout = {
       itemList: document.getElementById('item-list'),
       itemListContainer: document.getElementById('item-list-container'),
       itemListHint: document.getElementById('item-list-hint'),
-      itemListClose: document.getElementById('item-list-close'),
-      itemListBackdrop: document.getElementById('item-list-backdrop'),
+      itemSheetBackdrop: document.getElementById('item-sheet-backdrop'),
+      itemSheetList: document.getElementById('item-sheet-list'),
+      itemSheetTitle: document.getElementById('item-sheet-title'),
+      itemSheetClose: document.getElementById('item-sheet-close'),
+      itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
       runningSavings: document.getElementById('running-savings'),
       descriptionInput: document.getElementById('description-input'),
@@ -144,36 +146,42 @@ const Checkout = {
       });
     }
 
-    // Expandable item list: tap container to expand (skip if clicking remove button or close strip)
+    // Tap inline item list to open sheet
     if (this.elements.itemListContainer) {
-      this.elements.itemListContainer.addEventListener('click', (e) => {
-        if (e.target.closest('[data-remove]') || e.target.closest('.item-list-close')) return;
-        if (!this.isExpanded && this.items.length > 0) {
-          this.expandItemList();
+      this.elements.itemListContainer.addEventListener('click', () => {
+        if (this.items.length > 0) {
+          this.openItemSheet();
         }
       });
     }
 
-    // Hint strip tap to expand
+    // Hint strip tap to open sheet
     if (this.elements.itemListHint) {
       this.elements.itemListHint.addEventListener('click', () => {
-        if (!this.isExpanded && this.items.length > 0) {
-          this.expandItemList();
+        if (this.items.length > 0) {
+          this.openItemSheet();
         }
       });
     }
 
-    // Close strip tap to collapse
-    if (this.elements.itemListClose) {
-      this.elements.itemListClose.addEventListener('click', () => {
-        this.collapseItemList();
+    // Item sheet close/done/backdrop
+    if (this.elements.itemSheetClose) {
+      this.elements.itemSheetClose.addEventListener('click', () => {
+        this.closeItemSheet();
       });
     }
 
-    // Backdrop tap to collapse
-    if (this.elements.itemListBackdrop) {
-      this.elements.itemListBackdrop.addEventListener('click', () => {
-        this.collapseItemList();
+    if (this.elements.itemSheetDone) {
+      this.elements.itemSheetDone.addEventListener('click', () => {
+        this.closeItemSheet();
+      });
+    }
+
+    if (this.elements.itemSheetBackdrop) {
+      this.elements.itemSheetBackdrop.addEventListener('click', (e) => {
+        if (e.target === this.elements.itemSheetBackdrop) {
+          this.closeItemSheet();
+        }
       });
     }
   },
@@ -241,8 +249,8 @@ const Checkout = {
    * Add an item to the cart
    */
   addItem() {
-    // Collapse expanded item list before adding
-    this.collapseItemList();
+    // Close item sheet before adding
+    this.closeItemSheet();
 
     const price = parseFloat(this.priceInput);
 
@@ -302,19 +310,13 @@ const Checkout = {
 
     this.render();
 
-    // Auto-collapse if remaining items would fit in collapsed view
-    if (this.isExpanded) {
-      const container = this.elements.itemListContainer;
-      // Temporarily remove expanded to measure collapsed fit
-      requestAnimationFrame(() => {
-        container.classList.remove('expanded');
-        const fits = container.scrollHeight <= container.clientHeight;
-        if (fits) {
-          this.collapseItemList();
-        } else {
-          container.classList.add('expanded');
-        }
-      });
+    // Update sheet if open; close if cart is now empty
+    if (this.isSheetOpen) {
+      if (this.items.length === 0) {
+        this.closeItemSheet();
+      } else {
+        this.renderItemSheet();
+      }
     }
   },
 
@@ -355,15 +357,8 @@ const Checkout = {
 
     this.elements.itemList.innerHTML = html;
 
-    // Bind remove buttons
-    this.elements.itemList.querySelectorAll('[data-remove]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.removeItem(btn.dataset.remove);
-      });
-    });
-
     // Scroll to bottom to show newest item
-    this.elements.itemList.parentElement.scrollTop = this.elements.itemList.parentElement.scrollHeight;
+    this.elements.itemListContainer.scrollTop = this.elements.itemListContainer.scrollHeight;
   },
 
   /**
@@ -394,39 +389,69 @@ const Checkout = {
   },
 
   /**
-   * Expand the item list overlay
+   * Open item list sheet with all items and remove buttons
    */
-  expandItemList() {
-    if (this.isExpanded) return;
-    this.isExpanded = true;
-    this.elements.itemListContainer.classList.add('expanded');
-    this.elements.itemListBackdrop.classList.add('visible');
-    this.elements.itemListHint.classList.remove('visible');
-
-    // Scroll to bottom to show newest items
-    this.elements.itemListContainer.scrollTop = this.elements.itemListContainer.scrollHeight;
+  openItemSheet() {
+    if (this.isSheetOpen || this.items.length === 0) return;
+    this.isSheetOpen = true;
+    this.renderItemSheet();
+    this.elements.itemSheetBackdrop.hidden = false;
   },
 
   /**
-   * Collapse the item list overlay
+   * Close item list sheet
    */
-  collapseItemList() {
-    if (!this.isExpanded) return;
-    this.isExpanded = false;
-    this.elements.itemListContainer.classList.remove('expanded');
-    this.elements.itemListBackdrop.classList.remove('visible');
-    this.checkItemOverflow();
+  closeItemSheet() {
+    if (!this.isSheetOpen) return;
+    this.isSheetOpen = false;
+    this.elements.itemSheetBackdrop.hidden = true;
   },
 
   /**
-   * Check if the item list overflows its container and show/hide hint strip
+   * Render the item sheet contents
+   */
+  renderItemSheet() {
+    this.elements.itemSheetTitle.textContent = `All Items (${this.items.length})`;
+
+    const html = this.items.map(item => {
+      const showOriginal = item.discount > 0;
+      const hasDesc = item.description && item.description.trim().length > 0;
+
+      return `
+        <li class="item-row" data-id="${item.id}">
+          ${hasDesc ? `<span class="item-row__desc">${Utils.escapeHtml(item.description)}</span>` : ''}
+          <div class="item-row__prices${hasDesc ? '' : ' item-row__prices--full'}">
+            ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
+            <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+          </div>
+          <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
+        </li>
+      `;
+    }).join('');
+
+    this.elements.itemSheetList.innerHTML = html;
+
+    // Bind remove buttons in sheet
+    this.elements.itemSheetList.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeItem(btn.dataset.remove);
+      });
+    });
+  },
+
+  /**
+   * Check if items overflow inline view and show/hide hint strip
    */
   checkItemOverflow() {
-    if (this.isExpanded) return;
     const container = this.elements.itemListContainer;
     const overflows = container.scrollHeight > container.clientHeight;
     if (overflows && this.items.length > 0) {
-      this.elements.itemListHint.textContent = `${this.items.length} items — tap to see all`;
+      this.elements.itemListHint.textContent = `View all ${this.items.length} items ›`;
+      this.elements.itemListHint.classList.add('visible');
+    } else if (this.items.length > 0) {
+      // Even if they fit, show hint as a way to access sheet for remove
+      this.elements.itemListHint.textContent = `${this.items.length} item${this.items.length === 1 ? '' : 's'} — tap to edit`;
       this.elements.itemListHint.classList.add('visible');
     } else {
       this.elements.itemListHint.classList.remove('visible');
@@ -438,7 +463,7 @@ const Checkout = {
    */
   showClearModal() {
     if (this.items.length === 0) return;
-    this.collapseItemList();
+    this.closeItemSheet();
     this.elements.clearModal.classList.add('visible');
   },
 
@@ -453,7 +478,7 @@ const Checkout = {
    * Clear all items (used by NEW CUSTOMER and CLEAR ALL)
    */
   clearAll() {
-    this.collapseItemList();
+    this.closeItemSheet();
     this.items = [];
     Storage.clearCart();
     this.priceInput = '';
@@ -503,7 +528,7 @@ const Checkout = {
    */
   finishCheckout() {
     if (this.items.length === 0) return;
-    this.collapseItemList();
+    this.closeItemSheet();
 
     // If already saved (no modifications), re-navigate to QR with existing transaction
     if (this.transactionSaved && this.lastTransaction) {

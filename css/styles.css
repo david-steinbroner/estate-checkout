@@ -106,7 +106,7 @@
   --height-touch-min: 48px;
   --height-button: 48px;
   --height-input: 48px;
-  --height-numpad-btn: 56px;
+  --height-numpad-btn: 48px;  /* matches all interactive elements */
   --height-header-context: 24px;
   --height-header-buttons: 48px;
   --height-header: 72px;
@@ -315,13 +315,16 @@ body {
   font-weight: 600;
 }
 
-/* === Item List (scrollable, flex-grow) === */
+/* === Item List (inline preview — shows last 2-3 items) === */
 .item-list-container {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .item-list {
@@ -377,15 +380,68 @@ body {
 
 .item-row__final {
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
-.item-row__remove {
+/* Inline list hides remove buttons — they're in the sheet */
+.item-list-container .item-row__remove {
+  display: none;
+}
+
+/* === "View all X items" hint strip === */
+.item-list-hint {
+  min-height: var(--height-touch-min);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  line-height: var(--height-touch-min);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  display: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.item-list-hint.visible {
+  display: block;
+}
+
+/* === Item List Sheet (full list with remove buttons) === */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-medium);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.sheet-backdrop[hidden] {
+  display: none;
+}
+
+.sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.sheet__header .sheet__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 0;
+}
+
+.sheet__close {
   width: var(--height-touch-min);
   height: var(--height-touch-min);
   border: none;
   background: transparent;
-  color: var(--color-danger);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xl);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -395,74 +451,40 @@ body {
   flex-shrink: 0;
 }
 
-/* === Expandable Item List === */
-.item-list-container.expanded {
-  position: absolute;
-  top: var(--total-height);
-  left: 0;
-  right: 0;
-  max-height: calc(100% - var(--total-height));
-  z-index: 50;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.sheet__close:active {
+  color: var(--color-text);
 }
 
-.item-list-container.expanded .item-list {
-  flex: 1;
-  min-height: 0;
+.sheet__item-list {
+  list-style: none;
+  max-height: 60vh;
   overflow-y: auto;
+  margin: 0 calc(-1 * var(--space-2xl));
+  padding: 0;
 }
 
-.item-list-hint {
+.sheet__item-list .item-row {
+  padding: var(--space-md) var(--space-2xl);
   min-height: var(--height-touch-min);
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  text-align: center;
-  line-height: var(--height-touch-min);
+}
+
+.sheet__item-list .item-row__remove {
+  display: flex;
+  width: var(--height-touch-min);
+  height: var(--height-touch-min);
+  border: none;
+  background: transparent;
+  color: var(--color-danger);
+  font-size: var(--font-size-xl);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  display: none;
 }
 
-.item-list-hint.visible {
-  display: block;
-}
-
-.item-list-close {
-  min-height: var(--height-touch-min);
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  text-align: center;
-  line-height: var(--height-touch-min);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  border-top: 1px solid var(--color-border);
-  flex-shrink: 0;
-  display: none;
-}
-
-.item-list-container.expanded .item-list-close {
-  display: block;
-}
-
-.item-list-backdrop {
-  position: absolute;
-  top: var(--total-height);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--overlay-light);
-  z-index: 49;
-  display: none;
-}
-
-.item-list-backdrop.visible {
-  display: block;
+.sheet__footer {
+  margin-top: var(--space-lg);
 }
 
 /* === Input Area (compact) === */
@@ -638,7 +660,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   display: flex;

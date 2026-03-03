@@ -157,11 +157,11 @@ These CSS variables are the foundation. **Every** color, size, spacing, font, an
 ```css
 :root {
   /* === Interactive Element Heights === */
-  /* One button height (48px). Numpad keys are 56px but they're calculator keys, not buttons. */
+  /* One height for everything interactive: 48px. No exceptions. */
   --height-touch-min: 48px;    /* MINIMUM height for any tappable element */
   --height-button: 48px;       /* All buttons */
   --height-input: 48px;        /* Form inputs */
-  --height-numpad-btn: 56px;   /* Number pad keys (calculator keys, not buttons) */
+  --height-numpad-btn: 48px;   /* Number pad keys (same as buttons) */
 
   /* === Layout Heights === */
   --height-header-context: 24px;  /* Context strip (sale name, day, discount) */
@@ -205,9 +205,9 @@ Every component in the app must conform to these specs. When building or modifyi
 
 ### Buttons
 
-**Two sizes, four colors. That's it.**
+**One size, four colors. That's it.**
 
-#### Size: Standard (all buttons)
+#### Size: Standard (all buttons and numpad keys)
 ```
 height: var(--height-button)          /* 48px */
 font-size: var(--font-size-lg)        /* 16px */
@@ -216,13 +216,7 @@ padding: 0 var(--space-xl)            /* 0 16px */
 border-radius: var(--radius-md)       /* 6px */
 ```
 
-#### Size: Numpad (calculator keys only — not buttons)
-```
-height: var(--height-numpad-btn)      /* 56px */
-font-size: var(--font-size-2xl)       /* 28px */
-font-weight: var(--font-weight-bold)  /* 700 */
-border-radius: var(--radius-md)       /* 6px */
-```
+Numpad keys use the same 48px height but with `--font-size-xl` (20px) and `--font-weight-bold` (700) for a calculator feel.
 
 #### Color: Primary (navigation, secondary actions)
 ```
@@ -527,13 +521,13 @@ No hardcoded colors, no hardcoded font sizes, no hardcoded spacing, no hardcoded
 A button looks the same everywhere. An input looks the same everywhere. A card looks the same everywhere. There are not "checkout buttons" and "dashboard buttons" — there are buttons, and they use the standard button specs from §2.
 
 **4. Fewer unique values = better.**
-The app should use a minimal set of sizes. If we have 8 different button heights, something is wrong. Target: 1 button height (48px), 1 input height (48px), 1 numpad key height (56px). That's it.
+The app should use a minimal set of sizes. If we have 8 different button heights, something is wrong. Target: 1 height for everything interactive (48px). Buttons, inputs, numpad keys — all 48px. That's it.
 
 **5. Mobile-first means mobile-only (for now).**
 Design for 375px width, one-handed use, standing up, phone in hand. There are no tablet optimizations, no desktop layouts, no responsive breakpoints. If it works beautifully on an iPhone SE, it works everywhere we need it to.
 
 **6. The number pad is the hero.**
-On the checkout screen, the number pad dominates. It should be the most visually prominent, most tactile-feeling element in the entire app. Large keys, high contrast, instant feedback. Everything else on the checkout screen is secondary to the pad.
+On the checkout screen, the number pad dominates via its 3×4 grid — the largest visual block on the screen. Keys are 48px (same as all buttons) but use bold weight and large font for a calculator feel. High contrast, instant feedback. Everything else on the checkout screen is secondary to the pad.
 
 **7. White space is not wasted space.**
 Generous padding between elements prevents mis-taps and reduces cognitive load. When in doubt, add more space, not less. The checkout screen is tight by necessity (viewport fitting), but setup, dashboard, and modal screens should breathe.
@@ -588,6 +582,9 @@ These are structured prompts for a coding session. Each prompt is a self-contain
 
 ### Prompt 4: Fix Touch Targets + Replace Hardcoded Colors ✅
 **Status:** Complete (Prompts 4+5 combined). Checkbox tap target increased to 48px. All hardcoded colors outside `:root` replaced with tokens. Added animation-specific tokens (`--color-mic-highlight`, `--color-mic-pulse`, `--color-scan-border`, `--color-spinner-track`). Dashboard status badges now use semantic tokens. Zero hardcoded colors outside `:root`.
+
+### Prompt 5: Item List UX Overhaul + Numpad Resize ✅
+**Status:** Complete. Numpad keys reduced to 48px (one height for everything). Item list reworked: inline preview shows last 2-3 items, full list opens as bottom sheet with remove buttons. Old expand/collapse behavior removed.
 
 ### Prompt 6: Replace All Hardcoded Sizes
 **What:** Find every hardcoded px value for font-size, padding, margin, gap, height, and width that isn't using a CSS variable. Replace with the appropriate token. Use the grep list in §4.
