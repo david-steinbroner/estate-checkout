@@ -16,12 +16,11 @@ const Checkout = {
   // Current discount percentage
   currentDiscount: 0,
 
-  // Track "no description" prompts shown this session (not persisted)
-  noDescPromptCount: 0,
-  noDescPromptTimeout: null,
-
   // Track if we're in the middle of adding from prompt
   pendingAddWithoutDesc: false,
+
+  // Reuse customer number when reopening a transaction (prevents void loop incrementing)
+  reuseCustomerNumber: null,
 
   // Track if current cart has been saved as a transaction (prevents duplicates)
   transactionSaved: false,
@@ -254,8 +253,8 @@ const Checkout = {
 
     const description = this.elements.descriptionInput.value.trim();
 
-    // Check if no description and we should prompt (first 3 times)
-    if (!description && !this.pendingAddWithoutDesc && this.noDescPromptCount < 3) {
+    // Prompt if no description entered (unless bypassed via speech or confirm)
+    if (!description && !this.pendingAddWithoutDesc) {
       this.showDescPrompt();
       return;
     }
@@ -461,6 +460,7 @@ const Checkout = {
     this.elements.descriptionInput.value = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
+    this.reuseCustomerNumber = null;
     this.updatePriceDisplay();
     this.render();
   },
@@ -480,6 +480,7 @@ const Checkout = {
     this.priceInput = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
+    this.reuseCustomerNumber = null;
 
     // Clear UI inputs
     if (this.elements.descriptionInput) {
@@ -510,8 +511,9 @@ const Checkout = {
       return;
     }
 
-    // Get next customer number (auto-increments per sale)
-    const customerNumber = Storage.getNextCustomerNumber();
+    // Reuse customer number if reopening, otherwise get next
+    const customerNumber = this.reuseCustomerNumber || Storage.getNextCustomerNumber();
+    this.reuseCustomerNumber = null;
 
     // Save transaction for dashboard
     const transaction = {
@@ -552,11 +554,6 @@ const Checkout = {
     if (!this.elements.descPrompt) return;
 
     this.elements.descPrompt.classList.add('visible');
-
-    // Auto-dismiss after 3 seconds (add without description)
-    this.noDescPromptTimeout = setTimeout(() => {
-      this.confirmAddWithoutDesc();
-    }, 3000);
   },
 
   /**
@@ -566,12 +563,6 @@ const Checkout = {
     if (!this.elements.descPrompt) return;
 
     this.elements.descPrompt.classList.remove('visible');
-
-    // Clear timeout if set
-    if (this.noDescPromptTimeout) {
-      clearTimeout(this.noDescPromptTimeout);
-      this.noDescPromptTimeout = null;
-    }
   },
 
   /**
@@ -579,7 +570,6 @@ const Checkout = {
    */
   confirmAddWithoutDesc() {
     this.hideDescPrompt();
-    this.noDescPromptCount++;
     this.pendingAddWithoutDesc = true;
     this.addItem();
   },

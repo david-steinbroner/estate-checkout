@@ -72,8 +72,9 @@ const QR = {
     }));
     Storage.saveCart(Checkout.items);
 
-    // Track that this is a reopened transaction
-    Checkout.reopenedFromCustomer = txn.customerNumber;
+    // Track that this is a reopened transaction (preserve original root customer)
+    Checkout.reopenedFromCustomer = txn.reopenedFrom || txn.customerNumber;
+    Checkout.reuseCustomerNumber = txn.customerNumber;
 
     // Reset transaction saved state so a new transaction will be created on DONE
     Checkout.transactionSaved = false;

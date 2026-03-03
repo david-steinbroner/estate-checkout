@@ -3,11 +3,16 @@
 **Last updated:** 2026-03-02
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v43
+**Service worker cache:** v44
 
 ---
 
 ## What Was Accomplished
+
+### Session 28 (2026-03-02)
+- **Fixed Edit Order / Create Ticket Void Loop** — Repeatedly cycling Edit Order → Create Ticket no longer increments customer numbers. Added `Checkout.reuseCustomerNumber` property: `reopenTransaction()` stores the original customer number, `finishCheckout()` reuses it instead of calling `Storage.getNextCustomerNumber()`. Also preserves the `reopenedFrom` chain (carries forward root customer number instead of overwriting each cycle). Reset in `clearAll()` and `endSale()`.
+- **Removed Description Prompt 3-Use Limit** — The no-description bottom sheet prompt now shows every time an item is added without a description. Removed `noDescPromptCount` counter, `noDescPromptTimeout`, the `< 3` check, auto-dismiss timeout, and counter increment. `pendingAddWithoutDesc` flag retained for speech bypass.
+- **Service worker** — Bumped to v44
 
 ### Session 27 (2026-03-02)
 - **Added First-Run Onboarding Walkthrough** — Three-card overlay walkthrough shown on first app launch. Cards: "Set Up Your Sale" (📋), "Ring Up Items" (💰), "Mark It Paid" (✅). Centered white card with step indicator dots, fade transitions between cards, Next/Get Started and Skip buttons. Uses `estate_onboarding_seen` localStorage flag.
@@ -423,13 +428,45 @@ None currently.
 
 ## Next Steps (Priority Order)
 
-1. **One-person checkout flow** — Skip QR, mark paid directly (backlogged)
-2. **Dashboard enhancements** — Date range filtering, export (backlogged)
-3. **Item editing** — Tap item in cart to edit price/description
+1. **Field test at real estate sale** — Use with Alissa's contact to validate UX with real customers
+2. **Gather and triage feedback** — Document friction points, missed features, and bugs from field test
+3. **QR data compression** — Raw JSON may hit size limits for large carts (50+ items); evaluate compression or alternative handoff
 
 ---
 
 ## Files Changed This Session
+
+**Session 27:**
+```
+/js/onboarding.js   # NEW — Onboarding walkthrough module with card sets, show/dismiss/animate logic
+/index.html         # Added onboarding overlay container, "How It Works" link in setup-actions, onboarding.js script tag
+/css/styles.css     # Added .onboarding overlay (z-index 300), __card, __dots, __icon, __title, __body, __next, __skip, fade animation, .setup-help-link
+/js/app.js          # Added Onboarding.init() to initModules(), shouldShow()/show('single') check after route()
+/sw.js              # Bumped to v43, added /js/onboarding.js to cache list
+/HANDOFF.md         # Session 27 entry
+```
+
+**Session 26:**
+```
+/js/dashboard.js    # Edit Order disabled only for 'paid' (removed 'pending'), renamed button labels, added day info to rows
+/css/styles.css     # Added position: relative; z-index: 11 to .scan-actions
+/index.html         # Renamed Collect Payments → Scan Ticket, Ready for Payment → Create Ticket
+/sw.js              # Bumped to v42
+/HANDOFF.md         # Session 26 entry
+```
+
+**Session 25:**
+```
+/css/styles.css     # --action-bar-height 40→56px, .action-bar__button height to var(--btn-height-lg), removed .header__btn--back, added .scan-actions/.scan-action--new/.payment-action--new, .dashboard-detail__btn--reopen:disabled
+/index.html         # Removed #nav-checkout, added Edit Order + New Customer to QR actions, added New Customer to scan/payment, renamed Close Sale → End Estate Sale
+/js/app.js          # Removed checkoutBtn caching/click handler/updateCheckoutButton()/reopenFromQR()
+/js/qr.js           # Added editButton caching, reopenTransaction() method (moved from App)
+/js/scan.js         # Added newCustomerButton caching and click handler
+/js/payment.js      # Added newCustomerButton caching and click handler
+/js/dashboard.js    # All 3 buttons for non-void, Edit Order disabled for pending/paid, renamed Mark as Paid/Unpaid
+/sw.js              # Bumped to v40
+/HANDOFF.md         # Session 25 entry
+```
 
 **Session 24:**
 ```
@@ -661,9 +698,9 @@ None currently.
 
 ## Open Questions
 
-1. **QR data format:** Currently raw JSON. May need compression for large carts (50+ items).
-2. **Sale persistence:** Current behavior clears transactions when sale ends. Confirm this is desired.
-3. **Service worker caching:** Must bump cache version in sw.js when deploying JS changes.
+1. **QR data size limits:** Currently raw JSON. May need compression or chunking for large carts (50+ items). Needs field test data to validate.
+2. **Sale persistence:** Current behavior clears transactions when sale ends. Confirm this is desired after field testing.
+3. **Two-person vs. one-person flow:** Onboarding has card set architecture ready for flow selection. Need to decide if one-person flow is worth building before v0.2.
 
 ---
 
