@@ -96,9 +96,9 @@
   --radius-pill: 999px;
 
   /* === Component Heights === */
+  /* One button height (48px). Numpad keys are 56px but they're calculator keys, not buttons. */
   --height-touch-min: 48px;
   --height-button: 48px;
-  --height-button-lg: 56px;
   --height-input: 48px;
   --height-numpad-btn: 56px;
   --height-header-context: 24px;
@@ -471,12 +471,13 @@ body {
 }
 
 .description-input {
-  height: 44px;
+  height: var(--height-input);
   width: 100%;
   padding: 0 var(--space-lg);
   font-size: var(--font-size-base);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .description-input::placeholder {
@@ -485,7 +486,7 @@ body {
 
 .description-input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-border-focus);
 }
 
 .price-display {
@@ -832,7 +833,7 @@ body {
 
 .sheet__btn {
   width: 100%;
-  height: var(--height-button-lg);
+  height: var(--height-button);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-lg);
@@ -981,17 +982,17 @@ body {
 
 .setup-field__input {
   width: 100%;
-  height: 48px;
+  height: var(--height-input);
   padding: 0 var(--space-lg);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
 }
 
 .setup-field__input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-border-focus);
 }
 
 /* Discount List */
@@ -1081,7 +1082,7 @@ body {
 
 .start-sale-button {
   width: 100%;
-  height: var(--height-button-lg);
+  height: var(--height-button);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -1484,7 +1485,7 @@ body {
 
 .payment-action--paid {
   width: 100%;
-  height: var(--height-button-lg);
+  height: var(--height-button);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -2003,7 +2004,7 @@ body {
 
 .onboarding__next {
   width: 100%;
-  height: var(--height-button-lg);
+  height: var(--height-button);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
