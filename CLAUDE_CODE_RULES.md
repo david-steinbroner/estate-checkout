@@ -63,24 +63,33 @@ A feature is DONE when:
 ### File Structure
 ```
 /estate-checkout/
-  index.html              # Entry point
+  index.html              # Entry point (single-page app, all screens)
   manifest.json           # PWA manifest
-  sw.js                   # Service worker
+  sw.js                   # Service worker (cache version: estate-checkout-vNN)
   /css/
     styles.css            # Single stylesheet
   /js/
-    app.js                # App initialization, routing
+    app.js                # App initialization, routing, shared header
     checkout.js           # Checkout pad logic
     sale-setup.js         # Sale configuration
-    speech.js             # Speech-to-text module
-    qr.js                 # QR code generation
+    speech.js             # Speech-to-text module (parser, mic UX, guide sheet)
+    qr.js                 # QR code generation and handoff screen
+    scan.js               # QR scanning (BarcodeDetector + html5-qrcode fallback)
+    payment.js            # Payment receive screen
+    dashboard.js          # Sale dashboard (stats, filters, sort, transaction list)
+    onboarding.js         # First-run walkthrough (3-card overlay)
     storage.js            # localStorage abstraction
-    utils.js              # Shared helpers
+    utils.js              # Shared helpers (currency, dates, escaping)
   /assets/
-    icons/                # PWA icons
+    icons/                # PWA icons (icon-192.svg, icon-512.svg)
   /lib/
     qrcode.min.js         # QR code library
 ```
+
+### Service Worker Convention
+- Cache name format: `estate-checkout-vNN` (e.g., `estate-checkout-v48`)
+- Bump the version number in `sw.js` with every code change to bust the cache
+- All JS, CSS, HTML, and external libraries are listed in `ASSETS_TO_CACHE`
 
 ### CSS Rules
 - Mobile-first. Default styles ARE the mobile styles.
@@ -114,14 +123,20 @@ A feature is DONE when:
 ### Current Version: v0.1 — Checkout Pad MVP
 
 **IN SCOPE for v0.1:**
-- Sale setup (name, dates, discount schedule)
-- Checkout pad with number pad entry
-- Item list with running total and auto-applied discounts
-- Speech-to-text input (additive to number pad, not required)
+- Sale setup (name, start date, discount schedule)
+- First-run onboarding walkthrough with "How It Works" replay
+- Checkout pad with number pad entry, Add Item, Create Ticket
+- Expandable item list with running total, savings display, and auto-applied discounts
+- Speech-to-text input with hold-to-talk, parser, confirmation, guide sheet, quick-tap detection
+- No-description prompt (every time, no limit)
 - QR code generation for completed checkout (encodes item list + total)
-- QR scan view for receiving employee
-- Basic sale summary/dashboard (transaction count, total revenue)
-- PWA install + offline support
+- QR scan view with BarcodeDetector + html5-qrcode fallback
+- Payment receive screen with Mark Paid
+- Sale dashboard (stats, filter pills, sort toggle, transaction list with expand/collapse)
+- Transaction statuses: pending, paid, unpaid (legacy), void with voidReason
+- Edit Order flow (void + reload with same customer number)
+- Shared header navigation (Dashboard, Scan Ticket, End Estate Sale)
+- PWA install + offline support via service worker
 - localStorage persistence
 
 **OUT OF SCOPE for v0.1 (do not build, do not suggest):**
@@ -181,12 +196,13 @@ Before the session ends, you MUST update HANDOFF.md with:
 For the MVP, testing is manual but structured:
 
 ### Test Scenarios to Run for Every Change:
-1. **Happy path:** Add 5 items, verify total, generate QR, scan QR
-2. **Discount test:** Set up Day 2 = 50% off, add items, verify discounted prices
-3. **Speech test:** Use voice to add 3 items with descriptions and prices
-4. **Error handling:** Try to add item with no price, try to generate QR with empty cart
+1. **Happy path:** Add 5 items via number pad, verify total, tap Create Ticket, verify QR and summary
+2. **Discount test:** Set up Day 2 = 50% off, add items, verify discounted prices and savings display
+3. **Speech test:** Hold 🎤 Speak, say 3 items with descriptions and prices, confirm each
+4. **Error handling:** Try to add item with no price, try to Create Ticket with empty cart
 5. **Offline test:** Enable airplane mode, use full checkout flow
 6. **Reload test:** Add items, close browser, reopen — is the cart still there?
+7. **Dashboard test:** Complete 3 checkouts, verify stats, filter pills, and sort toggle
 
 ---
 

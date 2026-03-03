@@ -2,13 +2,18 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
+**v0.1 Status:** ~95% complete as of Session 32 (2026-03-02). Remaining: end-to-end test pass, offline testing, field test.
+
 ---
 
 ## Future Versions
 
 ### v0.2 — Post-MVP Improvements (after field testing)
-- [ ] Bluetooth receipt printer support
+- [ ] One-person checkout flow shortcut (skip QR, mark paid directly from checkout)
 - [ ] Export sale data as CSV
+- [ ] Dashboard date range filtering
+- [ ] Dashboard search by customer number
+- [ ] Bluetooth receipt printer support
 - [ ] Multiple simultaneous checkout stations (multi-device)
 - [ ] Item categories/tags for basic reporting
 - [ ] Undo last transaction (not just last item)
@@ -46,8 +51,19 @@
 ---
 
 ## Known Issues / Tech Debt
-_Add items here as they come up during development._
 
 | Date | Issue | Severity | Notes |
 |------|-------|----------|-------|
+| 2026-03-02 | QR data may hit size limits for 50+ item carts | Low | Raw JSON, no compression. Needs field test data to validate real-world cart sizes. |
+| 2026-03-02 | `--numpad-btn-size` at 56px is below 64px CLAUDE_CODE_RULES minimum | Low | Reduced from 64px in Session 22 to reclaim vertical space. Touch target still usable but below spec. |
+| 2026-03-02 | VERSION_LOG and HANDOFF "Files Changed" weren't maintained every session | Info | Sessions 7, 9, 18-21 missing from Files Changed section. Session logs are complete. |
+| 2026-03-02 | Offline airplane mode not tested | Medium | Service worker caches all assets but no live test has been done in airplane mode. |
+
+---
+
+## Field Testing Notes
+_To be filled in after first real estate sale test._
+
+| Date | Tester | Feedback | Priority |
+|------|--------|----------|----------|
 | — | — | — | — |

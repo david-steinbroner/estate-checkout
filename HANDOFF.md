@@ -392,41 +392,79 @@
 ## Current State
 
 ### What Works (confirmed on Cloudflare Pages)
-- **Sale Setup**: Create a new sale with name, start date, discount schedule
-- **Routing**: App opens to setup if no sale, checkout if sale exists
-- **Number pad entry**: Tap digits → price appears → tap ADD → item added to list
-- **Item list rendering**: Shows description (if provided) + original/discounted price
-- **Running total**: Updates automatically as items are added/removed
-- **Savings display**: Shows "Saved: $X.XX" when discount is active
-- **Remove items**: Tap × to remove individual items
-- **Clear all**: Shows confirmation modal, clears cart on confirm
-- **Discount display**: Header shows sale day and discount percentage
-- **Discount calculation**: Based on start date vs. today, applies correct day's discount
-- **Cart persistence**: Items survive page refresh (localStorage)
-- **End Sale**: Button in header ends sale and returns to setup
-- **NEW CUSTOMER / BACK buttons**: Work correctly on QR screen
-- **QR data format**: Includes customerNumber and timestamp
-- **Collect Payments button**: Opens QR scan view from checkout screen
-- **QR Scan view**: Camera viewfinder, native BarcodeDetector or html5-qrcode fallback
-- **Payment Receive screen**: Shows customer #, time, itemized list with discounts, total
-- **Mark Paid**: Saves transaction to localStorage, shows confirmation, returns to scan
-- **Customer numbering**: Auto-increments per sale, resets when sale ends
-- **Offline scanning**: html5-qrcode library cached for offline iOS scanning
-- **Dashboard**: Summary stats (customers, revenue, avg ticket) for current sale
-- **Transaction list**: View all transactions with accordion expand for details
-- **Dashboard navigation**: Accessible from top nav bar on checkout screen
-- **Speech-to-text**: Hold mic → speak → release → parsed result shown
-- **Speech parser**: Handles number words, compounds, X-fifty, hundred patterns
-- **Voice confirmation**: CONFIRM adds item, EDIT populates fields, CANCEL dismisses
-- **Descriptions via voice**: Carry through to QR, payment, and dashboard
-- **Header layout**: Context strip + button bar with Dashboard, Collect Payments, End Sale
-- **Description input**: Repositioned below price, 44px tall, closer to keypad
-- **No-description prompt**: Bottom sheet with overlay, shows first 3 times, backdrop tap dismisses
-- **Transaction status**: paid/unpaid/void with visual badges
-- **Paid/unpaid toggle**: Toggle status from Dashboard expanded view
-- **Reopen ticket**: Void original, load items to checkout for modification
-- **Collect Payment from Dashboard**: Generate QR for any transaction
-- **Dashboard stats**: Exclude voided transactions from totals
+
+**Sale Setup & Routing:**
+- Create a new sale with name, "Sale starts today" checkbox (or custom start date), discount schedule with Add Day
+- App opens to setup if no sale, checkout if sale exists
+- Dashboard button shown on setup when sale is active
+- "How It Works" link replays the onboarding walkthrough
+
+**First-Run Onboarding:**
+- 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid) on first launch
+- Fade transitions, step dots, Next/Get Started/Skip buttons
+- Replays from "How It Works" link regardless of seen state
+
+**Checkout Pad:**
+- Number pad entry: tap digits → price appears → tap Add Item → item added with "Added!" flash
+- Expandable item list with description, original/discounted prices, remove button
+- Running total with "Saved: $X.XX" when discount is active
+- Description input below price display
+- No-description prompt: bottom sheet every time (no use limit)
+- Clear All with confirmation bottom sheet
+- Create Ticket button (disabled when cart empty) → generates QR handoff
+- Cart persists in localStorage across page refresh
+- Auto-applied discounts by sale day
+
+**Speech-to-Text:**
+- Hold 🎤 Speak → speak → release → parsed result in confirmation sheet
+- Parser handles number words, compounds, X-fifty, hundred patterns, dollar signs
+- Confirmation flow: Confirm adds item, Edit populates fields, Cancel dismisses
+- Post-permission guide: "How to Use Voice Input" bottom sheet on first mic use
+- Quick-tap detection: "Hold the button longer" guidance if released under 1.5s
+- Progressive failure tips based on consecutive failure count
+- Mic permission flow: custom bottom sheet before browser prompt, denied state handling
+
+**QR Handoff:**
+- QR code with full transaction data (sale, day, discount, items, total, timestamp)
+- Itemized summary with discounted prices
+- Edit Order button: voids current ticket, reloads items with same customer number
+- New Customer button: clears cart, returns to checkout
+- Reopen-from chain preserved across repeated edit cycles
+
+**QR Scan:**
+- Camera viewfinder with native BarcodeDetector (Chrome/Edge) + html5-qrcode fallback (iOS)
+- Camera permission denied handling with retry
+- New Customer button navigates to checkout
+
+**Payment Receive:**
+- Customer info bar with customer number and timestamp
+- Itemized list with discounted prices
+- Mark Paid: updates transaction status, success animation, returns to scan
+- New Customer button navigates to checkout
+
+**Dashboard:**
+- Summary stats: customer count, revenue, avg ticket (excludes voided transactions)
+- Filter pills: All, Pending, Paid, Void with live counts (single-select)
+- Sort toggle: Newest First / Oldest First (resets on each Dashboard open)
+- Transaction list with accordion expand/collapse
+- Status badges: Pending (orange), Paid (green), Void (gray with reason), Unpaid (red, legacy)
+- Void reason labels: "Void — Edited Order" (with graceful fallback for legacy data)
+- Expanded detail: discount label, itemized list, action buttons
+- Action buttons: Mark as Paid/Unpaid, Edit Order (disabled for paid), Generate Ticket
+- Filter-specific empty state: "No [status] tickets"
+- New Customer button at bottom
+
+**Shared Header:**
+- Context strip: sale name, day number, discount badge
+- Button bar: Dashboard, Scan Ticket, End Estate Sale (red)
+- Active screen highlighting
+- End Estate Sale with confirmation bottom sheet
+
+**Infrastructure:**
+- PWA with service worker (cache-first strategy, version v48)
+- localStorage persistence for all data (sale, cart, transactions)
+- Customer numbering: auto-increments per sale, resets on new sale
+- All assets cached for offline use (html5-qrcode CDN included)
 
 ### What's Broken
 - None currently
@@ -452,9 +490,11 @@ None currently.
 
 ## Next Steps (Priority Order)
 
-1. **Field test at real estate sale** — Use with Alissa's contact to validate UX with real customers
-2. **Gather and triage feedback** — Document friction points, missed features, and bugs from field test
-3. **QR data compression** — Raw JSON may hit size limits for large carts (50+ items); evaluate compression or alternative handoff
+1. **End-to-end test pass** — Full manual test on mobile Chrome and mobile Safari using current button names and flows
+2. **Offline test** — Airplane mode full checkout flow (add items, Create Ticket, scan QR, Mark Paid)
+3. **Field test at real estate sale** — Use with Alissa's contact to validate UX with real customers
+4. **Gather and triage feedback** — Document friction points, missed features, and bugs from field test
+5. **QR data compression** — Raw JSON may hit size limits for large carts (50+ items); evaluate after field test
 
 ---
 
@@ -723,8 +763,8 @@ None currently.
 ## Open Questions
 
 1. **QR data size limits:** Currently raw JSON. May need compression or chunking for large carts (50+ items). Needs field test data to validate.
-2. **Sale persistence:** Current behavior clears transactions when sale ends. Confirm this is desired after field testing.
-3. **Two-person vs. one-person flow:** Onboarding has card set architecture ready for flow selection. Need to decide if one-person flow is worth building before v0.2.
+2. **Sale persistence:** Current behavior clears all transactions when sale ends. Confirm this is desired after field testing.
+3. **One-person flow shortcut:** Onboarding has card set architecture ready for flow selection. Should a one-person flow (skip QR, mark paid directly from checkout) be built before field test or after?
 
 ---
 
@@ -732,66 +772,73 @@ None currently.
 
 ### Sale Setup Flow
 1. Clear localStorage: DevTools > Application > Local Storage > Clear
-2. Refresh page → should see Sale Setup screen
-3. Enter sale name (e.g., "Test Estate")
-4. Verify date picker defaults to TODAY (not tomorrow)
-5. Set start date to today → should show "Day 1" with 0% discount
-6. Set start date to yesterday → should show "Day 2" with 25% discount
-7. Tap START SALE
-8. Checkout pad should show correct day and discount
+2. Refresh page → onboarding walkthrough should appear (3 cards)
+3. Dismiss onboarding → Sale Setup screen
+4. Enter sale name (e.g., "Test Estate")
+5. "Sale starts today" checkbox should be checked by default
+6. Uncheck → date picker appears, set start date to yesterday → should show "Day 2" with 25% discount
+7. Tap Start Sale → checkout pad should show correct day and discount
+8. Tap "How It Works" link → onboarding replays
 
 ### Checkout Flow
-1. Type price on number pad
-2. Tap ADD → item appears in list with "Added!" flash
-3. If discount active, running total bar shows "Saved: $X.XX"
-4. Add several items → verify running total updates
-5. Tap × on an item → verify it's removed
-6. Tap DONE → QR screen should appear with QR code and item summary
-7. Tap NEW CUSTOMER → clears cart, returns to checkout
-8. Tap BACK → returns to checkout with cart intact
+1. Type price on number pad → price display updates
+2. Tap Add Item → if no description, "No description — add anyway?" sheet appears
+3. Tap "Add Without Description" → item appears in list with "Added!" flash
+4. If discount active, running total bar shows "Saved: $X.XX"
+5. Add several items → verify running total updates
+6. Tap × on an item → verify it's removed
+7. Tap Create Ticket → QR screen should appear with QR code and item summary
+8. Tap New Customer → clears cart, returns to checkout
+
+### QR Handoff / Edit Order Flow
+1. Add 3 items → tap Create Ticket → QR shows
+2. Tap Edit Order → returns to checkout with same items reloaded
+3. Create Ticket again → Dashboard should show 1 pending + 1 void (same customer number)
+4. Voided ticket badge should read "Void — Edited Order"
 
 ### QR Scan/Payment Flow (Two-Person Workflow)
-1. **Checkout Worker:** Add 3 items → tap DONE → QR code shows
-2. **Payment Worker:** Tap "Collect Payments" → camera opens
+1. **Checkout Worker:** Add 3 items → tap Create Ticket → QR code shows
+2. **Payment Worker:** Tap Scan Ticket in header → camera opens
 3. Point camera at QR code → Payment screen shows
 4. Verify: Customer # and timestamp at top
 5. Verify: All 3 items listed with correct prices
 6. Verify: Total matches checkout total
-7. Tap "MARK PAID" → green checkmark flashes → returns to scan view
-8. Check localStorage: `estate_paid_transactions` should have the transaction
+7. Tap Mark Paid → green checkmark flashes → returns to scan view
 
 ### Customer Number Test
 1. Checkout 3 customers in sequence
 2. Verify QR codes show Customer #1, #2, #3
-3. End sale → start new sale
+3. End Estate Sale → start new sale
 4. Checkout 1 customer → should show Customer #1 (reset)
 
 ### Camera Permission Test
-1. Tap "Collect Payments"
+1. Tap Scan Ticket in header
 2. Deny camera permission when prompted
 3. Should see error message with "Retry" button
 4. Tap Retry → grant permission → camera should start
 
 ### Speech-to-Text Test
-1. **Happy path:** Hold mic → say "blue vase fifteen dollars" → release → confirmation shows "Add 'blue vase' — $15.00?" → tap CONFIRM → item added with description
-2. **Price only:** Hold mic → say "twenty five" → confirmation shows "Add item — $25.00?" → CONFIRM
-3. **Compound price:** Hold mic → say "seven fifty" → confirmation shows "$7.50" → CONFIRM
-4. **Large number:** Hold mic → say "two hundred" → confirmation shows "$200.00" → CONFIRM
-5. **Edit flow:** Hold mic → say something → EDIT → number pad populated with price, description in field → adjust → ADD ITEM
-6. **Cancel flow:** Hold mic → say something → CANCEL → nothing happens
-7. **Parse failure:** Hold mic → say gibberish → shows "Couldn't understand" with transcript → TRY AGAIN or CANCEL
-8. **No speech:** Hold mic → say nothing → release → error flash "Didn't catch that"
-9. **API not supported:** Load on browser without Web Speech API → mic button hidden
+1. **First use:** Tap 🎤 Speak → permission modal appears → Allow Microphone → guide sheet "How to Use Voice Input" shows → tap Got It
+2. **Happy path:** Hold 🎤 Speak → say "blue vase fifteen dollars" → release → confirmation shows "Add 'blue vase' — $15.00?" → tap Confirm → item added
+3. **Price only:** Hold mic → say "twenty five" → confirmation shows "Add item — $25.00?" → Confirm
+4. **Compound price:** Hold mic → say "seven fifty" → confirmation shows "$7.50" → Confirm
+5. **Large number:** Hold mic → say "two hundred" → confirmation shows "$200.00" → Confirm
+6. **Edit flow:** Hold mic → say something → Edit → fields populated → adjust → Add Item
+7. **Cancel flow:** Hold mic → say something → Cancel → nothing happens
+8. **Quick tap:** Tap and immediately release 🎤 Speak → "Hold the button longer" guidance appears
+9. **Parse failure:** Hold mic → say gibberish → shows "Couldn't understand" with transcript → Try Again or Cancel
 10. **Console test:** Open DevTools → `Speech.parse("blue vase fifteen dollars")` → returns `{price: 15, description: "blue vase"}`
 
 ### Dashboard Test
 1. **Empty state:** Clear localStorage → start sale → tap Dashboard → shows zeros and "No transactions yet"
 2. **With data:** Complete 3 checkouts → tap Dashboard → shows 3 customers, correct revenue, correct average
-3. **Transaction detail:** Tap a transaction row → expands to show items → tap again → collapses
-4. **Accordion:** Expand transaction #1 → tap transaction #2 → #1 collapses, #2 expands
-5. **Discounted items:** Verify crossed-out original prices and discount label in expanded view
-6. **Navigation from checkout:** Tap Dashboard from checkout → Back returns to checkout
-7. **Data freshness:** Complete a checkout → open Dashboard → new transaction appears
+3. **Filter pills:** All (3), Pending (3), Paid (0), Void (0) → tap Pending → only pending shown
+4. **Mark paid:** Expand a transaction → Mark as Paid → counts update: Pending (2), Paid (1)
+5. **Sort toggle:** Tap "Newest First ↓" → list reverses → shows "Oldest First ↑"
+6. **Void reason:** Edit Order on a ticket → Dashboard shows "Void — Edited Order" on voided ticket
+7. **Filter empty state:** Tap Void filter with 0 voids → "No void tickets" message
+8. **Transaction detail:** Tap a row → expands with items → tap again → collapses
+9. **Accordion:** Expand #1 → tap #2 → #1 collapses, #2 expands
 
 ### Local Server
 ```bash

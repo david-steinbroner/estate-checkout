@@ -21,94 +21,129 @@ A mobile-first Progressive Web App that replaces the printing calculator. It let
 ```
 OPERATOR SETUP (once per sale)
   → Name the sale
-  → Set sale dates
+  → Optionally set a future start date (defaults to today)
   → Set discount rules (Day 1: 0%, Day 2: 25% off, Day 3: 50% off, etc.)
-  → Save → ready for checkout
+  → Tap Start Sale → ready for checkout
+
+FIRST-RUN ONBOARDING (once per device)
+  → 3-card walkthrough: Set Up Your Sale → Ring Up Items → Mark It Paid
+  → Can be replayed from "How It Works" link on Setup screen
 
 CHECKOUT WORKER FLOW (repeated per customer)
-  → Open checkout pad
-  → Enter item price via number pad (tap price → tap ADD)
-  → OR hold mic button → speak "blue vase twelve dollars" → auto-fills description + price
+  → Open checkout pad (shared header shows sale name, day, discount)
+  → Enter item price via number pad → tap Add Item
+  → OR hold 🎤 Speak → say "blue vase twelve dollars" → confirm/edit/cancel
+  → If no description entered, a prompt asks to add one or continue
   → Repeat for each item
-  → See running item list with discounted prices
-  → Tap DONE → QR code appears
-  → Customer or payment worker scans QR
-  → Tap NEW CUSTOMER → pad resets
+  → See running item list with discounted prices and savings
+  → Tap Create Ticket → QR code appears with transaction summary
+  → Hand device to customer or payment worker scans QR
+  → Tap New Customer → pad resets for next customer
+  → OR tap Edit Order → voids current ticket, reloads items for editing
 
 PAYMENT WORKER FLOW
+  → Tap Scan Ticket in header → camera opens
   → Scan QR code from checkout worker's screen
-  → See itemized list + total
-  → Enter total into their POS (Square/Clover) manually
-  → Done
+  → See itemized list + total due
+  → Enter total into POS (Square/Clover) manually
+  → Tap Mark Paid → transaction saved
+  → Tap New Customer → return to scan for next customer
 
-OPERATOR REVIEW (end of day)
-  → Open dashboard
-  → See: total transactions, total revenue, average ticket size
-  → Data stored locally on device
+OPERATOR REVIEW (during or end of day)
+  → Tap Dashboard in header
+  → See: total customers, total revenue, average ticket size
+  → Filter by status: All / Pending / Paid / Void
+  → Sort: Newest First or Oldest First
+  → Tap any transaction to expand details
+  → From expanded view: Mark as Paid/Unpaid, Edit Order, Generate Ticket
 ```
 
 ---
 
 ## Screen Specifications
 
-### Screen 1: Home / Sale Setup
+### Screen 1: Sale Setup
 
 **Purpose:** Configure a sale before it starts.
 
 **Elements:**
-- Sale name (text input, e.g., "Johnson Estate - Oak Hill")
-- Sale dates (start date, end date — simple date pickers)
+- Sale name input (text, e.g., "Johnson Estate - Oak Hill")
+- "Sale starts today" checkbox (checked by default)
+  - Unchecking reveals a date picker for a future start date
 - Discount schedule:
   - Day 1 discount: __% (default 0)
   - Day 2 discount: __% (default 25)
   - Day 3 discount: __% (default 50)
-  - Optional Day 4+: __% (for longer sales)
-- "Start Sale" button → navigates to checkout pad
-- If a sale is already active, show: sale name, current day number, current discount, and buttons for "Go to Checkout" and "View Dashboard"
+  - "+ Add Day" button for longer sales (Day 4+)
+- "Start Sale" button (green, prominent)
+- "Dashboard" button (shown only when a sale is already active, navigates to dashboard)
+- "How It Works" link (replays the onboarding walkthrough)
 
 **Behavior:**
 - Sale config saves to localStorage
 - Only one active sale at a time
 - App auto-detects which day of the sale it is based on current date vs. start date
+- If a sale is already active, routing sends the user to the checkout pad on app load
 
 ---
 
-### Screen 2: Checkout Pad ⭐ (Most Critical Screen)
+### First-Run Onboarding Walkthrough
+
+**Purpose:** Teach new users how the app works in 30 seconds.
+
+**Elements:**
+- Full-screen overlay with centered white card
+- 3 cards shown in sequence:
+  1. **Set Up Your Sale** — Name sale, set dates and discount schedule
+  2. **Ring Up Items** — Number pad or hold 🎤 Speak to add items by voice
+  3. **Mark It Paid** — Customer scans QR, payment worker marks paid
+- Step indicator dots below each card
+- "Next" / "Get Started" button to advance
+- "Skip" link to dismiss immediately
+
+**Behavior:**
+- Shows automatically on first app load (uses `estate_onboarding_seen` localStorage flag)
+- Can be replayed anytime from the "How It Works" link on the Setup screen
+- Fade transitions between cards
+
+---
+
+### Screen 2: Checkout Pad (Most Critical Screen)
 
 **Purpose:** Enter items and prices as fast as possible.
 
 **Layout (top to bottom):**
-1. **Header bar:** Sale name, Day X, current discount (e.g., "Day 2 — 25% off")
-2. **Item list area** (scrollable, grows upward):
-   - Each row: item description (if given) | original price | discounted price
-   - Swipe or tap X to remove an item
-   - Running total at the bottom of the list (always visible)
-3. **Input area:**
-   - Optional description field (can be skipped — just enter price)
+1. **Shared header** (visible during active sale):
+   - Context strip: sale name, day number, current discount
+   - Button bar: Dashboard, Scan Ticket, End Estate Sale
+2. **Running total bar:** Shows "Total: $X.XX" and "Saved: $X.XX" when discount is active
+3. **Item list** (scrollable, expandable):
+   - Each row: description (if given), original price (struck through if discounted), final price, remove button (×)
+   - Tappable to expand when items overflow the visible area
+   - Close strip and backdrop overlay when expanded
+   - "No items yet" empty state
+4. **Input area:**
    - Price display (large, shows what's being typed)
-   - Mic button (hold to speak)
-4. **Number pad:**
-   - Digits 0-9, decimal point, backspace
-   - Large buttons (minimum 64px square, ideally bigger)
-   - "ADD" button (prominent, green, separate from number pad)
-5. **Action bar:**
-   - "DONE" button → generates QR
-   - "CLEAR ALL" button → requires confirmation tap
+   - 🎤 Speak button (hold to talk, next to price display)
+   - Description field (optional, below price display)
+   - Listening status indicator (pulsing dot when recording)
+5. **Number pad:**
+   - Digits 0-9, decimal point, backspace (⌫)
+   - "Add Item" button (green, prominent, spans full width below pad)
+6. **Action bar:**
+   - "Clear All" button (left, requires confirmation bottom sheet)
+   - "Create Ticket" button (right, disabled when cart is empty)
 
 **Behavior:**
-- Price entry is the DEFAULT state. App opens with cursor in price field.
-- Typing a price and tapping ADD creates an item with no description — this is fine and expected.
-- Description is optional — if they want to add one, they tap the description field first.
-- Speech-to-text: hold mic button, speak naturally, release. App parses utterance:
-  - Extracts dollar amount → fills price field
-  - Everything else → fills description field
-  - Example: "brass table lamp fifteen dollars" → Description: "brass table lamp" | Price: $15.00
-  - Example: "twenty-five fifty" → Description: (empty) | Price: $25.50
-- Discount is auto-applied based on sale day. Show both original and discounted price per item.
-- Running total shows the discounted total.
-- Items persist in localStorage until "DONE" or "CLEAR ALL" — safe against accidental refresh.
+- Price entry is the DEFAULT state. Typing digits builds the price display.
+- Tapping "Add Item" creates an item. If no description, a bottom sheet prompts: "No description — add anyway?" with "Add Without Description" and "Add Description" buttons. This prompt shows every time (no limit).
+- Speech input: hold 🎤 button, speak naturally, release. App parses the utterance to extract price and description. Shows a confirmation sheet with Confirm / Edit / Cancel.
+- On first mic press after granting permission, a "How to Use Voice Input" guide sheet is shown (one-time).
+- Quick-tap detection: if user taps and releases the mic button in under 1.5 seconds, shows "Hold the button longer" guidance instead of a generic error.
+- Discount is auto-applied based on sale day. Both original and discounted prices shown per item.
+- Items persist in localStorage until "Create Ticket" or "Clear All".
 
-**Speed target:** A competent user should be able to add a price-only item in under 3 seconds (tap price digits + tap ADD).
+**Speed target:** A competent user should be able to add a price-only item in under 3 seconds.
 
 ---
 
@@ -117,12 +152,12 @@ OPERATOR REVIEW (end of day)
 **Purpose:** Transfer the itemized list to the payment worker or customer.
 
 **Elements:**
-- Large QR code (centered, as big as possible)
-- Itemized list summary below (scrollable):
-  - Each item: description (if any) | discounted price
-  - Total at bottom (bold, large)
-- "NEW CUSTOMER" button → clears cart, returns to checkout pad
-- "BACK" button → returns to checkout pad without clearing (in case they need to add/remove items)
+- Large QR code (centered)
+- Itemized list summary below:
+  - Each item: description (or "Item"), original price (struck through if discounted), final price
+  - Total at bottom
+- "Edit Order" button — voids current ticket, reloads items into checkout for editing
+- "New Customer" button — clears cart, returns to checkout pad
 
 **QR Data Format:**
 ```json
@@ -130,6 +165,7 @@ OPERATOR REVIEW (end of day)
   "sale": "Johnson Estate",
   "day": 2,
   "discount": 25,
+  "customerNumber": 1,
   "items": [
     {"desc": "brass lamp", "orig": 15.00, "final": 11.25},
     {"desc": "", "orig": 8.00, "final": 6.00}
@@ -138,44 +174,139 @@ OPERATOR REVIEW (end of day)
   "ts": "2025-01-15T14:32:00"
 }
 ```
-- Encode as JSON, compress if needed for QR size limits
-- If item count is very large (30+ items), may need to simplify (drop descriptions) to fit QR capacity
+
+**Behavior:**
+- Edit Order voids the current transaction (status: 'void', voidReason: 'Edited Order') and creates a new checkout with the same items and customer number
+- The reopened-from chain is preserved so repeated edit cycles don't spawn new customer numbers
 
 ---
 
-### Screen 4: QR Scan / Receive View
+### Screen 4: QR Scan
 
 **Purpose:** Payment worker scans QR to see what the customer owes.
 
 **Elements:**
-- Camera viewfinder for QR scanning
-- Once scanned, shows:
-  - Itemized list (same format as QR Handoff screen)
-  - Total (large, prominent — this is what they enter into the POS)
-- "SCAN ANOTHER" button
+- Full-screen camera viewfinder with scan target overlay
+- Status text: "Point camera at QR code"
+- Camera permission error state with retry button
+- "New Customer" button (navigates to checkout to create a new order)
 
 **Behavior:**
-- Uses device camera via browser API
-- Decodes QR JSON and renders the item list
-- No data is saved on the receiving device (stateless)
+- Uses native BarcodeDetector API where available (Chrome/Edge)
+- Falls back to html5-qrcode library for iOS Safari
+- Camera permission denied shows error with "Retry" button and help text
+- On successful scan, navigates to Payment screen with decoded transaction data
 
 ---
 
-### Screen 5: Sale Dashboard
+### Screen 5: Payment Receive
+
+**Purpose:** Show the payment worker what the customer owes.
+
+**Elements:**
+- Customer info bar: "Customer #X — HH:MM AM/PM"
+- Itemized list with descriptions and prices (discounted items show original struck through)
+- Total due (large, prominent)
+- "Mark Paid" button (green)
+- "New Customer" button (navigates to checkout)
+- Success overlay: green checkmark with "Paid!" text (auto-dismisses)
+
+**Behavior:**
+- Mark Paid updates the transaction status to 'paid' with timestamp, shows success animation, then navigates back to scan
+- Transaction data is saved to localStorage on the receiving device
+
+---
+
+### Screen 6: Dashboard
 
 **Purpose:** Let the operator see how the sale is going.
 
 **Elements:**
-- Sale name and date range
-- Total transactions today
-- Total revenue today
-- Average transaction size
-- Simple list of completed transactions (tap to expand and see items)
+- Summary stats (always show full sale totals, unaffected by filters):
+  - Customer count (excludes voided transactions)
+  - Total revenue (excludes voided transactions)
+  - Average ticket size
+- Filter pills row: All (X), Pending (X), Paid (X), Void (X)
+  - Live counts in parentheses
+  - Single-select, active pill fills with status color (blue/orange/green/gray)
+- Sort toggle: "Newest First ↓" / "Oldest First ↑" (text link, right-aligned)
+- Transaction list:
+  - Each row: "Customer #X — Day Y · HH:MM AM/PM", status badge, total
+  - Item count in secondary text
+  - Tap to expand/collapse (accordion — only one expanded at a time)
+- Expanded detail:
+  - Discount label (e.g., "Day 2 — 25% off")
+  - Itemized list with prices
+  - Action buttons (hidden for voided transactions):
+    - "Mark as Paid" / "Mark as Unpaid" toggle
+    - "Edit Order" (disabled for paid tickets, voids and reloads to checkout)
+    - "Generate Ticket" (navigates to QR screen for this transaction)
+- Status badges:
+  - Pending (orange) — ticket created, not yet paid
+  - Paid (green) — marked as paid
+  - Void (gray) — voided, shows reason if available (e.g., "Void — Edited Order")
+  - Unpaid (red) — legacy status, no dedicated filter pill
+- Empty states:
+  - No transactions at all: "No transactions yet. Complete a checkout to see data here."
+  - Filter with 0 matches: "No [status] tickets"
+- "New Customer" button at bottom
 
 **Behavior:**
-- Data comes from localStorage (saved when each QR is generated / "DONE" is tapped)
-- No charts or graphs needed — just numbers
-- "End Sale" button → archives the sale data, returns to setup screen
+- Filter and sort reset to All + Newest First each time Dashboard is opened
+- Stats always show full sale totals regardless of filter
+- "End Estate Sale" in the header ends the sale (confirmation required), clears all data, returns to setup
+
+---
+
+### Shared Header
+
+**Purpose:** Navigate between screens during an active sale.
+
+**Elements:**
+- Context strip: sale name, day number, current discount badge
+- Button bar: Dashboard, Scan Ticket, End Estate Sale (red)
+
+**Behavior:**
+- Hidden during sale setup, visible during active sale
+- Active screen button is highlighted
+- "End Estate Sale" shows a confirmation bottom sheet before clearing data
+
+---
+
+### Speech-to-Text System
+
+**Purpose:** Let workers add items by voice for hands-free operation.
+
+**Components:**
+- Hold-to-talk: press and hold 🎤 Speak button, speak, release
+- Natural language parser:
+  - Number words (one through ninety, hundred)
+  - Compound numbers ("twenty five" → 25)
+  - X-fifty cents pattern ("seven fifty" → $7.50)
+  - Hundred pattern ("two hundred" → $200)
+  - Dollar sign detection ("$25", "$5.50")
+  - Description extraction ("blue vase fifteen dollars" → desc: "blue vase", price: $15)
+  - Filler word stripping (dollars, bucks, and, cents)
+- Confirmation flow: Confirm (adds item), Edit (populates fields), Cancel
+- Post-permission guide: "How to Use Voice Input" bottom sheet on first mic use after granting permission
+- Quick-tap guidance: "Hold the button longer" if released in under 1.5 seconds
+- Progressive failure tips: contextual tips escalate after repeated failures
+- Mic permission flow: custom "Voice Input" sheet before browser prompt, denied state handling
+
+---
+
+### Transaction Statuses
+
+| Status | Meaning | Set When |
+|--------|---------|----------|
+| `pending` | Ticket created, awaiting payment | `finishCheckout()` (Create Ticket) |
+| `paid` | Payment confirmed | Mark Paid button (payment or dashboard) |
+| `unpaid` | Legacy status from early builds | Not actively set; shown under "All" filter |
+| `void` | Cancelled/replaced | Edit Order (from QR or dashboard) |
+
+Voided transactions include a `voidReason` string:
+- `'Edited Order'` — voided because the order was reopened for editing
+- Future values: `'Cancelled'`, `'Refunded'`, `'Duplicate'`
 
 ---
 
