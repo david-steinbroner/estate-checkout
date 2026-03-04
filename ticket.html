@@ -222,19 +222,50 @@
         // Build items
         const itemsHtml = data.items.map(item => {
           const desc = item.desc || 'Item';
-          const hasDiscount = item.orig !== item.final;
+          const hasHaggle = item.haggle && item.haggle.value;
+          const hasDayDiscount = item.day !== undefined && item.orig !== item.day;
+
+          let priceHtml;
+          if (hasHaggle) {
+            priceHtml = `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>`;
+            if (hasDayDiscount) {
+              priceHtml += `<span class="ticket__item-original">${formatCurrency(item.day)}</span>`;
+            }
+            priceHtml += formatCurrency(item.final);
+          } else if (item.orig !== item.final) {
+            priceHtml = `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>${formatCurrency(item.final)}`;
+          } else {
+            priceHtml = formatCurrency(item.final);
+          }
+
           return `
             <li class="ticket__item">
               <span class="ticket__item-desc">${escapeHtml(desc)}</span>
-              <span class="ticket__item-price">
-                ${hasDiscount ? `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>` : ''}
-                ${formatCurrency(item.final)}
-              </span>
+              <span class="ticket__item-price">${priceHtml}</span>
             </li>
           `;
         }).join('');
 
         const timeStr = formatTime(data.ts);
+
+        // Ticket discount line
+        let ticketDiscountHtml = '';
+        if (data.ticketDiscount && data.ticketDiscount.value) {
+          const subtotal = data.subtotal || data.total;
+          const tdLabel = data.ticketDiscount.type === 'percent'
+            ? `${data.ticketDiscount.value}% off`
+            : `${formatCurrency(data.ticketDiscount.value)} off`;
+          ticketDiscountHtml = `
+            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#666">
+              <span>Subtotal</span>
+              <span style="text-decoration:line-through">${formatCurrency(subtotal)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:2px 0 8px;font-size:13px;color:#666">
+              <span>Ticket discount</span>
+              <span>${tdLabel}</span>
+            </div>
+          `;
+        }
 
         ticketEl.innerHTML = `
           <div class="ticket__header">
@@ -242,6 +273,7 @@
             <div class="ticket__sale-info">${escapeHtml(saleInfo)}</div>
           </div>
           <ul class="ticket__items">${itemsHtml}</ul>
+          ${ticketDiscountHtml}
           <div class="ticket__total">
             <span class="ticket__total-label">Total</span>
             <span class="ticket__total-amount">${formatCurrency(data.total)}</span>

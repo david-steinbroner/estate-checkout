@@ -88,6 +88,45 @@ const Utils = {
   },
 
   /**
+   * Apply a haggle discount to a day-discounted price
+   * @param {number} dayDiscountedPrice - Price after day discount
+   * @param {string} haggleType - 'percent' | 'dollar' | 'newprice' | null
+   * @param {number} haggleValue - The raw haggle input
+   * @returns {number} Final price after haggle
+   */
+  applyHaggle(dayDiscountedPrice, haggleType, haggleValue) {
+    if (!haggleType || !haggleValue) return dayDiscountedPrice;
+
+    if (haggleType === 'newprice') {
+      return Math.max(0, haggleValue);
+    } else if (haggleType === 'dollar') {
+      return Math.max(0, dayDiscountedPrice - haggleValue);
+    } else if (haggleType === 'percent') {
+      return Math.max(0, dayDiscountedPrice * (1 - haggleValue / 100));
+    }
+
+    return dayDiscountedPrice;
+  },
+
+  /**
+   * Apply a ticket-level discount to a subtotal
+   * @param {number} subtotal - Sum of item final prices
+   * @param {object|null} ticketDiscount - { type: 'percent'|'dollar', value: number }
+   * @returns {number} Total after ticket discount
+   */
+  applyTicketDiscount(subtotal, ticketDiscount) {
+    if (!ticketDiscount || !ticketDiscount.type || !ticketDiscount.value) return subtotal;
+
+    if (ticketDiscount.type === 'dollar') {
+      return Math.max(0, subtotal - ticketDiscount.value);
+    } else if (ticketDiscount.type === 'percent') {
+      return Math.max(0, subtotal * (1 - ticketDiscount.value / 100));
+    }
+
+    return subtotal;
+  },
+
+  /**
    * Format ISO timestamp to time string (e.g., "10:42 AM")
    */
   formatTime(isoTimestamp) {

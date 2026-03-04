@@ -35,19 +35,35 @@ const Storage = {
   },
 
   /**
-   * Save the current cart (items in progress)
+   * Save the current cart (items + ticket discount)
    */
-  saveCart(items) {
-    localStorage.setItem(this.KEYS.CART, JSON.stringify(items));
+  saveCart(items, ticketDiscount) {
+    localStorage.setItem(this.KEYS.CART, JSON.stringify({
+      items: items,
+      ticketDiscount: ticketDiscount || null
+    }));
   },
 
   /**
    * Get the current cart
-   * Returns empty array if no cart exists
+   * Returns { items: [], ticketDiscount: null }
+   * Handles migration from old array format
    */
   getCart() {
     const data = localStorage.getItem(this.KEYS.CART);
-    return data ? JSON.parse(data) : [];
+    if (!data) return { items: [], ticketDiscount: null };
+
+    const parsed = JSON.parse(data);
+
+    // Migrate old format (plain array) to new wrapped format
+    if (Array.isArray(parsed)) {
+      return { items: parsed, ticketDiscount: null };
+    }
+
+    return {
+      items: parsed.items || [],
+      ticketDiscount: parsed.ticketDiscount || null
+    };
   },
 
   /**
@@ -83,7 +99,9 @@ const Storage = {
       paidAt: txn.paidAt || null,
       voidedAt: txn.voidedAt || null,
       reopenedFrom: txn.reopenedFrom || null,
-      orderName: txn.orderName || ''
+      orderName: txn.orderName || '',
+      ticketDiscount: txn.ticketDiscount || null,
+      subtotal: txn.subtotal || txn.total
     }));
   },
 

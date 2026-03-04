@@ -96,6 +96,7 @@
     <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
       <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
+      <button class="action-bar__button action-bar__button--discount" id="ticket-discount-button" hidden>Ticket %</button>
       <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Ticket</button>
     </div>
   </div>
@@ -361,6 +362,59 @@
       </div>
       <div class="sheet__buttons">
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Haggle Discount Sheet -->
+  <div class="overlay" id="haggle-modal">
+    <div class="sheet">
+      <p class="sheet__title" id="haggle-title">Adjust Price</p>
+      <p class="sheet__text" id="haggle-breakdown">Lamp — $20.00 → $15.00</p>
+      <div class="haggle-options">
+        <label class="haggle-option">
+          <input type="radio" name="haggle-type" value="newprice" checked>
+          <span class="haggle-option__label">New price</span>
+        </label>
+        <label class="haggle-option">
+          <input type="radio" name="haggle-type" value="dollar">
+          <span class="haggle-option__label">$ off</span>
+        </label>
+        <label class="haggle-option">
+          <input type="radio" name="haggle-type" value="percent">
+          <span class="haggle-option__label">% off</span>
+        </label>
+      </div>
+      <input type="text" inputmode="decimal" class="haggle-input" id="haggle-input" placeholder="0.00" autocomplete="off">
+      <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="haggle-apply">Apply</button>
+        <button class="sheet__btn sheet__btn--danger-outline" id="haggle-remove" hidden>Remove Discount</button>
+        <button class="sheet__btn sheet__btn--secondary" id="haggle-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Discount Sheet -->
+  <div class="overlay" id="ticket-discount-modal">
+    <div class="sheet">
+      <p class="sheet__title">Ticket Discount</p>
+      <div class="haggle-options">
+        <label class="haggle-option">
+          <input type="radio" name="ticket-discount-type" value="percent" checked>
+          <span class="haggle-option__label">% off</span>
+        </label>
+        <label class="haggle-option">
+          <input type="radio" name="ticket-discount-type" value="dollar">
+          <span class="haggle-option__label">$ off</span>
+        </label>
+      </div>
+      <input type="text" inputmode="decimal" class="haggle-input" id="ticket-discount-input" placeholder="0" autocomplete="off">
+      <p class="haggle-preview" id="ticket-discount-preview">Total: $0.00</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="ticket-discount-apply">Apply</button>
+        <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
+        <button class="sheet__btn sheet__btn--secondary" id="ticket-discount-cancel">Cancel</button>
       </div>
     </div>
   </div>

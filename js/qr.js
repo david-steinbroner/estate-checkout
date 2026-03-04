@@ -72,7 +72,8 @@ const QR = {
       ...item,
       id: Utils.generateId()
     }));
-    Storage.saveCart(Checkout.items);
+    Checkout.ticketDiscount = txn.ticketDiscount || null;
+    Checkout.saveCart();
 
     // Track that this is a reopened transaction (preserve original root customer)
     Checkout.reopenedFromCustomer = txn.reopenedFrom || txn.customerNumber;
@@ -103,8 +104,12 @@ const QR = {
       items: transaction.items.map(item => ({
         desc: item.description || '',
         orig: item.originalPrice,
-        final: item.finalPrice
+        day: item.dayDiscountedPrice !== undefined ? item.dayDiscountedPrice : item.finalPrice,
+        final: item.finalPrice,
+        haggle: (item.haggleType && item.haggleValue) ? { type: item.haggleType, value: item.haggleValue } : null
       })),
+      ticketDiscount: transaction.ticketDiscount || null,
+      subtotal: transaction.subtotal || transaction.total,
       total: transaction.total,
       ts: transaction.timestamp
     };
@@ -142,7 +147,18 @@ const QR = {
 
     // Render item summary and total first (these should always work)
     this.renderItemSummary(transaction);
-    this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
+
+    // Show ticket discount in total if present
+    if (transaction.ticketDiscount && transaction.ticketDiscount.value) {
+      const subtotal = transaction.subtotal || transaction.total;
+      const discountLabel = transaction.ticketDiscount.type === 'percent'
+        ? `${transaction.ticketDiscount.value}% off`
+        : `${Utils.formatCurrency(transaction.ticketDiscount.value)} off`;
+      this.elements.qrTotal.innerHTML =
+        `<span style="text-decoration:line-through;color:#999;font-size:0.85em;margin-right:4px">${Utils.formatCurrency(subtotal)}</span>${Utils.formatCurrency(transaction.total)}`;
+    } else {
+      this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
+    }
 
     // Generate and render QR code (may fail on very large transactions)
     try {
@@ -183,15 +199,26 @@ const QR = {
   renderItemSummary(transaction) {
     const html = transaction.items.map(item => {
       const desc = item.description || 'Item';
-      const showOriginal = item.discount > 0;
+      const hasHaggle = item.haggleType && item.haggleValue;
+      const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
+
+      let priceHtml;
+      if (hasHaggle) {
+        priceHtml = `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>`;
+        if (hasDayDiscount && item.dayDiscountedPrice !== undefined) {
+          priceHtml += `<span class="qr-item__original">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>`;
+        }
+        priceHtml += Utils.formatCurrency(item.finalPrice);
+      } else if (hasDayDiscount) {
+        priceHtml = `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>${Utils.formatCurrency(item.finalPrice)}`;
+      } else {
+        priceHtml = Utils.formatCurrency(item.finalPrice);
+      }
 
       return `
         <li class="qr-item">
           <span class="qr-item__desc">${Utils.escapeHtml(desc)}</span>
-          <span class="qr-item__price">
-            ${showOriginal ? `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
-            ${Utils.formatCurrency(item.finalPrice)}
-          </span>
+          <span class="qr-item__price">${priceHtml}</span>
         </li>
       `;
     }).join('');

@@ -315,15 +315,26 @@ const Dashboard = {
 
     const itemsHtml = (txn.items || []).map(item => {
       const desc = item.description || 'Item';
-      const hasDiscount = item.originalPrice !== item.finalPrice;
+      const hasHaggle = item.haggleType && item.haggleValue;
+      const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
+
+      let priceHtml;
+      if (hasHaggle) {
+        priceHtml = `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>`;
+        if (hasDayDiscount && item.dayDiscountedPrice !== undefined) {
+          priceHtml += `<span class="dashboard-detail__original">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>`;
+        }
+        priceHtml += Utils.formatCurrency(item.finalPrice);
+      } else if (item.originalPrice !== item.finalPrice) {
+        priceHtml = `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>${Utils.formatCurrency(item.finalPrice)}`;
+      } else {
+        priceHtml = Utils.formatCurrency(item.finalPrice);
+      }
 
       return `
         <li class="dashboard-detail__item">
           <span class="dashboard-detail__desc">${Utils.escapeHtml(desc)}</span>
-          <span class="dashboard-detail__price">
-            ${hasDiscount ? `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
-            ${Utils.formatCurrency(item.finalPrice)}
-          </span>
+          <span class="dashboard-detail__price">${priceHtml}</span>
         </li>
       `;
     }).join('');
@@ -347,11 +358,21 @@ const Dashboard = {
       </div>
     `;
 
+    // Ticket discount line
+    let ticketDiscountHtml = '';
+    if (txn.ticketDiscount && txn.ticketDiscount.value) {
+      const tdLabel = txn.ticketDiscount.type === 'percent'
+        ? `${txn.ticketDiscount.value}% off`
+        : `${Utils.formatCurrency(txn.ticketDiscount.value)} off`;
+      ticketDiscountHtml = `<div class="dashboard-detail__discount">Ticket discount: ${tdLabel}</div>`;
+    }
+
     return `
       <div class="dashboard-detail__discount">${discountLabel}</div>
       <ul class="dashboard-detail__items">
         ${itemsHtml}
       </ul>
+      ${ticketDiscountHtml}
       ${actionsHtml}
     `;
   },
@@ -424,10 +445,12 @@ const Dashboard = {
       ...item,
       id: Utils.generateId() // New IDs for the reopened items
     }));
-    Storage.saveCart(Checkout.items);
+    Checkout.ticketDiscount = txn.ticketDiscount || null;
+    Checkout.saveCart();
 
     // Track that this is a reopened transaction
     Checkout.reopenedFromCustomer = txn.customerNumber;
+    Checkout.reuseCustomerNumber = txn.customerNumber;
 
     // Preserve order name
     Checkout.elements.orderNameInput.value = txn.orderName || '';

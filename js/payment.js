@@ -70,8 +70,18 @@ const Payment = {
     // Render items
     this.renderItems(data.items);
 
-    // Render total
-    this.elements.total.textContent = Utils.formatCurrency(data.total);
+    // Render total with ticket discount if present
+    if (data.ticketDiscount && data.ticketDiscount.value) {
+      const subtotal = data.subtotal || data.total;
+      const discountLabel = data.ticketDiscount.type === 'percent'
+        ? `${data.ticketDiscount.value}% off`
+        : `${Utils.formatCurrency(data.ticketDiscount.value)} off`;
+      this.elements.total.innerHTML =
+        `<span style="text-decoration:line-through;color:#999;font-size:0.85em;margin-right:4px">${Utils.formatCurrency(subtotal)}</span>${Utils.formatCurrency(data.total)}` +
+        `<br><span style="font-size:0.75em;color:#666">Ticket discount: ${discountLabel}</span>`;
+    } else {
+      this.elements.total.textContent = Utils.formatCurrency(data.total);
+    }
 
     // Reset state
     this.elements.successOverlay.hidden = true;
@@ -84,15 +94,26 @@ const Payment = {
   renderItems(items) {
     const html = items.map(item => {
       const desc = item.desc || 'Item';
-      const hasDiscount = item.orig !== item.final;
+      const hasHaggle = item.haggle && item.haggle.value;
+      const hasDayDiscount = item.day !== undefined && item.orig !== item.day;
+
+      let priceHtml;
+      if (hasHaggle) {
+        priceHtml = `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>`;
+        if (hasDayDiscount) {
+          priceHtml += `<span class="payment-item__original">${Utils.formatCurrency(item.day)}</span>`;
+        }
+        priceHtml += Utils.formatCurrency(item.final);
+      } else if (item.orig !== item.final) {
+        priceHtml = `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>${Utils.formatCurrency(item.final)}`;
+      } else {
+        priceHtml = Utils.formatCurrency(item.final);
+      }
 
       return `
         <li class="payment-item">
           <span class="payment-item__desc">${Utils.escapeHtml(desc)}</span>
-          <span class="payment-item__price">
-            ${hasDiscount ? `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>` : ''}
-            ${Utils.formatCurrency(item.final)}
-          </span>
+          <span class="payment-item__price">${priceHtml}</span>
         </li>
       `;
     }).join('');

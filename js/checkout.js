@@ -16,6 +16,9 @@ const Checkout = {
   // Current discount percentage
   currentDiscount: 0,
 
+  // Ticket-level discount ({ type: 'percent'|'dollar', value: number } or null)
+  ticketDiscount: null,
+
   // Track if we're in the middle of adding from prompt
   pendingAddWithoutDesc: false,
 
@@ -30,6 +33,9 @@ const Checkout = {
 
   // Item sheet state
   isSheetOpen: false,
+
+  // Haggle sheet state — which item is being haggled
+  haggleItemId: null,
 
   // DOM element references
   elements: {},
@@ -75,7 +81,24 @@ const Checkout = {
       descPrompt: document.getElementById('desc-prompt'),
       descPromptAdd: document.getElementById('desc-prompt-add'),
       descPromptDesc: document.getElementById('desc-prompt-desc'),
-      orderNameInput: document.getElementById('order-name-input')
+      orderNameInput: document.getElementById('order-name-input'),
+      // Haggle sheet
+      haggleModal: document.getElementById('haggle-modal'),
+      haggleTitle: document.getElementById('haggle-title'),
+      haggleBreakdown: document.getElementById('haggle-breakdown'),
+      haggleInput: document.getElementById('haggle-input'),
+      hagglePreview: document.getElementById('haggle-preview'),
+      haggleApply: document.getElementById('haggle-apply'),
+      haggleRemove: document.getElementById('haggle-remove'),
+      haggleCancel: document.getElementById('haggle-cancel'),
+      // Ticket discount sheet
+      ticketDiscountButton: document.getElementById('ticket-discount-button'),
+      ticketDiscountModal: document.getElementById('ticket-discount-modal'),
+      ticketDiscountInput: document.getElementById('ticket-discount-input'),
+      ticketDiscountPreview: document.getElementById('ticket-discount-preview'),
+      ticketDiscountApply: document.getElementById('ticket-discount-apply'),
+      ticketDiscountRemove: document.getElementById('ticket-discount-remove'),
+      ticketDiscountCancel: document.getElementById('ticket-discount-cancel')
     };
   },
 
@@ -186,6 +209,50 @@ const Checkout = {
         }
       });
     }
+
+    // Haggle sheet events
+    if (this.elements.haggleApply) {
+      this.elements.haggleApply.addEventListener('click', () => this.applyHaggle());
+    }
+    if (this.elements.haggleRemove) {
+      this.elements.haggleRemove.addEventListener('click', () => this.removeHaggle());
+    }
+    if (this.elements.haggleCancel) {
+      this.elements.haggleCancel.addEventListener('click', () => this.closeHaggleSheet());
+    }
+    if (this.elements.haggleModal) {
+      this.elements.haggleModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.haggleModal) this.closeHaggleSheet();
+      });
+      // Live preview on input/type change
+      this.elements.haggleInput.addEventListener('input', () => this.updateHagglePreview());
+      document.querySelectorAll('input[name="haggle-type"]').forEach(radio => {
+        radio.addEventListener('change', () => this.updateHagglePreview());
+      });
+    }
+
+    // Ticket discount sheet events
+    if (this.elements.ticketDiscountButton) {
+      this.elements.ticketDiscountButton.addEventListener('click', () => this.openTicketDiscountSheet());
+    }
+    if (this.elements.ticketDiscountApply) {
+      this.elements.ticketDiscountApply.addEventListener('click', () => this.applyTicketDiscount());
+    }
+    if (this.elements.ticketDiscountRemove) {
+      this.elements.ticketDiscountRemove.addEventListener('click', () => this.removeTicketDiscount());
+    }
+    if (this.elements.ticketDiscountCancel) {
+      this.elements.ticketDiscountCancel.addEventListener('click', () => this.closeTicketDiscountSheet());
+    }
+    if (this.elements.ticketDiscountModal) {
+      this.elements.ticketDiscountModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.ticketDiscountModal) this.closeTicketDiscountSheet();
+      });
+      this.elements.ticketDiscountInput.addEventListener('input', () => this.updateTicketDiscountPreview());
+      document.querySelectorAll('input[name="ticket-discount-type"]').forEach(radio => {
+        radio.addEventListener('change', () => this.updateTicketDiscountPreview());
+      });
+    }
   },
 
   /**
@@ -208,7 +275,20 @@ const Checkout = {
    * Load cart from storage (for persistence across refreshes)
    */
   loadCart() {
-    this.items = Storage.getCart();
+    const cart = Storage.getCart();
+    this.items = cart.items;
+    this.ticketDiscount = cart.ticketDiscount;
+
+    // Migrate old items missing new discount fields
+    this.items.forEach(item => {
+      if (item.dayDiscount === undefined) {
+        item.dayDiscount = item.discount || 0;
+        item.dayDiscountedPrice = item.finalPrice;
+        item.haggleType = null;
+        item.haggleValue = null;
+        delete item.discount;
+      }
+    });
   },
 
   /**
@@ -272,18 +352,21 @@ const Checkout = {
     // Reset pending flag
     this.pendingAddWithoutDesc = false;
 
-    const discountedPrice = Utils.applyDiscount(price, this.currentDiscount);
+    const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
 
     const item = {
       id: Utils.generateId(),
       description: description,
       originalPrice: price,
-      finalPrice: discountedPrice,
-      discount: this.currentDiscount
+      dayDiscount: this.currentDiscount,
+      dayDiscountedPrice: dayDiscountedPrice,
+      haggleType: null,
+      haggleValue: null,
+      finalPrice: dayDiscountedPrice
     };
 
     this.items.push(item);
-    Storage.saveCart(this.items);
+    this.saveCart();
 
     // Reset transaction saved flag (cart was modified)
     this.transactionSaved = false;
@@ -312,7 +395,7 @@ const Checkout = {
    */
   removeItem(itemId) {
     this.items = this.items.filter(item => item.id !== itemId);
-    Storage.saveCart(this.items);
+    this.saveCart();
 
     // Reset transaction saved flag (cart was modified)
     this.transactionSaved = false;
@@ -338,6 +421,7 @@ const Checkout = {
     this.updateDoneButton();
     this.checkItemOverflow();
     this.updateOrderNamePlaceholder();
+    this.updateTicketDiscountButton();
   },
 
   /**
@@ -359,7 +443,6 @@ const Checkout = {
     }
 
     const html = this.items.map((item, index) => {
-      const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
       const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
@@ -369,10 +452,8 @@ const Checkout = {
           <span class="item-row__number">${index + 1}.</span>
           <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
-            ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
-            <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+            ${this.renderItemPrices(item)}
           </div>
-          <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
         </li>
       `;
     }).join('');
@@ -384,17 +465,56 @@ const Checkout = {
   },
 
   /**
+   * Render price display for an item with stacking discount display
+   * Shows: original → day discount → haggle (if applicable)
+   */
+  renderItemPrices(item) {
+    const hasHaggle = item.haggleType && item.haggleValue;
+    const hasDayDiscount = item.dayDiscount > 0;
+
+    if (hasHaggle) {
+      // Show full stacking: ~~original~~ ~~day-discounted~~ final
+      return `
+        <span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>
+        ${hasDayDiscount ? `<span class="item-row__day-price">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>` : ''}
+        <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+      `;
+    } else if (hasDayDiscount) {
+      // Day discount only: ~~original~~ final
+      return `
+        <span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>
+        <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+      `;
+    } else {
+      // No discounts
+      return `<span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>`;
+    }
+  },
+
+  /**
    * Render the running total and savings
    */
   renderRunningTotal() {
-    const total = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
     const originalTotal = this.items.reduce((sum, item) => sum + item.originalPrice, 0);
     const savings = originalTotal - total;
 
-    this.elements.runningTotal.textContent = Utils.formatCurrency(total);
+    // Show ticket discount with strikethrough if active
+    if (this.ticketDiscount && this.ticketDiscount.value && this.items.length > 0) {
+      const discountLabel = this.ticketDiscount.type === 'percent'
+        ? `${this.ticketDiscount.value}% off`
+        : `${Utils.formatCurrency(this.ticketDiscount.value)} off`;
+
+      this.elements.runningTotal.innerHTML =
+        `<span class="running-total__pre-discount">${Utils.formatCurrency(subtotal)}</span> ${Utils.formatCurrency(total)}` +
+        `<span class="running-total__ticket-discount">Ticket discount: ${discountLabel}</span>`;
+    } else {
+      this.elements.runningTotal.textContent = Utils.formatCurrency(total);
+    }
 
     // Only show savings if there's a discount active and items in cart
-    if (savings > 0 && this.currentDiscount > 0) {
+    if (savings > 0) {
       this.elements.runningSavings.textContent = `Saved: ${Utils.formatCurrency(savings)}`;
       this.elements.runningSavings.style.display = '';
     } else {
@@ -436,18 +556,17 @@ const Checkout = {
     this.elements.itemSheetTitle.textContent = `All Items (${this.items.length})`;
 
     const html = this.items.map((item, index) => {
-      const showOriginal = item.discount > 0;
       const hasDesc = item.description && item.description.trim().length > 0;
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
       const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+      const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
       return `
-        <li class="item-row" data-id="${item.id}">
+        <li class="item-row${haggleClass}" data-id="${item.id}" data-haggle="${item.id}">
           <span class="item-row__number">${index + 1}.</span>
           <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
-            ${showOriginal ? `<span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>` : ''}
-            <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+            ${this.renderItemPrices(item)}
           </div>
           <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
         </li>
@@ -461,6 +580,14 @@ const Checkout = {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.removeItem(btn.dataset.remove);
+      });
+    });
+
+    // Bind tap-to-haggle on item rows (not on remove button)
+    this.elements.itemSheetList.querySelectorAll('[data-haggle]').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('[data-remove]')) return;
+        this.openHaggleSheet(row.dataset.haggle);
       });
     });
   },
@@ -505,6 +632,7 @@ const Checkout = {
   clearAll() {
     this.closeItemSheet();
     this.items = [];
+    this.ticketDiscount = null;
     Storage.clearCart();
     this.priceInput = '';
     this.elements.descriptionInput.value = '';
@@ -528,6 +656,7 @@ const Checkout = {
     this.items = [];
     this.sale = null;
     this.currentDiscount = 0;
+    this.ticketDiscount = null;
     this.priceInput = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
@@ -570,13 +699,18 @@ const Checkout = {
     this.reuseCustomerNumber = null;
 
     // Save transaction for dashboard
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
+
     const transaction = {
       id: Utils.generateId(),
       timestamp: Utils.getTimestamp(),
       customerNumber: customerNumber,
       orderName: this.elements.orderNameInput.value.trim() || '',
       items: [...this.items],
-      total: this.items.reduce((sum, item) => sum + item.finalPrice, 0),
+      subtotal: subtotal,
+      total: total,
+      ticketDiscount: this.ticketDiscount || null,
       discount: this.currentDiscount,
       saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate) : 1,
       // New status fields
@@ -635,6 +769,212 @@ const Checkout = {
   focusDescription() {
     this.hideDescPrompt();
     this.elements.descriptionInput.focus();
+  },
+
+  /**
+   * Save cart to storage (items + ticketDiscount)
+   */
+  saveCart() {
+    Storage.saveCart(this.items, this.ticketDiscount);
+  },
+
+  /**
+   * Show/hide the ticket discount button based on cart state
+   */
+  updateTicketDiscountButton() {
+    if (!this.elements.ticketDiscountButton) return;
+
+    if (this.items.length > 0) {
+      this.elements.ticketDiscountButton.hidden = false;
+      // Visual indicator when discount is active
+      if (this.ticketDiscount && this.ticketDiscount.value) {
+        this.elements.ticketDiscountButton.classList.add('has-discount');
+      } else {
+        this.elements.ticketDiscountButton.classList.remove('has-discount');
+      }
+    } else {
+      this.elements.ticketDiscountButton.hidden = true;
+    }
+  },
+
+  // ── Haggle Sheet ──
+
+  /**
+   * Open the haggle sheet for a specific item
+   */
+  openHaggleSheet(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    this.haggleItemId = itemId;
+
+    // Set title and breakdown
+    const desc = item.description || 'Item';
+    const hasDayDiscount = item.dayDiscount > 0;
+    let breakdown = `${Utils.escapeHtml(desc)} — ${Utils.formatCurrency(item.originalPrice)}`;
+    if (hasDayDiscount) {
+      breakdown += ` → ${Utils.formatCurrency(item.dayDiscountedPrice)} (${item.dayDiscount}% day discount)`;
+    }
+    this.elements.haggleTitle.textContent = 'Adjust Price';
+    this.elements.haggleBreakdown.innerHTML = breakdown;
+
+    // Pre-fill if item already has a haggle
+    if (item.haggleType && item.haggleValue) {
+      document.querySelector(`input[name="haggle-type"][value="${item.haggleType}"]`).checked = true;
+      this.elements.haggleInput.value = item.haggleValue;
+      this.elements.haggleRemove.hidden = false;
+    } else {
+      document.querySelector('input[name="haggle-type"][value="newprice"]').checked = true;
+      this.elements.haggleInput.value = '';
+      this.elements.haggleRemove.hidden = true;
+    }
+
+    this.updateHagglePreview();
+    this.elements.haggleModal.classList.add('visible');
+    this.elements.haggleInput.focus();
+  },
+
+  /**
+   * Update haggle preview based on current input
+   */
+  updateHagglePreview() {
+    const item = this.items.find(i => i.id === this.haggleItemId);
+    if (!item) return;
+
+    const type = document.querySelector('input[name="haggle-type"]:checked')?.value;
+    const rawValue = parseFloat(this.elements.haggleInput.value) || 0;
+
+    const newFinal = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
+    this.elements.hagglePreview.textContent = `New price: ${Utils.formatCurrency(newFinal)}`;
+  },
+
+  /**
+   * Apply the haggle discount to the item
+   */
+  applyHaggle() {
+    const item = this.items.find(i => i.id === this.haggleItemId);
+    if (!item) return;
+
+    const type = document.querySelector('input[name="haggle-type"]:checked')?.value;
+    const rawValue = parseFloat(this.elements.haggleInput.value) || 0;
+
+    if (!rawValue) {
+      this.showFlash('error', 'Enter a value');
+      return;
+    }
+
+    item.haggleType = type;
+    item.haggleValue = rawValue;
+    item.finalPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
+
+    this.saveCart();
+    this.transactionSaved = false;
+    this.closeHaggleSheet();
+    this.render();
+    this.renderItemSheet();
+    this.showFlash('success', 'Discount applied!');
+  },
+
+  /**
+   * Remove haggle discount from the current item
+   */
+  removeHaggle() {
+    const item = this.items.find(i => i.id === this.haggleItemId);
+    if (!item) return;
+
+    item.haggleType = null;
+    item.haggleValue = null;
+    item.finalPrice = item.dayDiscountedPrice;
+
+    this.saveCart();
+    this.transactionSaved = false;
+    this.closeHaggleSheet();
+    this.render();
+    this.renderItemSheet();
+    this.showFlash('success', 'Discount removed');
+  },
+
+  /**
+   * Close the haggle sheet
+   */
+  closeHaggleSheet() {
+    this.haggleItemId = null;
+    this.elements.haggleModal.classList.remove('visible');
+  },
+
+  // ── Ticket Discount Sheet ──
+
+  /**
+   * Open the ticket discount sheet
+   */
+  openTicketDiscountSheet() {
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+
+    // Pre-fill if ticket discount exists
+    if (this.ticketDiscount && this.ticketDiscount.value) {
+      document.querySelector(`input[name="ticket-discount-type"][value="${this.ticketDiscount.type}"]`).checked = true;
+      this.elements.ticketDiscountInput.value = this.ticketDiscount.value;
+      this.elements.ticketDiscountRemove.hidden = false;
+    } else {
+      document.querySelector('input[name="ticket-discount-type"][value="percent"]').checked = true;
+      this.elements.ticketDiscountInput.value = '';
+      this.elements.ticketDiscountRemove.hidden = true;
+    }
+
+    this.updateTicketDiscountPreview();
+    this.elements.ticketDiscountModal.classList.add('visible');
+    this.elements.ticketDiscountInput.focus();
+  },
+
+  /**
+   * Update ticket discount preview
+   */
+  updateTicketDiscountPreview() {
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+    const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
+
+    const newTotal = Utils.applyTicketDiscount(subtotal, { type, value: rawValue });
+    this.elements.ticketDiscountPreview.textContent = `Total: ${Utils.formatCurrency(newTotal)}`;
+  },
+
+  /**
+   * Apply the ticket discount
+   */
+  applyTicketDiscount() {
+    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+    const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
+
+    if (!rawValue) {
+      this.showFlash('error', 'Enter a value');
+      return;
+    }
+
+    this.ticketDiscount = { type, value: rawValue };
+    this.saveCart();
+    this.transactionSaved = false;
+    this.closeTicketDiscountSheet();
+    this.render();
+    this.showFlash('success', 'Ticket discount applied!');
+  },
+
+  /**
+   * Remove the ticket discount
+   */
+  removeTicketDiscount() {
+    this.ticketDiscount = null;
+    this.saveCart();
+    this.transactionSaved = false;
+    this.closeTicketDiscountSheet();
+    this.render();
+    this.showFlash('success', 'Ticket discount removed');
+  },
+
+  /**
+   * Close the ticket discount sheet
+   */
+  closeTicketDiscountSheet() {
+    this.elements.ticketDiscountModal.classList.remove('visible');
   },
 
   /**
