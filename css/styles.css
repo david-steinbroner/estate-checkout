@@ -1207,7 +1207,6 @@ body {
 /* === Sale Paused Screen === */
 .paused-screen {
   background: var(--color-bg);
-  display: flex;
   flex-direction: column;
 }
 
