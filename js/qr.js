@@ -110,8 +110,10 @@ const QR = {
     };
 
     const jsonStr = JSON.stringify(data);
-    // Encode as URL pointing to standalone ticket page
-    return window.location.origin + '/ticket.html?d=' + btoa(unescape(encodeURIComponent(jsonStr)));
+    // Encode as URL-safe base64 pointing to standalone ticket page
+    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const urlSafe = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return window.location.origin + '/ticket.html?d=' + urlSafe;
   },
 
   /**

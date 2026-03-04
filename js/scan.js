@@ -190,10 +190,13 @@ const Scan = {
       let data;
 
       // Dual-format detection: URL format (new) vs raw JSON (legacy)
-      if (rawData.includes('/ticket.html?d=')) {
+      if (rawData.startsWith('http')) {
         const url = new URL(rawData);
-        const encoded = url.searchParams.get('d');
+        let encoded = url.searchParams.get('d');
         if (!encoded) throw new Error('Missing d parameter');
+        // Restore standard base64 from URL-safe format
+        encoded = encoded.replace(/-/g, '+').replace(/_/g, '/');
+        while (encoded.length % 4) encoded += '=';
         const jsonStr = decodeURIComponent(escape(atob(encoded)));
         data = JSON.parse(jsonStr);
       } else {
