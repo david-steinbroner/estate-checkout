@@ -21,10 +21,12 @@
       <span class="header__day" id="sale-day">Day 1</span>
       <span class="header__dot">·</span>
       <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
+      <span class="header__shared-badge" id="shared-badge" hidden>Shared</span>
     </div>
     <div class="header__buttons">
       <button class="header__btn" id="nav-dashboard">Dashboard</button>
       <button class="header__btn" id="nav-collect">Scan Ticket</button>
+      <button class="header__btn" id="nav-share-sale">Share Sale</button>
       <button class="header__btn header__btn--danger" id="nav-end-sale">End Estate Sale</button>
     </div>
   </header>
@@ -177,6 +179,7 @@
     <div class="setup-actions">
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
       <button type="button" class="start-sale-button" id="start-sale-button">Start Sale</button>
+      <button type="button" class="join-sale-button" id="join-sale-button">Join Sale</button>
       <a class="setup-help-link" id="setup-how-it-works" href="#">How It Works</a>
     </div>
   </div>
@@ -362,6 +365,43 @@
       </div>
       <div class="sheet__buttons">
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Sale Sheet -->
+  <div class="overlay" id="share-sale-modal">
+    <div class="sheet">
+      <p class="sheet__title">Share Sale</p>
+      <p class="sheet__text">Have your helper scan this code or enter it on their phone</p>
+      <div class="share-sale__qr" id="share-sale-qr"></div>
+      <div class="share-sale__code" id="share-sale-code">---</div>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--secondary" id="share-sale-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Sale Confirmation Sheet -->
+  <div class="overlay" id="join-sale-modal">
+    <div class="sheet">
+      <p class="sheet__title" id="join-sale-title">Join Sale?</p>
+      <p class="sheet__text" id="join-sale-desc">Join this sale to use the same discount schedule.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="join-sale-confirm">Join Sale</button>
+        <button class="sheet__btn sheet__btn--secondary" id="join-sale-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Sale Instruction Sheet -->
+  <div class="overlay" id="join-instruction-modal">
+    <div class="sheet">
+      <p class="sheet__title">Join a Sale</p>
+      <p class="sheet__text">Scan the QR code shown on the organizer's phone with your camera app.</p>
+      <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">The organizer can show the code by tapping "Share Sale" on their device.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--secondary" id="join-instruction-done">Got It</button>
       </div>
     </div>
   </div>

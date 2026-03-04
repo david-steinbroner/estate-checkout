@@ -231,6 +231,17 @@ body {
   color: var(--color-text-secondary);
 }
 
+.header__shared-badge {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* Button bar - 3 equal buttons */
 .header__buttons {
   display: flex;
@@ -825,6 +836,45 @@ body {
   font-size: var(--font-size-sm);
   color: var(--color-primary);
   font-weight: var(--font-weight-medium);
+}
+
+/* === Share Sale Sheet === */
+.share-sale__qr {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-lg) 0;
+}
+
+.share-sale__code {
+  text-align: center;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  color: var(--color-text);
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+}
+
+/* === Join Sale Button === */
+.join-sale-button {
+  width: 100%;
+  min-height: var(--height-button);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.join-sale-button:active {
+  background: var(--color-primary-light);
 }
 
 /* === Haggle & Ticket Discount Sheets === */

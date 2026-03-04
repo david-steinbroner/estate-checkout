@@ -25,6 +25,9 @@ const App = {
     }
   },
 
+  // Pending join data (from URL parameter, awaiting user confirmation)
+  pendingJoinData: null,
+
   /**
    * Cache shared header element references
    */
@@ -34,14 +37,32 @@ const App = {
       saleName: document.getElementById('sale-name'),
       saleDay: document.getElementById('sale-day'),
       discountBadge: document.getElementById('discount-badge'),
+      sharedBadge: document.getElementById('shared-badge'),
       dashboardBtn: document.getElementById('nav-dashboard'),
       collectBtn: document.getElementById('nav-collect'),
+      shareSaleBtn: document.getElementById('nav-share-sale'),
       endSaleBtn: document.getElementById('nav-end-sale'),
       endSaleModal: document.getElementById('end-sale-modal'),
       endSaleCancel: document.getElementById('end-sale-cancel'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
       endDayConfirm: document.getElementById('end-day-confirm'),
-      endDayDesc: document.getElementById('end-day-desc')
+      endDayDesc: document.getElementById('end-day-desc'),
+      // Share sale sheet
+      shareSaleModal: document.getElementById('share-sale-modal'),
+      shareSaleQr: document.getElementById('share-sale-qr'),
+      shareSaleCode: document.getElementById('share-sale-code'),
+      shareSaleDone: document.getElementById('share-sale-done'),
+      // Join sale sheet
+      joinSaleModal: document.getElementById('join-sale-modal'),
+      joinSaleTitle: document.getElementById('join-sale-title'),
+      joinSaleDesc: document.getElementById('join-sale-desc'),
+      joinSaleConfirm: document.getElementById('join-sale-confirm'),
+      joinSaleCancel: document.getElementById('join-sale-cancel'),
+      // Join instruction sheet
+      joinInstructionModal: document.getElementById('join-instruction-modal'),
+      joinInstructionDone: document.getElementById('join-instruction-done'),
+      // Join Sale button on setup
+      joinSaleButton: document.getElementById('join-sale-button')
     };
   },
 
@@ -122,6 +143,63 @@ const App = {
     if (pausedEndSale) {
       pausedEndSale.addEventListener('click', () => {
         this.endSale();
+      });
+    }
+
+    // Share Sale button
+    if (this.headerElements.shareSaleBtn) {
+      this.headerElements.shareSaleBtn.addEventListener('click', () => {
+        this.openShareSaleSheet();
+      });
+    }
+
+    // Share sale modal done/backdrop
+    if (this.headerElements.shareSaleDone) {
+      this.headerElements.shareSaleDone.addEventListener('click', () => {
+        this.closeShareSaleSheet();
+      });
+    }
+    if (this.headerElements.shareSaleModal) {
+      this.headerElements.shareSaleModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.shareSaleModal) this.closeShareSaleSheet();
+      });
+    }
+
+    // Join sale confirmation buttons
+    if (this.headerElements.joinSaleConfirm) {
+      this.headerElements.joinSaleConfirm.addEventListener('click', () => {
+        this.confirmJoinSale();
+      });
+    }
+    if (this.headerElements.joinSaleCancel) {
+      this.headerElements.joinSaleCancel.addEventListener('click', () => {
+        this.cancelJoinSale();
+      });
+    }
+    if (this.headerElements.joinSaleModal) {
+      this.headerElements.joinSaleModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.joinSaleModal) this.cancelJoinSale();
+      });
+    }
+
+    // Join Sale button on setup screen
+    if (this.headerElements.joinSaleButton) {
+      this.headerElements.joinSaleButton.addEventListener('click', () => {
+        this.showJoinInstruction();
+      });
+    }
+
+    // Join instruction done
+    if (this.headerElements.joinInstructionDone) {
+      this.headerElements.joinInstructionDone.addEventListener('click', () => {
+        this.headerElements.joinInstructionModal.classList.remove('visible');
+      });
+    }
+    if (this.headerElements.joinInstructionModal) {
+      this.headerElements.joinInstructionModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.joinInstructionModal) {
+          this.headerElements.joinInstructionModal.classList.remove('visible');
+        }
       });
     }
   },
@@ -219,6 +297,14 @@ const App = {
    * Route to appropriate screen based on app state
    */
   route() {
+    // Check for join parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinData = urlParams.get('join');
+    if (joinData) {
+      this.handleJoinUrl(joinData);
+      return;
+    }
+
     const sale = Storage.getSale();
 
     if (!sale) {
@@ -410,6 +496,11 @@ const App = {
         this.headerElements.discountBadge.classList.add('header__discount--none');
       }
     }
+
+    // Shared badge
+    if (this.headerElements.sharedBadge) {
+      this.headerElements.sharedBadge.hidden = !sale.isShared;
+    }
   },
 
   /**
@@ -420,6 +511,7 @@ const App = {
     const buttons = [
       this.headerElements.dashboardBtn,
       this.headerElements.collectBtn,
+      this.headerElements.shareSaleBtn,
       this.headerElements.endSaleBtn
     ];
 
@@ -434,6 +526,187 @@ const App = {
       this.headerElements.collectBtn.classList.add('header__btn--active');
     }
     // checkout and qr don't have an active button (they're the main flow)
+  },
+
+  // ── Share Sale ──
+
+  /**
+   * Open the share sale sheet with QR code and sale code
+   */
+  openShareSaleSheet() {
+    const sale = Storage.getSale();
+    if (!sale) return;
+
+    // Generate share code (persists on first call)
+    const code = SaleSetup.generateShareCode(sale);
+    this.headerElements.shareSaleCode.textContent = code;
+
+    // Update shared badge since we just set isShared
+    if (this.headerElements.sharedBadge) {
+      this.headerElements.sharedBadge.hidden = false;
+    }
+
+    // Generate QR code with share URL
+    const shareData = SaleSetup.getShareData(sale);
+    const jsonStr = JSON.stringify(shareData);
+    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const urlSafe = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const shareUrl = window.location.origin + '/?join=' + urlSafe;
+
+    // Render QR
+    this.headerElements.shareSaleQr.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(this.headerElements.shareSaleQr, {
+        text: shareUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    this.headerElements.shareSaleModal.classList.add('visible');
+  },
+
+  /**
+   * Close the share sale sheet
+   */
+  closeShareSaleSheet() {
+    this.headerElements.shareSaleModal.classList.remove('visible');
+  },
+
+  // ── Join Sale ──
+
+  /**
+   * Handle a ?join= URL parameter
+   */
+  handleJoinUrl(encoded) {
+    try {
+      // Restore standard base64 from URL-safe format
+      let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const jsonStr = decodeURIComponent(escape(atob(b64)));
+      const data = JSON.parse(jsonStr);
+
+      if (!data.name || !data.startDate || !data.discounts) {
+        console.error('Invalid join data');
+        this.cleanJoinUrl();
+        this.routeWithoutJoin();
+        return;
+      }
+
+      this.pendingJoinData = data;
+
+      // Show the right screen behind the modal
+      const sale = Storage.getSale();
+      if (sale) {
+        this.showScreen('checkout');
+      } else {
+        this.showScreen('setup');
+      }
+
+      // Show join confirmation
+      this.showJoinConfirmation(data, !!sale);
+    } catch (e) {
+      console.error('Failed to parse join data:', e);
+      this.cleanJoinUrl();
+      this.routeWithoutJoin();
+    }
+  },
+
+  /**
+   * Show join confirmation sheet
+   */
+  showJoinConfirmation(data, hasExistingSale) {
+    const dayNumber = Utils.getSaleDay(data.startDate);
+    const discount = Utils.getDiscountForDay({ discounts: data.discounts }, dayNumber);
+    const discountText = discount > 0 ? `${discount}% off today` : 'no discount today';
+
+    this.headerElements.joinSaleTitle.textContent = `Join "${data.name}"?`;
+    this.headerElements.joinSaleDesc.textContent = hasExistingSale
+      ? `You have an active sale. Joining will replace it. Day ${dayNumber}, ${discountText}.`
+      : `Day ${dayNumber}, ${discountText}.`;
+    this.headerElements.joinSaleConfirm.textContent = hasExistingSale ? 'Replace & Join' : 'Join Sale';
+
+    this.headerElements.joinSaleModal.classList.add('visible');
+  },
+
+  /**
+   * Confirm joining the sale
+   */
+  confirmJoinSale() {
+    const data = this.pendingJoinData;
+    if (!data) return;
+
+    this.headerElements.joinSaleModal.classList.remove('visible');
+
+    // End existing sale if present
+    const existingSale = Storage.getSale();
+    if (existingSale) {
+      SaleSetup.endSale();
+    }
+
+    // Create new sale from shared config
+    SaleSetup.createSale({
+      name: data.name,
+      startDate: data.startDate,
+      discounts: data.discounts,
+      shareCode: data.shareCode || null,
+      isShared: true,
+      sharedAt: Utils.getTimestamp(),
+      maxDiscountPercent: data.maxDiscountPercent || null
+    });
+
+    this.pendingJoinData = null;
+    this.cleanJoinUrl();
+
+    // Navigate to checkout
+    Checkout.loadSale();
+    this.showScreen('checkout');
+  },
+
+  /**
+   * Cancel joining the sale
+   */
+  cancelJoinSale() {
+    this.pendingJoinData = null;
+    this.headerElements.joinSaleModal.classList.remove('visible');
+    this.cleanJoinUrl();
+    this.routeWithoutJoin();
+  },
+
+  /**
+   * Show the join instruction sheet (from setup screen button)
+   */
+  showJoinInstruction() {
+    this.headerElements.joinInstructionModal.classList.add('visible');
+  },
+
+  /**
+   * Clean the ?join= parameter from the URL
+   */
+  cleanJoinUrl() {
+    window.history.replaceState({}, '', window.location.pathname);
+  },
+
+  /**
+   * Route normally (without join parameter)
+   */
+  routeWithoutJoin() {
+    const sale = Storage.getSale();
+    if (!sale) {
+      this.showScreen('setup');
+      return;
+    }
+    const status = sale.status || 'active';
+    if (status === 'paused') {
+      this.showScreen('paused');
+    } else if (status === 'active') {
+      this.showScreen('checkout');
+    } else {
+      this.showScreen('setup');
+    }
   }
 };
 

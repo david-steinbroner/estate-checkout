@@ -221,11 +221,49 @@ const SaleSetup = {
       discounts: config.discounts || this.defaultDiscounts,
       createdAt: Utils.getTimestamp(),
       status: 'active',
-      pausedAt: null
+      pausedAt: null,
+      maxDiscountPercent: config.maxDiscountPercent || null,
+      shareCode: config.shareCode || null,
+      isShared: config.isShared || false,
+      sharedAt: config.sharedAt || null
     };
 
     Storage.saveSale(sale);
     return sale;
+  },
+
+  /**
+   * Generate a share code for the current sale
+   * Format: first 3 letters of sale name (uppercase) + hyphen + 4 random digits
+   * Persists on the sale object so it stays the same
+   */
+  generateShareCode(sale) {
+    if (sale.shareCode) return sale.shareCode;
+
+    const prefix = sale.name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || 'EST';
+    const suffix = String(Math.floor(1000 + Math.random() * 9000));
+    const code = `${prefix}-${suffix}`;
+
+    sale.shareCode = code;
+    sale.isShared = true;
+    sale.sharedAt = sale.sharedAt || Utils.getTimestamp();
+    Storage.saveSale(sale);
+
+    return code;
+  },
+
+  /**
+   * Get the share data for QR encoding
+   */
+  getShareData(sale) {
+    return {
+      name: sale.name,
+      startDate: sale.startDate,
+      discounts: sale.discounts,
+      shareCode: sale.shareCode,
+      sharedAt: sale.sharedAt,
+      maxDiscountPercent: sale.maxDiscountPercent || null
+    };
   },
 
   /**
