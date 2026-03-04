@@ -359,6 +359,24 @@ border-radius: var(--radius-sm)
 
 **Note:** `ticket.html` is a standalone customer-facing page with its own inline styles. It is intentionally outside the design system — it must render without importing app CSS/JS.
 
+### Sale Paused Screen
+
+Shown after End Day. Layout:
+- Header: sale name + "Day X Complete" subtitle (centered)
+- Stats row: 3 equal columns (Orders Today, Revenue Today, Avg Ticket) — mirrors dashboard stat style
+- Next-day preview text (centered, secondary color)
+- Optional stale-sale nudge (>7 days, warning/pending color)
+- Actions (stacked, full-width): Resume Sale (success), View Dashboard (neutral), End Sale Permanently (text link, muted)
+
+### End Day / End Sale Bottom Sheet
+
+Replaces the old "End this estate sale?" confirmation. Two-option layout:
+- "End Day X" button (primary) with description text below
+- "End Sale" button (danger outline) with description text below
+- Cancel button (secondary)
+
+Uses `.sheet__option` wrapper with `.sheet__option-desc` for the helper text beneath each button.
+
 ### Remove / Delete Buttons (Item List)
 
 ```

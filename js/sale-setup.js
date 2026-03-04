@@ -219,7 +219,9 @@ const SaleSetup = {
       name: config.name,
       startDate: config.startDate,
       discounts: config.discounts || this.defaultDiscounts,
-      createdAt: Utils.getTimestamp()
+      createdAt: Utils.getTimestamp(),
+      status: 'active',
+      pausedAt: null
     };
 
     Storage.saveSale(sale);
@@ -227,13 +229,44 @@ const SaleSetup = {
   },
 
   /**
-   * End the current sale
+   * Pause the current sale (end of day)
+   */
+  pauseSale() {
+    const sale = Storage.getSale();
+    if (!sale) return;
+
+    sale.status = 'paused';
+    sale.pausedAt = Utils.getTimestamp();
+    Storage.saveSale(sale);
+    Storage.clearCart();
+  },
+
+  /**
+   * Resume a paused sale
+   */
+  resumeSale() {
+    const sale = Storage.getSale();
+    if (!sale) return;
+
+    sale.status = 'active';
+    sale.pausedAt = null;
+    Storage.saveSale(sale);
+  },
+
+  /**
+   * End the current sale permanently
+   * Transaction data is preserved — only sale config and cart are cleared
    */
   endSale() {
-    Storage.clearSale();
+    const sale = Storage.getSale();
+    if (sale) {
+      sale.status = 'ended';
+      Storage.saveSale(sale);
+    }
     Storage.clearCart();
-    Storage.clearTransactions();
     Storage.clearCustomerCounter();
+    // Note: transactions are NOT cleared — they stay on the dashboard
+    Storage.clearSale();
   },
 
   /**

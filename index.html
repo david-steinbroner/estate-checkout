@@ -284,6 +284,43 @@
     </div>
   </div>
 
+  <!-- Sale Paused Screen -->
+  <div id="screen-paused" class="screen paused-screen">
+    <div class="paused-header">
+      <h1 class="paused-header__title" id="paused-sale-name">Sale Paused</h1>
+      <p class="paused-header__subtitle" id="paused-day-label">Day 1 Complete</p>
+    </div>
+
+    <div class="paused-stats">
+      <div class="paused-stat">
+        <span class="paused-stat__value" id="paused-orders">0</span>
+        <span class="paused-stat__label">Orders Today</span>
+      </div>
+      <div class="paused-stat">
+        <span class="paused-stat__value" id="paused-revenue">$0.00</span>
+        <span class="paused-stat__label">Revenue Today</span>
+      </div>
+      <div class="paused-stat">
+        <span class="paused-stat__value" id="paused-avg">$0.00</span>
+        <span class="paused-stat__label">Avg Ticket</span>
+      </div>
+    </div>
+
+    <div class="paused-next" id="paused-next">
+      <p class="paused-next__text" id="paused-next-text">Resume tomorrow for Day 2 (25% off)</p>
+    </div>
+
+    <div class="paused-stale" id="paused-stale" hidden>
+      <p class="paused-stale__text" id="paused-stale-text">This sale started 8 days ago. Resume or end it?</p>
+    </div>
+
+    <div class="paused-actions">
+      <button type="button" class="paused-action paused-action--resume" id="paused-resume">Resume Sale</button>
+      <button type="button" class="paused-action paused-action--dashboard" id="paused-dashboard">View Dashboard</button>
+      <button type="button" class="paused-action paused-action--end" id="paused-end-sale">End Sale Permanently</button>
+    </div>
+  </div>
+
   <!-- Flash Feedback -->
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
@@ -310,13 +347,19 @@
     </div>
   </div>
 
-  <!-- End Estate Sale Confirmation Sheet -->
+  <!-- End Day / End Sale Sheet -->
   <div class="overlay" id="end-sale-modal">
     <div class="sheet">
-      <p class="sheet__title">End this estate sale?</p>
-      <p class="sheet__text">This will clear all sale data.</p>
+      <p class="sheet__title">End Day or End Sale?</p>
+      <div class="sheet__option">
+        <button class="sheet__btn sheet__btn--primary" id="end-day-confirm">End Day 1</button>
+        <p class="sheet__option-desc" id="end-day-desc">Close out for today. Resume tomorrow.</p>
+      </div>
+      <div class="sheet__option">
+        <button class="sheet__btn sheet__btn--danger-outline" id="end-sale-confirm">End Sale</button>
+        <p class="sheet__option-desc">End the sale permanently. All data stays on your dashboard.</p>
+      </div>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">End Estate Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>

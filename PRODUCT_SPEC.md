@@ -53,11 +53,29 @@ PAYMENT WORKER FLOW
 
 OPERATOR REVIEW (during or end of day)
   → Tap Dashboard in header
-  → See: total customers, total revenue, average ticket size
+  → See: total orders, total revenue, average ticket size
   → Filter by status: All / Pending / Paid / Void
   → Sort: Newest First or Oldest First
   → Tap any transaction to expand details
   → From expanded view: Mark as Paid/Unpaid, Edit Order, Generate Ticket
+
+END OF DAY
+  → Tap "End Estate Sale" in header → bottom sheet: End Day or End Sale?
+  → "End Day X" (primary) → sale paused, shows day summary stats + next-day preview
+  → "End Sale" (danger) → sale ended permanently, navigate to setup
+  → Sale data persists in localStorage — nothing is deleted
+
+RESUME NEXT DAY
+  → Open app → sale is paused → paused screen shows stats + next-day discount
+  → Tap "Resume Sale" → sale status back to active → checkout screen
+  → Day-based discount advances automatically (calculated from start date)
+  → If >7 days since sale start, gentle nudge to resume or end
+
+SALE STATES
+  → active: Normal checkout flow. Created by Start Sale or Resume Sale.
+  → paused: End of day. Checkout locked, dashboard accessible. Created by End Day.
+  → ended: Sale permanently finished. Navigate to setup for new sale. Created by End Sale.
+  → Backward compat: sales without a status field are treated as active.
 ```
 
 ---
@@ -271,7 +289,7 @@ When decoded, the JSON payload:
 **Behavior:**
 - Filter and sort reset to All + Newest First each time Dashboard is opened
 - Stats always show full sale totals regardless of filter
-- "End Estate Sale" in the header ends the sale (confirmation required), clears all data, returns to setup
+- "End Estate Sale" in the header opens an End Day / End Sale bottom sheet. End Day pauses the sale; End Sale ends it permanently (transaction data preserved)
 
 ---
 

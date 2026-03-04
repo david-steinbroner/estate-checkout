@@ -116,6 +116,13 @@ const Dashboard = {
     // Apply filter then sort, render the resulting list
     const filtered = this.applyFilter(transactions);
     this.renderTransactionList(filtered, transactions.length);
+
+    // Hide New Order button when sale is paused (checkout is locked)
+    const sale = Storage.getSale();
+    const isPaused = sale && (sale.status || 'active') === 'paused';
+    if (this.elements.newCustomerButton) {
+      this.elements.newCustomerButton.hidden = isPaused;
+    }
   },
 
   /**
