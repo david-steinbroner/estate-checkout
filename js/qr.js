@@ -27,6 +27,7 @@ const QR = {
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
       editButton: document.getElementById('qr-edit'),
+      discountButton: document.getElementById('qr-discount'),
       newButton: document.getElementById('qr-new')
     };
   },
@@ -39,6 +40,13 @@ const QR = {
     this.elements.editButton.addEventListener('click', () => {
       this.reopenTransaction();
     });
+
+    // Discount button - apply/edit ticket discount in-place
+    if (this.elements.discountButton) {
+      this.elements.discountButton.addEventListener('click', () => {
+        this.applyTicketDiscountFromQR();
+      });
+    }
 
     // New customer button - clear cart and return to checkout
     this.elements.newButton.addEventListener('click', () => {
@@ -191,6 +199,72 @@ const QR = {
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M
     });
+  },
+
+  /**
+   * Apply or edit ticket discount from QR screen without reopening the transaction
+   * Opens the ticket discount sheet, then updates the transaction in-place
+   */
+  applyTicketDiscountFromQR() {
+    const txn = this.transaction;
+    if (!txn) return;
+
+    // Sync Checkout items/ticketDiscount so the sheet has correct state
+    Checkout.items = txn.items.map(item => ({ ...item }));
+    Checkout.ticketDiscount = txn.ticketDiscount || null;
+
+    // Stash original callbacks so we can intercept apply/remove
+    const origApply = Checkout.applyTicketDiscount.bind(Checkout);
+    const origRemove = Checkout.removeTicketDiscount.bind(Checkout);
+
+    const afterUpdate = () => {
+      // Recalculate transaction totals
+      const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
+      const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
+
+      txn.ticketDiscount = Checkout.ticketDiscount;
+      txn.subtotal = subtotal;
+      txn.total = total;
+
+      // Update in storage
+      Storage.updateTransaction(txn.id, {
+        ticketDiscount: txn.ticketDiscount,
+        subtotal: txn.subtotal,
+        total: txn.total
+      });
+
+      // Update lastTransaction reference
+      Checkout.lastTransaction = txn;
+
+      // Re-render QR screen with updated data
+      this.render(txn);
+
+      // Restore original methods
+      Checkout.applyTicketDiscount = origApply;
+      Checkout.removeTicketDiscount = origRemove;
+    };
+
+    // Monkey-patch apply/remove to intercept and update QR
+    Checkout.applyTicketDiscount = function() {
+      const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+      const rawValue = parseFloat(Checkout.elements.ticketDiscountInput.value) || 0;
+      if (!rawValue) { Checkout.showFlash('error', 'Enter a value'); return; }
+
+      Checkout.ticketDiscount = { type, value: rawValue };
+      Checkout.closeTicketDiscountSheet();
+      Checkout.showFlash('success', 'Ticket discount applied!');
+      afterUpdate();
+    };
+
+    Checkout.removeTicketDiscount = function() {
+      Checkout.ticketDiscount = null;
+      Checkout.closeTicketDiscountSheet();
+      Checkout.showFlash('success', 'Ticket discount removed');
+      afterUpdate();
+    };
+
+    // Open the sheet
+    Checkout.openTicketDiscountSheet();
   },
 
   /**

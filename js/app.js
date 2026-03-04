@@ -38,15 +38,19 @@ const App = {
       saleDay: document.getElementById('sale-day'),
       discountBadge: document.getElementById('discount-badge'),
       sharedBadge: document.getElementById('shared-badge'),
-      dashboardBtn: document.getElementById('nav-dashboard'),
-      collectBtn: document.getElementById('nav-collect'),
-      shareSaleBtn: document.getElementById('nav-share-sale'),
-      endSaleBtn: document.getElementById('nav-end-sale'),
-      endSaleModal: document.getElementById('end-sale-modal'),
-      endSaleCancel: document.getElementById('end-sale-cancel'),
+      menuBtn: document.getElementById('nav-menu'),
+      // Header menu sheet
+      menuModal: document.getElementById('header-menu-modal'),
+      menuDashboard: document.getElementById('menu-dashboard'),
+      menuScan: document.getElementById('menu-scan'),
+      menuShare: document.getElementById('menu-share'),
+      menuEndDay: document.getElementById('menu-end-day'),
+      menuEndSale: document.getElementById('menu-end-sale'),
+      menuCancel: document.getElementById('menu-cancel'),
+      // End sale confirmation
+      endSaleConfirmModal: document.getElementById('end-sale-confirm-modal'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
-      endDayConfirm: document.getElementById('end-day-confirm'),
-      endDayDesc: document.getElementById('end-day-desc'),
+      endSaleCancel: document.getElementById('end-sale-cancel'),
       // Share sale sheet
       shareSaleModal: document.getElementById('share-sale-modal'),
       shareSaleQr: document.getElementById('share-sale-qr'),
@@ -70,53 +74,67 @@ const App = {
    * Bind shared header event listeners
    */
   bindHeaderEvents() {
-    // Dashboard button
-    if (this.headerElements.dashboardBtn) {
-      this.headerElements.dashboardBtn.addEventListener('click', () => {
+    // Menu button
+    if (this.headerElements.menuBtn) {
+      this.headerElements.menuBtn.addEventListener('click', () => this.openMenu());
+    }
+
+    // Menu sheet items
+    if (this.headerElements.menuDashboard) {
+      this.headerElements.menuDashboard.addEventListener('click', () => {
+        this.closeMenu();
         this.showScreen('dashboard');
       });
     }
-
-    // Collect Payments button
-    if (this.headerElements.collectBtn) {
-      this.headerElements.collectBtn.addEventListener('click', () => {
+    if (this.headerElements.menuScan) {
+      this.headerElements.menuScan.addEventListener('click', () => {
+        this.closeMenu();
         this.showScreen('scan');
       });
     }
-
-    // End Sale button
-    if (this.headerElements.endSaleBtn) {
-      this.headerElements.endSaleBtn.addEventListener('click', () => {
-        this.showEndSaleModal();
+    if (this.headerElements.menuShare) {
+      this.headerElements.menuShare.addEventListener('click', () => {
+        this.closeMenu();
+        this.openShareSaleSheet();
       });
     }
-
-    // End sale modal events
-    if (this.headerElements.endSaleCancel) {
-      this.headerElements.endSaleCancel.addEventListener('click', () => {
-        this.hideEndSaleModal();
-      });
-    }
-
-    if (this.headerElements.endSaleConfirm) {
-      this.headerElements.endSaleConfirm.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.endSale();
-      });
-    }
-
-    // End Day button
-    if (this.headerElements.endDayConfirm) {
-      this.headerElements.endDayConfirm.addEventListener('click', (e) => {
-        e.stopPropagation();
+    if (this.headerElements.menuEndDay) {
+      this.headerElements.menuEndDay.addEventListener('click', () => {
+        this.closeMenu();
         this.endDay();
       });
     }
+    if (this.headerElements.menuEndSale) {
+      this.headerElements.menuEndSale.addEventListener('click', () => {
+        this.closeMenu();
+        this.showEndSaleConfirm();
+      });
+    }
+    if (this.headerElements.menuCancel) {
+      this.headerElements.menuCancel.addEventListener('click', () => this.closeMenu());
+    }
+    if (this.headerElements.menuModal) {
+      this.headerElements.menuModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.menuModal) this.closeMenu();
+      });
+    }
 
-    if (this.headerElements.endSaleModal) {
-      this.headerElements.endSaleModal.addEventListener('click', (e) => {
-        if (e.target === this.headerElements.endSaleModal) {
-          this.hideEndSaleModal();
+    // End sale confirmation
+    if (this.headerElements.endSaleConfirm) {
+      this.headerElements.endSaleConfirm.addEventListener('click', () => {
+        this.headerElements.endSaleConfirmModal.classList.remove('visible');
+        this.endSale();
+      });
+    }
+    if (this.headerElements.endSaleCancel) {
+      this.headerElements.endSaleCancel.addEventListener('click', () => {
+        this.headerElements.endSaleConfirmModal.classList.remove('visible');
+      });
+    }
+    if (this.headerElements.endSaleConfirmModal) {
+      this.headerElements.endSaleConfirmModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.endSaleConfirmModal) {
+          this.headerElements.endSaleConfirmModal.classList.remove('visible');
         }
       });
     }
@@ -133,31 +151,16 @@ const App = {
         this.showScreen('checkout');
       });
     }
-
     if (pausedDashboard) {
-      pausedDashboard.addEventListener('click', () => {
-        this.showScreen('dashboard');
-      });
+      pausedDashboard.addEventListener('click', () => this.showScreen('dashboard'));
     }
-
     if (pausedEndSale) {
-      pausedEndSale.addEventListener('click', () => {
-        this.endSale();
-      });
-    }
-
-    // Share Sale button
-    if (this.headerElements.shareSaleBtn) {
-      this.headerElements.shareSaleBtn.addEventListener('click', () => {
-        this.openShareSaleSheet();
-      });
+      pausedEndSale.addEventListener('click', () => this.endSale());
     }
 
     // Share sale modal done/backdrop
     if (this.headerElements.shareSaleDone) {
-      this.headerElements.shareSaleDone.addEventListener('click', () => {
-        this.closeShareSaleSheet();
-      });
+      this.headerElements.shareSaleDone.addEventListener('click', () => this.closeShareSaleSheet());
     }
     if (this.headerElements.shareSaleModal) {
       this.headerElements.shareSaleModal.addEventListener('click', (e) => {
@@ -167,14 +170,10 @@ const App = {
 
     // Join sale confirmation buttons
     if (this.headerElements.joinSaleConfirm) {
-      this.headerElements.joinSaleConfirm.addEventListener('click', () => {
-        this.confirmJoinSale();
-      });
+      this.headerElements.joinSaleConfirm.addEventListener('click', () => this.confirmJoinSale());
     }
     if (this.headerElements.joinSaleCancel) {
-      this.headerElements.joinSaleCancel.addEventListener('click', () => {
-        this.cancelJoinSale();
-      });
+      this.headerElements.joinSaleCancel.addEventListener('click', () => this.cancelJoinSale());
     }
     if (this.headerElements.joinSaleModal) {
       this.headerElements.joinSaleModal.addEventListener('click', (e) => {
@@ -184,12 +183,10 @@ const App = {
 
     // Join Sale button on setup screen
     if (this.headerElements.joinSaleButton) {
-      this.headerElements.joinSaleButton.addEventListener('click', () => {
-        this.showJoinInstruction();
-      });
+      this.headerElements.joinSaleButton.addEventListener('click', () => this.showJoinInstruction());
     }
 
-    // Join instruction done
+    // Join instruction done/backdrop
     if (this.headerElements.joinInstructionDone) {
       this.headerElements.joinInstructionDone.addEventListener('click', () => {
         this.headerElements.joinInstructionModal.classList.remove('visible');
@@ -205,43 +202,28 @@ const App = {
   },
 
   /**
-   * Show end day / end sale modal with dynamic content
+   * Open the header menu sheet
    */
-  showEndSaleModal() {
-    const sale = Storage.getSale();
-    if (!sale || !this.headerElements.endSaleModal) return;
-
-    const dayNumber = Utils.getSaleDay(sale.startDate);
-    const maxDay = Math.max(...Object.keys(sale.discounts || {}).map(Number));
-    const isFinalDay = dayNumber >= maxDay;
-    const nextDay = dayNumber + 1;
-    const nextDiscount = Utils.getDiscountForDay(sale, nextDay);
-
-    // Update End Day button text
-    if (this.headerElements.endDayConfirm) {
-      const finalLabel = isFinalDay ? ' (Final Day)' : '';
-      this.headerElements.endDayConfirm.textContent = `End Day ${dayNumber}${finalLabel}`;
-    }
-
-    // Update End Day description
-    if (this.headerElements.endDayDesc) {
-      if (isFinalDay) {
-        this.headerElements.endDayDesc.textContent = 'Close out for today. This is the last scheduled day — you can still resume if needed.';
-      } else {
-        const discountText = nextDiscount > 0 ? `${nextDiscount}% off` : 'no discount';
-        this.headerElements.endDayDesc.textContent = `Close out for today. Resume tomorrow for Day ${nextDay} (${discountText}).`;
-      }
-    }
-
-    this.headerElements.endSaleModal.classList.add('visible');
+  openMenu() {
+    if (!this.headerElements.menuModal) return;
+    this.headerElements.menuModal.classList.add('visible');
   },
 
   /**
-   * Hide end sale confirmation modal
+   * Close the header menu sheet
    */
-  hideEndSaleModal() {
-    if (this.headerElements.endSaleModal) {
-      this.headerElements.endSaleModal.classList.remove('visible');
+  closeMenu() {
+    if (this.headerElements.menuModal) {
+      this.headerElements.menuModal.classList.remove('visible');
+    }
+  },
+
+  /**
+   * Show end sale confirmation dialog
+   */
+  showEndSaleConfirm() {
+    if (this.headerElements.endSaleConfirmModal) {
+      this.headerElements.endSaleConfirmModal.classList.add('visible');
     }
   },
 
@@ -249,7 +231,6 @@ const App = {
    * End the current day (pause sale)
    */
   endDay() {
-    this.hideEndSaleModal();
     SaleSetup.pauseSale();
     Checkout.items = [];
     Checkout.priceInput = '';
@@ -263,7 +244,6 @@ const App = {
    * End the current sale permanently
    */
   endSale() {
-    this.hideEndSaleModal();
     Checkout.endSale();
   },
 
@@ -463,8 +443,6 @@ const App = {
     // Update header content
     this.updateHeaderContent(sale);
 
-    // Update active button state
-    this.updateActiveNavButton(screenName);
   },
 
   /**
@@ -503,30 +481,6 @@ const App = {
     }
   },
 
-  /**
-   * Update which nav button is active
-   */
-  updateActiveNavButton(screenName) {
-    // Remove active from all buttons
-    const buttons = [
-      this.headerElements.dashboardBtn,
-      this.headerElements.collectBtn,
-      this.headerElements.shareSaleBtn,
-      this.headerElements.endSaleBtn
-    ];
-
-    buttons.forEach(btn => {
-      if (btn) btn.classList.remove('header__btn--active');
-    });
-
-    // Set active based on screen
-    if (screenName === 'dashboard' && this.headerElements.dashboardBtn) {
-      this.headerElements.dashboardBtn.classList.add('header__btn--active');
-    } else if ((screenName === 'scan' || screenName === 'payment') && this.headerElements.collectBtn) {
-      this.headerElements.collectBtn.classList.add('header__btn--active');
-    }
-    // checkout and qr don't have an active button (they're the main flow)
-  },
 
   // ── Share Sale ──
 

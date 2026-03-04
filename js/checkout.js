@@ -66,7 +66,12 @@ const Checkout = {
       itemSheetClose: document.getElementById('item-sheet-close'),
       itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
-      runningSavings: document.getElementById('running-savings'),
+      runningTotalBar: document.getElementById('running-total-bar'),
+      runningTotalDot: document.getElementById('running-total-dot'),
+      runningTotalChevron: document.getElementById('running-total-chevron'),
+      runningTotalExpanded: document.getElementById('running-total-expanded'),
+      runningTotalBreakdown: document.getElementById('running-total-breakdown'),
+      runningTotalActions: document.getElementById('running-total-actions'),
       descriptionInput: document.getElementById('description-input'),
       priceDisplay: document.getElementById('price-display'),
       numpad: document.getElementById('numpad'),
@@ -92,7 +97,6 @@ const Checkout = {
       haggleRemove: document.getElementById('haggle-remove'),
       haggleCancel: document.getElementById('haggle-cancel'),
       // Ticket discount sheet
-      ticketDiscountButton: document.getElementById('ticket-discount-button'),
       ticketDiscountModal: document.getElementById('ticket-discount-modal'),
       ticketDiscountInput: document.getElementById('ticket-discount-input'),
       ticketDiscountPreview: document.getElementById('ticket-discount-preview'),
@@ -231,10 +235,16 @@ const Checkout = {
       });
     }
 
-    // Ticket discount sheet events
-    if (this.elements.ticketDiscountButton) {
-      this.elements.ticketDiscountButton.addEventListener('click', () => this.openTicketDiscountSheet());
+    // Running total expand/collapse
+    if (this.elements.runningTotalBar) {
+      this.elements.runningTotalBar.addEventListener('click', (e) => {
+        // Don't toggle if clicking inside actions (buttons)
+        if (e.target.closest('.running-total__actions')) return;
+        this.toggleTotalExpand();
+      });
     }
+
+    // Ticket discount sheet events
     if (this.elements.ticketDiscountApply) {
       this.elements.ticketDiscountApply.addEventListener('click', () => this.applyTicketDiscount());
     }
@@ -421,7 +431,6 @@ const Checkout = {
     this.updateDoneButton();
     this.checkItemOverflow();
     this.updateOrderNamePlaceholder();
-    this.updateTicketDiscountButton();
   },
 
   /**
@@ -494,32 +503,98 @@ const Checkout = {
   /**
    * Render the running total and savings
    */
+  // Total bar expanded state
+  totalExpanded: false,
+
   renderRunningTotal() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
     const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
-    const originalTotal = this.items.reduce((sum, item) => sum + item.originalPrice, 0);
-    const savings = originalTotal - total;
 
-    // Show ticket discount with strikethrough if active
-    if (this.ticketDiscount && this.ticketDiscount.value && this.items.length > 0) {
-      const discountLabel = this.ticketDiscount.type === 'percent'
-        ? `${this.ticketDiscount.value}% off`
-        : `${Utils.formatCurrency(this.ticketDiscount.value)} off`;
+    // Collapsed: just the total
+    this.elements.runningTotal.textContent = Utils.formatCurrency(total);
 
-      this.elements.runningTotal.innerHTML =
-        `<span class="running-total__pre-discount">${Utils.formatCurrency(subtotal)}</span> ${Utils.formatCurrency(total)}` +
-        `<span class="running-total__ticket-discount">Ticket discount: ${discountLabel}</span>`;
-    } else {
-      this.elements.runningTotal.textContent = Utils.formatCurrency(total);
+    // Dot indicator when ticket discount is active
+    const hasTD = this.ticketDiscount && this.ticketDiscount.value && this.items.length > 0;
+    if (this.elements.runningTotalDot) {
+      this.elements.runningTotalDot.hidden = !hasTD;
     }
 
-    // Only show savings if there's a discount active and items in cart
-    if (savings > 0) {
-      this.elements.runningSavings.textContent = `Saved: ${Utils.formatCurrency(savings)}`;
-      this.elements.runningSavings.style.display = '';
+    // Expanded breakdown
+    this.renderTotalBreakdown();
+  },
+
+  renderTotalBreakdown() {
+    if (!this.elements.runningTotalBreakdown) return;
+
+    const originalTotal = this.items.reduce((sum, item) => sum + item.originalPrice, 0);
+    const dayDiscountedTotal = this.items.reduce((sum, item) => sum + (item.dayDiscountedPrice !== undefined ? item.dayDiscountedPrice : item.finalPrice), 0);
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
+    const savings = originalTotal - total;
+
+    const dayDiscount = originalTotal - dayDiscountedTotal;
+    const haggleAdjustment = dayDiscountedTotal - subtotal;
+    const ticketDiscountAmount = subtotal - total;
+    const hasTD = this.ticketDiscount && this.ticketDiscount.value;
+
+    let rows = '';
+
+    if (this.items.length === 0) {
+      rows = '<div class="running-total__breakdown-row">No items yet</div>';
     } else {
-      this.elements.runningSavings.textContent = '';
-      this.elements.runningSavings.style.display = 'none';
+      rows += `<div class="running-total__breakdown-row"><span>Original total</span><span>${Utils.formatCurrency(originalTotal)}</span></div>`;
+
+      if (dayDiscount > 0.005) {
+        rows += `<div class="running-total__breakdown-row"><span>Day discount (${this.currentDiscount}%)</span><span>-${Utils.formatCurrency(dayDiscount)}</span></div>`;
+      }
+      if (Math.abs(haggleAdjustment) > 0.005) {
+        rows += `<div class="running-total__breakdown-row"><span>Item adjustments</span><span>-${Utils.formatCurrency(Math.abs(haggleAdjustment))}</span></div>`;
+      }
+
+      if (hasTD) {
+        rows += `<hr class="running-total__breakdown-divider">`;
+        rows += `<div class="running-total__breakdown-row"><span>Subtotal</span><span>${Utils.formatCurrency(subtotal)}</span></div>`;
+        const tdLabel = this.ticketDiscount.type === 'percent'
+          ? `Ticket discount (${this.ticketDiscount.value}%)`
+          : `Ticket discount`;
+        rows += `<div class="running-total__breakdown-row"><span>${tdLabel}</span><span>-${Utils.formatCurrency(ticketDiscountAmount)}</span></div>`;
+      }
+
+      rows += `<div class="running-total__breakdown-row running-total__breakdown-row--total"><span>Total</span><span>${Utils.formatCurrency(total)}</span></div>`;
+
+      if (savings > 0.005) {
+        rows += `<div class="running-total__breakdown-row running-total__breakdown-row--saved"><span>Saved</span><span>${Utils.formatCurrency(savings)}</span></div>`;
+      }
+    }
+
+    this.elements.runningTotalBreakdown.innerHTML = rows;
+
+    // Ticket discount button in expanded view
+    if (this.items.length > 0) {
+      const btnLabel = hasTD ? 'Edit Ticket Discount' : 'Add Ticket Discount';
+      let actionsHtml = `<button class="running-total__ticket-btn" id="total-ticket-btn">${btnLabel}</button>`;
+      if (hasTD) {
+        actionsHtml += `<button class="running-total__ticket-remove" id="total-ticket-remove">Remove</button>`;
+      }
+      this.elements.runningTotalActions.innerHTML = actionsHtml;
+
+      // Bind buttons
+      const ticketBtn = document.getElementById('total-ticket-btn');
+      if (ticketBtn) ticketBtn.addEventListener('click', (e) => { e.stopPropagation(); this.openTicketDiscountSheet(); });
+      const removeBtn = document.getElementById('total-ticket-remove');
+      if (removeBtn) removeBtn.addEventListener('click', (e) => { e.stopPropagation(); this.removeTicketDiscount(); });
+    } else {
+      this.elements.runningTotalActions.innerHTML = '';
+    }
+  },
+
+  toggleTotalExpand() {
+    this.totalExpanded = !this.totalExpanded;
+    if (this.elements.runningTotalExpanded) {
+      this.elements.runningTotalExpanded.hidden = !this.totalExpanded;
+    }
+    if (this.elements.runningTotalChevron) {
+      this.elements.runningTotalChevron.textContent = this.totalExpanded ? '▴' : '▾';
     }
   },
 
@@ -776,25 +851,6 @@ const Checkout = {
    */
   saveCart() {
     Storage.saveCart(this.items, this.ticketDiscount);
-  },
-
-  /**
-   * Show/hide the ticket discount button based on cart state
-   */
-  updateTicketDiscountButton() {
-    if (!this.elements.ticketDiscountButton) return;
-
-    if (this.items.length > 0) {
-      this.elements.ticketDiscountButton.hidden = false;
-      // Visual indicator when discount is active
-      if (this.ticketDiscount && this.ticketDiscount.value) {
-        this.elements.ticketDiscountButton.classList.add('has-discount');
-      } else {
-        this.elements.ticketDiscountButton.classList.remove('has-discount');
-      }
-    } else {
-      this.elements.ticketDiscountButton.hidden = true;
-    }
   },
 
   // ── Haggle Sheet ──

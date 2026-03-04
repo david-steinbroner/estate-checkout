@@ -23,21 +23,23 @@
       <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
       <span class="header__shared-badge" id="shared-badge" hidden>Shared</span>
     </div>
-    <div class="header__buttons">
-      <button class="header__btn" id="nav-dashboard">Dashboard</button>
-      <button class="header__btn" id="nav-collect">Scan Ticket</button>
-      <button class="header__btn" id="nav-share-sale">Share Sale</button>
-      <button class="header__btn header__btn--danger" id="nav-end-sale">End Estate Sale</button>
-    </div>
+    <button class="header__menu-btn" id="nav-menu" aria-label="Menu">☰</button>
   </header>
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Running Total (compact bar) -->
-    <div class="running-total">
-      <span class="running-total__label">Total:</span>
-      <span class="running-total__amount" id="running-total">$0.00</span>
-      <span class="running-total__savings" id="running-savings"></span>
+    <!-- Running Total (tappable, expandable) -->
+    <div class="running-total" id="running-total-bar">
+      <div class="running-total__collapsed">
+        <span class="running-total__label">Total:</span>
+        <span class="running-total__amount" id="running-total">$0.00</span>
+        <span class="running-total__dot" id="running-total-dot" hidden></span>
+        <span class="running-total__chevron" id="running-total-chevron">▾</span>
+      </div>
+      <div class="running-total__expanded" id="running-total-expanded" hidden>
+        <div class="running-total__breakdown" id="running-total-breakdown"></div>
+        <div class="running-total__actions" id="running-total-actions"></div>
+      </div>
     </div>
 
     <!-- Order Name Input -->
@@ -98,7 +100,6 @@
     <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
       <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
-      <button class="action-bar__button action-bar__button--discount" id="ticket-discount-button" hidden>Ticket %</button>
       <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Ticket</button>
     </div>
   </div>
@@ -124,6 +125,7 @@
     <div class="qr-actions">
       <div class="qr-actions__row">
         <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Order</button>
+        <button type="button" class="qr-action qr-action--outline" id="qr-discount">Discount</button>
         <button type="button" class="qr-action qr-action--new" id="qr-new">New Order</button>
       </div>
     </div>
@@ -352,18 +354,27 @@
   </div>
 
   <!-- End Day / End Sale Sheet -->
-  <div class="overlay" id="end-sale-modal">
+  <!-- Header Menu Sheet -->
+  <div class="overlay" id="header-menu-modal">
     <div class="sheet">
-      <p class="sheet__title">End Day or End Sale?</p>
-      <div class="sheet__option">
-        <button class="sheet__btn sheet__btn--primary" id="end-day-confirm">End Day 1</button>
-        <p class="sheet__option-desc" id="end-day-desc">Close out for today. Resume tomorrow.</p>
-      </div>
-      <div class="sheet__option">
-        <button class="sheet__btn sheet__btn--danger-outline" id="end-sale-confirm">End Sale</button>
-        <p class="sheet__option-desc">End the sale permanently. All data stays on your dashboard.</p>
-      </div>
       <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--secondary" id="menu-dashboard">Dashboard</button>
+        <button class="sheet__btn sheet__btn--secondary" id="menu-scan">Scan Ticket</button>
+        <button class="sheet__btn sheet__btn--secondary" id="menu-share">Share Sale</button>
+        <button class="sheet__btn sheet__btn--primary" id="menu-end-day">End Day</button>
+        <button class="sheet__btn sheet__btn--danger-outline" id="menu-end-sale">End Sale Permanently</button>
+        <button class="sheet__btn sheet__btn--secondary" id="menu-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Sale Confirmation Sheet -->
+  <div class="overlay" id="end-sale-confirm-modal">
+    <div class="sheet">
+      <p class="sheet__title">End Sale Permanently?</p>
+      <p class="sheet__text">All transaction data stays on your dashboard, but the sale cannot be resumed.</p>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--danger-outline" id="end-sale-confirm">End Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>
