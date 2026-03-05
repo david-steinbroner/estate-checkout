@@ -422,6 +422,13 @@ body {
   text-overflow: ellipsis;
 }
 
+.item-row__desc[data-edit-desc] {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
 .item-row__desc--empty {
   color: var(--color-text-secondary);
   font-style: italic;
@@ -432,6 +439,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
+  cursor: pointer;
 }
 
 .item-row__original {

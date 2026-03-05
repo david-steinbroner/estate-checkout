@@ -99,6 +99,11 @@ const Checkout = {
       descEntryTitle: document.getElementById('desc-entry-title'),
       descEntryInput: document.getElementById('desc-entry-input'),
       descEntryConfirm: document.getElementById('desc-entry-confirm'),
+      descEditModal: document.getElementById('desc-edit-modal'),
+      descEditTitle: document.getElementById('desc-edit-title'),
+      descEditInput: document.getElementById('desc-edit-input'),
+      descEditSave: document.getElementById('desc-edit-save'),
+      descEditCancel: document.getElementById('desc-edit-cancel'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
       haggleTitle: document.getElementById('haggle-title'),
@@ -203,6 +208,24 @@ const Checkout = {
         if (e.target === this.elements.descEntryModal) {
           this.hideDescEntry();
         }
+      });
+    }
+
+    // Description edit sheet (editing existing item descriptions)
+    if (this.elements.descEditSave) {
+      this.elements.descEditSave.addEventListener('click', () => this.saveDescEdit());
+    }
+    if (this.elements.descEditCancel) {
+      this.elements.descEditCancel.addEventListener('click', () => this.closeDescEdit());
+    }
+    if (this.elements.descEditInput) {
+      this.elements.descEditInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.saveDescEdit();
+      });
+    }
+    if (this.elements.descEditModal) {
+      this.elements.descEditModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.descEditModal) this.closeDescEdit();
       });
     }
 
@@ -686,10 +709,10 @@ const Checkout = {
       const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
       return `
-        <li class="item-row${haggleClass}" data-id="${item.id}" data-haggle="${item.id}">
+        <li class="item-row${haggleClass}" data-id="${item.id}">
           <span class="item-row__number">${index + 1}.</span>
-          <span class="${descClass}">${descText}</span>
-          <div class="item-row__prices">
+          <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
+          <div class="item-row__prices" data-edit-price="${item.id}">
             ${this.renderItemPrices(item)}
           </div>
           <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
@@ -707,11 +730,19 @@ const Checkout = {
       });
     });
 
-    // Bind tap-to-haggle on item rows (not on remove button)
-    this.elements.itemSheetList.querySelectorAll('[data-haggle]').forEach(row => {
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('[data-remove]')) return;
-        this.openHaggleSheet(row.dataset.haggle);
+    // Bind tap-to-edit-description on desc spans
+    this.elements.itemSheetList.querySelectorAll('[data-edit-desc]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openDescEdit(el.dataset.editDesc);
+      });
+    });
+
+    // Bind tap-to-haggle on price area
+    this.elements.itemSheetList.querySelectorAll('[data-edit-price]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openHaggleSheet(el.dataset.editPrice);
       });
     });
   },
@@ -957,6 +988,51 @@ const Checkout = {
   hideDescEntry() {
     if (!this.elements.descEntryModal) return;
     this.elements.descEntryModal.classList.remove('visible');
+  },
+
+  // ── Edit Description Sheet (for existing items) ──
+
+  /**
+   * Open the description edit sheet for an existing item
+   */
+  openDescEdit(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    this.closeItemSheet();
+    this._editDescItemId = itemId;
+
+    const desc = item.description || '';
+    const price = Utils.formatCurrency(item.finalPrice);
+    this.elements.descEditTitle.textContent = `Edit Description — ${price}`;
+    this.elements.descEditInput.value = desc;
+    this.elements.descEditModal.classList.add('visible');
+    setTimeout(() => this.elements.descEditInput.focus(), 100);
+  },
+
+  /**
+   * Save the edited description and return to item sheet
+   */
+  saveDescEdit() {
+    const item = this.items.find(i => i.id === this._editDescItemId);
+    if (item) {
+      item.description = this.elements.descEditInput.value.trim();
+      this.saveCart();
+      this.transactionSaved = false;
+      this.render();
+    }
+    this._editDescItemId = null;
+    this.elements.descEditModal.classList.remove('visible');
+    if (this.items.length > 0) this.openItemSheet();
+  },
+
+  /**
+   * Close the description edit sheet without saving
+   */
+  closeDescEdit() {
+    this._editDescItemId = null;
+    this.elements.descEditModal.classList.remove('visible');
+    if (this.items.length > 0) this.openItemSheet();
   },
 
   /**
