@@ -292,19 +292,26 @@ body {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
+  justify-content: space-between;
   padding: 0 var(--space-lg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.running-total__label {
-  font-size: var(--font-size-base);
+.running-total__info {
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .running-total__amount {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  margin-left: var(--space-md);
 }
 
 /* === Item List (inline preview — shows last 2-3 items) === */
@@ -406,21 +413,6 @@ body {
   display: none;
 }
 
-/* === "View all X items" hint strip === */
-.item-list-hint {
-  min-height: 36px;
-  background: var(--color-bg);
-  color: var(--color-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  text-align: left;
-  padding: 0 var(--space-md);
-  line-height: 36px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--color-border);
-}
 
 .sheet__title--editable {
   cursor: pointer;

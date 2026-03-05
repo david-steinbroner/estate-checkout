@@ -68,7 +68,7 @@ const Checkout = {
     this.elements = {
       itemList: document.getElementById('item-list'),
       itemListContainer: document.getElementById('item-list-container'),
-      itemListHint: document.getElementById('item-list-hint'),
+      runningTotalInfo: document.getElementById('running-total-info'),
       itemSheetBackdrop: document.getElementById('item-sheet-backdrop'),
       itemSheetList: document.getElementById('item-sheet-list'),
       itemSheetTitle: document.getElementById('item-sheet-title'),
@@ -242,9 +242,9 @@ const Checkout = {
       });
     }
 
-    // Hint strip tap to open sheet
-    if (this.elements.itemListHint) {
-      this.elements.itemListHint.addEventListener('click', () => {
+    // Total bar tap to open item sheet
+    if (this.elements.runningTotalBar) {
+      this.elements.runningTotalBar.addEventListener('click', () => {
         this.openItemSheet();
       });
     }
@@ -484,17 +484,17 @@ const Checkout = {
    * Update the hint strip text with order number and item count
    */
   updateOrderNamePlaceholder() {
-    if (!this.elements.itemListHint) return;
+    if (!this.elements.runningTotalInfo) return;
     const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
     this.currentOrderNumber = num;
     const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     if (count === 0) {
-      this.elements.itemListHint.textContent = `${name} · tap to name`;
+      this.elements.runningTotalInfo.textContent = `${name} · tap to name`;
     } else if (count === 1) {
-      this.elements.itemListHint.textContent = `${name} · 1 item`;
+      this.elements.runningTotalInfo.textContent = `${name} · 1 item`;
     } else {
-      this.elements.itemListHint.textContent = `${name} · ${count} items`;
+      this.elements.runningTotalInfo.textContent = `${name} · ${count} items`;
     }
   },
 
