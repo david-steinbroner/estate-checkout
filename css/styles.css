@@ -491,15 +491,43 @@ body {
 
 .sheet__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-xl);
+}
+
+.sheet__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .sheet__header .sheet__title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   margin-bottom: 0;
+}
+
+.sheet__title--editable {
+  cursor: pointer;
+}
+
+.sheet__title-input {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-sm);
+  background: var(--color-bg);
+  width: 100%;
+  outline: none;
+}
+
+.sheet__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .sheet__close {

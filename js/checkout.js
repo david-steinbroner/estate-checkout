@@ -28,6 +28,9 @@ const Checkout = {
   // Current order number (for hint strip display)
   currentOrderNumber: null,
 
+  // Custom order name (set via sheet title editing)
+  orderCustomName: '',
+
   // Track if current cart has been saved as a transaction (prevents duplicates)
   transactionSaved: false,
 
@@ -66,6 +69,7 @@ const Checkout = {
       itemSheetBackdrop: document.getElementById('item-sheet-backdrop'),
       itemSheetList: document.getElementById('item-sheet-list'),
       itemSheetTitle: document.getElementById('item-sheet-title'),
+      itemSheetSubtitle: document.getElementById('item-sheet-subtitle'),
       itemSheetClose: document.getElementById('item-sheet-close'),
       itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
@@ -191,6 +195,13 @@ const Checkout = {
         if (this.items.length > 0) {
           this.openItemSheet();
         }
+      });
+    }
+
+    // Item sheet title tap to rename
+    if (this.elements.itemSheetTitle) {
+      this.elements.itemSheetTitle.addEventListener('click', () => {
+        this.startEditingOrderName();
       });
     }
 
@@ -440,13 +451,14 @@ const Checkout = {
     if (!this.elements.itemListHint) return;
     const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
     this.currentOrderNumber = num;
+    const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     if (count === 0) {
-      this.elements.itemListHint.textContent = `Order #${num} — tap to add items`;
+      this.elements.itemListHint.textContent = `${name} — tap to add items`;
     } else if (count === 1) {
-      this.elements.itemListHint.textContent = `Order #${num} — 1 item — tap to edit order name and items`;
+      this.elements.itemListHint.textContent = `${name} — 1 item — tap to edit order name and items`;
     } else {
-      this.elements.itemListHint.textContent = `Order #${num} — ${count} items — tap to edit order name and items`;
+      this.elements.itemListHint.textContent = `${name} — ${count} items — tap to edit order name and items`;
     }
   },
 
@@ -636,7 +648,10 @@ const Checkout = {
    * Render the item sheet contents
    */
   renderItemSheet() {
-    this.elements.itemSheetTitle.textContent = `All Items (${this.items.length})`;
+    const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
+    const titleText = this.orderCustomName || `Order #${num}`;
+    this.elements.itemSheetTitle.textContent = titleText;
+    this.elements.itemSheetSubtitle.textContent = `All items (${this.items.length}) · tap title to rename`;
 
     const html = this.items.map((item, index) => {
       const hasDesc = item.description && item.description.trim().length > 0;
@@ -676,6 +691,37 @@ const Checkout = {
   },
 
   /**
+   * Replace sheet title with an inline input for renaming the order
+   */
+  startEditingOrderName() {
+    const titleEl = this.elements.itemSheetTitle;
+    if (titleEl.querySelector('input')) return; // already editing
+
+    const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'sheet__title-input';
+    input.value = this.orderCustomName;
+    input.placeholder = `Order #${num}`;
+    input.maxLength = 30;
+
+    titleEl.textContent = '';
+    titleEl.appendChild(input);
+    input.focus();
+
+    const finish = () => {
+      this.orderCustomName = input.value.trim();
+      this.renderItemSheet();
+      this.updateOrderNamePlaceholder();
+    };
+
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') input.blur();
+    });
+  },
+
+  /**
    * Check item overflow (hint strip is always visible; text managed by updateOrderNamePlaceholder)
    */
   checkItemOverflow() {
@@ -707,6 +753,7 @@ const Checkout = {
     this.ticketDiscount = null;
     Storage.clearCart();
     this.priceInput = '';
+    this.orderCustomName = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
@@ -728,6 +775,7 @@ const Checkout = {
     this.currentDiscount = 0;
     this.ticketDiscount = null;
     this.priceInput = '';
+    this.orderCustomName = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
@@ -770,7 +818,7 @@ const Checkout = {
       id: Utils.generateId(),
       timestamp: Utils.getTimestamp(),
       customerNumber: customerNumber,
-      orderName: '',
+      orderName: this.orderCustomName || '',
       items: [...this.items],
       subtotal: subtotal,
       total: total,
