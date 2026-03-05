@@ -264,12 +264,12 @@ const Dashboard = {
    * Render a single transaction row
    */
   renderTransactionRow(txn) {
+    const status = txn.status || 'unpaid';
     const defaultLabel = status === 'open' ? 'Order #' : 'Invoice #';
     const orderLabel = Utils.escapeHtml(txn.orderName || (defaultLabel + (txn.customerNumber || '?')));
     const time = Utils.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
-    const status = txn.status || 'unpaid';
 
     // Status badge HTML
     const statusBadge = this.renderStatusBadge(status, txn.voidReason);
