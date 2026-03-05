@@ -25,6 +25,9 @@ const Checkout = {
   // Reuse customer number when reopening a transaction (prevents void loop incrementing)
   reuseCustomerNumber: null,
 
+  // Current order number (for hint strip display)
+  currentOrderNumber: null,
+
   // Track if current cart has been saved as a transaction (prevents duplicates)
   transactionSaved: false,
 
@@ -72,7 +75,6 @@ const Checkout = {
       runningTotalExpanded: document.getElementById('running-total-expanded'),
       runningTotalBreakdown: document.getElementById('running-total-breakdown'),
       runningTotalActions: document.getElementById('running-total-actions'),
-      descriptionInput: document.getElementById('description-input'),
       priceDisplay: document.getElementById('price-display'),
       numpad: document.getElementById('numpad'),
       addButton: document.getElementById('add-button'),
@@ -86,7 +88,6 @@ const Checkout = {
       descPrompt: document.getElementById('desc-prompt'),
       descPromptAdd: document.getElementById('desc-prompt-add'),
       descPromptDesc: document.getElementById('desc-prompt-desc'),
-      orderNameInput: document.getElementById('order-name-input'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
       haggleTitle: document.getElementById('haggle-title'),
@@ -351,7 +352,7 @@ const Checkout = {
       return;
     }
 
-    const description = this.elements.descriptionInput.value.trim();
+    const description = '';
 
     // Prompt if no description entered (unless bypassed via speech or confirm)
     if (!description && !this.pendingAddWithoutDesc) {
@@ -383,7 +384,6 @@ const Checkout = {
 
     // Clear inputs
     this.priceInput = '';
-    this.elements.descriptionInput.value = '';
     this.updatePriceDisplay();
 
     // Re-render
@@ -434,12 +434,20 @@ const Checkout = {
   },
 
   /**
-   * Update the order name input placeholder with the next order number
+   * Update the hint strip text with order number and item count
    */
   updateOrderNamePlaceholder() {
-    if (!this.elements.orderNameInput) return;
+    if (!this.elements.itemListHint) return;
     const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
-    this.elements.orderNameInput.placeholder = `Order #${num} (tap to name)`;
+    this.currentOrderNumber = num;
+    const count = this.items.length;
+    if (count === 0) {
+      this.elements.itemListHint.textContent = `Order #${num} — tap to add items`;
+    } else if (count === 1) {
+      this.elements.itemListHint.textContent = `Order #${num} — 1 item — tap to edit order name and items`;
+    } else {
+      this.elements.itemListHint.textContent = `Order #${num} — ${count} items — tap to edit order name and items`;
+    }
   },
 
   /**
@@ -668,21 +676,10 @@ const Checkout = {
   },
 
   /**
-   * Check if items overflow inline view and show/hide hint strip
+   * Check item overflow (hint strip is always visible; text managed by updateOrderNamePlaceholder)
    */
   checkItemOverflow() {
-    const container = this.elements.itemListContainer;
-    const overflows = container.scrollHeight > container.clientHeight;
-    if (overflows && this.items.length > 0) {
-      this.elements.itemListHint.textContent = `View all ${this.items.length} items ›`;
-      this.elements.itemListHint.classList.add('visible');
-    } else if (this.items.length > 0) {
-      // Even if they fit, show hint as a way to access sheet for remove
-      this.elements.itemListHint.textContent = `${this.items.length} item${this.items.length === 1 ? '' : 's'} — tap to edit`;
-      this.elements.itemListHint.classList.add('visible');
-    } else {
-      this.elements.itemListHint.classList.remove('visible');
-    }
+    // Hint strip is always visible; text is set by updateOrderNamePlaceholder()
   },
 
   /**
@@ -710,8 +707,6 @@ const Checkout = {
     this.ticketDiscount = null;
     Storage.clearCart();
     this.priceInput = '';
-    this.elements.descriptionInput.value = '';
-    this.elements.orderNameInput.value = '';
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
@@ -738,12 +733,6 @@ const Checkout = {
     this.reuseCustomerNumber = null;
 
     // Clear UI inputs
-    if (this.elements.descriptionInput) {
-      this.elements.descriptionInput.value = '';
-    }
-    if (this.elements.orderNameInput) {
-      this.elements.orderNameInput.value = '';
-    }
     this.updatePriceDisplay();
     this.render();
 
@@ -781,7 +770,7 @@ const Checkout = {
       id: Utils.generateId(),
       timestamp: Utils.getTimestamp(),
       customerNumber: customerNumber,
-      orderName: this.elements.orderNameInput.value.trim() || '',
+      orderName: '',
       items: [...this.items],
       subtotal: subtotal,
       total: total,
@@ -843,7 +832,6 @@ const Checkout = {
    */
   focusDescription() {
     this.hideDescPrompt();
-    this.elements.descriptionInput.focus();
   },
 
   /**
@@ -1053,8 +1041,5 @@ const Checkout = {
     this.priceInput = price.toString();
     this.updatePriceDisplay();
 
-    if (description) {
-      this.elements.descriptionInput.value = description;
-    }
   }
 };

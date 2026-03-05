@@ -368,37 +368,6 @@ body {
   cursor: pointer;
 }
 
-/* === Order Name Input === */
-.order-name-bar {
-  padding: var(--space-sm) var(--space-lg);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.order-name-input {
-  width: 100%;
-  height: 28px; /* intentional: supplementary input, not primary interactive element */
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-md);
-  box-sizing: border-box;
-}
-
-.order-name-input::placeholder {
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
-
-.order-name-input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
-  color: var(--color-text);
-}
-
 /* === Item List (inline preview — shows last 2-3 items) === */
 .item-list-container {
   flex: 1;
@@ -502,12 +471,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
-  display: none;
   border-bottom: 1px solid var(--color-border);
-}
-
-.item-list-hint.visible {
-  display: block;
 }
 
 /* === Item List Sheet (full list with remove buttons) === */
@@ -598,25 +562,6 @@ body {
   gap: var(--space-sm);
   flex-shrink: 0;
   position: relative;
-}
-
-.description-input {
-  height: var(--height-input);
-  width: 100%;
-  padding: 0 var(--space-lg);
-  font-size: var(--font-size-base);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-}
-
-.description-input::placeholder {
-  color: var(--color-text-secondary);
-}
-
-.description-input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
 }
 
 .price-display {
