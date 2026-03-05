@@ -142,3 +142,67 @@ const Utils = {
     }
   }
 };
+
+/**
+ * KeyboardAvoidance — keeps .overlay sheets visible above the iOS keyboard.
+ *
+ * Uses the visualViewport API to detect when the keyboard shrinks the viewport,
+ * then shifts all visible .overlay elements up so sheets anchor above the keyboard.
+ * Attach once at startup; listeners self-manage based on overlay visibility.
+ */
+const KeyboardAvoidance = {
+  _listening: false,
+  _layoutHeight: 0,
+
+  init() {
+    if (!window.visualViewport) return;
+    this._layoutHeight = window.innerHeight;
+
+    this._onResize = this._update.bind(this);
+    this._onScroll = this._update.bind(this);
+
+    // Observe all .overlay elements for class changes to detect visible/hidden
+    this._observer = new MutationObserver(() => this._checkOverlays());
+    document.querySelectorAll('.overlay').forEach(el => {
+      this._observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+  },
+
+  _checkOverlays() {
+    const hasVisible = document.querySelector('.overlay.visible') !== null;
+    if (hasVisible && !this._listening) {
+      this._layoutHeight = window.innerHeight;
+      window.visualViewport.addEventListener('resize', this._onResize);
+      window.visualViewport.addEventListener('scroll', this._onScroll);
+      this._listening = true;
+      this._update();
+    } else if (!hasVisible && this._listening) {
+      window.visualViewport.removeEventListener('resize', this._onResize);
+      window.visualViewport.removeEventListener('scroll', this._onScroll);
+      this._listening = false;
+      this._reset();
+    }
+  },
+
+  _update() {
+    const vv = window.visualViewport;
+    const keyboardHeight = this._layoutHeight - vv.height - vv.offsetTop;
+    if (keyboardHeight > 50) {
+      // Keyboard is open — shift overlays up
+      document.querySelectorAll('.overlay.visible').forEach(el => {
+        el.style.bottom = keyboardHeight + 'px';
+      });
+    } else {
+      this._reset();
+    }
+  },
+
+  _reset() {
+    document.querySelectorAll('.overlay').forEach(el => {
+      el.style.bottom = '';
+    });
+  }
+};
+
+// Auto-initialize
+KeyboardAvoidance.init();
