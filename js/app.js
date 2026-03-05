@@ -106,7 +106,14 @@ const App = {
     if (this.headerElements.menuEndDay) {
       this.headerElements.menuEndDay.addEventListener('click', () => {
         this.closeMenu();
-        this.endDay();
+        const sale = Storage.getSale();
+        if (sale && sale.status === 'paused') {
+          SaleSetup.resumeSale();
+          Checkout.loadSale();
+          this.showScreen('checkout');
+        } else {
+          this.endDay();
+        }
       });
     }
     if (this.headerElements.menuEndSale) {
@@ -236,6 +243,11 @@ const App = {
    */
   openMenu() {
     if (!this.headerElements.menuModal) return;
+    // Toggle End Day / Resume Day based on sale status
+    const sale = Storage.getSale();
+    if (this.headerElements.menuEndDay) {
+      this.headerElements.menuEndDay.textContent = (sale && sale.status === 'paused') ? 'Resume Day' : 'End Day';
+    }
     this.headerElements.menuModal.classList.add('visible');
   },
 
