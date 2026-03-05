@@ -22,6 +22,9 @@ const Checkout = {
   // Track if we're in the middle of adding from prompt
   pendingAddWithoutDesc: false,
 
+  // Pending price for description entry sheet
+  pendingPrice: null,
+
   // Reuse customer number when reopening a transaction (prevents void loop incrementing)
   reuseCustomerNumber: null,
 
@@ -92,6 +95,10 @@ const Checkout = {
       descPrompt: document.getElementById('desc-prompt'),
       descPromptAdd: document.getElementById('desc-prompt-add'),
       descPromptDesc: document.getElementById('desc-prompt-desc'),
+      descEntryModal: document.getElementById('desc-entry-modal'),
+      descEntryTitle: document.getElementById('desc-entry-title'),
+      descEntryInput: document.getElementById('desc-entry-input'),
+      descEntryConfirm: document.getElementById('desc-entry-confirm'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
       haggleTitle: document.getElementById('haggle-title'),
@@ -176,6 +183,25 @@ const Checkout = {
         // Only trigger if clicking the overlay itself, not the sheet
         if (e.target === this.elements.descPrompt) {
           this.confirmAddWithoutDesc();
+        }
+      });
+    }
+
+    // Description entry sheet
+    if (this.elements.descEntryConfirm) {
+      this.elements.descEntryConfirm.addEventListener('click', () => {
+        this.confirmDescEntry();
+      });
+    }
+    if (this.elements.descEntryInput) {
+      this.elements.descEntryInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.confirmDescEntry();
+      });
+    }
+    if (this.elements.descEntryModal) {
+      this.elements.descEntryModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.descEntryModal) {
+          this.hideDescEntry();
         }
       });
     }
@@ -876,10 +902,61 @@ const Checkout = {
   },
 
   /**
-   * Focus the description input instead of adding
+   * Show the description entry sheet for the pending price
    */
   focusDescription() {
     this.hideDescPrompt();
+    this.pendingPrice = parseFloat(this.priceInput);
+    if (!this.pendingPrice || this.pendingPrice <= 0) return;
+
+    this.elements.descEntryTitle.textContent = `Item — ${Utils.formatCurrency(this.pendingPrice)}`;
+    this.elements.descEntryInput.value = '';
+    this.elements.descEntryModal.classList.add('visible');
+
+    // Delay focus slightly so the sheet animation completes and keyboard avoidance kicks in
+    setTimeout(() => this.elements.descEntryInput.focus(), 100);
+  },
+
+  /**
+   * Confirm description entry and add item to cart
+   */
+  confirmDescEntry() {
+    const description = this.elements.descEntryInput.value.trim();
+    this.hideDescEntry();
+
+    const price = this.pendingPrice;
+    this.pendingPrice = null;
+    if (!price || price <= 0) return;
+
+    const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
+
+    const item = {
+      id: Utils.generateId(),
+      description: description,
+      originalPrice: price,
+      dayDiscount: this.currentDiscount,
+      dayDiscountedPrice: dayDiscountedPrice,
+      haggleType: null,
+      haggleValue: null,
+      finalPrice: dayDiscountedPrice
+    };
+
+    this.items.push(item);
+    this.saveCart();
+    this.transactionSaved = false;
+
+    this.priceInput = '';
+    this.updatePriceDisplay();
+    this.render();
+    this.showFlash('success', 'Added!');
+  },
+
+  /**
+   * Hide the description entry sheet
+   */
+  hideDescEntry() {
+    if (!this.elements.descEntryModal) return;
+    this.elements.descEntryModal.classList.remove('visible');
   },
 
   /**

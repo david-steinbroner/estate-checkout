@@ -1050,6 +1050,23 @@ body {
   line-height: var(--line-height-relaxed);
 }
 
+.sheet__input {
+  width: 100%;
+  height: var(--height-input);
+  font-size: var(--font-size-base);
+  padding: 0 var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  margin-bottom: var(--space-lg);
+  box-sizing: border-box;
+}
+
+.sheet__input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
 .sheet__buttons {
   display: flex;
   flex-direction: column;
