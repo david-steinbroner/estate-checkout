@@ -471,12 +471,21 @@ const App = {
    * Register service worker for offline support
    */
   registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
-    }
+    if (!('serviceWorker' in navigator)) return;
+
+    // Auto-reload when a new service worker takes control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
+    navigator.serviceWorker.register('/sw.js')
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
   },
 
   /**

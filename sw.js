@@ -1,9 +1,9 @@
 /**
  * sw.js - Service Worker for Estate Checkout
- * Provides offline support via cache-first strategy
+ * Provides offline support via stale-while-revalidate strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v65';
+const CACHE_NAME = 'estate-checkout-v66';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -49,19 +49,29 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: cache-first strategy for offline support
+// Fetch: stale-while-revalidate — serve from cache, update in background
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        // Return cached version or fetch from network
-        return cachedResponse || fetch(event.request);
-      })
-      .catch(() => {
-        // If both cache and network fail, return offline fallback for HTML
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        // Only cache successful same-origin or CORS responses
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Network failed — fall back to cached version or offline fallback
+        if (cachedResponse) return cachedResponse;
         if ((event.request.headers.get('accept') || '').includes('text/html')) {
           return caches.match('/index.html');
         }
-      })
+      });
+
+      // Return cached response immediately, or wait for network
+      return cachedResponse || fetchPromise;
+    })
   );
 });
