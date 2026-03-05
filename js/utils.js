@@ -15,7 +15,11 @@ const Utils = {
    * Returns 1 for first day, 2 for second, etc.
    * Returns 0 if sale hasn't started yet
    */
-  getSaleDay(startDate) {
+  getSaleDay(startDate, sale) {
+    // If dayOverride is set, use it directly
+    if (sale && sale.dayOverride && Number.isInteger(sale.dayOverride) && sale.dayOverride > 0) {
+      return sale.dayOverride;
+    }
     // Parse start date as local time (not UTC) to avoid timezone issues
     const [year, month, day] = startDate.split('-').map(Number);
     const start = new Date(year, month - 1, day); // month is 0-indexed

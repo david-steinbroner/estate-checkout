@@ -67,6 +67,11 @@ const App = {
       joinInstructionDone: document.getElementById('join-instruction-done'),
       // Join Sale button on setup
       joinSaleButton: document.getElementById('join-sale-button'),
+      // Edit sale sheet
+      menuEditSale: document.getElementById('menu-edit-sale'),
+      editSaleModal: document.getElementById('edit-sale-modal'),
+      editSaleContent: document.getElementById('edit-sale-content'),
+      editSaleDone: document.getElementById('edit-sale-done'),
       // Setup menu
       setupMenuBtn: document.getElementById('setup-menu-btn'),
       setupMenuModal: document.getElementById('setup-menu-modal'),
@@ -101,6 +106,20 @@ const App = {
       this.headerElements.menuShare.addEventListener('click', () => {
         this.closeMenu();
         this.openShareSaleSheet();
+      });
+    }
+    if (this.headerElements.menuEditSale) {
+      this.headerElements.menuEditSale.addEventListener('click', () => {
+        this.closeMenu();
+        this.openEditSale();
+      });
+    }
+    if (this.headerElements.editSaleDone) {
+      this.headerElements.editSaleDone.addEventListener('click', () => this.closeEditSale());
+    }
+    if (this.headerElements.editSaleModal) {
+      this.headerElements.editSaleModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.editSaleModal) this.closeEditSale();
       });
     }
     if (this.headerElements.menuEndDay) {
@@ -260,6 +279,165 @@ const App = {
     }
   },
 
+  // ── Edit Sale Sheet ──
+
+  /**
+   * Open the edit sale sheet and render its content
+   */
+  openEditSale() {
+    const sale = Storage.getSale();
+    if (!sale) return;
+    this.renderEditSale(sale);
+    this.headerElements.editSaleModal.classList.add('visible');
+  },
+
+  /**
+   * Close the edit sale sheet and refresh dependent state
+   */
+  closeEditSale() {
+    this.headerElements.editSaleModal.classList.remove('visible');
+    // Refresh header, checkout discount, and paused screen
+    const sale = Storage.getSale();
+    if (sale) {
+      this.updateHeaderContent(sale);
+      Checkout.loadSale();
+    }
+  },
+
+  /**
+   * Render the edit sale sheet content
+   */
+  renderEditSale(sale) {
+    const dayNumber = Utils.getSaleDay(sale.startDate, sale);
+    const discounts = sale.discounts || {};
+    const days = Object.keys(discounts).map(Number).sort((a, b) => a - b);
+
+    let html = '';
+
+    // Sale Name
+    html += `<div class="edit-sale__section">
+      <div class="edit-sale__label">Sale Name</div>
+      <div class="edit-sale__value" id="edit-sale-name">${Utils.escapeHtml(sale.name)}</div>
+    </div>`;
+
+    // Current Day
+    html += `<div class="edit-sale__section">
+      <div class="edit-sale__label">Current Day</div>
+      <div class="edit-sale__value" id="edit-sale-day">Day ${dayNumber}</div>
+    </div>`;
+
+    // Discount Schedule
+    html += `<div class="edit-sale__section">
+      <div class="edit-sale__label">Discount Schedule</div>`;
+    days.forEach(d => {
+      html += `<div class="edit-sale__row">
+        <span class="edit-sale__row-label">Day ${d}</span>
+        <span class="edit-sale__row-value" data-edit-discount="${d}">${discounts[d]}%</span>
+      </div>`;
+    });
+    html += `<button class="edit-sale__add-day" id="edit-sale-add-day">+ Add Day</button>`;
+    html += `</div>`;
+
+    this.headerElements.editSaleContent.innerHTML = html;
+    this.bindEditSaleEvents(sale);
+  },
+
+  /**
+   * Bind tap-to-edit events inside the edit sale sheet
+   */
+  bindEditSaleEvents(sale) {
+    const content = this.headerElements.editSaleContent;
+
+    // Sale name tap to edit
+    const nameEl = content.querySelector('#edit-sale-name');
+    if (nameEl) {
+      nameEl.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'sheet__input';
+        input.value = sale.name;
+        input.maxLength = 50;
+        nameEl.replaceWith(input);
+        input.focus();
+        const save = () => {
+          const val = input.value.trim();
+          if (val) sale.name = val;
+          Storage.saveSale(sale);
+          this.renderEditSale(sale);
+        };
+        input.addEventListener('blur', save);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+      });
+    }
+
+    // Current day tap to edit
+    const dayEl = content.querySelector('#edit-sale-day');
+    if (dayEl) {
+      dayEl.addEventListener('click', () => {
+        const currentDay = Utils.getSaleDay(sale.startDate, sale);
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'sheet__input';
+        input.value = currentDay;
+        input.min = 1;
+        input.max = 99;
+        dayEl.replaceWith(input);
+        input.focus();
+        const save = () => {
+          const val = parseInt(input.value);
+          if (val > 0) {
+            sale.dayOverride = val;
+          }
+          Storage.saveSale(sale);
+          this.renderEditSale(sale);
+        };
+        input.addEventListener('blur', save);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+      });
+    }
+
+    // Discount percentage tap to edit
+    content.querySelectorAll('[data-edit-discount]').forEach(el => {
+      el.addEventListener('click', () => {
+        const day = parseInt(el.dataset.editDiscount);
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'sheet__input';
+        input.value = sale.discounts[day] || 0;
+        input.min = 0;
+        input.max = 100;
+        input.style.width = '80px';
+        input.style.textAlign = 'right';
+        el.replaceWith(input);
+        input.focus();
+        const save = () => {
+          const val = parseInt(input.value);
+          if (!isNaN(val) && val >= 0 && val <= 100) {
+            sale.discounts[day] = val;
+          }
+          Storage.saveSale(sale);
+          this.renderEditSale(sale);
+        };
+        input.addEventListener('blur', save);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+      });
+    });
+
+    // Add Day button
+    const addDayBtn = content.querySelector('#edit-sale-add-day');
+    if (addDayBtn) {
+      addDayBtn.addEventListener('click', () => {
+        const days = Object.keys(sale.discounts).map(Number);
+        const nextDay = days.length > 0 ? Math.max(...days) + 1 : 1;
+        const lastDiscount = days.length > 0 ? sale.discounts[Math.max(...days)] : 0;
+        // Default new day to last discount + 25, capped at 100
+        sale.discounts[nextDay] = Math.min(100, lastDiscount + 25);
+        Storage.saveSale(sale);
+        this.renderEditSale(sale);
+      });
+    }
+  },
+
   /**
    * Show end sale confirmation dialog
    */
@@ -398,7 +576,7 @@ const App = {
     const sale = Storage.getSale();
     if (!sale) return;
 
-    const dayNumber = Utils.getSaleDay(sale.startDate);
+    const dayNumber = Utils.getSaleDay(sale.startDate, sale);
     const maxDay = Math.max(...Object.keys(sale.discounts || {}).map(Number));
     const nextDay = dayNumber + 1;
     const nextDiscount = Utils.getDiscountForDay(sale, nextDay);
@@ -494,7 +672,7 @@ const App = {
     if (!sale) return;
 
     const status = sale.status || 'active';
-    const dayNumber = Utils.getSaleDay(sale.startDate);
+    const dayNumber = Utils.getSaleDay(sale.startDate, sale);
     const discount = Utils.getDiscountForDay(sale, dayNumber);
 
     if (this.headerElements.saleName) {

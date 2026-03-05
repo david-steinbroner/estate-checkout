@@ -837,6 +837,72 @@ body {
   background: var(--color-primary-light);
 }
 
+/* === Edit Sale Sheet === */
+.edit-sale {
+  text-align: left;
+  margin-bottom: var(--space-lg);
+}
+
+.edit-sale__section {
+  margin-bottom: var(--space-lg);
+}
+
+.edit-sale__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-sm);
+}
+
+.edit-sale__value {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--color-text-secondary);
+  padding: var(--space-sm) 0;
+}
+
+.edit-sale__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.edit-sale__row:last-child {
+  border-bottom: none;
+}
+
+.edit-sale__row-label {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.edit-sale__row-value {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--color-text-secondary);
+}
+
+.edit-sale__add-day {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* === Share Sale Sheet === */
 .share-sale__qr {
   display: flex;

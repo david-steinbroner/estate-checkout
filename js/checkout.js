@@ -333,7 +333,7 @@ const Checkout = {
     this.sale = Storage.getSale();
 
     if (this.sale) {
-      const dayNumber = Utils.getSaleDay(this.sale.startDate);
+      const dayNumber = Utils.getSaleDay(this.sale.startDate, this.sale);
       this.currentDiscount = Utils.getDiscountForDay(this.sale, dayNumber);
     } else {
       // No active sale - use defaults for demo/testing
@@ -881,7 +881,7 @@ const Checkout = {
       total: total,
       ticketDiscount: this.ticketDiscount || null,
       discount: this.currentDiscount,
-      saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate) : 1,
+      saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1,
       // New status fields
       status: 'pending',
       paidAt: null,
