@@ -1118,7 +1118,8 @@ body {
 }
 
 .desc-entry__mic:active {
-  background: var(--color-bg-hover);
+  background: var(--color-primary-light);
+  transform: scale(0.92);
 }
 
 .sheet__buttons {

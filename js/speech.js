@@ -93,6 +93,7 @@ const Speech = {
       this.clearProcessingHardTimeout();
       this.isListening = false;
       this.waitingForResult = false;
+      const wasDescMode = this._descMode;
       this._descMode = false;
       this._descCallback = null;
       this.hideProcessing();
@@ -101,9 +102,9 @@ const Speech = {
       if (event.error === 'not-allowed') {
         this.showPermissionDeniedModal();
       } else if (event.error === 'no-speech') {
-        if (this.isQuickTap()) {
+        if (!wasDescMode && this.isQuickTap()) {
           this.showQuickTapModal();
-        } else {
+        } else if (!wasDescMode) {
           this.showFailModalWithTip('', 'no-speech');
         }
       } else if (event.error === 'network') {
@@ -122,12 +123,13 @@ const Speech = {
       // If we were waiting for a result and didn't get one, show failure
       if (this.waitingForResult) {
         this.waitingForResult = false;
+        const wasDescMode = this._descMode;
         this._descMode = false;
         this._descCallback = null;
         this.hideProcessing();
-        if (this.isQuickTap()) {
+        if (!wasDescMode && this.isQuickTap()) {
           this.showQuickTapModal();
-        } else {
+        } else if (!wasDescMode) {
           this.showFailModalWithTip('', 'no-speech');
         }
       }
