@@ -109,15 +109,35 @@ Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day change
 
 ## Discovery & Validation
 
-**Status:** Alissa asked to see the prototype tonight. She talked to her friend Allison — waiting on Allison's response (unclear what Alissa asked her). Aravenda demo missed and rescheduling (sent technical questions to Carolyn Thompson, President — see COMPETITIVE_RESEARCH_QUESTIONS.md for pre-demo findings from website analysis). SimpleConsign demo still to be scheduled.
+**Status:** First operator feedback received from Allison (estate sale + consignment operator, via Alissa text, 2026-03-04). She confirmed the checkout bottleneck pain (20-40 person lines), uses Square on phone for payment, tracks consignor numbers on notepads, and emphasized workers need extreme simplicity. Alissa confirmed (2026-03-05 voice note) that Allison does use consignor-style tracking at estate sales too — different family members selling different items, tagged so she knows whose stuff sold and can split payouts. Alissa thinks Allison is open to follow-up questions but may resist trying the app — "she just wants to use her handwritten methods." Key quote: "I think if we came with something really simple she might be open to it." Allison is Alissa's only estate sale connection — need to find more operators independently. Shared project overview doc + prototype link with Alissa (2026-03-05). Aravenda demo missed and rescheduling. SimpleConsign demo still to be scheduled.
 
 **Discovery opener:** "I've been noticing at every estate sale — the checkout person punching every item into that adding machine, printing tape, writing tickets, especially on Day 2 when they manually calculate discounts. Is that as painful on your end as it looks?"
 
-**What we need to learn:**
-- Do operators feel the pain, or just customers?
+**What we've learned so far:**
+- ✅ Operators DO feel the checkout pain — 20-40 person lines, speed is the hard part
+- ✅ Workers (not owners) are the real users — simplicity is non-negotiable
+- ✅ Square already in use for payment — phone-as-tool is accepted, but phone is contested real estate
+- ✅ Consignor/multi-seller tracking is a real workflow — items tagged to seller numbers, payout reconciliation done on notepads after the sale
+- ✅ "Why not just a calculator?" is the positioning question we need to answer instantly
+- ❓ Is consignor tracking common across operators or specific to consignment-adjacent ones?
+- ❓ Would Allison do a side-by-side test at a real sale?
+- ❓ What's the full end-to-end checkout flow at her estate sales specifically?
+
+**What we still need to learn:**
 - Have they tried to fix it? What failed and why?
-- Would they try something new?
 - Is there a graveyard of failed attempts?
+- How does consignor payout reconciliation work end-to-end? How long does it take?
+- Does she use Square at estate sales or just at her store?
+- What would make her actually switch from the adding machine?
+
+**Follow-up questions to ask Allison (via Alissa or direct):**
+1. "When you're running an estate sale specifically — not your store — what does your checkout table look like? Adding machine? Calculator? Square? Notepads?"
+2. "At estate sales, what's the part that slows you down the most or causes the most mistakes?"
+3. "Do you use Square at estate sales for the actual ringing up, or just for taking card payments after you've already totaled everything?"
+4. "At estate sales with multiple family members selling — do you track consignor numbers during the sale at checkout, or figure it out after? Like are items physically tagged with the consignor number, and your worker writes that down as they ring up?"
+5. "After the sale, how does the consignor payout work? Do you sit down with the notepads and add up each consignor's total by hand?"
+
+**Why these matter:** We're still conflating her consignment store workflow with her estate sale workflow. These questions separate the two and tell us whether consignor tracking is a checkout-time problem (worker has to record it while 40 people wait) or a back-office problem (operator tallies it at home after the sale). That distinction determines whether it belongs in the checkout flow or in a reporting feature.
 
 ---
 
@@ -129,6 +149,8 @@ Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day change
 - Setup screen usability: could a 60-year-old figure it out with 2 min training?
 - Onboarding walkthrough: is it enough, or do users dismiss and get confused?
 - PWA vs App Store: do operators ask "is this in the App Store?" — does it matter for adoption?
+- **Consignor/seller tagging:** Is this a checkout-time problem (worker records consignor # per item while ringing up) or a back-office problem (operator tallies payouts after the sale)? If checkout-time, it could be a lightweight optional tag in v0.2. If back-office, it's a reporting/export feature. Need Allison follow-up to clarify.
+- **"Store mode" expansion:** Allison uses Square for payment but tracks consignors on notepads — Square has vendor features but she doesn't use them (too slow/complex for real-time checkout). Could we become the fast-entry front end for consignment tracking that feeds into a payout report? Path A: lightweight seller tag in checkout flow + payout breakdown in dashboard. Path B: full store mode for consignment shops. Path A first — validate with field data before considering B. See principle #5.
 
 ---
 

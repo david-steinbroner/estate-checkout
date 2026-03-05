@@ -372,7 +372,13 @@ _This section gets filled in as Alissa and others report back from conversations
 
 | Date | Operator | Key Quotes / Insights | Implications |
 |------|----------|----------------------|--------------|
-| — | — | — | — |
+| 2026-03-04 | Allison (via Alissa text) | **Consignor tracking is central:** "I sell a lot of things on consignment... everybody gets a number like I have N1-N98." Each item tagged to a consignor number. At estate sales, family members get separate numbers (N1 for mom, N2 for daughter, N3 for uncle). Tallies payouts per consignor after the sale using notepads. | Consignor/seller tracking is a core workflow, not an edge case. Multi-seller payout reconciliation is a major back-office pain. Currently handled with pen + paper. Our v0.3 multi-vendor feature may need to move up if this is common across operators. |
+| 2026-03-04 | Allison (via Alissa text) | **Speed is everything:** "It has to be done so fast that's the hard part because you may be 20-40 people deep in a checkout line." | Validates core thesis. Checkout bottleneck is real and felt. 20-40 person lines confirm the pain intensity. |
+| 2026-03-04 | Allison (via Alissa text) | **Workers are the users, simplicity is non-negotiable:** "ALL I CAN SAY IS IT WOULD BE MY WORKERS USING IT, WHICH MEANS IT WOULD HAVE TO BE THE EASIEST THING TO USE IN THE WORLD LIKE SIMPLE, FAST, NOT COMPLICATED." | The operator decides to adopt but the worker decides if it gets used. Zero training tolerance. Confirms design principle #3. |
+| 2026-03-04 | Allison (via Alissa text) | **Phone competition:** "I could not use my phone because I use it for phone calls text in 1 million other things so I would not use an app." But also: "I use my phone for checkout on Square." | She already uses Square on her phone — so phone-as-checkout-tool isn't foreign. The objection is about dedicating her *personal* phone to yet another app. Suggests dedicated cheap tablet or seamless app-switching as deployment path. |
+| 2026-03-04 | Allison (via Alissa text) | **"Why wouldn't they just use a calculator?"** | The killer positioning question. Need to make the answer obvious in <10 seconds: it's not just math — it's tickets, QR handoff, discount tracking, record-keeping. Calculator can't do any of that. |
+| 2026-03-04 | Allison (via Alissa text) | **Android matters:** "Two of the five people who always work for me don't have iPhones." | PWA on Android Chrome needs explicit testing. 40% of her workforce is Android. |
+| 2026-03-04 | Allison (via Alissa text) | **Category tagging in use:** Selects from dropdown options like "decor" to tag items for tracking what customers are buying. | Operators may want lightweight item categorization for reporting/reconciliation. Not just price + description. |
 
 ### Field Test Observations
 
@@ -404,6 +410,11 @@ _This section gets filled in as Alissa and others report back from conversations
 - [ ] Does Aravenda's voice entry work for price-only input (like ours) or is it inventory cataloging? → Pending demo. Website suggests cataloging focus.
 - [ ] Does SimpleConsign's AI item entry work for estate sale items (one-of-a-kind)? → Pending demo.
 - [ ] What does Aravenda's actual estate sale operator base look like? They claim to serve estate sales but couldn't demonstrate how on their website.
+- [ ] How common is consignor/multi-seller tracking across estate sale operators? Allison uses it (N1-N98 numbering) — is this standard or specific to operators who also run consignment?
+- [ ] What does post-sale consignor reconciliation look like? How long does the notepad tallying take? What's the error rate?
+- [ ] Does Allison use Square at estate sales or only at her consignment store? Does she track consignor numbers in Square or on paper alongside it?
+- [ ] What's the full checkout workflow at one of Allison's estate sales? Adding machine → paper ticket → Square? Or something else?
+- [ ] Would Allison let us shadow or side-by-side test at one of her sales?
 
 ---
 
@@ -425,5 +436,6 @@ _This section gets filled in as Alissa and others report back from conversations
 
 | Date | What Changed |
 |------|-------------|
+| 2026-03-05 | Added Allison operator conversation findings (via Alissa text). 7 entries in §8 Operator Conversations table. Added 5 new research questions to §9. Key insights: consignor tracking is central workflow, Square already in use, workers are the real users, Android testing needed. |
 | 2026-03-03 | Added Aravenda deep-dive findings from website analysis. Updated §2 with detailed competitive assessment, §8 with competitive platform analysis table, §9 with answered/new research questions. |
 | 2026-03-03 | Initial version — competitive research, market data, positioning, segments, GTM strategy |
