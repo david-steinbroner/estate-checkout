@@ -26,8 +26,8 @@ const QR = {
       qrCode: document.getElementById('qr-code'),
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
-      editButton: document.getElementById('qr-edit'),
       discountButton: document.getElementById('qr-discount'),
+      markPaidButton: document.getElementById('qr-mark-paid'),
       newButton: document.getElementById('qr-new')
     };
   },
@@ -36,15 +36,18 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
-    // Edit Order button - reopen current transaction
-    this.elements.editButton.addEventListener('click', () => {
-      this.reopenTransaction();
-    });
-
     // Discount button - apply/edit ticket discount in-place
     if (this.elements.discountButton) {
       this.elements.discountButton.addEventListener('click', () => {
         this.applyTicketDiscountFromQR();
+      });
+    }
+
+    // Mark Paid button - navigate to payment screen
+    if (this.elements.markPaidButton) {
+      this.elements.markPaidButton.addEventListener('click', () => {
+        const txn = Checkout.lastTransaction;
+        if (txn) App.showScreen('payment', txn);
       });
     }
 
@@ -53,50 +56,6 @@ const QR = {
       Checkout.clearAll();
       App.showScreen('checkout');
     });
-  },
-
-  /**
-   * Reopen the current transaction from QR screen
-   * Voids the original, creates a new transaction with same items, navigates to checkout
-   */
-  reopenTransaction() {
-    const txn = Checkout.lastTransaction;
-    if (!txn) return;
-
-    // Don't reopen already-voided transactions
-    const current = Storage.getTransaction(txn.id);
-    if (!current || current.status === 'void') return;
-
-    // Void the original transaction
-    // voidReason values: 'Edited Order', 'Cancelled', 'Refunded', 'Duplicate' (future)
-    Storage.updateTransaction(txn.id, {
-      status: 'void',
-      voidedAt: Utils.getTimestamp(),
-      voidReason: 'Edited Order'
-    });
-
-    // Load items into checkout with new IDs
-    Checkout.items = txn.items.map(item => ({
-      ...item,
-      id: Utils.generateId()
-    }));
-    Checkout.ticketDiscount = txn.ticketDiscount || null;
-    Checkout.saveCart();
-
-    // Track that this is a reopened transaction (preserve original root customer)
-    Checkout.reopenedFromCustomer = txn.reopenedFrom || txn.customerNumber;
-    Checkout.reuseCustomerNumber = txn.customerNumber;
-
-    // Reset transaction saved state so a new transaction will be created on DONE
-    Checkout.transactionSaved = false;
-    Checkout.lastTransaction = null;
-
-    // Preserve order name
-    Checkout.orderCustomName = txn.orderName || '';
-
-    // Navigate to checkout
-    App.showScreen('checkout');
-    Checkout.render();
   },
 
   /**

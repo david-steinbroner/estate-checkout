@@ -174,6 +174,12 @@ body {
   flex-shrink: 0;
 }
 
+.cart-banner__hint {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  opacity: 0.7;
+}
+
 .cart-banner[hidden] {
   display: none;
 }
@@ -722,13 +728,23 @@ body {
 
 /* QR screen discount button */
 .qr-action--outline {
-  background: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 .qr-action--outline:active {
-  background: var(--color-primary-light);
+  background: var(--color-bg-hover);
+}
+
+/* QR screen mark paid button */
+.qr-action--paid {
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+}
+
+.qr-action--paid:active {
+  background: var(--color-success-dark);
 }
 
 /* === Edit Sale Sheet === */
@@ -1694,15 +1710,7 @@ body {
   background: var(--color-success-dark);
 }
 
-.qr-action--secondary {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
 
-.qr-action--secondary:active {
-  background: var(--color-bg-hover);
-}
 
 /* === QR Scan Screen === */
 .scan-screen {

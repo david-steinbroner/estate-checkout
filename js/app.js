@@ -658,7 +658,7 @@ const App = {
       const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
       const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
       const itemWord = count === 1 ? 'item' : 'items';
-      bannerText.textContent = `Order in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)}`;
+      bannerText.innerHTML = `Order in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)} <span class="cart-banner__hint">tap to edit</span>`;
       banner.hidden = false;
     } else {
       banner.hidden = true;
