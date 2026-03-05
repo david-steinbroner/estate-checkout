@@ -112,7 +112,7 @@
   --height-header-context: 48px;
   --height-header-buttons: 48px;
   --height-header: 72px;
-  --height-total-bar: 36px;
+  --height-total-bar: 48px;
 
   /* === Shadows === */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -261,19 +261,15 @@ body {
   opacity: 0.6;
 }
 
-/* === Running Total (expandable) === */
+/* === Running Total === */
 .running-total {
+  height: var(--height-total-bar);
   background: var(--color-text);
   color: var(--color-text-on-dark);
   flex-shrink: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.running-total__collapsed {
-  height: var(--height-total-bar);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-md);
   padding: 0 var(--space-lg);
 }
@@ -286,87 +282,6 @@ body {
 .running-total__amount {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-}
-
-.running-total__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.running-total__chevron {
-  margin-left: auto;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-on-dark);
-  opacity: 0.6;
-}
-
-.running-total__expanded {
-  padding: var(--space-md) var(--space-lg) var(--space-lg);
-  border-top: 1px solid rgba(255,255,255,0.15);
-}
-
-.running-total__breakdown-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 3px 0;
-  font-size: var(--font-size-sm);
-  color: rgba(255,255,255,0.7);
-}
-
-.running-total__breakdown-row--total {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-on-dark);
-  padding-top: var(--space-sm);
-  margin-top: var(--space-sm);
-  border-top: 1px solid rgba(255,255,255,0.25);
-}
-
-.running-total__breakdown-row--saved {
-  color: var(--color-success);
-  font-weight: var(--font-weight-semibold);
-}
-
-.running-total__breakdown-divider {
-  border: none;
-  border-top: 1px solid rgba(255,255,255,0.15);
-  margin: var(--space-sm) 0;
-}
-
-.running-total__actions {
-  margin-top: var(--space-md);
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.running-total__ticket-btn {
-  flex: 1;
-  height: 36px;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  background: rgba(255,255,255,0.15);
-  color: var(--color-text-on-dark);
-  border: 1px solid rgba(255,255,255,0.3);
-}
-
-.running-total__ticket-btn:active {
-  background: rgba(255,255,255,0.25);
-}
-
-.running-total__ticket-remove {
-  height: 36px;
-  padding: 0 var(--space-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-danger-light, #fca5a5);
-  background: none;
-  border: none;
-  cursor: pointer;
 }
 
 /* === Item List (inline preview — shows last 2-3 items) === */

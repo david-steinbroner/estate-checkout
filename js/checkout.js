@@ -77,11 +77,6 @@ const Checkout = {
       itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
       runningTotalBar: document.getElementById('running-total-bar'),
-      runningTotalDot: document.getElementById('running-total-dot'),
-      runningTotalChevron: document.getElementById('running-total-chevron'),
-      runningTotalExpanded: document.getElementById('running-total-expanded'),
-      runningTotalBreakdown: document.getElementById('running-total-breakdown'),
-      runningTotalActions: document.getElementById('running-total-actions'),
       priceDisplay: document.getElementById('price-display'),
       numpad: document.getElementById('numpad'),
       addButton: document.getElementById('add-button'),
@@ -291,15 +286,6 @@ const Checkout = {
       this.elements.haggleInput.addEventListener('input', () => this.updateHagglePreview());
       document.querySelectorAll('input[name="haggle-type"]').forEach(radio => {
         radio.addEventListener('change', () => this.updateHagglePreview());
-      });
-    }
-
-    // Running total expand/collapse
-    if (this.elements.runningTotalBar) {
-      this.elements.runningTotalBar.addEventListener('click', (e) => {
-        // Don't toggle if clicking inside actions (buttons)
-        if (e.target.closest('.running-total__actions')) return;
-        this.toggleTotalExpand();
       });
     }
 
@@ -570,99 +556,10 @@ const Checkout = {
   /**
    * Render the running total and savings
    */
-  // Total bar expanded state
-  totalExpanded: false,
-
   renderRunningTotal() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
     const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
-
-    // Collapsed: just the total
     this.elements.runningTotal.textContent = Utils.formatCurrency(total);
-
-    // Dot indicator when ticket discount is active
-    const hasTD = this.ticketDiscount && this.ticketDiscount.value && this.items.length > 0;
-    if (this.elements.runningTotalDot) {
-      this.elements.runningTotalDot.hidden = !hasTD;
-    }
-
-    // Expanded breakdown
-    this.renderTotalBreakdown();
-  },
-
-  renderTotalBreakdown() {
-    if (!this.elements.runningTotalBreakdown) return;
-
-    const originalTotal = this.items.reduce((sum, item) => sum + item.originalPrice, 0);
-    const dayDiscountedTotal = this.items.reduce((sum, item) => sum + (item.dayDiscountedPrice !== undefined ? item.dayDiscountedPrice : item.finalPrice), 0);
-    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
-    const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
-    const savings = originalTotal - total;
-
-    const dayDiscount = originalTotal - dayDiscountedTotal;
-    const haggleAdjustment = dayDiscountedTotal - subtotal;
-    const ticketDiscountAmount = subtotal - total;
-    const hasTD = this.ticketDiscount && this.ticketDiscount.value;
-
-    let rows = '';
-
-    if (this.items.length === 0) {
-      rows = '<div class="running-total__breakdown-row">No items yet</div>';
-    } else {
-      rows += `<div class="running-total__breakdown-row"><span>Original total</span><span>${Utils.formatCurrency(originalTotal)}</span></div>`;
-
-      if (dayDiscount > 0.005) {
-        rows += `<div class="running-total__breakdown-row"><span>Day discount (${this.currentDiscount}%)</span><span>-${Utils.formatCurrency(dayDiscount)}</span></div>`;
-      }
-      if (Math.abs(haggleAdjustment) > 0.005) {
-        rows += `<div class="running-total__breakdown-row"><span>Item adjustments</span><span>-${Utils.formatCurrency(Math.abs(haggleAdjustment))}</span></div>`;
-      }
-
-      if (hasTD) {
-        rows += `<hr class="running-total__breakdown-divider">`;
-        rows += `<div class="running-total__breakdown-row"><span>Subtotal</span><span>${Utils.formatCurrency(subtotal)}</span></div>`;
-        const tdLabel = this.ticketDiscount.type === 'percent'
-          ? `Ticket discount (${this.ticketDiscount.value}%)`
-          : `Ticket discount`;
-        rows += `<div class="running-total__breakdown-row"><span>${tdLabel}</span><span>-${Utils.formatCurrency(ticketDiscountAmount)}</span></div>`;
-      }
-
-      rows += `<div class="running-total__breakdown-row running-total__breakdown-row--total"><span>Total</span><span>${Utils.formatCurrency(total)}</span></div>`;
-
-      if (savings > 0.005) {
-        rows += `<div class="running-total__breakdown-row running-total__breakdown-row--saved"><span>Saved</span><span>${Utils.formatCurrency(savings)}</span></div>`;
-      }
-    }
-
-    this.elements.runningTotalBreakdown.innerHTML = rows;
-
-    // Ticket discount button in expanded view
-    if (this.items.length > 0) {
-      const btnLabel = hasTD ? 'Edit Ticket Discount' : 'Add Ticket Discount';
-      let actionsHtml = `<button class="running-total__ticket-btn" id="total-ticket-btn">${btnLabel}</button>`;
-      if (hasTD) {
-        actionsHtml += `<button class="running-total__ticket-remove" id="total-ticket-remove">Remove</button>`;
-      }
-      this.elements.runningTotalActions.innerHTML = actionsHtml;
-
-      // Bind buttons
-      const ticketBtn = document.getElementById('total-ticket-btn');
-      if (ticketBtn) ticketBtn.addEventListener('click', (e) => { e.stopPropagation(); this.openTicketDiscountSheet(); });
-      const removeBtn = document.getElementById('total-ticket-remove');
-      if (removeBtn) removeBtn.addEventListener('click', (e) => { e.stopPropagation(); this.removeTicketDiscount(); });
-    } else {
-      this.elements.runningTotalActions.innerHTML = '';
-    }
-  },
-
-  toggleTotalExpand() {
-    this.totalExpanded = !this.totalExpanded;
-    if (this.elements.runningTotalExpanded) {
-      this.elements.runningTotalExpanded.hidden = !this.totalExpanded;
-    }
-    if (this.elements.runningTotalChevron) {
-      this.elements.runningTotalChevron.textContent = this.totalExpanded ? '▴' : '▾';
-    }
   },
 
   /**
