@@ -658,7 +658,7 @@ const Checkout = {
     if (this.isSheetOpen || this.items.length === 0) return;
     this.isSheetOpen = true;
     this.renderItemSheet();
-    this.elements.itemSheetBackdrop.hidden = false;
+    this.elements.itemSheetBackdrop.classList.add('visible');
   },
 
   /**
@@ -667,7 +667,7 @@ const Checkout = {
   closeItemSheet() {
     if (!this.isSheetOpen) return;
     this.isSheetOpen = false;
-    this.elements.itemSheetBackdrop.hidden = true;
+    this.elements.itemSheetBackdrop.classList.remove('visible');
   },
 
   /**
