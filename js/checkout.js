@@ -975,6 +975,7 @@ const Checkout = {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
 
+    this.closeItemSheet();
     this.haggleItemId = itemId;
 
     // Set title and breakdown
@@ -1040,7 +1041,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
-    this.renderItemSheet();
     this.showFlash('success', 'Discount applied!');
   },
 
@@ -1059,7 +1059,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
-    this.renderItemSheet();
     this.showFlash('success', 'Discount removed');
   },
 
@@ -1069,6 +1068,8 @@ const Checkout = {
   closeHaggleSheet() {
     this.haggleItemId = null;
     this.elements.haggleModal.classList.remove('visible');
+    // Reopen item sheet (was closed when haggle opened)
+    if (this.items.length > 0) this.openItemSheet();
   },
 
   // ── Ticket Discount Sheet ──
