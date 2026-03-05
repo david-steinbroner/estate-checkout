@@ -48,8 +48,7 @@ const Onboarding = {
   cacheElements() {
     this.elements = {
       overlay: document.getElementById('onboarding-overlay'),
-      card: document.getElementById('onboarding-card'),
-      howItWorks: document.getElementById('setup-how-it-works')
+      card: document.getElementById('onboarding-card')
     };
   },
 
@@ -57,14 +56,6 @@ const Onboarding = {
    * Bind event listeners
    */
   bindEvents() {
-    // "How It Works" link on setup screen
-    if (this.elements.howItWorks) {
-      this.elements.howItWorks.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.show('single');
-      });
-    }
-
     // Backdrop click dismisses
     if (this.elements.overlay) {
       this.elements.overlay.addEventListener('click', (e) => {

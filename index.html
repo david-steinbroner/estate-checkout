@@ -120,9 +120,10 @@
 
   <!-- Sale Setup Screen -->
   <div id="screen-setup" class="screen setup-screen active">
-    <header class="setup-header">
-      <h1 class="setup-header__title">New Sale</h1>
-    </header>
+    <div class="header setup-header-bar">
+      <span class="setup-header-bar__title">New Sale</span>
+      <button class="header__menu-btn" id="setup-menu-btn">☰</button>
+    </div>
 
     <div class="setup-form">
       <!-- Sale Name -->
@@ -167,9 +168,21 @@
     <!-- Start Sale Button -->
     <div class="setup-actions">
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
-      <button type="button" class="start-sale-button" id="start-sale-button">Start Sale</button>
-      <button type="button" class="join-sale-button" id="join-sale-button">Join Sale</button>
-      <a class="setup-help-link" id="setup-how-it-works" href="#">How It Works</a>
+      <div class="setup-actions__row">
+        <button type="button" class="start-sale-button" id="start-sale-button">Start Sale</button>
+        <button type="button" class="join-sale-button" id="join-sale-button">Join Sale</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Menu Sheet -->
+  <div class="overlay" id="setup-menu-modal">
+    <div class="sheet">
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--secondary" id="setup-menu-how">How It Works</button>
+        <button class="sheet__btn sheet__btn--secondary" id="setup-menu-feedback" disabled>Send Feedback (Coming soon)</button>
+        <button class="sheet__btn sheet__btn--secondary" id="setup-menu-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 

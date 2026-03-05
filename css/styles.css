@@ -852,8 +852,8 @@ body {
 
 /* === Join Sale Button === */
 .join-sale-button {
-  width: 100%;
-  min-height: var(--height-button);
+  flex: 1;
+  height: var(--height-button);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
@@ -1166,19 +1166,14 @@ body {
   padding: 0;
 }
 
-.setup-header {
-  height: var(--height-button);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.setup-header-bar {
+  height: var(--height-header-context);
 }
 
-.setup-header__title {
+.setup-header-bar__title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
+  padding-left: var(--space-md);
 }
 
 .setup-form {
@@ -1314,14 +1309,20 @@ body {
 
 /* Setup Actions */
 .setup-actions {
-  padding: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
+.setup-actions__row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
 .start-sale-button {
-  width: 100%;
+  flex: 1;
   height: var(--height-button);
   background: var(--color-success);
   color: var(--color-text-on-success);
@@ -1343,9 +1344,8 @@ body {
 }
 
 .setup-dashboard-button {
-  width: 100%;
   height: var(--height-button);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
@@ -2294,25 +2294,6 @@ body {
 }
 
 /* === "How It Works" Link on Setup Screen === */
-.setup-help-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--height-touch-min);
-  text-align: center;
-  margin-top: var(--space-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  text-decoration: underline;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.setup-help-link:active {
-  color: var(--color-text);
-}
-
 /* === Onboarding Walkthrough === */
 .onboarding {
   position: fixed;

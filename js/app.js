@@ -66,7 +66,12 @@ const App = {
       joinInstructionModal: document.getElementById('join-instruction-modal'),
       joinInstructionDone: document.getElementById('join-instruction-done'),
       // Join Sale button on setup
-      joinSaleButton: document.getElementById('join-sale-button')
+      joinSaleButton: document.getElementById('join-sale-button'),
+      // Setup menu
+      setupMenuBtn: document.getElementById('setup-menu-btn'),
+      setupMenuModal: document.getElementById('setup-menu-modal'),
+      setupMenuHow: document.getElementById('setup-menu-how'),
+      setupMenuCancel: document.getElementById('setup-menu-cancel')
     };
   },
 
@@ -196,6 +201,31 @@ const App = {
       this.headerElements.joinInstructionModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.joinInstructionModal) {
           this.headerElements.joinInstructionModal.classList.remove('visible');
+        }
+      });
+    }
+
+    // Setup menu
+    if (this.headerElements.setupMenuBtn) {
+      this.headerElements.setupMenuBtn.addEventListener('click', () => {
+        this.headerElements.setupMenuModal.classList.add('visible');
+      });
+    }
+    if (this.headerElements.setupMenuHow) {
+      this.headerElements.setupMenuHow.addEventListener('click', () => {
+        this.headerElements.setupMenuModal.classList.remove('visible');
+        Onboarding.show('single');
+      });
+    }
+    if (this.headerElements.setupMenuCancel) {
+      this.headerElements.setupMenuCancel.addEventListener('click', () => {
+        this.headerElements.setupMenuModal.classList.remove('visible');
+      });
+    }
+    if (this.headerElements.setupMenuModal) {
+      this.headerElements.setupMenuModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.setupMenuModal) {
+          this.headerElements.setupMenuModal.classList.remove('visible');
         }
       });
     }
