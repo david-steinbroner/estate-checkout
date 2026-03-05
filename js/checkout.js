@@ -241,9 +241,7 @@ const Checkout = {
     // Hint strip tap to open sheet
     if (this.elements.itemListHint) {
       this.elements.itemListHint.addEventListener('click', () => {
-        if (this.items.length > 0) {
-          this.openItemSheet();
-        }
+        this.openItemSheet();
       });
     }
 
@@ -678,7 +676,7 @@ const Checkout = {
    * Open item list sheet with all items and remove buttons
    */
   openItemSheet() {
-    if (this.isSheetOpen || this.items.length === 0) return;
+    if (this.isSheetOpen) return;
     this.isSheetOpen = true;
     this.renderItemSheet();
     this.elements.itemSheetBackdrop.classList.add('visible');
@@ -702,25 +700,29 @@ const Checkout = {
     this.elements.itemSheetTitle.textContent = titleText;
     this.elements.itemSheetSubtitle.textContent = `All items (${this.items.length}) · tap title to rename`;
 
-    const html = this.items.map((item, index) => {
-      const hasDesc = item.description && item.description.trim().length > 0;
-      const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
-      const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
-      const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
+    if (this.items.length === 0) {
+      this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';
+    } else {
+      const html = this.items.map((item, index) => {
+        const hasDesc = item.description && item.description.trim().length > 0;
+        const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
+        const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+        const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
-      return `
-        <li class="item-row${haggleClass}" data-id="${item.id}">
-          <span class="item-row__number">${index + 1}.</span>
-          <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
-          <div class="item-row__prices" data-edit-price="${item.id}">
-            ${this.renderItemPrices(item)}
-          </div>
-          <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
-        </li>
-      `;
-    }).join('');
+        return `
+          <li class="item-row${haggleClass}" data-id="${item.id}">
+            <span class="item-row__number">${index + 1}.</span>
+            <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
+            <div class="item-row__prices" data-edit-price="${item.id}">
+              ${this.renderItemPrices(item)}
+            </div>
+            <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
+          </li>
+        `;
+      }).join('');
 
-    this.elements.itemSheetList.innerHTML = html;
+      this.elements.itemSheetList.innerHTML = html;
+    }
 
     // Bind remove buttons in sheet
     this.elements.itemSheetList.querySelectorAll('[data-remove]').forEach(btn => {
