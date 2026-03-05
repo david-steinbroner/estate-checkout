@@ -1246,7 +1246,7 @@ body {
 
 .setup-header-bar__title {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   padding-left: var(--space-md);
 }
 
