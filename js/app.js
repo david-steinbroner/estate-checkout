@@ -651,9 +651,9 @@ const App = {
     if (!banner || !bannerText) return;
 
     const hasItems = Checkout.items && Checkout.items.length > 0;
-    const onCheckout = this.currentScreen === 'checkout';
+    const hideBanner = this.currentScreen === 'checkout' || this.currentScreen === 'qr' || this.currentScreen === 'payment';
 
-    if (hasItems && !onCheckout) {
+    if (hasItems && !hideBanner) {
       const count = Checkout.items.length;
       const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
       const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);

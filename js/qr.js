@@ -26,6 +26,7 @@ const QR = {
       qrCode: document.getElementById('qr-code'),
       qrItems: document.getElementById('qr-items'),
       qrTotal: document.getElementById('qr-total'),
+      editButton: document.getElementById('qr-edit'),
       discountButton: document.getElementById('qr-discount'),
       markPaidButton: document.getElementById('qr-mark-paid'),
       newButton: document.getElementById('qr-new')
@@ -36,6 +37,13 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
+    // Edit Order button - return to checkout with cart intact
+    if (this.elements.editButton) {
+      this.elements.editButton.addEventListener('click', () => {
+        App.showScreen('checkout');
+      });
+    }
+
     // Discount button - apply/edit ticket discount in-place
     if (this.elements.discountButton) {
       this.elements.discountButton.addEventListener('click', () => {

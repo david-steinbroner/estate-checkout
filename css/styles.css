@@ -726,14 +726,14 @@ body {
   text-decoration: line-through;
 }
 
-/* QR screen discount button */
-.qr-action--outline {
+/* QR screen secondary button */
+.qr-action--secondary {
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
 }
 
-.qr-action--outline:active {
+.qr-action--secondary:active {
   background: var(--color-bg-hover);
 }
 
@@ -1629,6 +1629,10 @@ body {
   border-bottom: 1px solid var(--color-border);
 }
 
+.qr-item:last-child {
+  border-bottom: none;
+}
+
 .qr-item__desc {
   font-size: var(--font-size-base);
   color: var(--color-text);
@@ -1681,12 +1685,15 @@ body {
   flex-shrink: 0;
 }
 
-.qr-actions__row {
-  display: flex;
-  gap: var(--space-md);
+.qr-actions__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  width: 100%;
 }
 
 .qr-action {
+  min-height: var(--height-touch-min);
   height: var(--height-button);
   border: none;
   border-radius: var(--radius-md);
@@ -1697,13 +1704,8 @@ body {
 }
 
 .qr-action--new {
-  width: 100%;
   background: var(--color-success);
   color: var(--color-text-on-success);
-}
-
-.qr-actions__row .qr-action {
-  flex: 1;
 }
 
 .qr-action--new:active {
