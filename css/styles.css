@@ -461,13 +461,13 @@ body {
 
 /* === "View all X items" hint strip === */
 .item-list-hint {
-  min-height: var(--height-touch-min);
+  min-height: 36px;
   background: var(--color-bg);
   color: var(--color-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  line-height: var(--height-touch-min);
+  line-height: 36px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
@@ -779,8 +779,8 @@ body {
 .action-bar {
   display: flex;
   gap: var(--space-sm);
-  padding: var(--space-lg);
-  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-sm) var(--space-lg);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
