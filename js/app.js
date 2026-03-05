@@ -16,6 +16,7 @@ const App = {
     this.registerServiceWorker();
     this.cacheHeaderElements();
     this.bindHeaderEvents();
+    this.bindCartBanner();
     this.initModules();
     this.route();
 
@@ -632,6 +633,39 @@ const App = {
   },
 
   /**
+   * Bind the cart banner click handler
+   */
+  bindCartBanner() {
+    const banner = document.getElementById('cart-banner');
+    if (banner) {
+      banner.addEventListener('click', () => this.showScreen('checkout'));
+    }
+  },
+
+  /**
+   * Show or hide the order-in-progress banner based on cart state and current screen
+   */
+  updateCartBanner() {
+    const banner = document.getElementById('cart-banner');
+    const bannerText = document.getElementById('cart-banner-text');
+    if (!banner || !bannerText) return;
+
+    const hasItems = Checkout.items && Checkout.items.length > 0;
+    const onCheckout = this.currentScreen === 'checkout';
+
+    if (hasItems && !onCheckout) {
+      const count = Checkout.items.length;
+      const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
+      const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
+      const itemWord = count === 1 ? 'item' : 'items';
+      bannerText.textContent = `Order in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)}`;
+      banner.hidden = false;
+    } else {
+      banner.hidden = true;
+    }
+  },
+
+  /**
    * Switch to a different screen
    */
   showScreen(screenName, data) {
@@ -673,6 +707,9 @@ const App = {
       } else if (screenName === 'paused') {
         this.renderPausedScreen();
       }
+
+      // Update cart banner visibility
+      this.updateCartBanner();
     }
   },
 

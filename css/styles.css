@@ -38,6 +38,10 @@
   --color-pending: #b45309;
   --color-pending-light: rgba(217, 119, 6, 0.15);
 
+  /* === Colors: Banner === */
+  --color-banner-bg: #fde68a;
+  --color-banner-text: #78350f;
+
   /* === Colors: Borders & Dividers === */
   --color-border: #e5e5e5;
   --color-border-focus: var(--color-primary);
@@ -153,6 +157,25 @@ body {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+}
+
+/* === Order In Progress Banner === */
+.cart-banner {
+  height: var(--height-touch-min);
+  background: var(--color-banner-bg);
+  color: var(--color-banner-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.cart-banner[hidden] {
+  display: none;
 }
 
 /* === Shared Header === */
