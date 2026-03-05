@@ -119,7 +119,15 @@ const App = {
     }
     if (this.headerElements.editSaleModal) {
       this.headerElements.editSaleModal.addEventListener('click', (e) => {
-        if (e.target === this.headerElements.editSaleModal) this.closeEditSale();
+        if (e.target === this.headerElements.editSaleModal) {
+          if (this._editSaleEditing) {
+            if (document.activeElement && document.activeElement.blur) {
+              document.activeElement.blur();
+            }
+            return;
+          }
+          this.closeEditSale();
+        }
       });
     }
     if (this.headerElements.menuEndDay) {
@@ -281,12 +289,17 @@ const App = {
 
   // ── Edit Sale Sheet ──
 
+  // Track whether an input is actively being edited in the Edit Sale sheet
+  _editSaleEditing: false,
+
   /**
    * Open the edit sale sheet and render its content
    */
   openEditSale() {
     const sale = Storage.getSale();
     if (!sale) return;
+    this._editSaleEditing = false;
+    this._updateEditSaleDoneBtn();
     this.renderEditSale(sale);
     this.headerElements.editSaleModal.classList.add('visible');
   },
@@ -295,6 +308,13 @@ const App = {
    * Close the edit sale sheet and refresh dependent state
    */
   closeEditSale() {
+    if (this._editSaleEditing) {
+      // Confirm first — blur active input, don't close yet
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+      return;
+    }
     this.headerElements.editSaleModal.classList.remove('visible');
     // Refresh header, checkout discount, and paused screen
     const sale = Storage.getSale();
@@ -305,10 +325,43 @@ const App = {
   },
 
   /**
+   * Set or clear the editing flag and update Done button text
+   */
+  _setEditSaleEditing(editing) {
+    this._editSaleEditing = editing;
+    this._updateEditSaleDoneBtn();
+  },
+
+  /**
+   * Update the Done/Confirm button text based on editing state
+   */
+  _updateEditSaleDoneBtn() {
+    if (this.headerElements.editSaleDone) {
+      this.headerElements.editSaleDone.textContent = this._editSaleEditing ? 'Confirm' : 'Done';
+    }
+  },
+
+  /**
+   * Show a brief flash error message inside the edit sale sheet
+   */
+  _showEditSaleFlash(message) {
+    const sheet = this.headerElements.editSaleModal?.querySelector('.sheet');
+    if (!sheet) return;
+    // Remove any existing flash
+    const existing = sheet.querySelector('.edit-sale__flash-error');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.className = 'edit-sale__flash-error';
+    el.textContent = message;
+    sheet.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  },
+
+  /**
    * Render the edit sale sheet content
    */
   renderEditSale(sale) {
-    const dayNumber = Utils.getSaleDay(sale.startDate, sale);
+    const currentDay = Utils.getSaleDay(sale.startDate, sale);
     const discounts = sale.discounts || {};
     const days = Object.keys(discounts).map(Number).sort((a, b) => a - b);
 
@@ -320,25 +373,29 @@ const App = {
       <div class="edit-sale__value" id="edit-sale-name">${Utils.escapeHtml(sale.name)}</div>
     </div>`;
 
-    // Current Day
+    // Current Day (dropdown)
     html += `<div class="edit-sale__section">
       <div class="edit-sale__label">Current Day</div>
-      <div class="edit-sale__value" id="edit-sale-day">Day ${dayNumber}</div>
+      <div class="edit-sale__value" id="edit-sale-day">Day ${currentDay}</div>
     </div>`;
 
     // Discount Schedule
     html += `<div class="edit-sale__section">
       <div class="edit-sale__label">Discount Schedule</div>`;
     days.forEach(d => {
+      const isCompleted = d <= currentDay;
+      const removeClass = isCompleted ? 'edit-sale__remove edit-sale__remove--disabled' : 'edit-sale__remove';
       html += `<div class="edit-sale__row">
         <span class="edit-sale__row-label">Day ${d}</span>
         <span class="edit-sale__row-value" data-edit-discount="${d}">${discounts[d]}%</span>
+        <button class="${removeClass}" data-remove-day="${d}" ${isCompleted ? 'aria-disabled="true"' : ''}>&times;</button>
       </div>`;
     });
     html += `<button class="edit-sale__add-day" id="edit-sale-add-day">+ Add Day</button>`;
     html += `</div>`;
 
     this.headerElements.editSaleContent.innerHTML = html;
+    this._setEditSaleEditing(false);
     this.bindEditSaleEvents(sale);
   },
 
@@ -359,10 +416,12 @@ const App = {
         input.maxLength = 50;
         nameEl.replaceWith(input);
         input.focus();
+        this._setEditSaleEditing(true);
         const save = () => {
           const val = input.value.trim();
           if (val) sale.name = val;
           Storage.saveSale(sale);
+          this._setEditSaleEditing(false);
           this.renderEditSale(sale);
         };
         input.addEventListener('blur', save);
@@ -370,29 +429,34 @@ const App = {
       });
     }
 
-    // Current day tap to edit
+    // Current day tap to open dropdown
     const dayEl = content.querySelector('#edit-sale-day');
     if (dayEl) {
       dayEl.addEventListener('click', () => {
         const currentDay = Utils.getSaleDay(sale.startDate, sale);
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'sheet__input';
-        input.value = currentDay;
-        input.min = 1;
-        input.max = 99;
-        dayEl.replaceWith(input);
-        input.focus();
-        const save = () => {
-          const val = parseInt(input.value);
-          if (val > 0) {
-            sale.dayOverride = val;
-          }
+        const days = Object.keys(sale.discounts).map(Number).sort((a, b) => a - b);
+        const select = document.createElement('select');
+        select.className = 'sheet__input';
+        days.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = `Day ${d}`;
+          if (d === currentDay) opt.selected = true;
+          select.appendChild(opt);
+        });
+        dayEl.replaceWith(select);
+        select.focus();
+        this._setEditSaleEditing(true);
+        select.addEventListener('change', () => {
+          sale.dayOverride = parseInt(select.value);
           Storage.saveSale(sale);
+          this._setEditSaleEditing(false);
           this.renderEditSale(sale);
-        };
-        input.addEventListener('blur', save);
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+        });
+        select.addEventListener('blur', () => {
+          this._setEditSaleEditing(false);
+          this.renderEditSale(sale);
+        });
       });
     }
 
@@ -410,16 +474,50 @@ const App = {
         input.style.textAlign = 'right';
         el.replaceWith(input);
         input.focus();
+        this._setEditSaleEditing(true);
         const save = () => {
           const val = parseInt(input.value);
           if (!isNaN(val) && val >= 0 && val <= 100) {
             sale.discounts[day] = val;
           }
           Storage.saveSale(sale);
+          this._setEditSaleEditing(false);
           this.renderEditSale(sale);
         };
         input.addEventListener('blur', save);
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+      });
+    });
+
+    // Remove day buttons
+    content.querySelectorAll('[data-remove-day]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const day = parseInt(btn.dataset.removeDay);
+        const currentDay = Utils.getSaleDay(sale.startDate, sale);
+
+        if (day <= currentDay) {
+          this._showEditSaleFlash("Can't remove a completed day");
+          return;
+        }
+
+        // Delete the day and renumber sequentially
+        delete sale.discounts[day];
+        const remaining = Object.keys(sale.discounts).map(Number).sort((a, b) => a - b);
+        const newDiscounts = {};
+        remaining.forEach((oldKey, i) => {
+          newDiscounts[i + 1] = sale.discounts[oldKey];
+        });
+        sale.discounts = newDiscounts;
+
+        // Clamp dayOverride if needed
+        const maxDay = remaining.length;
+        if (sale.dayOverride && sale.dayOverride > maxDay) {
+          sale.dayOverride = maxDay;
+        }
+
+        Storage.saveSale(sale);
+        this.renderEditSale(sale);
       });
     });
 

@@ -1,50 +1,66 @@
 # PM TRACKER — Estate Checkout
 
-**Last updated:** 2026-03-03
+**Last updated:** 2026-03-05
 **Purpose:** Tracking doc for Claude (PM partner) to maintain context across chat sessions. Human should add this to the project files.
 
 ---
 
 ## Current Project Status
 
-**Version:** v0.1 (features and design system complete, entering end-to-end testing)
+**Version:** v0.1 (core features + discount system + multi-worker support complete, entering end-to-end testing)
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v61
-**Development sessions:** 32+ (2026-02-27 through 2026-03-03, plus design system implementation session)
+**Service worker cache:** v63+
+**Development sessions:** 42+ (2026-02-27 through 2026-03-05)
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
 
-### What's Working (confirmed through Session 32)
-- **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day, Start Sale, "How It Works" link
-- **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from "How It Works"
-- **Checkout pad** — number pad (48px keys), price display, Add Item, description field, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), bottom sheet overlay for full item list with remove buttons, inline "Added!" flash animation, Clear All (confirmation sheet), Create Ticket
-- **No-description prompt** — bottom sheet every time item added without description (no limit)
+### What's Working (confirmed through Session 42)
+- **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
+- **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
+- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), full item list sheet with split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), Create Ticket
+- **Order naming** — merged into hint strip ("Order #3 — 2 items — tap to edit order name and items"). Tap opens item sheet with "Order #X" title (tap to rename). Sequential numbering. Custom names preserved through Edit Ticket cycle.
+- **No-description prompt** — bottom sheet every time item added without description. "Add Description" opens dedicated entry sheet with text input.
+- **Description + price editing** — In item edit sheet, tapping description opens description edit sheet, tapping price opens adjust price sheet. Both editable after item is added.
 - **Speech-to-text** — hold-to-talk, natural language parser (number words, compound prices, description extraction), confirm/edit/cancel flow, post-permission guide sheet, quick-tap detection ("Hold the button longer"), progressive failure tips, mic permission flow with custom modal
-- **QR Handoff** — QR code, itemized summary, Edit Order (voids + reloads), New Customer
-- **Edit Order loop** — repeated Edit Order → Create Ticket cycles preserve customer number and reopenedFrom chain
+- **QR Handoff** — QR code, itemized summary, Edit Ticket (voids + reloads), New Ticket
+- **Edit Ticket loop** — repeated Edit Ticket → Create Ticket cycles preserve customer number and reopenedFrom chain
 - **QR Scan** — native BarcodeDetector + html5-qrcode fallback for iOS, permission denied error state with Retry, New Customer button
 - **Payment Receive** — customer info bar, itemized list, total, Mark Paid with success animation, New Customer
 - **Dashboard** — summary stats (customers, revenue, avg ticket), filter pills (All/Pending/Paid/Void) with live counts, sort toggle (Newest/Oldest First), expandable transaction list (accordion), status badges (Pending orange, Paid green, Void gray with reason), action buttons (Mark as Paid/Unpaid, Edit Order, Generate Ticket), filter-specific empty states
 - **Transaction statuses** — pending (from Create Ticket), paid (from Mark Paid), void (from Edit Order, with voidReason), unpaid (legacy)
-- **Shared header** — sale name, day number, discount badge; Dashboard, Scan Ticket, End Estate Sale buttons; active button highlighting
+- **Shared header** — 48px nav bar with sale name, day number, discount badge, shared sale badge; ☰ hamburger menu (Dashboard, Scan Ticket, Share Sale, End Day, End Sale) across all active-sale screens
 - **Navigation** — New Customer buttons on QR, Scan, Payment, Dashboard screens
 - **Discount auto-calculation** — timezone-aware day detection, configurable per-day percentages
+- **Item-level haggle discounts** — tap price in edit sheet to open haggle sheet; new price, $ off, or % off; stacks on top of day discount with visual stacking display (~~$20~~ ~~$15~~ $12)
+- **Ticket-level discounts** — % off or $ off entire ticket; accessible from expandable total bar and QR screen; stacks with day + haggle discounts
+- **Expandable running total** — collapsed shows final total + chevron; expanded shows full price breakdown (original, day discount, haggles, subtotal, ticket discount, total, savings) plus Add/Edit Ticket Discount button
+- **Shared sale / multi-worker join** — Share Sale generates QR + human-readable sale code (e.g., JOH-8291); Worker 2 scans with phone camera to join same sale config; independent transaction tracking per device
+- **Multi-day sale flow** — End Day pauses sale with stats, Resume Sale advances day with correct discount, End Sale is permanent; sale states: active/paused/ended; stale sale warning after 7 days
+- **Keyboard avoidance** — visualViewport API repositions all overlay sheets above iOS keyboard when inputs are focused
+- **Standardized sheets** — All 17 modals use `.overlay` + `.visible` class pattern with z-index 100
 - **PWA + offline** — service worker cache-first strategy (untested in airplane mode)
 - **Cloudflare Pages auto-deploy** from GitHub main branch
 
 ### What's Left Before Ship
 
-1. **✅ Design system overhaul** — Complete. All 10 implementation prompts executed. Full token system, component library, screen-by-screen rebuild, item list UX overhaul, and final audit/cleanup done. See DESIGN_SYSTEM.md.
-2. **End-to-end test pass** on mobile Chrome and mobile Safari
-3. **Offline test** — airplane mode full checkout flow
-4. **Alissa's independent walkthrough** — can she complete the full flow with zero instruction?
-5. **Field test** at real estate sale with Alissa's contact
+1. **✅ Design system overhaul** — Complete. All 10 implementation prompts executed.
+2. **✅ Discount system** — Item-level haggle + ticket-level discounts, expandable total bar with breakdown.
+3. **✅ Multi-worker support** — Share Sale QR/code, Join Sale via URL parameter.
+4. **✅ Multi-day sale flow** — End Day/Resume/End Sale, paused screen, stale sale warning.
+5. **✅ Header collapse** — ☰ menu replaces inline buttons, freeing vertical space on checkout screen.
+6. **End-to-end test pass** on mobile Chrome and mobile Safari
+7. **Offline test** — airplane mode full checkout flow
+8. **Alissa's independent walkthrough** — can she complete the full flow with zero instruction?
+9. **Field test** at real estate sale with Alissa's contact
 
 ### Known Issues / Tech Debt
-- QR data now encoded as base64 URL; may hit size limits for 50+ item carts — needs field validation
+- QR data now encoded as URL-safe base64 URL; may hit size limits for 50+ item carts — needs field validation
 - Offline airplane mode never tested live
 - End Sale no longer clears transactions (preserves all data). Old localStorage from pre-v61 may have sales without status field — backward compat handles via `sale.status || 'active'`
+- Cart storage format changed to `{ items, ticketDiscount }` — migration handles old plain-array format
+- Item data model extended with `dayDiscount`, `dayDiscountedPrice`, `haggleType`, `haggleValue` — migration handles old `discount` field
+- `maxDiscountPercent` placeholder on sale object — not surfaced in UI yet, reserved for future worker discount limits
 
 ---
 
@@ -57,7 +73,7 @@
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (v57) |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 42) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 
@@ -82,12 +98,18 @@ Session 33 (2026-03-03): **Design system overhaul** — 10-prompt implementation
 Session 34 (2026-03-03): **Order naming + customer ticket page** — Optional order name input (replaces auto "Customer #X"), QR codes now encode URLs to standalone `ticket.html` (customers scan with phone camera to see receipt + QR), renamed "Customer" → "Order" throughout UI, dual-format scanner (URL + legacy JSON), orderName preserved through Edit Order cycle, service worker bumped to v59.
 Session 35 (2026-03-03): **Ticket QR fix** — URL-safe base64 encoding for QR data, larger ticket QR (240x240, Level L), robust URL detection in scanner. Service worker v60.
 Session 36 (2026-03-03): **Multi-day sale flow** — End Day pauses sale with day summary stats, Resume Sale advances to next day with correct discount, End Sale is permanent (transaction data preserved). Sale states: active/paused/ended. Paused screen shows today's stats, next-day preview, 7-day stale nudge. Dashboard accessible while paused (New Order hidden). Service worker v61.
+Session 37 (2026-03-04): **Bug fix: paused screen bleed-through** — Removed `display: flex` from `.paused-screen` CSS that was overriding `.screen { display: none }`, causing paused screen to appear underneath other screens. Service worker v62.
+Session 38 (2026-03-04): **Item-level & ticket-level discounts (Prompt 14)** — Haggle discounts on individual items (new price / $ off / % off), stacking on day discount with visual display. Ticket-level discount (% or $ off whole ticket). Extended item data model (dayDiscount, dayDiscountedPrice, haggleType, haggleValue). Transaction model extended with subtotal and ticketDiscount. Cart storage wrapped as {items, ticketDiscount}. Backward compat migrations for all old data. Updated QR data, ticket page, payment screen, and dashboard to show stacking prices. Service worker v63.
+Session 39 (2026-03-04): **Shared sale / multi-worker join (Prompt 15)** — Share Sale generates QR code + sale code (e.g., JOH-8291). QR encodes sale config as URL-safe base64 in `?join=` parameter. Worker 2 scans with phone camera → join confirmation sheet → creates matching sale. Independent transaction tracking per device. Join Sale button on setup screen shows scan instruction. Shared badge in header. Sale object extended with shareCode, isShared, sharedAt.
+Session 40 (2026-03-04): **UI cleanup (Prompt 16)** — Header buttons collapsed into ☰ hamburger menu (bottom sheet with Dashboard, Scan Ticket, Share Sale, End Day, End Sale). Expandable running total bar (collapsed = total + chevron, expanded = full breakdown + Add/Edit Ticket Discount button). Ticket % button removed from action bar. Discount button added to QR screen for in-place ticket discount without voiding transaction.
+Session 41 (2026-03-05): **Checkout UX overhaul** — Taller 48px header as proper nav bar. Removed description input + order name bar, merged order info into always-visible hint strip. Item sheet redesigned with editable "Order #X" title + split description/price tap targets. Keyboard avoidance via visualViewport API. Fixed Edit Ticket crashes (removed element refs). Standardized all 17 sheets to overlay+visible pattern. Setup screen: side-by-side buttons + header with ☰ menu. Add Description flow implemented. Haggle sheet stacking fix.
+Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day changed from number input to dropdown select. Confirm/Done button flow prevents accidental sheet close during editing. Remove discount days with sequential renumbering (disabled for completed days, flash error toast).
 
 ---
 
 ## Discovery & Validation
 
-**Status:** Waiting on Alissa's conversation with her estate sale contact. Aravenda demo missed and rescheduling (sent technical questions to Carolyn Thompson, President — see COMPETITIVE_RESEARCH_QUESTIONS.md for pre-demo findings from website analysis). SimpleConsign demo still to be scheduled.
+**Status:** Alissa asked to see the prototype tonight. She talked to her friend Allison — waiting on Allison's response (unclear what Alissa asked her). Aravenda demo missed and rescheduling (sent technical questions to Carolyn Thompson, President — see COMPETITIVE_RESEARCH_QUESTIONS.md for pre-demo findings from website analysis). SimpleConsign demo still to be scheduled.
 
 **Discovery opener:** "I've been noticing at every estate sale — the checkout person punching every item into that adding machine, printing tape, writing tickets, especially on Day 2 when they manually calculate discounts. Is that as painful on your end as it looks?"
 

@@ -874,7 +874,7 @@ body {
   border-bottom: 1px solid var(--color-border);
 }
 
-.edit-sale__row:last-child {
+.edit-sale__row:last-of-type {
   border-bottom: none;
 }
 
@@ -890,6 +890,59 @@ body {
   text-decoration: underline;
   text-decoration-style: dotted;
   text-decoration-color: var(--color-text-secondary);
+}
+
+.edit-sale__remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  color: var(--color-danger);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  margin-left: var(--space-sm);
+}
+
+.edit-sale__remove:active {
+  background: var(--color-danger-light);
+}
+
+.edit-sale__remove--disabled {
+  color: var(--color-disabled);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.edit-sale__remove--disabled:active {
+  background: none;
+}
+
+.edit-sale__flash-error {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text);
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: flash-fade 1.5s ease-out forwards;
+  z-index: 10;
+}
+
+@keyframes flash-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .edit-sale__add-day {
@@ -1050,6 +1103,7 @@ body {
 }
 
 .sheet {
+  position: relative;
   width: 100%;
   background: var(--color-surface-raised);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;

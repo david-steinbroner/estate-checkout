@@ -1,13 +1,35 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-02
+**Last updated:** 2026-03-05
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v48
+**Service worker cache:** v63+
 
 ---
 
 ## What Was Accomplished
+
+### Session 42 (2026-03-05)
+- **Edit Sale: Current Day dropdown** — Replaced the tap-to-edit number input for Current Day with a `<select>` dropdown. Populated with all days from the discount schedule (labeled "Day N"), pre-selects current day. On change, sets `sale.dayOverride` and re-renders.
+- **Edit Sale: Confirm/Done button flow** — Added `_editSaleEditing` flag to track active inline editing. When an input or select is focused, Done button text changes to "Confirm". Tapping Confirm blurs the active input (saves it) but doesn't close the sheet. Second tap (now "Done") closes. Backdrop close also blocked during editing.
+- **Edit Sale: Remove discount days** — Each discount row now has a `×` remove button. Days ≤ current day show disabled/grayed `×` with flash error toast ("Can't remove a completed day"). Future days have a red `×` that deletes the day, renumbers remaining days sequentially from 1, and clamps `dayOverride` if needed.
+- **CSS additions** — `.edit-sale__remove` / `--disabled` button styles, `.edit-sale__flash-error` absolute-positioned toast with fade-out animation, `.sheet` gets `position: relative` for toast positioning, `.edit-sale__row:last-child` → `:last-of-type` fix.
+
+### Session 41 (2026-03-05)
+- **Taller shared header** — `--height-header-context` increased from 24px to 48px. Header restructured as flex row with `justify-content: space-between`. Menu button moved from absolute positioning into the flex flow. Right-padding compensation removed from `header__context`.
+- **Reduced action bar + hint strip** — Action bar vertical padding reduced (`--space-lg` → `--space-sm`). Item list hint strip reduced from `--height-touch-min` to 36px.
+- **Removed description input from checkout** — The visible description text box in `.input-area` removed. Description entry now handled entirely by the description prompt sheet flow.
+- **Removed order name bar, merged into hint strip** — `order-name-bar` and `#order-name-input` removed. The `item-list-hint` strip is now always visible and shows combined order info: "Order #3 — 2 items — tap to edit order name and items". Order number sourced from `Storage.peekNextCustomerNumber()` or `reuseCustomerNumber`. New `Checkout.orderCustomName` property stores custom names.
+- **Reworked item sheet header** — Sheet title changed from "All Items (X)" to "Order #X" with tap-to-rename functionality. Tapping title reveals inline text input for custom order name. Secondary subtitle shows "All items (X) · tap title to rename". `renderItemSheet()` updated with editable title and subtitle element.
+- **Keyboard avoidance for bottom sheets** — Added `visualViewport` API listener that repositions `.overlay` elements when the iOS keyboard appears, keeping sheets anchored above the keyboard. Shared utility applied to all overlay modals.
+- **Fixed Edit Order crash** — Both `qr.js` and `dashboard.js` referenced removed `Checkout.elements.orderNameInput`. Updated to set `Checkout.orderCustomName` instead.
+- **Renamed QR screen buttons** — "Edit Order" → "Edit Ticket", "New Order" → "New Ticket".
+- **Left-aligned hint strip** — Changed from `text-align: center` to `text-align: left` with `padding: 0 var(--space-md)`.
+- **Add Description flow** — "Add Description" button in the no-description prompt now opens a new bottom sheet (`#desc-entry-modal`) with text input for description entry. Confirms and adds item with description.
+- **Fixed haggle sheet stacking** — Haggle/adjust price sheet was appearing behind item sheet (same z-index). Fixed by closing item sheet before opening haggle, reopening on haggle close.
+- **Standardized item sheet to overlay pattern** — Converted `#item-sheet-backdrop` from `.sheet-backdrop` + `hidden` attribute to `.overlay` + `.visible` class pattern, matching all 16 other modals. Now covered by KeyboardAvoidance automatically.
+- **Setup screen redesign** — Start Sale and Join Sale buttons on same row (flex, side-by-side). "How It Works" link removed from bottom, replaced by header bar with ☰ menu containing "How It Works" and "Send Feedback (Coming soon)".
+- **Split item row tap targets** — In edit sheet, description area and price area are now separate tap targets. Tapping description opens description edit sheet, tapping price opens existing adjust price sheet.
 
 ### Session 32 (2026-03-02)
 - **Added Dashboard Filter Pills** — Horizontal row of pill-shaped buttons (All, Pending, Paid, Void) above the transaction list. Each pill shows a live count in parentheses. Single-select with filled background in status color when active (blue/orange/green/gray). Filters the transaction list instantly on tap. Summary stats (customers, revenue, avg ticket) always reflect full sale totals regardless of active filter.
