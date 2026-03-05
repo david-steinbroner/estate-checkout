@@ -69,13 +69,30 @@ const Speech = {
     }
 
     this.isSupported = true;
+    this.ensureRecognition();
+
+    this.cacheElements();
+    this.bindEvents();
+    this.checkPermissionState();
+  },
+
+  /**
+   * Create (or recreate) the SpeechRecognition instance and bind its handlers.
+   * Called on init and before each listening session to ensure iOS Safari
+   * fully releases the microphone hardware between sessions.
+   */
+  ensureRecognition() {
+    if (this.recognition) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
     this.recognition.lang = 'en-US';
 
     this.recognition.onstart = () => {
-      // Mic is now active (permission granted) - start the timeout if user released button
       if (this.waitingForResult) {
         this.startResultTimeout();
       }
@@ -116,11 +133,9 @@ const Speech = {
 
     this.recognition.onend = () => {
       this.isListening = false;
-      // Always clean up when recognition ends for any reason
       this.clearResultTimeout();
       this.updateMicUI(false);
 
-      // If we were waiting for a result and didn't get one, show failure
       if (this.waitingForResult) {
         this.waitingForResult = false;
         const wasDescMode = this._descMode;
@@ -134,10 +149,6 @@ const Speech = {
         }
       }
     };
-
-    this.cacheElements();
-    this.bindEvents();
-    this.checkPermissionState();
   },
 
   /**
@@ -330,6 +341,7 @@ const Speech = {
    * Actually start the speech recognition (called after permission is confirmed)
    */
   doStartListening() {
+    this.ensureRecognition();
     if (!this.recognition || this.isListening) return;
 
     // Show guide sheet on first mic use after permission grant (one-time)
@@ -381,6 +393,7 @@ const Speech = {
    * Start recognition for description-only mode (tap, not hold)
    */
   doStartDescriptionListening() {
+    this.ensureRecognition();
     if (!this.recognition || this.isListening) return;
 
     this.buttonPressTime = Date.now();
@@ -495,12 +508,16 @@ const Speech = {
     // Update mic UI
     this.updateMicUI(false);
 
-    // Abort recognition (releases mic immediately without waiting for results)
+    // Abort and destroy recognition instance so iOS Safari releases the mic hardware
     if (this.recognition) {
       try {
         this.recognition.abort();
       } catch (e) {}
+      this.recognition = null;
     }
+
+    // iOS Safari audio session release hint
+    try { document.activeElement?.blur(); } catch (e) {}
   },
 
   /**
