@@ -231,10 +231,10 @@ const Dashboard = {
       } else {
         // Transactions exist but none match filter — show filter-specific message
         this.elements.emptyState.hidden = true;
-        const filterLabels = { open: 'open', unpaid: 'unpaid', paid: 'paid', void: 'void' };
-        const label = filterLabels[this.activeFilter] || this.activeFilter;
+        const label = this.activeFilter;
+        const noun = label === 'open' ? 'orders' : 'invoices';
         this.elements.transactionList.innerHTML =
-          `<li class="dashboard-filter-empty">No ${label} invoices</li>`;
+          `<li class="dashboard-filter-empty">No ${label} ${noun}</li>`;
       }
       return;
     }
@@ -264,7 +264,8 @@ const Dashboard = {
    * Render a single transaction row
    */
   renderTransactionRow(txn) {
-    const orderLabel = Utils.escapeHtml(txn.orderName || ('Invoice #' + (txn.customerNumber || '?')));
+    const defaultLabel = status === 'open' ? 'Order #' : 'Invoice #';
+    const orderLabel = Utils.escapeHtml(txn.orderName || (defaultLabel + (txn.customerNumber || '?')));
     const time = Utils.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
@@ -304,7 +305,7 @@ const Dashboard = {
    */
   renderStatusBadge(status, voidReason) {
     if (status === 'void') {
-      const isEdited = voidReason === 'Edited Invoice';
+      const isEdited = voidReason === 'Edited Invoice' || voidReason === 'Edited';
       const label = isEdited ? 'Edited' : 'Cancelled';
       const cssClass = isEdited ? 'edited' : 'cancelled';
       return `<span class="dashboard-txn__status dashboard-txn__status--${cssClass}">${label}</span>`;
@@ -360,10 +361,10 @@ const Dashboard = {
       actionsHtml = `
         <div class="dashboard-detail__actions">
           <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="continue-editing" data-id="${txn.id}">
-            Edit Invoice
+            Edit Order
           </button>
           <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="generate-open" data-id="${txn.id}">
-            Generate Invoice
+            Create Invoice
           </button>
           <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
             Cancel
@@ -482,12 +483,9 @@ const Dashboard = {
       Checkout.draftTransactionId = null;
     }
 
-    // Mark original as void
-    Storage.updateTransaction(txnId, {
-      status: 'void',
-      voidedAt: Utils.getTimestamp(),
-      voidReason: 'Edited Invoice'
-    });
+    // Do NOT void immediately — use lazy voiding via checkEditDirty()
+    Checkout.editingInvoiceId = txnId;
+    Checkout.editingInvoiceDirty = false;
 
     // Load items into checkout
     Checkout.items = txn.items.map(item => ({
@@ -505,9 +503,6 @@ const Dashboard = {
     Checkout.orderCustomName = txn.orderName || '';
     Checkout.transactionSaved = false;
     Checkout.lastTransaction = null;
-
-    // Create new draft so the reopened invoice appears as "Open"
-    Checkout.saveDraftTransaction();
 
     // Navigate to checkout
     App.showScreen('checkout');

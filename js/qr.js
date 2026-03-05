@@ -37,10 +37,18 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
-    // Edit Invoice button - return to checkout with cart intact
+    // Edit Invoice button - enter edit mode and return to checkout
     if (this.elements.editButton) {
       this.elements.editButton.addEventListener('click', () => {
+        if (this.transaction) {
+          Checkout.editingInvoiceId = this.transaction.id;
+          Checkout.editingInvoiceDirty = false;
+          // Items are already in checkout cart, just navigate back
+          Checkout.transactionSaved = false;
+          Checkout.lastTransaction = null;
+        }
         App.showScreen('checkout');
+        Checkout.render();
       });
     }
 

@@ -43,6 +43,10 @@ const Checkout = {
   // Draft transaction ID (for open invoice persistence on dashboard)
   draftTransactionId: null,
 
+  // Editing state: tracks when editing an existing invoice (lazy voiding)
+  editingInvoiceId: null,
+  editingInvoiceDirty: false,
+
   // Item sheet state
   isSheetOpen: false,
 
@@ -407,6 +411,7 @@ const Checkout = {
   addItem() {
     // Close item sheet before adding
     this.closeItemSheet();
+    this.checkEditDirty();
 
     const price = parseFloat(this.priceInput);
 
@@ -468,6 +473,7 @@ const Checkout = {
    * Remove an item from the cart
    */
   removeItem(itemId) {
+    this.checkEditDirty();
     this.items = this.items.filter(item => item.id !== itemId);
     this.saveCart();
     this.saveDraftTransaction();
@@ -505,7 +511,7 @@ const Checkout = {
     if (!this.elements.runningTotalInfo) return;
     const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
     this.currentOrderNumber = num;
-    const name = this.orderCustomName || `Invoice #${num}`;
+    const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     if (count === 0) {
       this.elements.runningTotalInfo.textContent = `${name} · tap to name`;
@@ -584,10 +590,46 @@ const Checkout = {
   },
 
   /**
-   * Update done button state
+   * Update done button state and text
    */
   updateDoneButton() {
     this.elements.doneButton.disabled = this.items.length === 0;
+    this.updateDoneButtonText();
+  },
+
+  /**
+   * Update done button text based on editing state
+   */
+  updateDoneButtonText() {
+    if (this.transactionSaved && this.lastTransaction) {
+      this.elements.doneButton.textContent = 'See Invoice';
+    } else if (this.editingInvoiceId && !this.editingInvoiceDirty) {
+      this.elements.doneButton.textContent = 'See Invoice';
+    } else if (this.editingInvoiceDirty) {
+      this.elements.doneButton.textContent = 'Create New Invoice';
+    } else {
+      this.elements.doneButton.textContent = 'Create Invoice';
+    }
+  },
+
+  /**
+   * Check if we're editing an invoice and this is the first mutation.
+   * If so, void the original invoice and transition to "new order" mode.
+   */
+  checkEditDirty() {
+    if (this.editingInvoiceId && !this.editingInvoiceDirty) {
+      this.editingInvoiceDirty = true;
+      // Void the original invoice now
+      Storage.updateTransaction(this.editingInvoiceId, {
+        status: 'void',
+        voidedAt: Utils.getTimestamp(),
+        voidReason: 'Edited'
+      });
+      this.editingInvoiceId = null;
+      this.transactionSaved = false;
+      this.lastTransaction = null;
+      this.updateDoneButtonText();
+    }
   },
 
   /**
@@ -614,7 +656,7 @@ const Checkout = {
    */
   renderItemSheet() {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
-    const titleText = this.orderCustomName || `Invoice #${num}`;
+    const titleText = this.orderCustomName || `Order #${num}`;
     this.elements.itemSheetTitle.textContent = titleText;
     this.elements.itemSheetSubtitle.textContent = `All items (${this.items.length}) · tap title to rename`;
 
@@ -679,7 +721,7 @@ const Checkout = {
     input.type = 'text';
     input.className = 'sheet__title-input';
     input.value = this.orderCustomName;
-    input.placeholder = `Invoice #${num}`;
+    input.placeholder = `Order #${num}`;
     input.maxLength = 30;
 
     titleEl.textContent = '';
@@ -740,6 +782,8 @@ const Checkout = {
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
+    this.editingInvoiceId = null;
+    this.editingInvoiceDirty = false;
     this.updatePriceDisplay();
     this.render();
   },
@@ -769,6 +813,8 @@ const Checkout = {
     this.transactionSaved = false;
     this.lastTransaction = null;
     this.reuseCustomerNumber = null;
+    this.editingInvoiceId = null;
+    this.editingInvoiceDirty = false;
 
     // Clear UI inputs
     this.updatePriceDisplay();
@@ -794,6 +840,15 @@ const Checkout = {
     if (this.transactionSaved && this.lastTransaction) {
       App.showScreen('qr', this.lastTransaction);
       return;
+    }
+
+    // If editing an invoice but no changes made, just show the existing invoice
+    if (this.editingInvoiceId && !this.editingInvoiceDirty) {
+      const existingTxn = Storage.getTransaction(this.editingInvoiceId);
+      if (existingTxn) {
+        App.showScreen('qr', existingTxn);
+        return;
+      }
     }
 
     // Reuse customer number if reopening, otherwise get next
@@ -850,6 +905,9 @@ const Checkout = {
     // Store transaction for re-navigation and mark as saved
     this.lastTransaction = transaction;
     this.transactionSaved = true;
+    this.editingInvoiceId = null;
+    this.editingInvoiceDirty = false;
+    this.updateDoneButtonText();
 
     // DON'T clear cart here - let BACK return to items for review
     // Cart is cleared only by NEW CUSTOMER
@@ -905,6 +963,7 @@ const Checkout = {
    * Confirm description entry and add item to cart
    */
   confirmDescEntry() {
+    this.checkEditDirty();
     const description = this.elements.descEntryInput.value.trim();
     this.hideDescEntry();
 
@@ -970,6 +1029,7 @@ const Checkout = {
   saveDescEdit() {
     const item = this.items.find(i => i.id === this._editDescItemId);
     if (item) {
+      this.checkEditDirty();
       item.description = this.elements.descEditInput.value.trim();
       this.saveCart();
       this.saveDraftTransaction();
@@ -1118,6 +1178,7 @@ const Checkout = {
       return;
     }
 
+    this.checkEditDirty();
     item.haggleType = type;
     item.haggleValue = rawValue;
     item.finalPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
@@ -1137,6 +1198,7 @@ const Checkout = {
     const item = this.items.find(i => i.id === this.haggleItemId);
     if (!item) return;
 
+    this.checkEditDirty();
     item.haggleType = null;
     item.haggleValue = null;
     item.finalPrice = item.dayDiscountedPrice;
@@ -1207,6 +1269,7 @@ const Checkout = {
       return;
     }
 
+    this.checkEditDirty();
     this.ticketDiscount = { type, value: rawValue };
     this.saveCart();
     this.saveDraftTransaction();
@@ -1220,6 +1283,7 @@ const Checkout = {
    * Remove the invoice discount
    */
   removeTicketDiscount() {
+    this.checkEditDirty();
     this.ticketDiscount = null;
     this.saveCart();
     this.saveDraftTransaction();
