@@ -838,8 +838,11 @@ body {
 }
 
 /* === Edit Sale Sheet === */
-.edit-sale {
+#edit-sale-modal .sheet {
   text-align: left;
+}
+
+.edit-sale {
   margin-bottom: var(--space-lg);
 }
 
