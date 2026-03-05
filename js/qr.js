@@ -59,11 +59,23 @@ const QR = {
       });
     }
 
-    // Mark Paid button - navigate to payment screen
+    // Mark Paid button - mark transaction as paid and go to dashboard
     if (this.elements.markPaidButton) {
       this.elements.markPaidButton.addEventListener('click', () => {
-        const txn = Checkout.lastTransaction;
-        if (txn) App.showScreen('payment', txn);
+        const txn = this.transaction;
+        if (!txn) return;
+
+        // Update transaction status to paid
+        Storage.updateTransaction(txn.id, {
+          status: 'paid',
+          paidAt: Utils.getTimestamp()
+        });
+
+        // Clear checkout state
+        Checkout.clearAll();
+
+        // Navigate to dashboard so they see the paid tag
+        App.showScreen('dashboard');
       });
     }
 
