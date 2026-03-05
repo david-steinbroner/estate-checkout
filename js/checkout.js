@@ -503,11 +503,11 @@ const Checkout = {
     const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     if (count === 0) {
-      this.elements.itemListHint.textContent = `${name} — tap to add items`;
+      this.elements.itemListHint.textContent = `${name} · tap to name`;
     } else if (count === 1) {
-      this.elements.itemListHint.textContent = `${name} — 1 item — tap to edit order name and items`;
+      this.elements.itemListHint.textContent = `${name} · 1 item`;
     } else {
-      this.elements.itemListHint.textContent = `${name} — ${count} items — tap to edit order name and items`;
+      this.elements.itemListHint.textContent = `${name} · ${count} items`;
     }
   },
 
