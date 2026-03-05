@@ -23,15 +23,21 @@ const Speech = {
   buttonReleaseTime: null,
   _descMode: false,
   _descCallback: null,
+  _recognitionStartedAt: null, // timestamp when recognition.start() was called
+  _hasReceivedOnstart: false, // true after onstart fires (mic hardware ready)
+  _noSpeechRetried: false, // prevent infinite retry loop for early no-speech
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
   // Hard safety timeout for processing overlay (ms)
   PROCESSING_HARD_TIMEOUT: 8000,
   // Quick-tap threshold — under this duration, show hold guidance (ms)
-  QUICK_TAP_THRESHOLD: 1500,
-  // localStorage key for mic tooltip one-time display
+  QUICK_TAP_THRESHOLD: 800,
+  // Grace period for iOS early no-speech errors (ms)
+  IOS_NO_SPEECH_GRACE: 2000,
+  // localStorage keys
   MIC_TOOLTIP_KEY: 'estate_mic_tooltip_seen',
+  MIC_PERMISSION_KEY: 'estate_mic_permission',
 
   // Tips for struggling users (indexed by failure count - 1)
   failureTips: [
@@ -93,6 +99,7 @@ const Speech = {
     this.recognition.lang = 'en-US';
 
     this.recognition.onstart = () => {
+      this._hasReceivedOnstart = true;
       if (this.waitingForResult) {
         this.startResultTimeout();
       }
@@ -106,10 +113,36 @@ const Speech = {
     };
 
     this.recognition.onerror = (event) => {
+      // iOS fires no-speech almost instantly before mic hardware initializes.
+      // Silently retry once if within the grace period.
+      if (event.error === 'no-speech' && this._recognitionStartedAt &&
+          (Date.now() - this._recognitionStartedAt) < this.IOS_NO_SPEECH_GRACE &&
+          !this._noSpeechRetried) {
+        this._noSpeechRetried = true;
+        this.isListening = false;
+        // Destroy and recreate to reset iOS audio state
+        this.recognition = null;
+        setTimeout(() => {
+          if (this._descMode) {
+            this.doStartDescriptionListening();
+          } else {
+            this.ensureRecognition();
+            if (!this.recognition) return;
+            try {
+              this.recognition.start();
+              this.isListening = true;
+              this._recognitionStartedAt = Date.now();
+            } catch (e) {}
+          }
+        }, 300);
+        return;
+      }
+
       this.clearResultTimeout();
       this.clearProcessingHardTimeout();
       this.isListening = false;
       this.waitingForResult = false;
+      this._noSpeechRetried = false;
       const wasDescMode = this._descMode;
       this._descMode = false;
       this._descCallback = null;
@@ -163,11 +196,20 @@ const Speech = {
         // Listen for permission changes (user might change in settings)
         result.addEventListener('change', () => {
           this.micPermissionState = result.state;
+          if (result.state === 'granted') {
+            localStorage.setItem(this.MIC_PERMISSION_KEY, 'granted');
+          }
         });
+        return;
       } catch (e) {
-        // Permission API not available, assume 'prompt'
-        this.micPermissionState = 'prompt';
+        // Permission API not available (iOS) — fall through to localStorage
       }
+    }
+
+    // Fallback for iOS: check persisted permission state
+    const persisted = localStorage.getItem(this.MIC_PERMISSION_KEY);
+    if (persisted === 'granted') {
+      this.micPermissionState = 'granted';
     }
   },
 
@@ -318,6 +360,7 @@ const Speech = {
    * Start listening (checks permission state first)
    */
   async startListening() {
+    this.ensureRecognition();
     if (!this.recognition || this.isListening) return;
 
     // Check permission state
@@ -355,6 +398,9 @@ const Speech = {
     this.buttonReleaseTime = null;
 
     try {
+      this._recognitionStartedAt = Date.now();
+      this._hasReceivedOnstart = false;
+      this._noSpeechRetried = false;
       this.recognition.start();
       this.isListening = true;
       this.waitingForResult = false;
@@ -369,6 +415,7 @@ const Speech = {
    * @param {function} callback - receives the transcript string
    */
   startDescriptionCapture(callback) {
+    this.ensureRecognition();
     if (!this.recognition || this.isListening) return;
 
     this._descMode = true;
@@ -400,6 +447,9 @@ const Speech = {
     this.buttonReleaseTime = Date.now();
 
     try {
+      this._recognitionStartedAt = Date.now();
+      this._hasReceivedOnstart = false;
+      this._noSpeechRetried = false;
       this.recognition.start();
       this.isListening = true;
       this.waitingForResult = true;
@@ -497,6 +547,9 @@ const Speech = {
     this.buttonReleaseTime = null;
     this._descMode = false;
     this._descCallback = null;
+    this._recognitionStartedAt = null;
+    this._hasReceivedOnstart = false;
+    this._noSpeechRetried = false;
 
     // Hide all overlays and modals
     this.hideProcessing();
@@ -1042,8 +1095,9 @@ const Speech = {
       // Permission granted - stop the stream immediately (we just needed the permission)
       stream.getTracks().forEach(track => track.stop());
 
-      // Update permission state
+      // Update and persist permission state
       this.micPermissionState = 'granted';
+      localStorage.setItem(this.MIC_PERMISSION_KEY, 'granted');
 
       // If in description mode, auto-start listening now that permission is granted
       if (this._descMode) {
@@ -1073,6 +1127,8 @@ const Speech = {
    */
   isQuickTap() {
     if (!this.buttonPressTime || !this.buttonReleaseTime) return false;
+    // Don't treat as quick-tap if mic hardware never initialized (iOS slow start)
+    if (!this._hasReceivedOnstart) return false;
     return (this.buttonReleaseTime - this.buttonPressTime) < this.QUICK_TAP_THRESHOLD;
   },
 
