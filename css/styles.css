@@ -757,6 +757,11 @@ body {
   text-align: left;
 }
 
+/* === Item Sheet === */
+#item-sheet-backdrop .sheet {
+  text-align: left;
+}
+
 .edit-sale {
   margin-bottom: var(--space-lg);
 }
