@@ -159,7 +159,7 @@ body {
   height: 100dvh;
 }
 
-/* === Order In Progress Banner === */
+/* === Invoice In Progress Banner === */
 .cart-banner {
   height: var(--height-touch-min);
   background: var(--color-banner-bg);
@@ -726,26 +726,6 @@ body {
   text-decoration: line-through;
 }
 
-/* QR screen secondary button */
-.qr-action--secondary {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.qr-action--secondary:active {
-  background: var(--color-bg-hover);
-}
-
-/* QR screen mark paid button */
-.qr-action--paid {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-}
-
-.qr-action--paid:active {
-  background: var(--color-success-dark);
-}
 
 /* === Edit Sale Sheet === */
 #edit-sale-modal .sheet {
@@ -913,7 +893,7 @@ body {
   background: var(--color-primary-light);
 }
 
-/* === Haggle & Ticket Discount Sheets === */
+/* === Haggle & Invoice Discount Sheets === */
 .haggle-options {
   display: flex;
   gap: var(--space-md);
@@ -1709,6 +1689,25 @@ body {
 }
 
 .qr-action--new:active {
+  background: var(--color-success-dark);
+}
+
+.qr-action--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.qr-action--secondary:active {
+  background: var(--color-bg-hover);
+}
+
+.qr-action--paid {
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+}
+
+.qr-action--paid:active {
   background: var(--color-success-dark);
 }
 

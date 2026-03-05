@@ -117,7 +117,7 @@ const Dashboard = {
     const filtered = this.applyFilter(transactions);
     this.renderTransactionList(filtered, transactions.length);
 
-    // Hide New Order button when sale is paused (checkout is locked)
+    // Hide New Invoice button when sale is paused (checkout is locked)
     const sale = Storage.getSale();
     const isPaused = sale && (sale.status || 'active') === 'paused';
     if (this.elements.newCustomerButton) {
@@ -225,7 +225,7 @@ const Dashboard = {
         const filterLabels = { pending: 'pending', paid: 'paid', void: 'void' };
         const label = filterLabels[this.activeFilter] || this.activeFilter;
         this.elements.transactionList.innerHTML =
-          `<li class="dashboard-filter-empty">No ${label} tickets</li>`;
+          `<li class="dashboard-filter-empty">No ${label} invoices</li>`;
       }
       return;
     }
@@ -255,7 +255,7 @@ const Dashboard = {
    * Render a single transaction row
    */
   renderTransactionRow(txn) {
-    const orderLabel = Utils.escapeHtml(txn.orderName || ('Order #' + (txn.customerNumber || '?')));
+    const orderLabel = Utils.escapeHtml(txn.orderName || ('Invoice #' + (txn.customerNumber || '?')));
     const time = Utils.formatTime(txn.timestamp);
     const itemCount = txn.items ? txn.items.length : 0;
     const total = Utils.formatCurrency(txn.total);
@@ -339,7 +339,7 @@ const Dashboard = {
       `;
     }).join('');
 
-    // Action buttons: all 3 shown for non-void, Edit Order disabled for pending/paid
+    // Action buttons: all 3 shown for non-void, Edit Invoice disabled for pending/paid
     const status = txn.status || 'unpaid';
     const isVoid = status === 'void';
     const editDisabled = status === 'paid' ? ' disabled' : '';
@@ -350,21 +350,21 @@ const Dashboard = {
           ${status === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid'}
         </button>
         <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}"${editDisabled}>
-          Edit Order
+          Edit Invoice
         </button>
         <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-          Generate Ticket
+          Generate Invoice
         </button>
       </div>
     `;
 
-    // Ticket discount line
+    // Invoice discount line
     let ticketDiscountHtml = '';
     if (txn.ticketDiscount && txn.ticketDiscount.value) {
       const tdLabel = txn.ticketDiscount.type === 'percent'
         ? `${txn.ticketDiscount.value}% off`
         : `${Utils.formatCurrency(txn.ticketDiscount.value)} off`;
-      ticketDiscountHtml = `<div class="dashboard-detail__discount">Ticket discount: ${tdLabel}</div>`;
+      ticketDiscountHtml = `<div class="dashboard-detail__discount">Invoice discount: ${tdLabel}</div>`;
     }
 
     return `
@@ -433,11 +433,11 @@ const Dashboard = {
     if (!txn || txn.status === 'void') return;
 
     // Mark original as void
-    // voidReason values: 'Edited Order', 'Cancelled', 'Refunded', 'Duplicate' (future)
+    // voidReason values: 'Edited Invoice', 'Cancelled', 'Refunded', 'Duplicate' (future)
     Storage.updateTransaction(txnId, {
       status: 'void',
       voidedAt: Utils.getTimestamp(),
-      voidReason: 'Edited Order'
+      voidReason: 'Edited Invoice'
     });
 
     // Load items into checkout
@@ -452,7 +452,7 @@ const Dashboard = {
     Checkout.reopenedFromCustomer = txn.customerNumber;
     Checkout.reuseCustomerNumber = txn.customerNumber;
 
-    // Preserve order name
+    // Preserve invoice name
     Checkout.orderCustomName = txn.orderName || '';
 
     // Navigate to checkout

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
-  <title>Your Ticket — Estate Checkout</title>
+  <title>Your Invoice — Estate Checkout</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -186,7 +186,7 @@
       function renderError(msg) {
         ticketEl.innerHTML = `
           <div class="ticket__error">
-            <div class="ticket__error-title">Ticket Not Found</div>
+            <div class="ticket__error-title">Invoice Not Found</div>
             <div class="ticket__error-msg">${escapeHtml(msg || 'This link may be invalid or expired.')}</div>
           </div>
         `;
@@ -197,7 +197,7 @@
         let encoded = params.get('d');
 
         if (!encoded) {
-          renderError('No ticket data in this link.');
+          renderError('No invoice data in this link.');
           return;
         }
 
@@ -208,12 +208,12 @@
         const data = JSON.parse(jsonStr);
 
         if (!data.items || typeof data.total !== 'number') {
-          renderError('This ticket data is incomplete.');
+          renderError('This invoice data is incomplete.');
           return;
         }
 
         // Build header
-        const orderName = data.orderName || ('Order #' + (data.customerNumber || '?'));
+        const orderName = data.orderName || ('Invoice #' + (data.customerNumber || '?'));
         const saleName = data.sale || 'Estate Sale';
         const dayLabel = data.day ? `Day ${data.day}` : '';
         const discountLabel = data.discount > 0 ? `${data.discount}% off` : '';
@@ -248,7 +248,7 @@
 
         const timeStr = formatTime(data.ts);
 
-        // Ticket discount line
+        // Invoice discount line
         let ticketDiscountHtml = '';
         if (data.ticketDiscount && data.ticketDiscount.value) {
           const subtotal = data.subtotal || data.total;
@@ -261,7 +261,7 @@
               <span style="text-decoration:line-through">${formatCurrency(subtotal)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:2px 0 8px;font-size:13px;color:#666">
-              <span>Ticket discount</span>
+              <span>Invoice discount</span>
               <span>${tdLabel}</span>
             </div>
           `;
@@ -296,8 +296,8 @@
           });
         }
       } catch (e) {
-        console.error('Ticket parse error:', e);
-        renderError('Could not read ticket data.');
+        console.error('Invoice parse error:', e);
+        renderError('Could not read invoice data.');
       }
     })();
   </script>

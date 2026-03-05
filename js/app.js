@@ -643,7 +643,7 @@ const App = {
   },
 
   /**
-   * Show or hide the order-in-progress banner based on cart state and current screen
+   * Show or hide the invoice-in-progress banner based on cart state and current screen
    */
   updateCartBanner() {
     const banner = document.getElementById('cart-banner');
@@ -658,7 +658,7 @@ const App = {
       const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
       const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
       const itemWord = count === 1 ? 'item' : 'items';
-      bannerText.innerHTML = `Order in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)} <span class="cart-banner__hint">tap to edit</span>`;
+      bannerText.innerHTML = `Invoice in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)} <span class="cart-banner__hint">tap to edit</span>`;
       banner.hidden = false;
     } else {
       banner.hidden = true;

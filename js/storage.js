@@ -35,7 +35,7 @@ const Storage = {
   },
 
   /**
-   * Save the current cart (items + ticket discount)
+   * Save the current cart (items + invoice discount)
    */
   saveCart(items, ticketDiscount) {
     localStorage.setItem(this.KEYS.CART, JSON.stringify({
@@ -159,7 +159,7 @@ const Storage = {
 
   /**
    * Peek at the next customer number without incrementing
-   * Used for placeholder text (e.g., "Order #3 (tap to name)")
+   * Used for placeholder text (e.g., "Invoice #3 (tap to name)")
    */
   peekNextCustomerNumber() {
     const sale = this.getSale();

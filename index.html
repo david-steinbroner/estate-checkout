@@ -13,9 +13,9 @@
 </head>
 <body>
 
-  <!-- Order in progress banner (shown on non-checkout screens when cart has items) -->
+  <!-- Invoice in progress banner (shown on non-checkout screens when cart has items) -->
   <div class="cart-banner" id="cart-banner" hidden>
-    <span id="cart-banner-text">Order in progress</span>
+    <span id="cart-banner-text">Invoice in progress</span>
   </div>
 
   <!-- Shared Header (visible during active sale, hidden during setup) -->
@@ -83,7 +83,7 @@
     <!-- Action Bar (compact, bottom) -->
     <div class="action-bar">
       <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
-      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Ticket</button>
+      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Invoice</button>
     </div>
   </div>
 
@@ -93,7 +93,7 @@
     <div class="qr-code-container">
       <div id="qr-code" class="qr-code"></div>
     </div>
-    <p class="qr-helper-text" id="qr-helper-text">Customer can scan this with their phone camera</p>
+    <p class="qr-helper-text" id="qr-helper-text">Scan to handoff Invoice</p>
 
     <!-- Transaction Summary -->
     <div class="qr-summary">
@@ -107,10 +107,10 @@
     <!-- Action Buttons -->
     <div class="qr-actions">
       <div class="qr-actions__grid">
-        <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Order</button>
+        <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Invoice</button>
         <button type="button" class="qr-action qr-action--secondary" id="qr-discount">Adjust Price</button>
         <button type="button" class="qr-action qr-action--paid" id="qr-mark-paid">Mark Paid</button>
-        <button type="button" class="qr-action qr-action--new" id="qr-new">New Ticket</button>
+        <button type="button" class="qr-action qr-action--new" id="qr-new">New Invoice</button>
       </div>
     </div>
   </div>
@@ -205,14 +205,14 @@
 
     <!-- Actions -->
     <div class="scan-actions">
-      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Order</button>
+      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Invoice</button>
     </div>
   </div>
 
   <!-- Payment Receive Screen -->
   <div id="screen-payment" class="screen payment-screen">
-    <!-- Order Info Bar -->
-    <div class="payment-info" id="payment-title">Order #1 — 10:42 AM</div>
+    <!-- Invoice Info Bar -->
+    <div class="payment-info" id="payment-title">Invoice #1 — 10:42 AM</div>
 
     <!-- Item List -->
     <div class="payment-items-container">
@@ -233,7 +233,7 @@
         Mark Paid
       </button>
       <button class="payment-action payment-action--new" id="payment-new-customer">
-        New Order
+        New Invoice
       </button>
     </div>
 
@@ -250,7 +250,7 @@
     <div class="dashboard-stats">
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-customers">0</span>
-        <span class="dashboard-stat__label">Orders</span>
+        <span class="dashboard-stat__label">Invoices</span>
       </div>
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-revenue">$0.00</span>
@@ -258,7 +258,7 @@
       </div>
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-avg">$0.00</span>
-        <span class="dashboard-stat__label">Avg Ticket</span>
+        <span class="dashboard-stat__label">Avg Invoice</span>
       </div>
     </div>
 
@@ -283,7 +283,7 @@
 
     <!-- Actions -->
     <div class="dashboard-actions">
-      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Order</button>
+      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Invoice</button>
     </div>
   </div>
 
@@ -297,7 +297,7 @@
     <div class="paused-stats">
       <div class="paused-stat">
         <span class="paused-stat__value" id="paused-orders">0</span>
-        <span class="paused-stat__label">Orders Today</span>
+        <span class="paused-stat__label">Invoices Today</span>
       </div>
       <div class="paused-stat">
         <span class="paused-stat__value" id="paused-revenue">$0.00</span>
@@ -305,7 +305,7 @@
       </div>
       <div class="paused-stat">
         <span class="paused-stat__value" id="paused-avg">$0.00</span>
-        <span class="paused-stat__label">Avg Ticket</span>
+        <span class="paused-stat__label">Avg Invoice</span>
       </div>
     </div>
 
@@ -384,7 +384,7 @@
     <div class="sheet">
       <div class="sheet__buttons">
         <button class="sheet__btn sheet__btn--secondary" id="menu-dashboard">Dashboard</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-scan">Scan Ticket</button>
+        <button class="sheet__btn sheet__btn--secondary" id="menu-scan">Scan Invoice</button>
         <button class="sheet__btn sheet__btn--secondary" id="menu-share">Share Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="menu-edit-sale">Edit Sale</button>
         <button class="sheet__btn sheet__btn--primary" id="menu-end-day">End Day</button>
@@ -483,10 +483,10 @@
     </div>
   </div>
 
-  <!-- Ticket Discount Sheet -->
+  <!-- Invoice Discount Sheet -->
   <div class="overlay" id="ticket-discount-modal">
     <div class="sheet">
-      <p class="sheet__title">Ticket Discount</p>
+      <p class="sheet__title">Invoice Discount</p>
       <div class="haggle-options">
         <label class="haggle-option">
           <input type="radio" name="ticket-discount-type" value="percent" checked>

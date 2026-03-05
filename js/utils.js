@@ -113,10 +113,10 @@ const Utils = {
   },
 
   /**
-   * Apply a ticket-level discount to a subtotal
+   * Apply an invoice-level discount to a subtotal
    * @param {number} subtotal - Sum of item final prices
    * @param {object|null} ticketDiscount - { type: 'percent'|'dollar', value: number }
-   * @returns {number} Total after ticket discount
+   * @returns {number} Total after invoice discount
    */
   applyTicketDiscount(subtotal, ticketDiscount) {
     if (!ticketDiscount || !ticketDiscount.type || !ticketDiscount.value) return subtotal;

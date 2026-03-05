@@ -16,7 +16,7 @@ const Checkout = {
   // Current discount percentage
   currentDiscount: 0,
 
-  // Ticket-level discount ({ type: 'percent'|'dollar', value: number } or null)
+  // Invoice-level discount ({ type: 'percent'|'dollar', value: number } or null)
   ticketDiscount: null,
 
   // Track if we're in the middle of adding from prompt
@@ -28,10 +28,10 @@ const Checkout = {
   // Reuse customer number when reopening a transaction (prevents void loop incrementing)
   reuseCustomerNumber: null,
 
-  // Current order number (for hint strip display)
+  // Current invoice number (for total bar display)
   currentOrderNumber: null,
 
-  // Custom order name (set via sheet title editing)
+  // Custom invoice name (set via sheet title editing)
   orderCustomName: '',
 
   // Track if current cart has been saved as a transaction (prevents duplicates)
@@ -108,7 +108,7 @@ const Checkout = {
       haggleApply: document.getElementById('haggle-apply'),
       haggleRemove: document.getElementById('haggle-remove'),
       haggleCancel: document.getElementById('haggle-cancel'),
-      // Ticket discount sheet
+      // Invoice discount sheet
       ticketDiscountModal: document.getElementById('ticket-discount-modal'),
       ticketDiscountInput: document.getElementById('ticket-discount-input'),
       ticketDiscountPreview: document.getElementById('ticket-discount-preview'),
@@ -292,7 +292,7 @@ const Checkout = {
       });
     }
 
-    // Ticket discount sheet events
+    // Invoice discount sheet events
     if (this.elements.ticketDiscountApply) {
       this.elements.ticketDiscountApply.addEventListener('click', () => this.applyTicketDiscount());
     }
@@ -481,13 +481,13 @@ const Checkout = {
   },
 
   /**
-   * Update the hint strip text with order number and item count
+   * Update the total bar text with invoice number and item count
    */
   updateOrderNamePlaceholder() {
     if (!this.elements.runningTotalInfo) return;
     const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
     this.currentOrderNumber = num;
-    const name = this.orderCustomName || `Order #${num}`;
+    const name = this.orderCustomName || `Invoice #${num}`;
     const count = this.items.length;
     if (count === 0) {
       this.elements.runningTotalInfo.textContent = `${name} · tap to name`;
@@ -596,7 +596,7 @@ const Checkout = {
    */
   renderItemSheet() {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
-    const titleText = this.orderCustomName || `Order #${num}`;
+    const titleText = this.orderCustomName || `Invoice #${num}`;
     this.elements.itemSheetTitle.textContent = titleText;
     this.elements.itemSheetSubtitle.textContent = `All items (${this.items.length}) · tap title to rename`;
 
@@ -650,7 +650,7 @@ const Checkout = {
   },
 
   /**
-   * Replace sheet title with an inline input for renaming the order
+   * Replace sheet title with an inline input for renaming the invoice
    */
   startEditingOrderName() {
     const titleEl = this.elements.itemSheetTitle;
@@ -661,7 +661,7 @@ const Checkout = {
     input.type = 'text';
     input.className = 'sheet__title-input';
     input.value = this.orderCustomName;
-    input.placeholder = `Order #${num}`;
+    input.placeholder = `Invoice #${num}`;
     input.maxLength = 30;
 
     titleEl.textContent = '';
@@ -681,7 +681,7 @@ const Checkout = {
   },
 
   /**
-   * Check item overflow (hint strip is always visible; text managed by updateOrderNamePlaceholder)
+   * Check item overflow (total bar text managed by updateOrderNamePlaceholder)
    */
   checkItemOverflow() {
     // Hint strip is always visible; text is set by updateOrderNamePlaceholder()
@@ -938,7 +938,7 @@ const Checkout = {
   },
 
   /**
-   * Save cart to storage (items + ticketDiscount)
+   * Save cart to storage (items + invoiceDiscount)
    */
   saveCart() {
     Storage.saveCart(this.items, this.ticketDiscount);
@@ -1050,15 +1050,15 @@ const Checkout = {
     if (this.items.length > 0) this.openItemSheet();
   },
 
-  // ── Ticket Discount Sheet ──
+  // ── Invoice Discount Sheet ──
 
   /**
-   * Open the ticket discount sheet
+   * Open the invoice discount sheet
    */
   openTicketDiscountSheet() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
 
-    // Pre-fill if ticket discount exists
+    // Pre-fill if invoice discount exists
     if (this.ticketDiscount && this.ticketDiscount.value) {
       document.querySelector(`input[name="ticket-discount-type"][value="${this.ticketDiscount.type}"]`).checked = true;
       this.elements.ticketDiscountInput.value = this.ticketDiscount.value;
@@ -1075,7 +1075,7 @@ const Checkout = {
   },
 
   /**
-   * Update ticket discount preview
+   * Update invoice discount preview
    */
   updateTicketDiscountPreview() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
@@ -1087,7 +1087,7 @@ const Checkout = {
   },
 
   /**
-   * Apply the ticket discount
+   * Apply the invoice discount
    */
   applyTicketDiscount() {
     const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
@@ -1103,11 +1103,11 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();
-    this.showFlash('success', 'Ticket discount applied!');
+    this.showFlash('success', 'Invoice discount applied!');
   },
 
   /**
-   * Remove the ticket discount
+   * Remove the invoice discount
    */
   removeTicketDiscount() {
     this.ticketDiscount = null;
@@ -1115,11 +1115,11 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();
-    this.showFlash('success', 'Ticket discount removed');
+    this.showFlash('success', 'Invoice discount removed');
   },
 
   /**
-   * Close the ticket discount sheet
+   * Close the invoice discount sheet
    */
   closeTicketDiscountSheet() {
     this.elements.ticketDiscountModal.classList.remove('visible');

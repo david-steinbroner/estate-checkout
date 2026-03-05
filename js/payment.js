@@ -62,15 +62,15 @@ const Payment = {
 
     this.cartData = data;
 
-    // Format order header: "Sarah — 10:42 AM" or "Order #3 — 10:42 AM"
-    const orderLabel = data.orderName || ('Order #' + (data.customerNumber || '?'));
+    // Format invoice header: "Sarah — 10:42 AM" or "Invoice #3 — 10:42 AM"
+    const orderLabel = data.orderName || ('Invoice #' + (data.customerNumber || '?'));
     const time = Utils.formatTime(data.ts);
     this.elements.title.textContent = `${orderLabel} — ${time}`;
 
     // Render items
     this.renderItems(data.items);
 
-    // Render total with ticket discount if present
+    // Render total with invoice discount if present
     if (data.ticketDiscount && data.ticketDiscount.value) {
       const subtotal = data.subtotal || data.total;
       const discountLabel = data.ticketDiscount.type === 'percent'
@@ -78,7 +78,7 @@ const Payment = {
         : `${Utils.formatCurrency(data.ticketDiscount.value)} off`;
       this.elements.total.innerHTML =
         `<span style="text-decoration:line-through;color:#999;font-size:0.85em;margin-right:4px">${Utils.formatCurrency(subtotal)}</span>${Utils.formatCurrency(data.total)}` +
-        `<br><span style="font-size:0.75em;color:#666">Ticket discount: ${discountLabel}</span>`;
+        `<br><span style="font-size:0.75em;color:#666">Invoice discount: ${discountLabel}</span>`;
     } else {
       this.elements.total.textContent = Utils.formatCurrency(data.total);
     }

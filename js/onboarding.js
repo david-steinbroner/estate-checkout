@@ -23,7 +23,7 @@ const Onboarding = {
       {
         icon: '✅',
         title: 'Mark It Paid',
-        body: 'Open the Dashboard to see all your tickets. Tap a ticket and hit Mark as Paid when you collect payment. That\u2019s it!'
+        body: 'Open the Dashboard to see all your invoices. Tap an invoice and hit Mark as Paid when you collect payment. That\u2019s it!'
       }
     ]
   },

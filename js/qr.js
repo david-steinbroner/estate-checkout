@@ -37,14 +37,14 @@ const QR = {
    * Bind event listeners
    */
   bindEvents() {
-    // Edit Order button - return to checkout with cart intact
+    // Edit Invoice button - return to checkout with cart intact
     if (this.elements.editButton) {
       this.elements.editButton.addEventListener('click', () => {
         App.showScreen('checkout');
       });
     }
 
-    // Discount button - apply/edit ticket discount in-place
+    // Discount button - apply/edit invoice discount in-place
     if (this.elements.discountButton) {
       this.elements.discountButton.addEventListener('click', () => {
         this.applyTicketDiscountFromQR();
@@ -90,7 +90,7 @@ const QR = {
     };
 
     const jsonStr = JSON.stringify(data);
-    // Encode as URL-safe base64 pointing to standalone ticket page
+    // Encode as URL-safe base64 pointing to standalone invoice page
     const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
     const urlSafe = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return window.location.origin + '/ticket.html?d=' + urlSafe;
@@ -113,17 +113,16 @@ const QR = {
     this.transaction = transaction;
     const sale = Storage.getSale();
 
-    // Update QR helper text with order label
+    // Update QR helper text
     const helperEl = document.getElementById('qr-helper-text');
     if (helperEl) {
-      const orderLabel = transaction.orderName || ('Order #' + (transaction.customerNumber || '?'));
-      helperEl.textContent = `${orderLabel} — customer can scan with their phone camera`;
+      helperEl.textContent = 'Scan to handoff Invoice';
     }
 
     // Render item summary and total first (these should always work)
     this.renderItemSummary(transaction);
 
-    // Show ticket discount in total if present
+    // Show invoice discount in total if present
     if (transaction.ticketDiscount && transaction.ticketDiscount.value) {
       const subtotal = transaction.subtotal || transaction.total;
       const discountLabel = transaction.ticketDiscount.type === 'percent'
@@ -169,8 +168,8 @@ const QR = {
   },
 
   /**
-   * Apply or edit ticket discount from QR screen without reopening the transaction
-   * Opens the ticket discount sheet, then updates the transaction in-place
+   * Apply or edit invoice discount from QR screen without reopening the transaction
+   * Opens the invoice discount sheet, then updates the transaction in-place
    */
   applyTicketDiscountFromQR() {
     const txn = this.transaction;
@@ -219,14 +218,14 @@ const QR = {
 
       Checkout.ticketDiscount = { type, value: rawValue };
       Checkout.closeTicketDiscountSheet();
-      Checkout.showFlash('success', 'Ticket discount applied!');
+      Checkout.showFlash('success', 'Invoice discount applied!');
       afterUpdate();
     };
 
     Checkout.removeTicketDiscount = function() {
       Checkout.ticketDiscount = null;
       Checkout.closeTicketDiscountSheet();
-      Checkout.showFlash('success', 'Ticket discount removed');
+      Checkout.showFlash('success', 'Invoice discount removed');
       afterUpdate();
     };
 
