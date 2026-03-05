@@ -16,7 +16,6 @@ const App = {
     this.registerServiceWorker();
     this.cacheHeaderElements();
     this.bindHeaderEvents();
-    this.bindCartBanner();
     this.initModules();
     this.route();
 
@@ -550,6 +549,12 @@ const App = {
    * End the current day (pause sale)
    */
   endDay() {
+    // Delete any open draft before pausing
+    if (Checkout.draftTransactionId) {
+      Storage.deleteTransaction(Checkout.draftTransactionId);
+      Storage.clearDraftTxnId();
+      Checkout.draftTransactionId = null;
+    }
     SaleSetup.pauseSale();
     Checkout.items = [];
     Checkout.priceInput = '';
@@ -633,39 +638,6 @@ const App = {
   },
 
   /**
-   * Bind the cart banner click handler
-   */
-  bindCartBanner() {
-    const banner = document.getElementById('cart-banner');
-    if (banner) {
-      banner.addEventListener('click', () => this.showScreen('checkout'));
-    }
-  },
-
-  /**
-   * Show or hide the invoice-in-progress banner based on cart state and current screen
-   */
-  updateCartBanner() {
-    const banner = document.getElementById('cart-banner');
-    const bannerText = document.getElementById('cart-banner-text');
-    if (!banner || !bannerText) return;
-
-    const hasItems = Checkout.items && Checkout.items.length > 0;
-    const hideBanner = this.currentScreen === 'checkout' || this.currentScreen === 'qr' || this.currentScreen === 'payment';
-
-    if (hasItems && !hideBanner) {
-      const count = Checkout.items.length;
-      const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
-      const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
-      const itemWord = count === 1 ? 'item' : 'items';
-      bannerText.innerHTML = `Invoice in progress · ${count} ${itemWord} · ${Utils.formatCurrency(total)} <span class="cart-banner__hint">tap to edit</span>`;
-      banner.hidden = false;
-    } else {
-      banner.hidden = true;
-    }
-  },
-
-  /**
    * Switch to a different screen
    */
   showScreen(screenName, data) {
@@ -708,8 +680,6 @@ const App = {
         this.renderPausedScreen();
       }
 
-      // Update cart banner visibility
-      this.updateCartBanner();
     }
   },
 

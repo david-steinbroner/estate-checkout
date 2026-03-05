@@ -8,7 +8,8 @@ const Storage = {
     SALE: 'estate_sale',
     CART: 'estate_cart',
     TRANSACTIONS: 'estate_transactions',
-    CUSTOMER_COUNTER: 'estate_customer_counter'
+    CUSTOMER_COUNTER: 'estate_customer_counter',
+    DRAFT_TXN_ID: 'estate_draft_txn_id'
   },
 
   /**
@@ -95,7 +96,7 @@ const Storage = {
     // Migrate old transactions that don't have new fields
     return transactions.map(txn => ({
       ...txn,
-      status: txn.status || 'unpaid',
+      status: txn.status === 'pending' ? 'unpaid' : (txn.status || 'unpaid'),
       paidAt: txn.paidAt || null,
       voidedAt: txn.voidedAt || null,
       reopenedFrom: txn.reopenedFrom || null,
@@ -190,5 +191,35 @@ const Storage = {
    */
   clearCustomerCounter() {
     localStorage.removeItem(this.KEYS.CUSTOMER_COUNTER);
+  },
+
+  /**
+   * Delete a transaction by ID
+   */
+  deleteTransaction(txnId) {
+    const transactions = this.getTransactions();
+    const filtered = transactions.filter(t => t.id !== txnId);
+    localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify(filtered));
+  },
+
+  /**
+   * Save the draft transaction ID
+   */
+  saveDraftTxnId(id) {
+    localStorage.setItem(this.KEYS.DRAFT_TXN_ID, id);
+  },
+
+  /**
+   * Get the draft transaction ID
+   */
+  getDraftTxnId() {
+    return localStorage.getItem(this.KEYS.DRAFT_TXN_ID);
+  },
+
+  /**
+   * Clear the draft transaction ID
+   */
+  clearDraftTxnId() {
+    localStorage.removeItem(this.KEYS.DRAFT_TXN_ID);
   }
 };

@@ -40,6 +40,9 @@ const Checkout = {
   // Last transaction created (for re-navigation when transactionSaved is true)
   lastTransaction: null,
 
+  // Draft transaction ID (for open invoice persistence on dashboard)
+  draftTransactionId: null,
+
   // Item sheet state
   isSheetOpen: false,
 
@@ -347,6 +350,19 @@ const Checkout = {
         delete item.discount;
       }
     });
+
+    // Reconnect draft transaction ID
+    const draftId = Storage.getDraftTxnId();
+    if (draftId) {
+      const draft = Storage.getTransaction(draftId);
+      if (draft && draft.status === 'open') {
+        this.draftTransactionId = draftId;
+      } else {
+        // Draft no longer exists or isn't open — clean up
+        Storage.clearDraftTxnId();
+        this.draftTransactionId = null;
+      }
+    }
   },
 
   /**
@@ -425,6 +441,7 @@ const Checkout = {
 
     this.items.push(item);
     this.saveCart();
+    this.saveDraftTransaction();
 
     // Reset transaction saved flag (cart was modified)
     this.transactionSaved = false;
@@ -453,6 +470,7 @@ const Checkout = {
   removeItem(itemId) {
     this.items = this.items.filter(item => item.id !== itemId);
     this.saveCart();
+    this.saveDraftTransaction();
 
     // Reset transaction saved flag (cart was modified)
     this.transactionSaved = false;
@@ -708,6 +726,12 @@ const Checkout = {
    */
   clearAll() {
     this.closeItemSheet();
+    // Delete any open draft from dashboard
+    if (this.draftTransactionId) {
+      Storage.deleteTransaction(this.draftTransactionId);
+      Storage.clearDraftTxnId();
+      this.draftTransactionId = null;
+    }
     this.items = [];
     this.ticketDiscount = null;
     Storage.clearCart();
@@ -727,6 +751,13 @@ const Checkout = {
     // Guard against double execution
     if (this._endingSale) return;
     this._endingSale = true;
+
+    // Delete any open draft
+    if (this.draftTransactionId) {
+      Storage.deleteTransaction(this.draftTransactionId);
+      Storage.clearDraftTxnId();
+      this.draftTransactionId = null;
+    }
 
     // Clear local state
     this.items = [];
@@ -773,28 +804,48 @@ const Checkout = {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
     const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
 
-    const transaction = {
-      id: Utils.generateId(),
-      timestamp: Utils.getTimestamp(),
-      customerNumber: customerNumber,
-      orderName: this.orderCustomName || '',
-      items: [...this.items],
-      subtotal: subtotal,
-      total: total,
-      ticketDiscount: this.ticketDiscount || null,
-      discount: this.currentDiscount,
-      saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1,
-      // New status fields
-      status: 'pending',
-      paidAt: null,
-      voidedAt: null,
-      reopenedFrom: this.reopenedFromCustomer || null
-    };
+    let transaction;
+
+    if (this.draftTransactionId) {
+      // Promote existing draft to unpaid
+      Storage.updateTransaction(this.draftTransactionId, {
+        status: 'unpaid',
+        customerNumber: customerNumber,
+        orderName: this.orderCustomName || '',
+        items: [...this.items],
+        subtotal: subtotal,
+        total: total,
+        ticketDiscount: this.ticketDiscount || null,
+        discount: this.currentDiscount,
+        saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1,
+        reopenedFrom: this.reopenedFromCustomer || null
+      });
+      transaction = Storage.getTransaction(this.draftTransactionId);
+      Storage.clearDraftTxnId();
+      this.draftTransactionId = null;
+    } else {
+      // Fallback: create new transaction
+      transaction = {
+        id: Utils.generateId(),
+        timestamp: Utils.getTimestamp(),
+        customerNumber: customerNumber,
+        orderName: this.orderCustomName || '',
+        items: [...this.items],
+        subtotal: subtotal,
+        total: total,
+        ticketDiscount: this.ticketDiscount || null,
+        discount: this.currentDiscount,
+        saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1,
+        status: 'unpaid',
+        paidAt: null,
+        voidedAt: null,
+        reopenedFrom: this.reopenedFromCustomer || null
+      };
+      Storage.saveTransaction(transaction);
+    }
 
     // Clear reopened tracking
     this.reopenedFromCustomer = null;
-
-    Storage.saveTransaction(transaction);
 
     // Store transaction for re-navigation and mark as saved
     this.lastTransaction = transaction;
@@ -876,6 +927,7 @@ const Checkout = {
 
     this.items.push(item);
     this.saveCart();
+    this.saveDraftTransaction();
     this.transactionSaved = false;
 
     this.priceInput = '';
@@ -920,6 +972,7 @@ const Checkout = {
     if (item) {
       item.description = this.elements.descEditInput.value.trim();
       this.saveCart();
+      this.saveDraftTransaction();
       this.transactionSaved = false;
       this.render();
     }
@@ -942,6 +995,60 @@ const Checkout = {
    */
   saveCart() {
     Storage.saveCart(this.items, this.ticketDiscount);
+  },
+
+  /**
+   * Save or update the draft (open) transaction on the dashboard
+   */
+  saveDraftTransaction() {
+    // If cart is empty, delete any existing draft
+    if (this.items.length === 0) {
+      if (this.draftTransactionId) {
+        Storage.deleteTransaction(this.draftTransactionId);
+        Storage.clearDraftTxnId();
+        this.draftTransactionId = null;
+      }
+      return;
+    }
+
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
+    const num = this.reuseCustomerNumber || Storage.peekNextCustomerNumber();
+
+    if (this.draftTransactionId) {
+      // Update existing draft
+      Storage.updateTransaction(this.draftTransactionId, {
+        items: [...this.items],
+        subtotal: subtotal,
+        total: total,
+        ticketDiscount: this.ticketDiscount || null,
+        orderName: this.orderCustomName || '',
+        discount: this.currentDiscount,
+        saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1
+      });
+    } else {
+      // Create new draft
+      const customerNumber = Storage.peekNextCustomerNumber();
+      const txn = {
+        id: Utils.generateId(),
+        timestamp: Utils.getTimestamp(),
+        customerNumber: customerNumber,
+        orderName: this.orderCustomName || '',
+        items: [...this.items],
+        subtotal: subtotal,
+        total: total,
+        ticketDiscount: this.ticketDiscount || null,
+        discount: this.currentDiscount,
+        saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1,
+        status: 'open',
+        paidAt: null,
+        voidedAt: null,
+        reopenedFrom: null
+      };
+      Storage.saveTransaction(txn);
+      this.draftTransactionId = txn.id;
+      Storage.saveDraftTxnId(txn.id);
+    }
   },
 
   // ── Haggle Sheet ──
@@ -1016,6 +1123,7 @@ const Checkout = {
     item.finalPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
 
     this.saveCart();
+    this.saveDraftTransaction();
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
@@ -1034,6 +1142,7 @@ const Checkout = {
     item.finalPrice = item.dayDiscountedPrice;
 
     this.saveCart();
+    this.saveDraftTransaction();
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
@@ -1100,6 +1209,7 @@ const Checkout = {
 
     this.ticketDiscount = { type, value: rawValue };
     this.saveCart();
+    this.saveDraftTransaction();
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();
@@ -1112,6 +1222,7 @@ const Checkout = {
   removeTicketDiscount() {
     this.ticketDiscount = null;
     this.saveCart();
+    this.saveDraftTransaction();
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();

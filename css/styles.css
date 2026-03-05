@@ -38,10 +38,6 @@
   --color-pending: #b45309;
   --color-pending-light: rgba(217, 119, 6, 0.15);
 
-  /* === Colors: Banner === */
-  --color-banner-bg: #fde68a;
-  --color-banner-text: #78350f;
-
   /* === Colors: Borders & Dividers === */
   --color-border: #e5e5e5;
   --color-border-focus: var(--color-primary);
@@ -157,31 +153,6 @@ body {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-}
-
-/* === Invoice In Progress Banner === */
-.cart-banner {
-  height: var(--height-touch-min);
-  background: var(--color-banner-bg);
-  color: var(--color-banner-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-}
-
-.cart-banner__hint {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-normal);
-  opacity: 0.7;
-}
-
-.cart-banner[hidden] {
-  display: none;
 }
 
 /* === Shared Header === */
@@ -2074,7 +2045,11 @@ body {
   background: var(--color-primary);
 }
 
-.dashboard-filter--pending.dashboard-filter--active {
+.dashboard-filter--open.dashboard-filter--active {
+  background: var(--color-primary);
+}
+
+.dashboard-filter--unpaid.dashboard-filter--active {
   background: var(--color-pending);
 }
 
@@ -2159,19 +2134,25 @@ body {
   color: var(--color-success);
 }
 
-.dashboard-txn__status--unpaid {
-  background: var(--color-danger-light);
-  color: var(--color-danger);
+.dashboard-txn__status--open {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
-.dashboard-txn__status--pending {
+.dashboard-txn__status--unpaid {
   background: var(--color-pending-light);
   color: var(--color-pending);
 }
 
-.dashboard-txn__status--void {
+.dashboard-txn__status--edited,
+.dashboard-txn__status--cancelled {
   background: var(--color-bg-hover);
   color: var(--color-text-secondary);
+}
+
+/* Open invoice styling */
+.dashboard-txn--open {
+  border-left: 3px solid var(--color-primary);
 }
 
 /* Voided transaction styling */
@@ -2306,6 +2287,16 @@ body {
 
 .dashboard-detail__btn--collect:active {
   background: var(--color-primary-dark);
+}
+
+.dashboard-detail__btn--cancel {
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.dashboard-detail__btn--cancel:active {
+  background: var(--color-danger-light);
 }
 
 /* Dashboard Empty State */

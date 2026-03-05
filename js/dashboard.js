@@ -92,6 +92,10 @@ const Dashboard = {
           this.reopenTransaction(txnId);
         } else if (action === 'collect') {
           this.collectPayment(txnId);
+        } else if (action === 'continue-editing') {
+          this.continueEditingOpen(txnId);
+        } else if (action === 'cancel-invoice') {
+          this.cancelInvoice(txnId);
         }
       });
     }
@@ -148,12 +152,13 @@ const Dashboard = {
    * Render summary statistics (excluding voided transactions)
    */
   renderStats(transactions) {
-    // Filter out voided transactions for stats
+    // Invoices = non-void (open + unpaid + paid)
     const activeTransactions = transactions.filter(txn => txn.status !== 'void');
+    const paidTransactions = transactions.filter(txn => txn.status === 'paid');
 
     const customerCount = activeTransactions.length;
-    const totalRevenue = activeTransactions.reduce((sum, txn) => sum + txn.total, 0);
-    const avgTicket = customerCount > 0 ? totalRevenue / customerCount : 0;
+    const totalRevenue = paidTransactions.reduce((sum, txn) => sum + txn.total, 0);
+    const avgTicket = paidTransactions.length > 0 ? totalRevenue / paidTransactions.length : 0;
 
     this.elements.customerCount.textContent = customerCount.toString();
     this.elements.revenue.textContent = Utils.formatCurrency(totalRevenue);
@@ -168,14 +173,16 @@ const Dashboard = {
 
     const counts = {
       all: transactions.length,
-      pending: transactions.filter(t => t.status === 'pending').length,
+      open: transactions.filter(t => t.status === 'open').length,
+      unpaid: transactions.filter(t => t.status === 'unpaid').length,
       paid: transactions.filter(t => t.status === 'paid').length,
       void: transactions.filter(t => t.status === 'void').length
     };
 
     const pills = [
       { key: 'all', label: 'All' },
-      { key: 'pending', label: 'Pending' },
+      { key: 'open', label: 'Open' },
+      { key: 'unpaid', label: 'Unpaid' },
       { key: 'paid', label: 'Paid' },
       { key: 'void', label: 'Void' }
     ];
@@ -222,7 +229,7 @@ const Dashboard = {
       } else {
         // Transactions exist but none match filter — show filter-specific message
         this.elements.emptyState.hidden = true;
-        const filterLabels = { pending: 'pending', paid: 'paid', void: 'void' };
+        const filterLabels = { open: 'open', unpaid: 'unpaid', paid: 'paid', void: 'void' };
         const label = filterLabels[this.activeFilter] || this.activeFilter;
         this.elements.transactionList.innerHTML =
           `<li class="dashboard-filter-empty">No ${label} invoices</li>`;
@@ -264,11 +271,13 @@ const Dashboard = {
     // Status badge HTML
     const statusBadge = this.renderStatusBadge(status, txn.voidReason);
 
-    // Void styling
-    const voidClass = status === 'void' ? ' dashboard-txn--void' : '';
+    // Status styling
+    let extraClass = '';
+    if (status === 'void') extraClass = ' dashboard-txn--void';
+    else if (status === 'open') extraClass = ' dashboard-txn--open';
 
     return `
-      <li class="dashboard-txn${voidClass}" data-id="${txn.id}">
+      <li class="dashboard-txn${extraClass}" data-id="${txn.id}">
         <div class="dashboard-txn__summary">
           <div class="dashboard-txn__header">
             <span class="dashboard-txn__customer">${orderLabel} — Day ${txn.saleDay || 1} · ${time}</span>
@@ -293,14 +302,16 @@ const Dashboard = {
    */
   renderStatusBadge(status, voidReason) {
     if (status === 'void') {
-      const label = voidReason ? `Void \u2014 ${Utils.escapeHtml(voidReason)}` : 'Void';
-      return `<span class="dashboard-txn__status dashboard-txn__status--void">${label}</span>`;
+      const isEdited = voidReason === 'Edited Invoice';
+      const label = isEdited ? 'Edited' : 'Cancelled';
+      const cssClass = isEdited ? 'edited' : 'cancelled';
+      return `<span class="dashboard-txn__status dashboard-txn__status--${cssClass}">${label}</span>`;
     }
 
     const badges = {
+      'open': '<span class="dashboard-txn__status dashboard-txn__status--open">Open</span>',
       'paid': '<span class="dashboard-txn__status dashboard-txn__status--paid">Paid</span>',
-      'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>',
-      'pending': '<span class="dashboard-txn__status dashboard-txn__status--pending">Pending</span>'
+      'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>'
     };
     return badges[status] || badges['unpaid'];
   },
@@ -339,24 +350,48 @@ const Dashboard = {
       `;
     }).join('');
 
-    // Action buttons: all 3 shown for non-void, Edit Invoice disabled for pending/paid
+    // Action buttons vary by status
     const status = txn.status || 'unpaid';
-    const isVoid = status === 'void';
-    const editDisabled = status === 'paid' ? ' disabled' : '';
+    let actionsHtml = '';
 
-    const actionsHtml = isVoid ? '' : `
-      <div class="dashboard-detail__actions">
-        <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
-          ${status === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid'}
-        </button>
-        <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}"${editDisabled}>
-          Edit Invoice
-        </button>
-        <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-          Generate Invoice
-        </button>
-      </div>
-    `;
+    if (status === 'open') {
+      actionsHtml = `
+        <div class="dashboard-detail__actions">
+          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="continue-editing" data-id="${txn.id}">
+            Continue Editing
+          </button>
+        </div>
+      `;
+    } else if (status === 'unpaid') {
+      actionsHtml = `
+        <div class="dashboard-detail__actions">
+          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
+            Mark as Paid
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
+            Edit Invoice
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
+            Generate Invoice
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
+            Cancel
+          </button>
+        </div>
+      `;
+    } else if (status === 'paid') {
+      actionsHtml = `
+        <div class="dashboard-detail__actions">
+          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
+            Mark as Unpaid
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
+            Generate Invoice
+          </button>
+        </div>
+      `;
+    }
+    // void (edited/cancelled): no actions
 
     // Invoice discount line
     let ticketDiscountHtml = '';
@@ -381,6 +416,13 @@ const Dashboard = {
    * Toggle transaction expand/collapse (accordion behavior)
    */
   toggleTransaction(txnId) {
+    // If open invoice, navigate to checkout instead of expanding
+    const txn = Storage.getTransaction(txnId);
+    if (txn && txn.status === 'open') {
+      this.continueEditingOpen(txnId);
+      return;
+    }
+
     const allRows = this.elements.transactionList.querySelectorAll('.dashboard-txn');
 
     allRows.forEach(row => {
@@ -432,8 +474,14 @@ const Dashboard = {
     const txn = Storage.getTransaction(txnId);
     if (!txn || txn.status === 'void') return;
 
+    // Delete any existing draft first
+    if (Checkout.draftTransactionId) {
+      Storage.deleteTransaction(Checkout.draftTransactionId);
+      Storage.clearDraftTxnId();
+      Checkout.draftTransactionId = null;
+    }
+
     // Mark original as void
-    // voidReason values: 'Edited Invoice', 'Cancelled', 'Refunded', 'Duplicate' (future)
     Storage.updateTransaction(txnId, {
       status: 'void',
       voidedAt: Utils.getTimestamp(),
@@ -454,10 +502,53 @@ const Dashboard = {
 
     // Preserve invoice name
     Checkout.orderCustomName = txn.orderName || '';
+    Checkout.transactionSaved = false;
+    Checkout.lastTransaction = null;
+
+    // Create new draft so the reopened invoice appears as "Open"
+    Checkout.saveDraftTransaction();
 
     // Navigate to checkout
     App.showScreen('checkout');
     Checkout.render();
+  },
+
+  /**
+   * Continue editing an open invoice — load items into checkout
+   */
+  continueEditingOpen(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn || txn.status !== 'open') return;
+
+    // Load items into checkout
+    Checkout.items = txn.items.map(item => ({ ...item }));
+    Checkout.ticketDiscount = txn.ticketDiscount || null;
+    Checkout.orderCustomName = txn.orderName || '';
+    Checkout.reuseCustomerNumber = txn.customerNumber;
+    Checkout.draftTransactionId = txnId;
+    Storage.saveDraftTxnId(txnId);
+    Checkout.saveCart();
+    Checkout.transactionSaved = false;
+    Checkout.lastTransaction = null;
+
+    App.showScreen('checkout');
+    Checkout.render();
+  },
+
+  /**
+   * Cancel an invoice (set to void with 'Cancelled' reason)
+   */
+  cancelInvoice(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn || txn.status === 'void') return;
+
+    Storage.updateTransaction(txnId, {
+      status: 'void',
+      voidedAt: Utils.getTimestamp(),
+      voidReason: 'Cancelled'
+    });
+
+    this.render();
   },
 
   /**
