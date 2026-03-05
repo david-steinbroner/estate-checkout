@@ -399,26 +399,6 @@ body {
   border-bottom: 1px solid var(--color-border);
 }
 
-.sheet__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: var(--space-xl);
-}
-
-.sheet__header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sheet__header .sheet__title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: 0;
-}
-
 .sheet__title--editable {
   cursor: pointer;
 }
@@ -438,25 +418,7 @@ body {
 .sheet__subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-}
-
-.sheet__close {
-  width: var(--height-touch-min);
-  height: var(--height-touch-min);
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xl);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.sheet__close:active {
-  color: var(--color-text);
+  margin-bottom: var(--space-lg);
 }
 
 .sheet__item-list {

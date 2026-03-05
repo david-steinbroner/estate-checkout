@@ -73,7 +73,6 @@ const Checkout = {
       itemSheetList: document.getElementById('item-sheet-list'),
       itemSheetTitle: document.getElementById('item-sheet-title'),
       itemSheetSubtitle: document.getElementById('item-sheet-subtitle'),
-      itemSheetClose: document.getElementById('item-sheet-close'),
       itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
       runningTotalBar: document.getElementById('running-total-bar'),
@@ -247,13 +246,7 @@ const Checkout = {
       });
     }
 
-    // Item sheet close/done/backdrop
-    if (this.elements.itemSheetClose) {
-      this.elements.itemSheetClose.addEventListener('click', () => {
-        this.closeItemSheet();
-      });
-    }
-
+    // Item sheet done/backdrop
     if (this.elements.itemSheetDone) {
       this.elements.itemSheetDone.addEventListener('click', () => {
         this.closeItemSheet();
