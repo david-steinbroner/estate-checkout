@@ -109,7 +109,7 @@
   --height-button: 48px;
   --height-input: 48px;
   --height-numpad-btn: 48px;  /* matches all interactive elements */
-  --height-header-context: 24px;
+  --height-header-context: 48px;
   --height-header-buttons: 48px;
   --height-header: 72px;
   --height-total-bar: 36px;
@@ -181,7 +181,9 @@ body {
 
 /* === Header (context strip + button bar) === */
 .header {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -194,7 +196,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 0 52px 0 var(--space-md);
+  padding: 0 var(--space-md);
 }
 
 .header__name {
@@ -241,8 +243,7 @@ body {
 
 /* Header menu button */
 .header__menu-btn {
-  position: absolute;
-  right: var(--space-sm);
+  flex-shrink: 0;
   width: 48px;
   height: 48px;
   display: flex;
