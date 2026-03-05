@@ -212,8 +212,10 @@ body {
   flex-shrink: 0;
 }
 
-/* Thin context strip - sale info */
+/* Context strip - sale info (centered nav bar title) */
 .header__context {
+  flex: 1;
+  min-width: 0;
   height: var(--height-header-context);
   display: flex;
   align-items: center;
@@ -223,27 +225,27 @@ body {
 }
 
 .header__name {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px; /* intentional: text overflow constraint */
+  max-width: 140px;
 }
 
 .header__dot {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .header__day {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .header__discount {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-success);
   white-space: nowrap;
