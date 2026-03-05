@@ -467,7 +467,8 @@ body {
   color: var(--color-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  text-align: center;
+  text-align: left;
+  padding: 0 var(--space-md);
   line-height: 36px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
