@@ -94,6 +94,8 @@ const Dashboard = {
           this.collectPayment(txnId);
         } else if (action === 'continue-editing') {
           this.continueEditingOpen(txnId);
+        } else if (action === 'generate-open') {
+          this.generateOpenInvoice(txnId);
         } else if (action === 'cancel-invoice') {
           this.cancelInvoice(txnId);
         }
@@ -357,8 +359,14 @@ const Dashboard = {
     if (status === 'open') {
       actionsHtml = `
         <div class="dashboard-detail__actions">
-          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="continue-editing" data-id="${txn.id}">
-            Continue Editing
+          <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="continue-editing" data-id="${txn.id}">
+            Edit Invoice
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="generate-open" data-id="${txn.id}">
+            Generate Invoice
+          </button>
+          <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
+            Cancel
           </button>
         </div>
       `;
@@ -416,13 +424,6 @@ const Dashboard = {
    * Toggle transaction expand/collapse (accordion behavior)
    */
   toggleTransaction(txnId) {
-    // If open invoice, navigate to checkout instead of expanding
-    const txn = Storage.getTransaction(txnId);
-    if (txn && txn.status === 'open') {
-      this.continueEditingOpen(txnId);
-      return;
-    }
-
     const allRows = this.elements.transactionList.querySelectorAll('.dashboard-txn');
 
     allRows.forEach(row => {
@@ -533,6 +534,33 @@ const Dashboard = {
 
     App.showScreen('checkout');
     Checkout.render();
+  },
+
+  /**
+   * Finalize an open invoice — promote to unpaid and navigate to QR
+   */
+  generateOpenInvoice(txnId) {
+    const txn = Storage.getTransaction(txnId);
+    if (!txn || txn.status !== 'open') return;
+
+    // Assign a customer number if needed
+    const customerNumber = txn.customerNumber || Storage.getNextCustomerNumber();
+
+    // Promote to unpaid
+    Storage.updateTransaction(txnId, {
+      status: 'unpaid',
+      customerNumber: customerNumber
+    });
+
+    // Clear draft tracking since it's no longer open
+    if (Checkout.draftTransactionId === txnId) {
+      Storage.clearDraftTxnId();
+      Checkout.draftTransactionId = null;
+    }
+
+    // Get updated transaction and navigate to QR
+    const updated = Storage.getTransaction(txnId);
+    App.showScreen('qr', updated);
   },
 
   /**
