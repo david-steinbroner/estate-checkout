@@ -93,6 +93,7 @@ const Checkout = {
       descEntryTitle: document.getElementById('desc-entry-title'),
       descEntryInput: document.getElementById('desc-entry-input'),
       descEntryConfirm: document.getElementById('desc-entry-confirm'),
+      descEntryMic: document.getElementById('desc-entry-mic'),
       descEditModal: document.getElementById('desc-edit-modal'),
       descEditTitle: document.getElementById('desc-edit-title'),
       descEditInput: document.getElementById('desc-edit-input'),
@@ -195,6 +196,15 @@ const Checkout = {
     if (this.elements.descEntryInput) {
       this.elements.descEntryInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') this.confirmDescEntry();
+      });
+    }
+    if (this.elements.descEntryMic) {
+      this.elements.descEntryMic.addEventListener('click', () => {
+        if (!Speech.isSupported) return;
+        Speech.startDescriptionCapture((text) => {
+          this.elements.descEntryInput.value = text;
+          this.elements.descEntryInput.focus();
+        });
       });
     }
     if (this.elements.descEntryModal) {

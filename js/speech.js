@@ -21,6 +21,8 @@ const Speech = {
   micPermissionState: 'prompt', // 'granted', 'denied', or 'prompt'
   buttonPressTime: null,
   buttonReleaseTime: null,
+  _descMode: false,
+  _descCallback: null,
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
@@ -91,6 +93,8 @@ const Speech = {
       this.clearProcessingHardTimeout();
       this.isListening = false;
       this.waitingForResult = false;
+      this._descMode = false;
+      this._descCallback = null;
       this.hideProcessing();
       this.updateMicUI(false);
 
@@ -118,6 +122,8 @@ const Speech = {
       // If we were waiting for a result and didn't get one, show failure
       if (this.waitingForResult) {
         this.waitingForResult = false;
+        this._descMode = false;
+        this._descCallback = null;
         this.hideProcessing();
         if (this.isQuickTap()) {
           this.showQuickTapModal();
@@ -345,7 +351,48 @@ const Speech = {
   },
 
   /**
-   * Called when user releases the mic button
+   * Start description-only speech capture (tap-to-listen, no price parsing)
+   * @param {function} callback - receives the transcript string
+   */
+  startDescriptionCapture(callback) {
+    if (!this.recognition || this.isListening) return;
+
+    this._descMode = true;
+    this._descCallback = callback;
+
+    if (this.micPermissionState === 'denied') {
+      this._descMode = false;
+      this._descCallback = null;
+      this.showPermissionDeniedModal(true);
+      return;
+    }
+
+    if (this.micPermissionState === 'prompt') {
+      this.showPermissionModal();
+      return;
+    }
+
+    this.doStartDescriptionListening();
+  },
+
+  /**
+   * Start recognition for description-only mode (tap, not hold)
+   */
+  doStartDescriptionListening() {
+    if (!this.recognition || this.isListening) return;
+
+    this.buttonPressTime = Date.now();
+    this.buttonReleaseTime = Date.now();
+
+    try {
+      this.recognition.start();
+      this.isListening = true;
+      this.waitingForResult = true;
+      this.showProcessing();
+    } catch (e) {}
+  },
+
+  /**
    * Don't stop recognition - let it end naturally after detecting silence
    */
   onButtonRelease() {
@@ -433,6 +480,8 @@ const Speech = {
     this.isListening = false;
     this.buttonPressTime = null;
     this.buttonReleaseTime = null;
+    this._descMode = false;
+    this._descCallback = null;
 
     // Hide all overlays and modals
     this.hideProcessing();
@@ -468,6 +517,17 @@ const Speech = {
   handleResult(transcript) {
     this.clearProcessingHardTimeout();
     this.hideProcessing();
+
+    // Description-only mode: return raw transcript, no price parsing
+    if (this._descMode) {
+      const callback = this._descCallback;
+      this._descMode = false;
+      this._descCallback = null;
+      this.consecutiveFailures = 0;
+      if (callback) callback(transcript.trim());
+      return;
+    }
+
     const result = this.parse(transcript);
 
     if (result.price > 0) {
@@ -899,6 +959,9 @@ const Speech = {
       const btn = document.getElementById('mic-button');
       if (btn) btn.style.display = 'none';
     }
+    // Also hide the description entry mic button
+    const descMic = document.getElementById('desc-entry-mic');
+    if (descMic) descMic.style.display = 'none';
   },
 
   /**
@@ -925,6 +988,9 @@ const Speech = {
     if (this.elements.permissionModal) {
       this.elements.permissionModal.classList.remove('visible');
     }
+    // Clean up description mode if user dismissed without granting
+    this._descMode = false;
+    this._descCallback = null;
   },
 
   /**
@@ -944,11 +1010,19 @@ const Speech = {
       // Update permission state
       this.micPermissionState = 'granted';
 
+      // If in description mode, auto-start listening now that permission is granted
+      if (this._descMode) {
+        this.doStartDescriptionListening();
+        return;
+      }
+
       // Highlight the Speak button to indicate it's ready
       this.highlightMicButton();
 
     } catch (e) {
-      // Permission denied or error
+      // Permission denied or error — clean up description mode
+      this._descMode = false;
+      this._descCallback = null;
       if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
         this.micPermissionState = 'denied';
         this.showPermissionDeniedModal(false);
