@@ -857,17 +857,27 @@ const Speech = {
     if (!this.pendingResult) return;
 
     const { price, description } = this.pendingResult;
+    const dayDiscountedPrice = Utils.applyDiscount(price, Checkout.currentDiscount);
 
-    // Set the price and description in checkout
-    Checkout.priceInput = price.toString();
+    const item = {
+      id: Utils.generateId(),
+      description: description,
+      originalPrice: price,
+      dayDiscount: Checkout.currentDiscount,
+      dayDiscountedPrice: dayDiscountedPrice,
+      haggleType: null,
+      haggleValue: null,
+      finalPrice: dayDiscountedPrice
+    };
+
+    Checkout.items.push(item);
+    Checkout.saveCart();
+    Checkout.transactionSaved = false;
+
+    Checkout.priceInput = '';
     Checkout.updatePriceDisplay();
-    Checkout.elements.descriptionInput.value = description;
-
-    // Skip description prompt since user already confirmed via speech modal
-    Checkout.pendingAddWithoutDesc = true;
-
-    // Add the item
-    Checkout.addItem();
+    Checkout.render();
+    Checkout.showFlash('success', 'Added!');
 
     this.hideConfirmModal();
   },
@@ -880,10 +890,16 @@ const Speech = {
 
     const { price, description } = this.pendingResult;
 
-    // Populate the checkout fields
+    // Set price in checkout pad
     Checkout.priceInput = price.toString();
     Checkout.updatePriceDisplay();
-    Checkout.elements.descriptionInput.value = description;
+
+    // Open the description entry sheet pre-filled for editing
+    Checkout.pendingPrice = price;
+    Checkout.elements.descEntryTitle.textContent = `Item — ${Utils.formatCurrency(price)}`;
+    Checkout.elements.descEntryInput.value = description;
+    Checkout.elements.descEntryModal.classList.add('visible');
+    setTimeout(() => Checkout.elements.descEntryInput.focus(), 100);
 
     this.hideConfirmModal();
   },
