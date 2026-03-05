@@ -247,7 +247,14 @@ const Dashboard = {
       return this.sortNewestFirst ? diff : -diff;
     });
 
-    const html = sorted.map(txn => this.renderTransactionRow(txn)).join('');
+    const html = sorted.map(txn => {
+      try {
+        return this.renderTransactionRow(txn);
+      } catch (e) {
+        console.error('Failed to render transaction row:', txn.id, e);
+        return '';
+      }
+    }).join('');
     this.elements.transactionList.innerHTML = html;
 
     // Bind click events for expand/collapse
@@ -292,7 +299,7 @@ const Dashboard = {
           </div>
         </div>
         <div class="dashboard-txn__detail" hidden>
-          ${this.renderTransactionDetail(txn)}
+          ${(() => { try { return this.renderTransactionDetail(txn); } catch (e) { console.error('Failed to render transaction detail:', txn.id, e); return ''; } })()}
         </div>
       </li>
     `;
