@@ -453,7 +453,7 @@ const Dashboard = {
     Checkout.reuseCustomerNumber = txn.customerNumber;
 
     // Preserve order name
-    Checkout.elements.orderNameInput.value = txn.orderName || '';
+    Checkout.orderCustomName = txn.orderName || '';
 
     // Navigate to checkout
     App.showScreen('checkout');
