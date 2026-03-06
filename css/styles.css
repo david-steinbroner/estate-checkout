@@ -290,9 +290,16 @@ body {
 }
 
 .running-total__edit-hint {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
   margin-left: var(--space-sm);
+  display: inline-block;
+  vertical-align: -2px;
+}
+
+.running-total__edit-hint svg {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
 }
 
 .running-total__amount {
@@ -423,12 +430,17 @@ body {
   cursor: pointer;
 }
 
-.sheet__title--editable::after {
-  content: ' ✎';
-  font-size: 16px;
+.edit-icon {
   color: var(--color-text-secondary);
-  font-weight: normal;
   margin-left: var(--space-md);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.edit-icon svg {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
 }
 
 .sheet__title-input {

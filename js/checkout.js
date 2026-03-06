@@ -3,6 +3,8 @@
  * Handles number pad input, item list, and running total
  */
 
+const EDIT_ICON_SVG = '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+
 const Checkout = {
   // Current price being entered (stored as string for display)
   priceInput: '',
@@ -462,11 +464,12 @@ const Checkout = {
     const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     const escapedName = Utils.escapeHtml(name);
+    const pencil = `<span class="running-total__edit-hint">${EDIT_ICON_SVG}</span>`;
     if (count === 0) {
-      this.elements.runningTotalInfo.innerHTML = `${escapedName} <span class="running-total__edit-hint">✎</span>`;
+      this.elements.runningTotalInfo.innerHTML = `${escapedName} ${pencil}`;
     } else {
       const itemText = count === 1 ? '1 item' : `${count} items`;
-      this.elements.runningTotalInfo.innerHTML = `${escapedName} · ${itemText} <span class="running-total__edit-hint">✎</span>`;
+      this.elements.runningTotalInfo.innerHTML = `${escapedName} · ${itemText} ${pencil}`;
     }
   },
 
@@ -605,7 +608,7 @@ const Checkout = {
   renderItemSheet() {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
     const titleText = this.orderCustomName || `Order #${num}`;
-    this.elements.itemSheetTitle.textContent = titleText;
+    this.elements.itemSheetTitle.innerHTML = `${Utils.escapeHtml(titleText)} <span class="edit-icon">${EDIT_ICON_SVG}</span>`;
     this.elements.itemSheetSubtitle.textContent = `${this.items.length} item${this.items.length !== 1 ? 's' : ''}`;
 
     if (this.items.length === 0) {
