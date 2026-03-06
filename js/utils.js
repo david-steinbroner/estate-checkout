@@ -192,8 +192,9 @@ const KeyboardAvoidance = {
     const vv = window.visualViewport;
     const keyboardHeight = this._layoutHeight - vv.height - vv.offsetTop;
     if (keyboardHeight > 50) {
-      // Keyboard is open — shift overlays up
+      // Keyboard is open — shift overlays up (skip Add Item sheet)
       document.querySelectorAll('.overlay.visible').forEach(el => {
+        if (el.id === 'add-item-modal') return;
         el.style.bottom = keyboardHeight + 'px';
       });
     } else {
