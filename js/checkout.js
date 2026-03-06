@@ -9,6 +9,9 @@ const Checkout = {
   // Current price being entered (stored as string for display)
   priceInput: '',
 
+  // Current quantity for Add Item sheet
+  addItemQty: 1,
+
   // Current cart items
   items: [],
 
@@ -95,6 +98,9 @@ const Checkout = {
       addItemMic: document.getElementById('add-item-mic'),
       addItemConfirm: document.getElementById('add-item-confirm'),
       addItemCancel: document.getElementById('add-item-cancel'),
+      addItemQtyMinus: document.getElementById('add-item-qty-minus'),
+      addItemQtyPlus: document.getElementById('add-item-qty-plus'),
+      addItemQtyValue: document.getElementById('add-item-qty'),
       numpad: document.getElementById('numpad'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
@@ -168,9 +174,29 @@ const Checkout = {
     if (this.elements.addItemCancel) {
       this.elements.addItemCancel.addEventListener('click', () => {
         this.priceInput = '';
+        this.addItemQty = 1;
         this.updatePriceDisplay();
+        this.updateQtyDisplay();
         if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
         this.closeAddItemSheet();
+      });
+    }
+    if (this.elements.addItemQtyMinus) {
+      this.elements.addItemQtyMinus.addEventListener('click', () => {
+        if (this.addItemQty > 1) {
+          this.addItemQty--;
+          this.updateQtyDisplay();
+          this.updatePriceDisplay();
+        }
+      });
+    }
+    if (this.elements.addItemQtyPlus) {
+      this.elements.addItemQtyPlus.addEventListener('click', () => {
+        if (this.addItemQty < 99) {
+          this.addItemQty++;
+          this.updateQtyDisplay();
+          this.updatePriceDisplay();
+        }
       });
     }
     // Mic button pointer events are bound in Speech.bindEvents()
@@ -295,7 +321,7 @@ const Checkout = {
     this.items = cart.items;
     this.ticketDiscount = cart.ticketDiscount;
 
-    // Migrate old items missing new discount fields
+    // Migrate old items missing new discount/quantity fields
     this.items.forEach(item => {
       if (item.dayDiscount === undefined) {
         item.dayDiscount = item.discount || 0;
@@ -304,6 +330,7 @@ const Checkout = {
         item.haggleValue = null;
         delete item.discount;
       }
+      item.quantity = item.quantity || 1;
     });
 
     // Reconnect draft transaction ID
@@ -354,7 +381,24 @@ const Checkout = {
   updatePriceDisplay() {
     const price = parseFloat(this.priceInput) || 0;
     if (this.elements.addItemPrice) {
-      this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
+      if (this.addItemQty > 1 && price > 0) {
+        const total = price * this.addItemQty;
+        this.elements.addItemPrice.textContent = `${this.addItemQty} x ${Utils.formatCurrency(price)} = ${Utils.formatCurrency(total)}`;
+      } else {
+        this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
+      }
+    }
+  },
+
+  /**
+   * Update the quantity stepper display
+   */
+  updateQtyDisplay() {
+    if (this.elements.addItemQtyValue) {
+      this.elements.addItemQtyValue.textContent = this.addItemQty;
+    }
+    if (this.elements.addItemQtyMinus) {
+      this.elements.addItemQtyMinus.disabled = this.addItemQty <= 1;
     }
   },
 
@@ -364,7 +408,9 @@ const Checkout = {
   openAddItemSheet() {
     this.closeItemSheet();
     this.priceInput = '';
+    this.addItemQty = 1;
     this.updatePriceDisplay();
+    this.updateQtyDisplay();
     if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
     if (this.elements.addItemModal) this.elements.addItemModal.classList.add('visible');
   },
@@ -397,17 +443,19 @@ const Checkout = {
       this.showFlash('error', 'Enter an item description');
       return;
     }
+    const qty = this.addItemQty;
     const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
 
     const item = {
       id: Utils.generateId(),
       description: description,
       originalPrice: price,
+      quantity: qty,
       dayDiscount: this.currentDiscount,
       dayDiscountedPrice: dayDiscountedPrice,
       haggleType: null,
       haggleValue: null,
-      finalPrice: dayDiscountedPrice
+      finalPrice: dayDiscountedPrice * qty
     };
 
     this.items.push(item);
@@ -417,7 +465,9 @@ const Checkout = {
 
     // Clear sheet inputs for next item
     this.priceInput = '';
+    this.addItemQty = 1;
     this.updatePriceDisplay();
+    this.updateQtyDisplay();
     if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
 
     // Close sheet and re-render
@@ -502,7 +552,9 @@ const Checkout = {
     const html = this.items.map((item, index) => {
       const hasDesc = item.description && item.description.trim().length > 0;
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
-      const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+      let descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+      const qty = item.quantity || 1;
+      if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
 
       return `
         <li class="item-row" data-id="${item.id}">
@@ -626,7 +678,12 @@ const Checkout = {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
     const titleText = this.orderCustomName || `Order #${num}`;
     this.elements.itemSheetTitle.innerHTML = `${Utils.escapeHtml(titleText)} <span class="edit-icon">${EDIT_ICON_SVG}</span>`;
-    this.elements.itemSheetSubtitle.textContent = `${this.items.length} item${this.items.length !== 1 ? 's' : ''}`;
+    const totalQty = this.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+    const lineCount = this.items.length;
+    const subtitle = totalQty > lineCount
+      ? `${lineCount} line${lineCount !== 1 ? 's' : ''} (${totalQty} items)`
+      : `${lineCount} item${lineCount !== 1 ? 's' : ''}`;
+    this.elements.itemSheetSubtitle.textContent = subtitle;
 
     if (this.items.length === 0) {
       this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';
@@ -634,7 +691,9 @@ const Checkout = {
       const html = this.items.map((item, index) => {
         const hasDesc = item.description && item.description.trim().length > 0;
         const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
-        const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+        let descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+        const qty = item.quantity || 1;
+        if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
         const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
         return `
@@ -643,6 +702,11 @@ const Checkout = {
             <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
             <div class="item-row__prices" data-edit-price="${item.id}">
               ${this.renderItemPrices(item)}
+            </div>
+            <div class="item-row__qty-controls" data-qty-id="${item.id}">
+              <button class="item-row__qty-btn" data-qty-dec="${item.id}">&minus;</button>
+              <span class="item-row__qty-num">${qty}</span>
+              <button class="item-row__qty-btn" data-qty-inc="${item.id}">+</button>
             </div>
             <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item"><span class="item-row__remove-icon">✕</span></button>
           </li>
@@ -675,6 +739,49 @@ const Checkout = {
         this.openHaggleSheet(el.dataset.editPrice);
       });
     });
+
+    // Bind quantity increment/decrement buttons
+    this.elements.itemSheetList.querySelectorAll('[data-qty-inc]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.changeItemQty(btn.dataset.qtyInc, 1);
+      });
+    });
+    this.elements.itemSheetList.querySelectorAll('[data-qty-dec]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.changeItemQty(btn.dataset.qtyDec, -1);
+      });
+    });
+  },
+
+  /**
+   * Change quantity of an item in the cart
+   */
+  changeItemQty(itemId, delta) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    const newQty = (item.quantity || 1) + delta;
+    if (newQty <= 0) {
+      this.removeItem(itemId);
+      return;
+    }
+    if (newQty > 99) return;
+
+    this.checkEditDirty();
+    item.quantity = newQty;
+    // Recalculate finalPrice = unit price * qty
+    const unitPrice = item.haggleType && item.haggleValue
+      ? Utils.applyHaggle(item.dayDiscountedPrice, item.haggleType, item.haggleValue)
+      : item.dayDiscountedPrice;
+    item.finalPrice = unitPrice * newQty;
+
+    this.saveCart();
+    this.saveDraftTransaction();
+    this.transactionSaved = false;
+    this.render();
+    this.renderItemSheet();
   },
 
   /**
@@ -1054,7 +1161,8 @@ const Checkout = {
     this.checkEditDirty();
     item.haggleType = type;
     item.haggleValue = rawValue;
-    item.finalPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
+    const unitPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
+    item.finalPrice = unitPrice * (item.quantity || 1);
 
     this.saveCart();
     this.saveDraftTransaction();
@@ -1074,7 +1182,7 @@ const Checkout = {
     this.checkEditDirty();
     item.haggleType = null;
     item.haggleValue = null;
-    item.finalPrice = item.dayDiscountedPrice;
+    item.finalPrice = item.dayDiscountedPrice * (item.quantity || 1);
 
     this.saveCart();
     this.saveDraftTransaction();

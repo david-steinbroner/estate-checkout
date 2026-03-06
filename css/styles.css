@@ -507,6 +507,51 @@ body {
   line-height: 1;
 }
 
+.item-row__qty {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.item-row__qty-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.item-row__qty-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item-row__qty-btn:active {
+  background: var(--color-bg-hover);
+}
+
+.item-row__qty-num {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  min-width: 16px;
+  text-align: center;
+}
+
+/* Hide qty controls in inline compact list */
+.item-list-container .item-row__qty-controls {
+  display: none;
+}
+
 .sheet__footer {
   margin-top: var(--space-lg);
 }
@@ -641,6 +686,52 @@ body {
 
 .add-item__cancel:active {
   background: var(--color-danger-light);
+}
+
+/* === Quantity Stepper === */
+.add-item__qty-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.add-item__qty-label {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.add-item__qty-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-item__qty-btn:active {
+  background: var(--color-bg-hover);
+}
+
+.add-item__qty-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.add-item__qty-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  min-width: 28px;
+  text-align: center;
 }
 
 /* === Number Pad === */

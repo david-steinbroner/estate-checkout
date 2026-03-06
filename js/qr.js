@@ -98,6 +98,7 @@ const QR = {
       orderName: transaction.orderName || '',
       items: transaction.items.map(item => ({
         desc: item.description || '',
+        qty: item.quantity || 1,
         orig: item.originalPrice,
         day: item.dayDiscountedPrice !== undefined ? item.dayDiscountedPrice : item.finalPrice,
         final: item.finalPrice,
@@ -258,7 +259,12 @@ const QR = {
    */
   renderItemSummary(transaction) {
     const html = transaction.items.map(item => {
-      const desc = item.description || 'Item';
+      const qty = item.quantity || 1;
+      let desc = item.description || 'Item';
+      if (qty > 1) {
+        const unitPrice = item.finalPrice / qty;
+        desc += ` x${qty} @${Utils.formatCurrency(unitPrice)}`;
+      }
       const hasHaggle = item.haggleType && item.haggleValue;
       const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
 

@@ -63,6 +63,9 @@ const Speech = {
   // Words to strip from transcript
   fillerWords: ['dollars', 'dollar', 'bucks', 'buck', 'and', 'cents', 'cent', 'a'],
 
+  // Words that indicate quantity multiplier
+  multiplierWords: ['times', 'x', 'by'],
+
   /**
    * Initialize speech recognition
    */
@@ -595,6 +598,8 @@ const Speech = {
       if (this._addItemMode) {
         this._addItemMode = false;
         Checkout.priceInput = result.price.toString();
+        Checkout.addItemQty = result.quantity || 1;
+        Checkout.updateQtyDisplay();
         Checkout.updatePriceDisplay();
         if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.value = result.description;
         return;
@@ -647,21 +652,40 @@ const Speech = {
   parse(transcript) {
     let text = transcript.toLowerCase().trim();
 
+    // Extract trailing multiplier: "... times 5" or "... x 3"
+    let trailingQty = 1;
+    const trailingMultiplier = text.match(/\s+(?:times|x|by)\s+(\d+)\s*$/);
+    if (trailingMultiplier) {
+      trailingQty = parseInt(trailingMultiplier[1]);
+      text = text.slice(0, -trailingMultiplier[0].length).trim();
+    }
+
     // Handle direct numeric input (speech API sometimes returns digits)
     // Matches: "$25", "$5.50", "25", "5.50", "$1,000", "1,000"
     const directNumber = text.match(/^\$?([\d,]+(?:\.\d{1,2})?)\s*$/);
     if (directNumber) {
       const priceStr = directNumber[1].replace(/,/g, '');
-      return { price: parseFloat(priceStr), description: '' };
+      return { price: parseFloat(priceStr), description: '', quantity: trailingQty };
+    }
+
+    // Check for "N items at $price" pattern: "3 bandanas at $10"
+    const atDollarMatch = text.match(/^(\d+)\s+(.+?)\s+at\s+\$([\d,]+(?:\.\d{1,2})?)\s*$/);
+    if (atDollarMatch) {
+      return {
+        price: parseFloat(atDollarMatch[3].replace(/,/g, '')),
+        description: atDollarMatch[2].trim(),
+        quantity: parseInt(atDollarMatch[1])
+      };
     }
 
     // Check for $-prefixed price anywhere in the transcript
     // e.g., "rug $25" or "blue vase $5.50" or "lamp $1,000"
     const dollarMatch = text.match(/^(.+?)\s*\$([\d,]+(?:\.\d{1,2})?)\s*$/);
     if (dollarMatch) {
-      const description = dollarMatch[1].trim();
+      let description = dollarMatch[1].trim();
       const priceStr = dollarMatch[2].replace(/,/g, '');
-      return { price: parseFloat(priceStr), description: description };
+      const qtyResult = this.extractLeadingQty(description);
+      return { price: parseFloat(priceStr), description: qtyResult.description, quantity: qtyResult.qty * trailingQty };
     }
 
     // Also check for $ at the start with description after (less common but possible)
@@ -669,7 +693,7 @@ const Speech = {
     if (dollarStartMatch) {
       const priceStr = dollarStartMatch[1].replace(/,/g, '');
       const description = dollarStartMatch[2].trim();
-      return { price: parseFloat(priceStr), description: description };
+      return { price: parseFloat(priceStr), description: description, quantity: trailingQty };
     }
 
     // Tokenize the transcript
@@ -685,20 +709,52 @@ const Speech = {
     const priceResult = this.extractPrice(numericTokens);
 
     if (priceResult.price <= 0) {
-      return { price: 0, description: '' };
+      return { price: 0, description: '', quantity: 1 };
     }
 
     // Everything before the price is the description
     const descTokens = numericTokens.slice(0, priceResult.startIndex);
-    const description = descTokens
-      .map(t => t.original)
-      .join(' ')
-      .trim();
+
+    // Check for "at" separator: "3 patches at 5" → qty=3, desc="patches"
+    const atIndex = descTokens.findIndex(t => t.original === 'at');
+    if (atIndex > 0 && descTokens[0].isNumber && descTokens[0].value >= 1 && descTokens[0].value <= 99) {
+      const qty = Math.round(descTokens[0].value);
+      const descAfterQty = descTokens.slice(1, atIndex).map(t => t.original).join(' ').trim();
+      if (descAfterQty) {
+        return { price: priceResult.price, description: descAfterQty, quantity: qty * trailingQty };
+      }
+    }
+
+    const description = descTokens.map(t => t.original).join(' ').trim();
+
+    // Check for leading quantity number: "5 bandanas 10" → qty=5
+    if (descTokens.length >= 2 && descTokens[0].isNumber && !descTokens[1].isNumber
+        && descTokens[0].value >= 2 && descTokens[0].value <= 99 && Number.isInteger(descTokens[0].value)) {
+      const qty = descTokens[0].value;
+      const descWithoutQty = descTokens.slice(1).map(t => t.original).join(' ').trim();
+      return { price: priceResult.price, description: descWithoutQty, quantity: qty * trailingQty };
+    }
 
     return {
       price: priceResult.price,
-      description: description
+      description: description,
+      quantity: trailingQty
     };
+  },
+
+  /**
+   * Extract a leading quantity number from a description string
+   * e.g., "3 bandanas" → { qty: 3, description: "bandanas" }
+   */
+  extractLeadingQty(desc) {
+    const match = desc.match(/^(\d+)\s+(.+)$/);
+    if (match) {
+      const qty = parseInt(match[1]);
+      if (qty >= 2 && qty <= 99) {
+        return { qty, description: match[2] };
+      }
+    }
+    return { qty: 1, description: desc };
   },
 
   /**
@@ -818,10 +874,14 @@ const Speech = {
   showConfirmModal(result) {
     if (!this.elements.confirmModal) return;
 
-    const descText = result.description
+    const qty = result.quantity || 1;
+    let descText = result.description
       ? `Add "${result.description}"`
       : 'Add item';
-    const priceText = Utils.formatCurrency(result.price);
+    if (qty > 1) descText += ` x${qty}`;
+    const priceText = qty > 1
+      ? `${qty} x ${Utils.formatCurrency(result.price)} = ${Utils.formatCurrency(result.price * qty)}`
+      : Utils.formatCurrency(result.price);
 
     this.elements.confirmDesc.textContent = descText;
     this.elements.confirmPrice.textContent = priceText;
@@ -922,10 +982,12 @@ const Speech = {
   confirmAdd() {
     if (!this.pendingResult) return;
 
-    const { price, description } = this.pendingResult;
+    const { price, description, quantity } = this.pendingResult;
 
     // Populate the Add Item sheet fields instead of auto-adding
     Checkout.priceInput = price.toString();
+    Checkout.addItemQty = quantity || 1;
+    Checkout.updateQtyDisplay();
     Checkout.updatePriceDisplay();
     if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.value = description;
     if (Checkout.elements.addItemModal) Checkout.elements.addItemModal.classList.add('visible');
