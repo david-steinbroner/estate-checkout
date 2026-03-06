@@ -461,11 +461,12 @@ const Checkout = {
     this.currentOrderNumber = num;
     const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
+    const escapedName = Utils.escapeHtml(name);
     if (count === 0) {
-      this.elements.runningTotalInfo.textContent = `${name} · tap to name`;
+      this.elements.runningTotalInfo.innerHTML = `${escapedName} <span class="running-total__edit-hint">✎</span>`;
     } else {
       const itemText = count === 1 ? '1 item' : `${count} items`;
-      this.elements.runningTotalInfo.innerHTML = `${Utils.escapeHtml(name)} · ${itemText} <span class="running-total__edit-hint">✎</span>`;
+      this.elements.runningTotalInfo.innerHTML = `${escapedName} · ${itemText} <span class="running-total__edit-hint">✎</span>`;
     }
   },
 
