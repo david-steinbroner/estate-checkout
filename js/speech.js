@@ -26,6 +26,7 @@ const Speech = {
   _recognitionStartedAt: null, // timestamp when recognition.start() was called
   _hasReceivedOnstart: false, // true after onstart fires (mic hardware ready)
   _noSpeechRetried: false, // prevent infinite retry loop for early no-speech
+  _addItemMode: false, // true when speech triggered from Add Item sheet mic
 
   // Timeout before giving up on result (ms)
   RESULT_TIMEOUT: 5000,
@@ -317,6 +318,7 @@ const Speech = {
       this.elements.addItemMic.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         this.elements.addItemMic.classList.add('listening');
+        this._addItemMode = true;
         this.startListening();
       });
 
@@ -532,6 +534,7 @@ const Speech = {
     this._recognitionStartedAt = null;
     this._hasReceivedOnstart = false;
     this._noSpeechRetried = false;
+    this._addItemMode = false;
 
     // Hide all overlays and modals
     this.hideProcessing();
@@ -587,9 +590,20 @@ const Speech = {
     if (result.price > 0) {
       // Success - reset failure counter
       this.consecutiveFailures = 0;
+
+      // Add Item sheet mode: populate fields directly, skip confirm modal
+      if (this._addItemMode) {
+        this._addItemMode = false;
+        Checkout.priceInput = result.price.toString();
+        Checkout.updatePriceDisplay();
+        if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.value = result.description;
+        return;
+      }
+
       this.pendingResult = result;
       this.showConfirmModal(result);
     } else {
+      this._addItemMode = false;
       this.showFailModalWithTip(transcript, 'parse');
     }
   },
