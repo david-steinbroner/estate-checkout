@@ -606,7 +606,7 @@ const Checkout = {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
     const titleText = this.orderCustomName || `Order #${num}`;
     this.elements.itemSheetTitle.textContent = titleText;
-    this.elements.itemSheetSubtitle.textContent = `All items (${this.items.length}) · tap title to rename`;
+    this.elements.itemSheetSubtitle.textContent = `${this.items.length} item${this.items.length !== 1 ? 's' : ''}`;
 
     if (this.items.length === 0) {
       this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';
@@ -624,7 +624,7 @@ const Checkout = {
             <div class="item-row__prices" data-edit-price="${item.id}">
               ${this.renderItemPrices(item)}
             </div>
-            <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item">×</button>
+            <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item"><span class="item-row__remove-icon">✕</span></button>
           </li>
         `;
       }).join('');
