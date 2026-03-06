@@ -463,10 +463,9 @@ const Checkout = {
     const count = this.items.length;
     if (count === 0) {
       this.elements.runningTotalInfo.textContent = `${name} · tap to name`;
-    } else if (count === 1) {
-      this.elements.runningTotalInfo.textContent = `${name} · 1 item`;
     } else {
-      this.elements.runningTotalInfo.textContent = `${name} · ${count} items`;
+      const itemText = count === 1 ? '1 item' : `${count} items`;
+      this.elements.runningTotalInfo.innerHTML = `${Utils.escapeHtml(name)} · ${itemText} <span class="running-total__edit-hint">✎</span>`;
     }
   },
 

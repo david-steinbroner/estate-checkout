@@ -289,6 +289,12 @@ body {
   min-width: 0;
 }
 
+.running-total__edit-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-left: var(--space-xs);
+}
+
 .running-total__amount {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
