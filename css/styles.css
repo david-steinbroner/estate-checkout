@@ -575,7 +575,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xs);
+  gap: var(--space-md);
 }
 
 .add-item__mic:active {
@@ -623,6 +623,24 @@ body {
 
 .add-item__confirm:active {
   background: var(--color-success-dark);
+}
+
+.add-item__cancel {
+  width: 100%;
+  height: var(--height-button);
+  margin-top: var(--space-sm);
+  background: transparent;
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.add-item__cancel:active {
+  background: var(--color-danger-light);
 }
 
 /* === Number Pad === */

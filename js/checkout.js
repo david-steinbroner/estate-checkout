@@ -94,6 +94,7 @@ const Checkout = {
       addItemPrice: document.getElementById('add-item-price'),
       addItemMic: document.getElementById('add-item-mic'),
       addItemConfirm: document.getElementById('add-item-confirm'),
+      addItemCancel: document.getElementById('add-item-cancel'),
       numpad: document.getElementById('numpad'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
@@ -162,6 +163,14 @@ const Checkout = {
     if (this.elements.addItemConfirm) {
       this.elements.addItemConfirm.addEventListener('click', () => {
         this.confirmAddItem();
+      });
+    }
+    if (this.elements.addItemCancel) {
+      this.elements.addItemCancel.addEventListener('click', () => {
+        this.priceInput = '';
+        this.updatePriceDisplay();
+        if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
+        this.closeAddItemSheet();
       });
     }
     // Mic button pointer events are bound in Speech.bindEvents()
@@ -374,12 +383,20 @@ const Checkout = {
     this.checkEditDirty();
 
     const price = parseFloat(this.priceInput);
+    const description = this.elements.addItemDesc ? this.elements.addItemDesc.value.trim() : '';
+
+    if ((!price || price <= 0) && !description) {
+      this.showFlash('error', 'Enter a price');
+      return;
+    }
     if (!price || price <= 0) {
       this.showFlash('error', 'Enter a price');
       return;
     }
-
-    const description = this.elements.addItemDesc ? this.elements.addItemDesc.value.trim() : '';
+    if (!description) {
+      this.showFlash('error', 'Enter an item description');
+      return;
+    }
     const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
 
     const item = {
