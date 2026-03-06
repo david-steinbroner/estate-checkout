@@ -19,11 +19,6 @@ const Checkout = {
   // Invoice-level discount ({ type: 'percent'|'dollar', value: number } or null)
   ticketDiscount: null,
 
-  // Track if we're in the middle of adding from prompt
-  pendingAddWithoutDesc: false,
-
-  // Pending price for description entry sheet
-  pendingPrice: null,
 
   // Reuse customer number when reopening a transaction (prevents void loop incrementing)
   reuseCustomerNumber: null,
@@ -83,9 +78,7 @@ const Checkout = {
       itemSheetDone: document.getElementById('item-sheet-done'),
       runningTotal: document.getElementById('running-total'),
       runningTotalBar: document.getElementById('running-total-bar'),
-      priceDisplay: document.getElementById('price-display'),
-      numpad: document.getElementById('numpad'),
-      addButton: document.getElementById('add-button'),
+      addItemButton: document.getElementById('add-item-button'),
       doneButton: document.getElementById('done-button'),
       clearButton: document.getElementById('clear-button'),
       clearModal: document.getElementById('clear-modal'),
@@ -93,14 +86,14 @@ const Checkout = {
       clearConfirm: document.getElementById('clear-confirm'),
       flashSuccess: document.getElementById('flash-success'),
       flashError: document.getElementById('flash-error'),
-      descPrompt: document.getElementById('desc-prompt'),
-      descPromptAdd: document.getElementById('desc-prompt-add'),
-      descPromptDesc: document.getElementById('desc-prompt-desc'),
-      descEntryModal: document.getElementById('desc-entry-modal'),
-      descEntryTitle: document.getElementById('desc-entry-title'),
-      descEntryInput: document.getElementById('desc-entry-input'),
-      descEntryConfirm: document.getElementById('desc-entry-confirm'),
-      descEntryMic: document.getElementById('desc-entry-mic'),
+      // Add Item sheet
+      addItemModal: document.getElementById('add-item-modal'),
+      addItemDesc: document.getElementById('add-item-desc'),
+      addItemPrice: document.getElementById('add-item-price'),
+      addItemMic: document.getElementById('add-item-mic'),
+      addItemConfirm: document.getElementById('add-item-confirm'),
+      numpad: document.getElementById('numpad'),
+      // Edit description sheet (for existing items)
       descEditModal: document.getElementById('desc-edit-modal'),
       descEditTitle: document.getElementById('desc-edit-title'),
       descEditInput: document.getElementById('desc-edit-input'),
@@ -129,18 +122,9 @@ const Checkout = {
    * Bind event listeners
    */
   bindEvents() {
-    // Number pad buttons
-    this.elements.numpad.addEventListener('click', (e) => {
-      const button = e.target.closest('.numpad__button');
-      if (!button) return;
-
-      const value = button.dataset.value;
-      this.handleNumpadInput(value);
-    });
-
-    // Add button
-    this.elements.addButton.addEventListener('click', () => {
-      this.addItem();
+    // Add Item button in action bar
+    this.elements.addItemButton.addEventListener('click', () => {
+      this.openAddItemSheet();
     });
 
     // Done button
@@ -171,53 +155,40 @@ const Checkout = {
       }
     });
 
-    // Description prompt buttons
-    if (this.elements.descPromptAdd) {
-      this.elements.descPromptAdd.addEventListener('click', () => {
-        this.confirmAddWithoutDesc();
+    // Add Item sheet events
+    if (this.elements.numpad) {
+      this.elements.numpad.addEventListener('click', (e) => {
+        const button = e.target.closest('.numpad__button');
+        if (!button) return;
+        this.handleNumpadInput(button.dataset.value);
       });
     }
-
-    if (this.elements.descPromptDesc) {
-      this.elements.descPromptDesc.addEventListener('click', () => {
-        this.focusDescription();
+    if (this.elements.addItemConfirm) {
+      this.elements.addItemConfirm.addEventListener('click', () => {
+        this.confirmAddItem();
       });
     }
-
-    // Description prompt overlay backdrop tap (add without description)
-    if (this.elements.descPrompt) {
-      this.elements.descPrompt.addEventListener('click', (e) => {
-        // Only trigger if clicking the overlay itself, not the sheet
-        if (e.target === this.elements.descPrompt) {
-          this.confirmAddWithoutDesc();
-        }
-      });
-    }
-
-    // Description entry sheet
-    if (this.elements.descEntryConfirm) {
-      this.elements.descEntryConfirm.addEventListener('click', () => {
-        this.confirmDescEntry();
-      });
-    }
-    if (this.elements.descEntryInput) {
-      this.elements.descEntryInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') this.confirmDescEntry();
-      });
-    }
-    if (this.elements.descEntryMic) {
-      this.elements.descEntryMic.addEventListener('click', () => {
+    if (this.elements.addItemMic) {
+      this.elements.addItemMic.addEventListener('click', () => {
         if (!Speech.isSupported) return;
         Speech.startDescriptionCapture((text) => {
-          this.elements.descEntryInput.value = text;
-          this.elements.descEntryInput.focus();
+          this.elements.addItemDesc.value = text;
+          this.elements.addItemDesc.focus();
         });
       });
     }
-    if (this.elements.descEntryModal) {
-      this.elements.descEntryModal.addEventListener('click', (e) => {
-        if (e.target === this.elements.descEntryModal) {
-          this.hideDescEntry();
+    if (this.elements.addItemDesc) {
+      this.elements.addItemDesc.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.elements.addItemDesc.blur();
+        }
+      });
+    }
+    if (this.elements.addItemModal) {
+      this.elements.addItemModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.addItemModal) {
+          this.closeAddItemSheet();
         }
       });
     }
@@ -402,35 +373,42 @@ const Checkout = {
    */
   updatePriceDisplay() {
     const price = parseFloat(this.priceInput) || 0;
-    this.elements.priceDisplay.textContent = Utils.formatCurrency(price);
+    if (this.elements.addItemPrice) {
+      this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
+    }
   },
 
   /**
-   * Add an item to the cart
+   * Open the Add Item bottom sheet
    */
-  addItem() {
-    // Close item sheet before adding
+  openAddItemSheet() {
     this.closeItemSheet();
+    this.priceInput = '';
+    this.updatePriceDisplay();
+    if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
+    if (this.elements.addItemModal) this.elements.addItemModal.classList.add('visible');
+  },
+
+  /**
+   * Close the Add Item bottom sheet
+   */
+  closeAddItemSheet() {
+    if (this.elements.addItemModal) this.elements.addItemModal.classList.remove('visible');
+  },
+
+  /**
+   * Confirm adding item from the Add Item sheet
+   */
+  confirmAddItem() {
     this.checkEditDirty();
 
     const price = parseFloat(this.priceInput);
-
     if (!price || price <= 0) {
       this.showFlash('error', 'Enter a price');
       return;
     }
 
-    const description = '';
-
-    // Prompt if no description entered (unless bypassed via speech or confirm)
-    if (!description && !this.pendingAddWithoutDesc) {
-      this.showDescPrompt();
-      return;
-    }
-
-    // Reset pending flag
-    this.pendingAddWithoutDesc = false;
-
+    const description = this.elements.addItemDesc ? this.elements.addItemDesc.value.trim() : '';
     const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
 
     const item = {
@@ -447,18 +425,19 @@ const Checkout = {
     this.items.push(item);
     this.saveCart();
     this.saveDraftTransaction();
-
-    // Reset transaction saved flag (cart was modified)
     this.transactionSaved = false;
 
-    // Clear inputs
+    // Clear sheet inputs for next item
     this.priceInput = '';
     this.updatePriceDisplay();
+    if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
 
-    // Re-render
+    // Close sheet and re-render
+    this.closeAddItemSheet();
     this.render();
+    this.showFlash('success', 'Added!');
 
-    // Flash the newly added item row in the inline list
+    // Flash the newly added item row
     const rows = this.elements.itemList.querySelectorAll('.item-row');
     if (rows.length > 0) {
       const lastRow = rows[rows.length - 1];
@@ -916,92 +895,6 @@ const Checkout = {
     App.showScreen('qr', transaction);
   },
 
-  /**
-   * Show the "no description" prompt
-   */
-  showDescPrompt() {
-    if (!this.elements.descPrompt) return;
-
-    this.elements.descPrompt.classList.add('visible');
-  },
-
-  /**
-   * Hide the "no description" prompt
-   */
-  hideDescPrompt() {
-    if (!this.elements.descPrompt) return;
-
-    this.elements.descPrompt.classList.remove('visible');
-  },
-
-  /**
-   * Confirm adding without description
-   */
-  confirmAddWithoutDesc() {
-    this.hideDescPrompt();
-    this.pendingAddWithoutDesc = true;
-    this.addItem();
-  },
-
-  /**
-   * Show the description entry sheet for the pending price
-   */
-  focusDescription() {
-    this.hideDescPrompt();
-    this.pendingPrice = parseFloat(this.priceInput);
-    if (!this.pendingPrice || this.pendingPrice <= 0) return;
-
-    this.elements.descEntryTitle.textContent = `Item — ${Utils.formatCurrency(this.pendingPrice)}`;
-    this.elements.descEntryInput.value = '';
-    this.elements.descEntryModal.classList.add('visible');
-
-    // Delay focus slightly so the sheet animation completes and keyboard avoidance kicks in
-    setTimeout(() => this.elements.descEntryInput.focus(), 100);
-  },
-
-  /**
-   * Confirm description entry and add item to cart
-   */
-  confirmDescEntry() {
-    this.checkEditDirty();
-    const description = this.elements.descEntryInput.value.trim();
-    this.hideDescEntry();
-
-    const price = this.pendingPrice;
-    this.pendingPrice = null;
-    if (!price || price <= 0) return;
-
-    const dayDiscountedPrice = Utils.applyDiscount(price, this.currentDiscount);
-
-    const item = {
-      id: Utils.generateId(),
-      description: description,
-      originalPrice: price,
-      dayDiscount: this.currentDiscount,
-      dayDiscountedPrice: dayDiscountedPrice,
-      haggleType: null,
-      haggleValue: null,
-      finalPrice: dayDiscountedPrice
-    };
-
-    this.items.push(item);
-    this.saveCart();
-    this.saveDraftTransaction();
-    this.transactionSaved = false;
-
-    this.priceInput = '';
-    this.updatePriceDisplay();
-    this.render();
-    this.showFlash('success', 'Added!');
-  },
-
-  /**
-   * Hide the description entry sheet
-   */
-  hideDescEntry() {
-    if (!this.elements.descEntryModal) return;
-    this.elements.descEntryModal.classList.remove('visible');
-  },
 
   // ── Edit Description Sheet (for existing items) ──
 

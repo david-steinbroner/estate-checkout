@@ -218,8 +218,6 @@ const Speech = {
    */
   cacheElements() {
     this.elements = {
-      micButton: document.getElementById('mic-button'),
-      micStatus: document.getElementById('mic-status'),
       processingOverlay: document.getElementById('speech-processing'),
       confirmModal: document.getElementById('speech-confirm-modal'),
       confirmDesc: document.getElementById('speech-confirm-desc'),
@@ -247,37 +245,6 @@ const Speech = {
    * Bind mic button events using pointer events for cross-device support
    */
   bindEvents() {
-    const btn = this.elements.micButton;
-    if (!btn) return;
-
-    // Use pointer events for cross-device compatibility
-    btn.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      this.startListening();
-    });
-
-    btn.addEventListener('pointerup', (e) => {
-      e.preventDefault();
-      this.onButtonRelease();
-    });
-
-    btn.addEventListener('pointerleave', (e) => {
-      if (this.isListening) {
-        this.onButtonRelease();
-      }
-    });
-
-    btn.addEventListener('pointercancel', (e) => {
-      if (this.isListening) {
-        this.onButtonRelease();
-      }
-    });
-
-    // Prevent context menu on long press (mobile)
-    btn.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
-
     // Bind confirmation modal buttons
     if (this.elements.confirmButton) {
       this.elements.confirmButton.addEventListener('click', () => this.confirmAdd());
@@ -495,16 +462,7 @@ const Speech = {
    * Update mic button UI state
    */
   updateMicUI(isListening) {
-    if (this.elements.micButton) {
-      if (isListening) {
-        this.elements.micButton.classList.add('listening');
-      } else {
-        this.elements.micButton.classList.remove('listening');
-      }
-    }
-    if (this.elements.micStatus) {
-      this.elements.micStatus.hidden = !isListening;
-    }
+    // No standalone mic button — mic is now inside the Add Item sheet
   },
 
   /**
@@ -940,12 +898,11 @@ const Speech = {
       finalPrice: dayDiscountedPrice
     };
 
+    Checkout.checkEditDirty();
     Checkout.items.push(item);
     Checkout.saveCart();
+    Checkout.saveDraftTransaction();
     Checkout.transactionSaved = false;
-
-    Checkout.priceInput = '';
-    Checkout.updatePriceDisplay();
     Checkout.render();
     Checkout.showFlash('success', 'Added!');
 
@@ -960,16 +917,14 @@ const Speech = {
 
     const { price, description } = this.pendingResult;
 
-    // Set price in checkout pad
+    // Open Add Item sheet pre-filled with speech result
     Checkout.priceInput = price.toString();
     Checkout.updatePriceDisplay();
-
-    // Open the description entry sheet pre-filled for editing
-    Checkout.pendingPrice = price;
-    Checkout.elements.descEntryTitle.textContent = `Item — ${Utils.formatCurrency(price)}`;
-    Checkout.elements.descEntryInput.value = description;
-    Checkout.elements.descEntryModal.classList.add('visible');
-    setTimeout(() => Checkout.elements.descEntryInput.focus(), 100);
+    if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.value = description;
+    if (Checkout.elements.addItemModal) Checkout.elements.addItemModal.classList.add('visible');
+    setTimeout(() => {
+      if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.focus();
+    }, 100);
 
     this.hideConfirmModal();
   },
@@ -986,12 +941,7 @@ const Speech = {
    * Highlight the mic button to draw attention to it
    */
   highlightMicButton() {
-    if (!this.elements.micButton) return;
-
-    this.elements.micButton.classList.add('highlight');
-    setTimeout(() => {
-      this.elements.micButton.classList.remove('highlight');
-    }, 2000);
+    // No standalone mic button to highlight — mic is inside Add Item sheet
   },
 
   /**
@@ -1041,15 +991,9 @@ const Speech = {
    * Hide the mic button if speech is not supported
    */
   hideButton() {
-    if (this.elements && this.elements.micButton) {
-      this.elements.micButton.style.display = 'none';
-    } else {
-      const btn = document.getElementById('mic-button');
-      if (btn) btn.style.display = 'none';
-    }
-    // Also hide the description entry mic button
-    const descMic = document.getElementById('desc-entry-mic');
-    if (descMic) descMic.style.display = 'none';
+    // Hide the Add Item sheet mic button if speech not supported
+    const addItemMic = document.getElementById('add-item-mic');
+    if (addItemMic) addItemMic.style.display = 'none';
   },
 
   /**

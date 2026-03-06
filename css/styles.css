@@ -450,25 +450,55 @@ body {
   margin-top: var(--space-lg);
 }
 
-/* === Input Area (compact) === */
-.input-area {
-  background: var(--color-surface);
-  padding: var(--space-sm) var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-  position: relative;
+/* === Add Item Sheet === */
+.add-item-sheet {
+  padding: var(--space-md);
 }
 
-.price-display {
+.add-item__desc-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.add-item__desc-input {
+  flex: 1;
+  height: var(--height-button);
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+}
+
+.add-item__desc-input:focus {
+  border-color: var(--color-border-focus);
+}
+
+.add-item__mic {
+  width: var(--height-touch-min);
+  height: var(--height-touch-min);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: center;
 }
 
-.price-display__value {
-  flex: 1;
+.add-item__mic:active {
+  background: var(--color-primary-light);
+  transform: scale(0.92);
+}
+
+.add-item__price-display {
   font-size: var(--font-size-price);
   font-weight: var(--font-weight-bold);
   text-align: right;
@@ -479,117 +509,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-bottom: var(--space-sm);
 }
 
-.mic-button {
-  min-width: 72px; /* intentional: mic button minimum width */
+.add-item__confirm {
+  width: 100%;
   height: var(--height-button);
-  padding: 0 var(--space-md);
-  border-radius: var(--radius-md);
+  margin-top: var(--space-sm);
+  background: var(--color-success);
+  color: var(--color-text-on-success);
   border: none;
-  background: var(--color-text-secondary);
-  color: var(--color-text-on-dark);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
 }
 
-.mic-button__icon {
-  font-size: var(--font-size-xl);
-  line-height: var(--line-height-tight);
-}
-
-.mic-button__label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.mic-button:active,
-.mic-button.listening {
-  background: var(--color-danger);
-  animation: mic-pulse 0.8s ease-in-out infinite;
-}
-
-.mic-button.highlight {
-  animation: mic-highlight 0.5s ease-in-out 4;
-}
-
-@keyframes mic-highlight {
-  0%, 100% {
-    box-shadow: 0 0 0 0 var(--color-mic-highlight);
-  }
-  50% {
-    box-shadow: 0 0 0 8px transparent;
-  }
-}
-
-@keyframes mic-pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 var(--color-mic-pulse);
-  }
-  50% {
-    transform: scale(1.03);
-    box-shadow: 0 0 0 10px transparent;
-  }
-}
-
-/* Listening Status Indicator */
-.mic-status {
-  position: absolute;
-  right: var(--space-md);
-  top: var(--space-xs);
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
-  background: var(--color-danger-light);
-  border-radius: var(--radius-sm);
-  animation: status-pulse 1s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.mic-status[hidden] {
-  display: none;
-}
-
-.mic-status__dot {
-  width: 10px; /* intentional: decorative */
-  height: 10px; /* intentional: decorative */
-  border-radius: 50%;
-  background: var(--color-danger);
-  animation: dot-blink 0.6s ease-in-out infinite alternate;
-}
-
-.mic-status__text {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-danger);
-}
-
-@keyframes dot-blink {
-  from { opacity: 1; }
-  to { opacity: 0.4; }
-}
-
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-/* === Numpad Container === */
-.numpad-container {
-  background: var(--color-surface);
-  padding: var(--space-sm);
-  flex-shrink: 0;
+.add-item__confirm:active {
+  background: var(--color-success-dark);
 }
 
 /* === Number Pad === */
@@ -621,27 +561,6 @@ body {
 
 .numpad__button--backspace {
   font-size: var(--font-size-xl);
-}
-
-/* === ADD Button === */
-.add-button {
-  width: 100%;
-  height: var(--height-button);
-  margin-top: var(--space-sm);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.add-button:active {
-  background: var(--color-success-dark);
 }
 
 /* === Action Bar === */
@@ -691,6 +610,16 @@ body {
 
 .action-bar__button--clear:active {
   background: var(--color-danger-light);
+}
+
+.action-bar__button--add {
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+  flex: 2;
+}
+
+.action-bar__button--add:active {
+  background: var(--color-success-dark);
 }
 
 /* === Stacking Price Display (haggle) === */
@@ -1054,37 +983,6 @@ body {
 }
 
 /* === Description Entry Mic Button === */
-.desc-entry__input-row {
-  display: flex;
-  gap: var(--space-sm);
-  align-items: center;
-  margin-bottom: var(--space-lg);
-}
-
-.desc-entry__input-row .sheet__input {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-.desc-entry__mic {
-  width: var(--height-touch-min);
-  height: var(--height-touch-min);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  font-size: var(--font-size-xl);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.desc-entry__mic:active {
-  background: var(--color-primary-light);
-  transform: scale(0.92);
-}
 
 .sheet__buttons {
   display: flex;

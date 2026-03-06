@@ -41,43 +41,10 @@
       </ul>
     </div>
 
-    <!-- Input Area (compact) -->
-    <div class="input-area">
-      <div class="price-display">
-        <div class="price-display__value" id="price-display">$0.00</div>
-        <button class="mic-button" id="mic-button" aria-label="Hold to speak">
-          <span class="mic-button__icon">🎤</span>
-          <span class="mic-button__label">Speak</span>
-        </button>
-      </div>
-      <div class="mic-status" id="mic-status" hidden>
-        <span class="mic-status__dot"></span>
-        <span class="mic-status__text">Listening...</span>
-      </div>
-    </div>
-
-    <!-- Number Pad + Add Item Button (tight grid) -->
-    <div class="numpad-container">
-      <div class="numpad" id="numpad">
-        <button class="numpad__button" data-value="1">1</button>
-        <button class="numpad__button" data-value="2">2</button>
-        <button class="numpad__button" data-value="3">3</button>
-        <button class="numpad__button" data-value="4">4</button>
-        <button class="numpad__button" data-value="5">5</button>
-        <button class="numpad__button" data-value="6">6</button>
-        <button class="numpad__button" data-value="7">7</button>
-        <button class="numpad__button" data-value="8">8</button>
-        <button class="numpad__button" data-value="9">9</button>
-        <button class="numpad__button" data-value=".">.</button>
-        <button class="numpad__button" data-value="0">0</button>
-        <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
-      </div>
-      <button class="add-button" id="add-button">Add Item</button>
-    </div>
-
-    <!-- Action Bar (compact, bottom) -->
+    <!-- Action Bar (bottom) -->
     <div class="action-bar">
       <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
+      <button class="action-bar__button action-bar__button--add" id="add-item-button">Add Item</button>
       <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Invoice</button>
     </div>
   </div>
@@ -323,29 +290,30 @@
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
 
-  <!-- No Description Prompt Sheet -->
-  <div class="overlay" id="desc-prompt">
-    <div class="sheet">
-      <p class="sheet__title">No description — add anyway?</p>
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="desc-prompt-add">Add Without Description</button>
-        <button class="sheet__btn sheet__btn--secondary" id="desc-prompt-desc">Add Description</button>
+  <!-- Add Item Sheet -->
+  <div class="overlay" id="add-item-modal">
+    <div class="sheet add-item-sheet">
+      <div class="add-item__desc-row">
+        <input type="text" class="add-item__desc-input" id="add-item-desc"
+          placeholder="Item description" autocomplete="off" maxlength="60">
+        <button class="add-item__mic" id="add-item-mic" aria-label="Speak description">🎤</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Add Description Sheet -->
-  <div class="overlay" id="desc-entry-modal">
-    <div class="sheet">
-      <p class="sheet__title" id="desc-entry-title">Item — $0.00</p>
-      <div class="desc-entry__input-row">
-        <input type="text" class="sheet__input" id="desc-entry-input"
-          placeholder="Description" autocomplete="off" maxlength="60">
-        <button class="desc-entry__mic" id="desc-entry-mic" aria-label="Speak description">🎤</button>
+      <div class="add-item__price-display" id="add-item-price">$0.00</div>
+      <div class="numpad" id="numpad">
+        <button class="numpad__button" data-value="1">1</button>
+        <button class="numpad__button" data-value="2">2</button>
+        <button class="numpad__button" data-value="3">3</button>
+        <button class="numpad__button" data-value="4">4</button>
+        <button class="numpad__button" data-value="5">5</button>
+        <button class="numpad__button" data-value="6">6</button>
+        <button class="numpad__button" data-value="7">7</button>
+        <button class="numpad__button" data-value="8">8</button>
+        <button class="numpad__button" data-value="9">9</button>
+        <button class="numpad__button" data-value=".">.</button>
+        <button class="numpad__button" data-value="0">0</button>
+        <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
       </div>
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="desc-entry-confirm">Confirm</button>
-      </div>
+      <button class="add-item__confirm" id="add-item-confirm">Add Item</button>
     </div>
   </div>
 
