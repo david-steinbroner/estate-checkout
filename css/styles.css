@@ -109,10 +109,10 @@
   --height-button: 48px;
   --height-input: 48px;
   --height-numpad-btn: 48px;  /* matches all interactive elements */
-  --height-header-context: 48px;
+  --height-header-context: 52px;
   --height-header-buttons: 48px;
-  --height-header: 72px;
-  --height-total-bar: 48px;
+  --height-header: 76px;
+  --height-total-bar: 56px;
 
   /* === Shadows === */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -275,7 +275,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-xl);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -319,6 +319,7 @@ body {
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  padding-top: var(--space-md);
 }
 
 .item-list {
@@ -335,10 +336,10 @@ body {
 .item-row {
   display: flex;
   align-items: center;
-  padding: var(--space-sm) var(--space-lg);
+  padding: var(--space-md) var(--space-xl);
   border-bottom: 1px solid var(--color-border);
   gap: var(--space-sm);
-  min-height: 36px; /* intentional: compact inline preview rows, not individually tappable */
+  min-height: 40px;
 }
 
 .item-row:last-child {
