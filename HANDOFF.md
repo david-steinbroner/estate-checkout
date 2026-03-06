@@ -1,13 +1,48 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-05
+**Last updated:** 2026-03-06
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v63+
+**Service worker cache:** v89
 
 ---
 
 ## What Was Accomplished
+
+### Session 45 (2026-03-06)
+- **Dashboard TDZ bug fix** — `renderTransactionRow()` referenced `status` before its `const` declaration (temporal dead zone). Moved `const status = txn.status || 'unpaid'` to top of function. This was causing the entire transaction list to render blank while filter pill counts (computed separately) showed correct numbers.
+- **Dashboard error isolation** — Wrapped `renderTransactionList()` `.map()` callback and `renderTransactionDetail()` call in try-catch blocks. A single bad transaction now logs an error instead of blanking the entire list.
+- **iOS Safari mic release** — `forceStopRecognition()` now destroys and nulls the `SpeechRecognition` instance after `abort()`, forcing iOS to release the mic hardware. Added `document.activeElement?.blur()` as extra iOS audio session release hint. New `ensureRecognition()` method extracted from `init()` recreates the instance on demand.
+- **iOS Chrome mic errors (Alissa's bug)** — Four interacting fixes for mic immediately erroring on iOS:
+  1. `ensureRecognition()` added to top of `startListening()` and `startDescriptionCapture()` so mic works after recognition was destroyed by visibility change
+  2. Silent retry with 300ms delay when iOS fires `no-speech` within 2s of `recognition.start()` (before mic hardware initializes), only retries once
+  3. `QUICK_TAP_THRESHOLD` lowered to 800ms; quick-tap modal skipped if `onstart` hasn't fired (mic still initializing)
+  4. Mic permission persisted to `localStorage` so iOS (where `navigator.permissions.query` fails) doesn't show permission modal on every page load
+- Service worker cache bumped v85 → v89 across all fixes.
+
+### Session 44 (2026-03-05)
+- **Dashboard status overhaul** — Replaced 3-status system (pending/paid/void) with 5 statuses: Open (blue), Unpaid (amber), Paid (green), Edited (gray), Cancelled (gray). Open invoices are draft transactions that appear on dashboard as items are added to cart. Removed cart banner entirely.
+- **Draft transaction persistence** — New `Storage` methods: `deleteTransaction()`, `saveDraftTxnId()`, `getDraftTxnId()`, `clearDraftTxnId()`. `Checkout.saveDraftTransaction()` creates/updates open drafts after every cart mutation. Drafts promoted to "unpaid" on `finishCheckout()`, deleted on `clearAll()`.
+- **Filter pills + stats** — Dashboard filters: All, Open, Unpaid, Paid, Void. Stats: Invoices = non-void count, Revenue/Avg = paid only.
+- **Open invoice actions** — Tapping an Open invoice on dashboard navigates to checkout. Expanded detail shows Edit Order, Create Invoice, Cancel buttons.
+- **Order/Invoice naming distinction** — Pre-QR references use "Order" (Order #3), post-QR use "Invoice". Dynamic done button: "Create Invoice" / "See Invoice" / "Create New Invoice" based on editing state.
+- **Lazy voiding** — Editing an invoice doesn't void the original until the first actual cart mutation. `checkEditDirty()` called at top of every cart mutation method.
+- **True-centered nav bar** — Header context text absolutely positioned with `left: 0; right: 0; padding: 0 56px` so it's centered across full header width, not offset by menu button.
+- **Mark Paid on QR screen** — Mark Paid button marks transaction paid via `Storage.updateTransaction()` and navigates to dashboard (not payment screen).
+- Service worker cache bumped v73 → v85.
+
+### Session 43 (2026-03-05)
+- **Item sheet text alignment** — Fixed text alignment throughout to match app convention.
+- **Removed X close button from item sheet** — Closing handled by overlay tap and swipe.
+- **Description mic button** — Added mic button to description entry sheet for voice input of descriptions.
+- **Order-in-progress banner** — Cart banner shown when navigating away from active cart.
+- **Description mic fix** — Skip quick-tap check in description mode, add tap feedback.
+- **Hint strip merged into total bar** — Order info (left) + price (right) in single bar.
+- **Nav bar text centering** — Centered and sized up nav bar sale info text.
+- **Speech confirm/edit fix** — Removed reference to non-existent `descriptionInput` element.
+- **QR screen redesign** — 2x2 button grid: Edit Order, Mark Paid, Discount, New Order. Cart banner hidden on QR/payment screens. Item list border fix.
+- **Ticket/Order renamed to Invoice** — "Create Ticket" → "Create Invoice", "Edit Ticket" → "Edit Invoice", etc. Updated QR helper text. Fixed button outlines.
+- Service worker cache bumped v63 → v73.
 
 ### Session 42 (2026-03-05)
 - **Edit Sale: Current Day dropdown** — Replaced the tap-to-edit number input for Current Day with a `<select>` dropdown. Populated with all days from the discount schedule (labeled "Day N"), pre-selects current day. On change, sets `sale.dayOverride` and re-renders.

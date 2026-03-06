@@ -88,6 +88,10 @@ These were previously on the roadmap but removed because they conflict with our 
 | 2026-03-05 | Haggle sheet hidden behind item edit sheet | Resolved | Both at z-index 100. Fixed by closing item sheet when haggle opens, reopening on close. |
 | 2026-03-05 | "Add Description" button did nothing | Resolved | `focusDescription()` was a stub. Implemented full description entry sheet flow. |
 | 2026-03-05 | Item sheet used non-standard pattern | Resolved | Converted from `.sheet-backdrop` + `hidden` to `.overlay` + `.visible` class pattern. |
+| 2026-03-06 | Dashboard transaction list blank (TDZ) | Resolved | `renderTransactionRow()` referenced `status` before `const` declaration. Moved declaration to top. |
+| 2026-03-06 | Single bad transaction blanks entire dashboard list | Resolved | Added try-catch in `renderTransactionList()` `.map()` and `renderTransactionDetail()` call. |
+| 2026-03-06 | iOS Safari mic stays active after backgrounding | Resolved | Destroy and recreate `SpeechRecognition` instance in `forceStopRecognition()`. |
+| 2026-03-06 | iOS Chrome mic immediately errors (Alissa report) | Resolved | Silent retry for early no-speech, `ensureRecognition()` in `startListening()`, permission persisted to localStorage, quick-tap threshold fix. |
 | 2026-03-03 | Design system inconsistency across screens | Resolved | Complete design system shipped. See DESIGN_SYSTEM.md. |
 | 2026-03-02 | QR data may hit size limits for 50+ item carts | Low | URL-safe base64 encoded, no compression. Needs field test data to validate real-world cart sizes. Haggle data adds ~30 bytes per item. |
 | 2026-03-02 | Offline airplane mode not tested | Medium | Service worker caches all assets but no live test has been done in airplane mode. |

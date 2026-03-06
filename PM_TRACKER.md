@@ -1,6 +1,6 @@
 # PM TRACKER — Estate Checkout
 
-**Last updated:** 2026-03-05
+**Last updated:** 2026-03-06
 **Purpose:** Tracking doc for Claude (PM partner) to maintain context across chat sessions. Human should add this to the project files.
 
 ---
@@ -11,26 +11,28 @@
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v63+
-**Development sessions:** 42+ (2026-02-27 through 2026-03-05)
+**Service worker cache:** v89
+**Development sessions:** 45 (2026-02-27 through 2026-03-06)
 **JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
 
-### What's Working (confirmed through Session 42)
+### What's Working (confirmed through Session 45)
 - **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
 - **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
-- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), full item list sheet with split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), Create Ticket
-- **Order naming** — merged into hint strip ("Order #3 — 2 items — tap to edit order name and items"). Tap opens item sheet with "Order #X" title (tap to rename). Sequential numbering. Custom names preserved through Edit Ticket cycle.
-- **No-description prompt** — bottom sheet every time item added without description. "Add Description" opens dedicated entry sheet with text input.
+- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), full item list sheet with split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
+- **Order naming** — merged into hint strip ("Order #3 — 2 items — tap to edit order name and items"). Tap opens item sheet with "Order #X" title (tap to rename). Sequential numbering. Custom names preserved through edit cycle. Pre-QR uses "Order", post-QR uses "Invoice".
+- **No-description prompt** — bottom sheet every time item added without description. "Add Description" opens dedicated entry sheet with text input + mic button.
 - **Description + price editing** — In item edit sheet, tapping description opens description edit sheet, tapping price opens adjust price sheet. Both editable after item is added.
-- **Speech-to-text** — hold-to-talk, natural language parser (number words, compound prices, description extraction), confirm/edit/cancel flow, post-permission guide sheet, quick-tap detection ("Hold the button longer"), progressive failure tips, mic permission flow with custom modal
-- **QR Handoff** — QR code, itemized summary, Edit Ticket (voids + reloads), New Ticket
-- **Edit Ticket loop** — repeated Edit Ticket → Create Ticket cycles preserve customer number and reopenedFrom chain
-- **QR Scan** — native BarcodeDetector + html5-qrcode fallback for iOS, permission denied error state with Retry, New Customer button
-- **Payment Receive** — customer info bar, itemized list, total, Mark Paid with success animation, New Customer
-- **Dashboard** — summary stats (customers, revenue, avg ticket), filter pills (All/Pending/Paid/Void) with live counts, sort toggle (Newest/Oldest First), expandable transaction list (accordion), status badges (Pending orange, Paid green, Void gray with reason), action buttons (Mark as Paid/Unpaid, Edit Order, Generate Ticket), filter-specific empty states
-- **Transaction statuses** — pending (from Create Ticket), paid (from Mark Paid), void (from Edit Order, with voidReason), unpaid (legacy)
-- **Shared header** — 48px nav bar with sale name, day number, discount badge, shared sale badge; ☰ hamburger menu (Dashboard, Scan Ticket, Share Sale, End Day, End Sale) across all active-sale screens
-- **Navigation** — New Customer buttons on QR, Scan, Payment, Dashboard screens
+- **Speech-to-text** — hold-to-talk, natural language parser (number words, compound prices, description extraction), confirm/edit/cancel flow, post-permission guide sheet, quick-tap detection ("Hold the button longer"), progressive failure tips, mic permission flow with custom modal, iOS early no-speech silent retry, permission persistence to localStorage
+- **QR Handoff** — QR code, itemized summary, 2x2 button grid (Edit Invoice, Mark Paid, Discount, New Order), Mark Paid directly marks paid and navigates to dashboard
+- **Edit Invoice loop** — lazy voiding (original not voided until first cart mutation), repeated edit cycles preserve customer number and reopenedFrom chain
+- **QR Scan** — native BarcodeDetector + html5-qrcode fallback for iOS, permission denied error state with Retry, New Order button
+- **Payment Receive** — customer info bar, itemized list, total, Mark Paid with success animation, New Order
+- **Dashboard** — 5-status system: Open (blue), Unpaid (amber), Paid (green), Edited (gray), Cancelled (gray). Summary stats (invoices = non-void, revenue/avg = paid only). Filter pills (All/Open/Unpaid/Paid/Void) with live counts, sort toggle (Newest/Oldest First), expandable transaction list (accordion) with error isolation, status-specific action buttons. Open invoices show as drafts with blue left border.
+- **Draft transaction persistence** — Adding items to cart creates an "Open" draft on dashboard in real-time. Drafts promoted to "Unpaid" on Create Invoice, deleted on Clear All or End Day.
+- **Transaction statuses** — open (draft in cart), unpaid (invoice created, awaiting payment), paid (payment received), void/edited (original after edit), void/cancelled (manually cancelled)
+- **Shared header** — 48px nav bar with sale name, day number, discount badge, shared sale badge; true-centered across full header width; ☰ hamburger menu (Dashboard, Scan Invoice, Share Sale, End Day, End Sale) across all active-sale screens
+- **Navigation** — New Order buttons on QR, Scan, Payment, Dashboard screens
+- **iOS mic reliability** — Recognition instance destroyed/recreated on page background to release mic hardware. Silent retry for early no-speech. Permission persisted to localStorage for iOS where Permissions API unavailable.
 - **Discount auto-calculation** — timezone-aware day detection, configurable per-day percentages
 - **Item-level haggle discounts** — tap price in edit sheet to open haggle sheet; new price, $ off, or % off; stacks on top of day discount with visual stacking display (~~$20~~ ~~$15~~ $12)
 - **Ticket-level discounts** — % off or $ off entire ticket; accessible from expandable total bar and QR screen; stacks with day + haggle discounts
@@ -73,7 +75,7 @@
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 42) |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 45) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 
@@ -104,6 +106,9 @@ Session 39 (2026-03-04): **Shared sale / multi-worker join (Prompt 15)** — Sha
 Session 40 (2026-03-04): **UI cleanup (Prompt 16)** — Header buttons collapsed into ☰ hamburger menu (bottom sheet with Dashboard, Scan Ticket, Share Sale, End Day, End Sale). Expandable running total bar (collapsed = total + chevron, expanded = full breakdown + Add/Edit Ticket Discount button). Ticket % button removed from action bar. Discount button added to QR screen for in-place ticket discount without voiding transaction.
 Session 41 (2026-03-05): **Checkout UX overhaul** — Taller 48px header as proper nav bar. Removed description input + order name bar, merged order info into always-visible hint strip. Item sheet redesigned with editable "Order #X" title + split description/price tap targets. Keyboard avoidance via visualViewport API. Fixed Edit Ticket crashes (removed element refs). Standardized all 17 sheets to overlay+visible pattern. Setup screen: side-by-side buttons + header with ☰ menu. Add Description flow implemented. Haggle sheet stacking fix.
 Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day changed from number input to dropdown select. Confirm/Done button flow prevents accidental sheet close during editing. Remove discount days with sequential renumbering (disabled for completed days, flash error toast).
+Session 43 (2026-03-05): **Checkout UX polish** — Description mic button, hint strip merged into total bar, QR screen 2x2 button grid, ticket/order renamed to invoice throughout. Service worker v63 → v73.
+Session 44 (2026-03-05): **Dashboard status overhaul** — 5-status system (Open/Unpaid/Paid/Edited/Cancelled), draft transaction persistence, filter pills, lazy voiding, order/invoice naming distinction, dynamic done button, true-centered nav bar. Cart banner removed. Service worker v73 → v85.
+Session 45 (2026-03-06): **iOS mic + dashboard bug fixes** — Dashboard TDZ fix, error isolation for row rendering, iOS Safari mic release (destroy/recreate recognition), iOS Chrome early no-speech silent retry, permission persistence to localStorage, quick-tap threshold fix. Service worker v85 → v89.
 
 ---
 
@@ -145,7 +150,7 @@ Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day change
 
 - QR data format: raw JSON works for now, may need compression for 50+ item carts
 - Should completed transactions persist across sales or reset? (Current: clears on End Sale)
-- Speech-to-text reliability on iOS Safari vs Android Chrome — untested in field conditions
+- Speech-to-text reliability on iOS Safari vs Android Chrome — iOS-specific fixes shipped (Session 45), needs field validation
 - Setup screen usability: could a 60-year-old figure it out with 2 min training?
 - Onboarding walkthrough: is it enough, or do users dismiss and get confused?
 - PWA vs App Store: do operators ask "is this in the App Store?" — does it matter for adoption?
