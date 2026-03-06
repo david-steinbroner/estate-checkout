@@ -361,6 +361,17 @@ body {
   font-style: italic;
 }
 
+.item-row__desc-input {
+  width: 100%;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface);
+  outline: none;
+}
+
 .item-row__prices {
   text-align: right;
   display: flex;
@@ -455,15 +466,21 @@ body {
   padding: var(--space-md);
 }
 
-.add-item__desc-row {
+.add-item__top {
   display: flex;
   gap: var(--space-sm);
-  align-items: center;
   margin-bottom: var(--space-md);
 }
 
-.add-item__desc-input {
+.add-item__fields {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.add-item__desc-input {
   height: var(--height-button);
   padding: 0 var(--space-md);
   border: 1px solid var(--color-border);
@@ -478,38 +495,48 @@ body {
   border-color: var(--color-border-focus);
 }
 
-.add-item__mic {
-  width: var(--height-touch-min);
-  height: var(--height-touch-min);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  font-size: var(--font-size-xl);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-item__mic:active {
-  background: var(--color-primary-light);
-  transform: scale(0.92);
-}
-
 .add-item__price-display {
   font-size: var(--font-size-price);
   font-weight: var(--font-weight-bold);
-  text-align: right;
+  text-align: left;
   padding: 0 var(--space-md);
   background: var(--color-bg);
   border-radius: var(--radius-sm);
   height: var(--height-button);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-bottom: var(--space-sm);
+}
+
+.add-item__mic {
+  width: 96px;
+  align-self: stretch;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+
+.add-item__mic:active {
+  background: var(--color-primary-dark);
+  transform: scale(0.96);
+}
+
+.add-item__mic-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.add-item__mic-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .add-item__confirm {

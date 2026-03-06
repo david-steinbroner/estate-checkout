@@ -293,12 +293,17 @@
   <!-- Add Item Sheet -->
   <div class="overlay" id="add-item-modal">
     <div class="sheet add-item-sheet">
-      <div class="add-item__desc-row">
-        <input type="text" class="add-item__desc-input" id="add-item-desc"
-          placeholder="Item description" autocomplete="off" maxlength="60">
-        <button class="add-item__mic" id="add-item-mic" aria-label="Speak description">🎤</button>
+      <div class="add-item__top">
+        <div class="add-item__fields">
+          <input type="text" class="add-item__desc-input" id="add-item-desc"
+            placeholder="Item description" autocomplete="off" maxlength="60">
+          <div class="add-item__price-display" id="add-item-price">$0.00</div>
+        </div>
+        <button class="add-item__mic" id="add-item-mic" aria-label="Speak price and description">
+          <span class="add-item__mic-icon">🎤</span>
+          <span class="add-item__mic-label">Speak</span>
+        </button>
       </div>
-      <div class="add-item__price-display" id="add-item-price">$0.00</div>
       <div class="numpad" id="numpad">
         <button class="numpad__button" data-value="1">1</button>
         <button class="numpad__button" data-value="2">2</button>
@@ -317,18 +322,6 @@
     </div>
   </div>
 
-  <!-- Edit Description Sheet -->
-  <div class="overlay" id="desc-edit-modal">
-    <div class="sheet">
-      <p class="sheet__title" id="desc-edit-title">Edit Description</p>
-      <input type="text" class="sheet__input" id="desc-edit-input"
-        placeholder="Description" autocomplete="off" maxlength="60">
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="desc-edit-save">Save</button>
-        <button class="sheet__btn sheet__btn--secondary" id="desc-edit-cancel">Cancel</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Clear Confirmation Sheet -->
   <div class="overlay" id="clear-modal">

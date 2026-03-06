@@ -93,12 +93,6 @@ const Checkout = {
       addItemMic: document.getElementById('add-item-mic'),
       addItemConfirm: document.getElementById('add-item-confirm'),
       numpad: document.getElementById('numpad'),
-      // Edit description sheet (for existing items)
-      descEditModal: document.getElementById('desc-edit-modal'),
-      descEditTitle: document.getElementById('desc-edit-title'),
-      descEditInput: document.getElementById('desc-edit-input'),
-      descEditSave: document.getElementById('desc-edit-save'),
-      descEditCancel: document.getElementById('desc-edit-cancel'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
       haggleTitle: document.getElementById('haggle-title'),
@@ -190,24 +184,6 @@ const Checkout = {
         if (e.target === this.elements.addItemModal) {
           this.closeAddItemSheet();
         }
-      });
-    }
-
-    // Description edit sheet (editing existing item descriptions)
-    if (this.elements.descEditSave) {
-      this.elements.descEditSave.addEventListener('click', () => this.saveDescEdit());
-    }
-    if (this.elements.descEditCancel) {
-      this.elements.descEditCancel.addEventListener('click', () => this.closeDescEdit());
-    }
-    if (this.elements.descEditInput) {
-      this.elements.descEditInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') this.saveDescEdit();
-      });
-    }
-    if (this.elements.descEditModal) {
-      this.elements.descEditModal.addEventListener('click', (e) => {
-        if (e.target === this.elements.descEditModal) this.closeDescEdit();
       });
     }
 
@@ -671,11 +647,11 @@ const Checkout = {
       });
     });
 
-    // Bind tap-to-edit-description on desc spans
+    // Bind tap-to-edit-description inline
     this.elements.itemSheetList.querySelectorAll('[data-edit-desc]').forEach(el => {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.openDescEdit(el.dataset.editDesc);
+        this.startInlineDescEdit(el.dataset.editDesc, el);
       });
     });
 
@@ -896,51 +872,42 @@ const Checkout = {
   },
 
 
-  // ── Edit Description Sheet (for existing items) ──
-
   /**
-   * Open the description edit sheet for an existing item
+   * Start inline editing of a description in the item sheet
    */
-  openDescEdit(itemId) {
+  startInlineDescEdit(itemId, descEl) {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
+    if (descEl.querySelector('input')) return; // already editing
 
-    this.closeItemSheet();
-    this._editDescItemId = itemId;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'item-row__desc-input';
+    input.value = item.description || '';
+    input.placeholder = 'Description';
+    input.maxLength = 60;
 
-    const desc = item.description || '';
-    const price = Utils.formatCurrency(item.finalPrice);
-    this.elements.descEditTitle.textContent = `Edit Description — ${price}`;
-    this.elements.descEditInput.value = desc;
-    this.elements.descEditModal.classList.add('visible');
-    setTimeout(() => this.elements.descEditInput.focus(), 100);
-  },
+    descEl.textContent = '';
+    descEl.appendChild(input);
+    input.focus();
 
-  /**
-   * Save the edited description and return to item sheet
-   */
-  saveDescEdit() {
-    const item = this.items.find(i => i.id === this._editDescItemId);
-    if (item) {
-      this.checkEditDirty();
-      item.description = this.elements.descEditInput.value.trim();
-      this.saveCart();
-      this.saveDraftTransaction();
-      this.transactionSaved = false;
-      this.render();
-    }
-    this._editDescItemId = null;
-    this.elements.descEditModal.classList.remove('visible');
-    if (this.items.length > 0) this.openItemSheet();
-  },
+    const finish = () => {
+      const newDesc = input.value.trim();
+      if (newDesc !== (item.description || '')) {
+        this.checkEditDirty();
+        item.description = newDesc;
+        this.saveCart();
+        this.saveDraftTransaction();
+        this.transactionSaved = false;
+        this.render();
+      }
+      this.renderItemSheet();
+    };
 
-  /**
-   * Close the description edit sheet without saving
-   */
-  closeDescEdit() {
-    this._editDescItemId = null;
-    this.elements.descEditModal.classList.remove('visible');
-    if (this.items.length > 0) this.openItemSheet();
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') input.blur();
+    });
   },
 
   /**
