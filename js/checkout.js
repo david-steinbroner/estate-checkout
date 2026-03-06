@@ -162,15 +162,8 @@ const Checkout = {
         this.confirmAddItem();
       });
     }
-    if (this.elements.addItemMic) {
-      this.elements.addItemMic.addEventListener('click', () => {
-        if (!Speech.isSupported) return;
-        Speech.startDescriptionCapture((text) => {
-          this.elements.addItemDesc.value = text;
-          this.elements.addItemDesc.focus();
-        });
-      });
-    }
+    // Mic button pointer events are bound in Speech.bindEvents()
+    // (hold-to-speak with full price+description parsing)
     if (this.elements.addItemDesc) {
       this.elements.addItemDesc.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {

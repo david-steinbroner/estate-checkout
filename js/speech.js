@@ -231,6 +231,7 @@ const Speech = {
       failTip: document.getElementById('speech-fail-tip'),
       retryButton: document.getElementById('speech-retry-btn'),
       failCancelButton: document.getElementById('speech-fail-cancel-btn'),
+      addItemMic: document.getElementById('add-item-mic'),
       permissionModal: document.getElementById('speech-permission-modal'),
       permissionTitle: document.getElementById('speech-permission-title'),
       permissionBody: document.getElementById('speech-permission-body'),
@@ -309,6 +310,27 @@ const Speech = {
           this.hideMicGuide();
         }
       });
+    }
+
+    // Add Item sheet mic button — hold-to-speak
+    if (this.elements.addItemMic) {
+      this.elements.addItemMic.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.elements.addItemMic.classList.add('listening');
+        this.startListening();
+      });
+
+      const stopHandler = () => {
+        this.elements.addItemMic.classList.remove('listening');
+        this.onButtonRelease();
+      };
+
+      this.elements.addItemMic.addEventListener('pointerup', stopHandler);
+      this.elements.addItemMic.addEventListener('pointerleave', stopHandler);
+      this.elements.addItemMic.addEventListener('pointercancel', stopHandler);
+
+      // Prevent iOS long-press context menu
+      this.elements.addItemMic.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
     // Release microphone when page loses focus
@@ -462,7 +484,9 @@ const Speech = {
    * Update mic button UI state
    */
   updateMicUI(isListening) {
-    // No standalone mic button — mic is now inside the Add Item sheet
+    if (this.elements.addItemMic) {
+      this.elements.addItemMic.classList.toggle('listening', isListening);
+    }
   },
 
   /**
@@ -885,39 +909,8 @@ const Speech = {
     if (!this.pendingResult) return;
 
     const { price, description } = this.pendingResult;
-    const dayDiscountedPrice = Utils.applyDiscount(price, Checkout.currentDiscount);
 
-    const item = {
-      id: Utils.generateId(),
-      description: description,
-      originalPrice: price,
-      dayDiscount: Checkout.currentDiscount,
-      dayDiscountedPrice: dayDiscountedPrice,
-      haggleType: null,
-      haggleValue: null,
-      finalPrice: dayDiscountedPrice
-    };
-
-    Checkout.checkEditDirty();
-    Checkout.items.push(item);
-    Checkout.saveCart();
-    Checkout.saveDraftTransaction();
-    Checkout.transactionSaved = false;
-    Checkout.render();
-    Checkout.showFlash('success', 'Added!');
-
-    this.hideConfirmModal();
-  },
-
-  /**
-   * Edit mode - populate fields and let user adjust
-   */
-  editItem() {
-    if (!this.pendingResult) return;
-
-    const { price, description } = this.pendingResult;
-
-    // Open Add Item sheet pre-filled with speech result
+    // Populate the Add Item sheet fields instead of auto-adding
     Checkout.priceInput = price.toString();
     Checkout.updatePriceDisplay();
     if (Checkout.elements.addItemDesc) Checkout.elements.addItemDesc.value = description;
@@ -927,6 +920,14 @@ const Speech = {
     }, 100);
 
     this.hideConfirmModal();
+  },
+
+  /**
+   * Edit mode - populate fields and let user adjust
+   */
+  editItem() {
+    // Both confirm and edit now populate the Add Item sheet
+    this.confirmAdd();
   },
 
   /**
@@ -941,7 +942,16 @@ const Speech = {
    * Highlight the mic button to draw attention to it
    */
   highlightMicButton() {
-    // No standalone mic button to highlight — mic is inside Add Item sheet
+    if (!this.elements.addItemMic) return;
+    // Ensure the Add Item sheet is visible so user can see the mic
+    if (Checkout.elements.addItemModal) {
+      Checkout.elements.addItemModal.classList.add('visible');
+    }
+    // Brief pulse to draw attention
+    this.elements.addItemMic.classList.add('listening');
+    setTimeout(() => {
+      this.elements.addItemMic.classList.remove('listening');
+    }, 600);
   },
 
   /**
