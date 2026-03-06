@@ -406,9 +406,22 @@ body {
   display: none;
 }
 
+.item-list-container .item-row__number,
+.item-list-container .item-row__desc,
+.item-list-container .item-row__final {
+  font-size: var(--font-size-sm);
+}
+
 
 .sheet__title--editable {
   cursor: pointer;
+}
+
+.sheet__title--editable::after {
+  content: ' ✎';
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: normal;
 }
 
 .sheet__title-input {
@@ -502,7 +515,7 @@ body {
   padding: 0 var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 20px;
+  font-size: var(--font-size-base);
   background: var(--color-bg);
   color: var(--color-text);
   outline: none;
@@ -513,8 +526,8 @@ body {
 }
 
 .add-item__price-display {
-  font-size: 20px;
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   text-align: left;
   padding: 0 var(--space-md);
   background: var(--color-bg);
@@ -527,14 +540,14 @@ body {
 .add-item__mic {
   width: 96px;
   align-self: stretch;
-  border: none;
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-md);
-  background: var(--color-primary);
+  background: var(--color-surface);
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
   touch-action: manipulation;
-  color: var(--color-text-on-primary);
+  color: var(--color-primary);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
@@ -546,12 +559,14 @@ body {
 }
 
 .add-item__mic:active {
-  background: var(--color-primary-dark);
+  background: var(--color-primary-light);
   transform: scale(0.96);
 }
 
 .add-item__mic.listening {
-  background: var(--color-danger);
+  background: var(--color-danger-light);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
   animation: mic-pulse 1s ease-in-out infinite;
 }
 
