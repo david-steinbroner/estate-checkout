@@ -396,7 +396,10 @@ const App = {
 
     // Discount Schedule
     html += `<div class="edit-sale__section">
-      <div class="edit-sale__label">Discount Schedule</div>`;
+      <div class="consignor-section__header">
+        <div class="edit-sale__label">Discount Schedule</div>
+        <button class="consignor-list__add" id="edit-sale-add-day">+ Add Day</button>
+      </div>`;
     days.forEach(d => {
       const isCompleted = d <= currentDay;
       const removeClass = isCompleted ? 'edit-sale__remove edit-sale__remove--disabled' : 'edit-sale__remove';
@@ -406,7 +409,6 @@ const App = {
         <button class="${removeClass}" data-remove-day="${d}" ${isCompleted ? 'aria-disabled="true"' : ''}>&times;</button>
       </div>`;
     });
-    html += `<button class="edit-sale__add-day" id="edit-sale-add-day">+ Add Day</button>`;
     html += `</div>`;
 
     // Consignors section

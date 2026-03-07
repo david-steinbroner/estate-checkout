@@ -974,16 +974,7 @@ body {
   100% { opacity: 0; }
 }
 
-.edit-sale__add-day {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-sm) 0;
-  -webkit-tap-highlight-color: transparent;
-}
+
 
 /* === Consignor Selector (Add Item + Item Sheet) === */
 .add-item__consignor-row {
@@ -1138,6 +1129,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.consignor-section__header .setup-field__label,
+.consignor-section__header .edit-sale__label {
+  margin-bottom: 0;
 }
 
 /* === Consignor Form (Add/Edit Sheet) === */
@@ -1715,6 +1711,10 @@ body {
   margin-bottom: var(--space-lg);
 }
 
+.setup-field--spaced {
+  margin-top: var(--space-xl);
+}
+
 .setup-field__label {
   display: block;
   font-size: var(--font-size-sm);
@@ -1818,23 +1818,6 @@ body {
   justify-content: center;
 }
 
-.add-day-button {
-  width: 100%;
-  min-height: var(--height-button);
-  margin-top: var(--space-sm);
-  background: transparent;
-  color: var(--color-primary);
-  border: 1px dashed var(--color-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.add-day-button:active {
-  background: var(--color-primary-light);
-}
 
 /* Setup Actions */
 .setup-actions {

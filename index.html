@@ -116,15 +116,17 @@
 
       <!-- Discount Schedule -->
       <div class="setup-field">
-        <label class="setup-field__label">Discount Schedule</label>
+        <div class="consignor-section__header">
+          <label class="setup-field__label">Discount Schedule</label>
+          <button type="button" class="consignor-list__add" id="add-day-button">+ Add Day</button>
+        </div>
         <div class="discount-list" id="discount-list">
           <!-- Discount rows added by JS -->
         </div>
-        <button type="button" class="add-day-button" id="add-day-button">+ Add Day</button>
       </div>
 
       <!-- Consignors -->
-      <div class="setup-field">
+      <div class="setup-field setup-field--spaced">
         <div class="consignor-section__header">
           <label class="setup-field__label">Consignors</label>
           <button type="button" class="consignor-list__add" id="setup-add-consignor">+ Add</button>

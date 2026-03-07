@@ -209,7 +209,7 @@ const KeyboardAvoidance = {
     if (keyboardHeight > 50) {
       // Keyboard is open — shift overlays up (skip Add Item sheet)
       document.querySelectorAll('.overlay.visible').forEach(el => {
-        if (el.id === 'add-item-modal') return;
+        if (el.id === 'add-item-modal' || el.id === 'consignor-modal' || el.id === 'edit-sale-modal') return;
         el.style.bottom = keyboardHeight + 'px';
       });
     } else {
