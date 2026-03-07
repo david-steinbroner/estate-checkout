@@ -1808,6 +1808,7 @@ body {
 /* Sale Date Row */
 .setup-date-row {
   display: flex;
+  align-items: flex-start;
   gap: var(--space-lg);
 }
 
@@ -1961,17 +1962,26 @@ body {
 }
 
 /* Sale Confirmation Sheet */
+#sale-confirm-modal .sheet {
+  padding: var(--space-xl) var(--space-lg) var(--space-lg);
+}
+
+#sale-confirm-modal .sheet__title {
+  margin-bottom: var(--space-lg);
+}
+
 .sale-confirm__summary {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-lg);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
 }
 
 .sale-confirm__row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: var(--space-lg);
   font-size: var(--font-size-base);
   line-height: 1.4;
 }
@@ -1979,12 +1989,15 @@ body {
 .sale-confirm__label {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  min-width: 80px;
+  flex-shrink: 0;
 }
 
 .sale-confirm__value {
   text-align: right;
   font-weight: var(--font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sale-confirm__value--default {
@@ -1995,7 +2008,7 @@ body {
 .sale-confirm__hint {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
   text-align: center;
 }
 
