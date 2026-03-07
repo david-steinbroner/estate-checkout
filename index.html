@@ -94,23 +94,42 @@
           class="setup-field__input"
           placeholder="e.g., Johnson Estate - Oak Hill"
           autocomplete="off"
-          required
         >
       </div>
 
-      <!-- Start Date -->
+      <!-- Sale Date -->
       <div class="setup-field">
-        <label class="setup-field__checkbox">
-          <input type="checkbox" id="setup-today-checkbox" checked>
-          Sale starts today
-        </label>
-        <div id="setup-date-picker" hidden>
-          <label class="setup-field__label" for="setup-start-date">Start Date</label>
-          <input
-            type="date"
-            id="setup-start-date"
-            class="setup-field__input"
-          >
+        <label class="setup-field__label">Sale Date</label>
+        <div class="setup-date-row">
+          <div class="setup-date-half">
+            <label class="setup-field__checkbox">
+              <input type="checkbox" id="setup-today-checkbox" checked>
+              Sale starts today
+            </label>
+            <div id="setup-date-picker" hidden>
+              <input
+                type="date"
+                id="setup-start-date"
+                class="setup-field__input setup-field__input--half"
+              >
+              <p class="setup-date-error" id="start-date-error" hidden></p>
+            </div>
+          </div>
+          <div class="setup-date-half">
+            <span class="setup-date-sublabel">End Date</span>
+            <label class="setup-field__checkbox">
+              <input type="checkbox" id="setup-tbd-checkbox" checked>
+              TBD
+            </label>
+            <div id="setup-end-date-picker" hidden>
+              <input
+                type="date"
+                id="setup-end-date"
+                class="setup-field__input setup-field__input--half"
+              >
+              <p class="setup-date-error" id="end-date-error" hidden></p>
+            </div>
+          </div>
         </div>
       </div>
 

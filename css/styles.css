@@ -1805,6 +1805,37 @@ body {
   border-color: var(--color-border-focus);
 }
 
+/* Sale Date Row */
+.setup-date-row {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.setup-date-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.setup-date-sublabel {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-xs);
+}
+
+.setup-field__input--half {
+  width: 100%;
+}
+
+.setup-date-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin: var(--space-xs) 0 0;
+}
+
 /* Discount List */
 .discount-list {
   display: flex;
@@ -1825,7 +1856,14 @@ body {
 .discount-row__label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  min-width: 50px; /* intentional: label minimum width */
+  min-width: 100px; /* intentional: label minimum width for date */
+  white-space: nowrap;
+}
+
+.discount-row__date {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .discount-row__input {
