@@ -14,6 +14,9 @@ const SaleSetup = {
   // Current discount configuration (editable)
   discounts: {},
 
+  // Pre-sale consignors (before sale is created)
+  pendingConsignors: [],
+
   // DOM element references
   elements: {},
 
@@ -76,6 +79,12 @@ const SaleSetup = {
     this.elements.saleNameInput.addEventListener('input', () => {
       this.validateForm();
     });
+
+    // Add consignor button on setup
+    const addConsignorBtn = document.getElementById('setup-add-consignor');
+    if (addConsignorBtn) {
+      addConsignorBtn.addEventListener('click', () => App.openConsignorSheet(null));
+    }
   },
 
   /**
@@ -219,6 +228,7 @@ const SaleSetup = {
       name: config.name,
       startDate: config.startDate,
       discounts: config.discounts || this.defaultDiscounts,
+      consignors: config.consignors || this.pendingConsignors || [],
       createdAt: Utils.getTimestamp(),
       status: 'active',
       pausedAt: null,
@@ -308,6 +318,40 @@ const SaleSetup = {
   },
 
   /**
+   * Render the consignor list on the setup screen
+   */
+  renderConsignorList() {
+    const container = document.getElementById('setup-consignor-list');
+    if (!container) return;
+
+    const sale = Storage.getSale();
+    const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
+    if (consignors.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = consignors.map(c => {
+      const payoutLabel = c.payoutType === 'percentage'
+        ? `${c.payoutValue}% to consignor`
+        : `$${c.payoutValue} fee per item`;
+      return `<div class="consignor-list__item" data-consignor-id="${c.id}">
+        <span class="consignor-list__dot" style="background: ${c.color}"></span>
+        <span class="consignor-list__name">${Utils.escapeHtml(c.name)}</span>
+        <span class="consignor-list__payout">${payoutLabel}</span>
+      </div>`;
+    }).join('');
+
+    container.querySelectorAll('[data-consignor-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.consignorId;
+        const consignor = consignors.find(c => c.id === id);
+        if (consignor) App.openConsignorSheet(consignor);
+      });
+    });
+  },
+
+  /**
    * Reset the form for a new sale
    */
   resetForm() {
@@ -317,6 +361,8 @@ const SaleSetup = {
     this.setDefaultDate();
     this.resetDiscounts();
     this.renderDiscountList();
+    this.pendingConsignors = [];
+    this.renderConsignorList();
     this.validateForm();
     this.updateDashboardButton();
   },

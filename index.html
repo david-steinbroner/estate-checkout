@@ -122,6 +122,15 @@
         </div>
         <button type="button" class="add-day-button" id="add-day-button">+ Add Day</button>
       </div>
+
+      <!-- Consignors -->
+      <div class="setup-field">
+        <div class="consignor-section__header">
+          <label class="setup-field__label">Consignors</label>
+          <button type="button" class="consignor-list__add" id="setup-add-consignor">+ Add</button>
+        </div>
+        <div id="setup-consignor-list"></div>
+      </div>
     </div>
 
     <!-- Start Sale Button -->
@@ -494,6 +503,40 @@
         <button class="sheet__btn sheet__btn--danger" id="cancel-confirm-yes">Cancel Invoice</button>
         <button class="sheet__btn sheet__btn--secondary" id="cancel-confirm-no">Keep Invoice</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Consignor Sheet -->
+  <div class="overlay" id="consignor-modal">
+    <div class="sheet">
+      <p class="sheet__title" id="consignor-modal-title">Add Consignor</p>
+
+      <label class="consignor-form__label">Name</label>
+      <input type="text" class="consignor-form__input" id="consignor-name" placeholder="e.g., Aunt Beth" autocomplete="off">
+
+      <label class="consignor-form__label">Color</label>
+      <div class="consignor-form__colors" id="consignor-colors"></div>
+
+      <label class="consignor-form__label">Payout</label>
+      <div class="consignor-form__payout-row">
+        <select class="consignor-form__select" id="consignor-payout-type">
+          <option value="percentage">Percentage</option>
+          <option value="flat">Flat Fee</option>
+        </select>
+        <div class="consignor-form__payout-input-wrap">
+          <span class="consignor-form__payout-prefix" id="consignor-payout-prefix"></span>
+          <input type="text" inputmode="decimal" class="consignor-form__payout-input" id="consignor-payout-value" placeholder="70" autocomplete="off">
+          <span class="consignor-form__payout-suffix" id="consignor-payout-suffix">%</span>
+        </div>
+      </div>
+      <p class="consignor-form__hint" id="consignor-payout-hint">Consignor gets 70%, you keep 30%</p>
+
+      <label class="consignor-form__label">Notes <span class="consignor-form__optional">(optional)</span></label>
+      <input type="text" class="consignor-form__input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
+
+      <button class="sheet__btn sheet__btn--confirm consignor-form__save" id="consignor-save">Save</button>
+      <button class="sheet__btn sheet__btn--danger consignor-form__delete" id="consignor-delete" hidden>Delete Consignor</button>
+      <button class="sheet__btn sheet__btn--secondary" id="consignor-cancel">Cancel</button>
     </div>
   </div>
 

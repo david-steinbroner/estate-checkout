@@ -2,6 +2,19 @@
  * utils.js - Shared helper functions for Estate Checkout
  */
 
+const CONSIGNOR_COLORS = [
+  '#e53e3e', // red
+  '#2563eb', // blue
+  '#16a34a', // green
+  '#d97706', // orange
+  '#7c3aed', // purple
+  '#0d9488', // teal
+  '#db2777', // pink
+  '#92400e', // brown
+  '#6b7280', // gray
+  '#0284c7'  // sky
+];
+
 const Utils = {
   /**
    * Format a number as currency (USD)

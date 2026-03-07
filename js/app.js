@@ -263,6 +263,9 @@ const App = {
         }
       });
     }
+
+    // Consignor sheet events (shared by Edit Sale + Setup)
+    this._initConsignorSheetEvents();
   },
 
   /**
@@ -392,6 +395,29 @@ const App = {
       </div>`;
     });
     html += `<button class="edit-sale__add-day" id="edit-sale-add-day">+ Add Day</button>`;
+    html += `</div>`;
+
+    // Consignors section
+    const consignors = sale.consignors || [];
+    html += `<div class="edit-sale__section">
+      <div class="consignor-section__header">
+        <div class="edit-sale__label">Consignors</div>
+        <button class="consignor-list__add" id="edit-sale-add-consignor">+ Add</button>
+      </div>`;
+    if (consignors.length === 0) {
+      html += `<div style="font-size: var(--font-size-sm); color: var(--color-text-secondary); padding: var(--space-sm) 0;">No consignors added</div>`;
+    } else {
+      consignors.forEach(c => {
+        const payoutLabel = c.payoutType === 'percentage'
+          ? `${c.payoutValue}% to consignor`
+          : `$${c.payoutValue} fee per item`;
+        html += `<div class="consignor-list__item" data-consignor-id="${c.id}">
+          <span class="consignor-list__dot" style="background: ${c.color}"></span>
+          <span class="consignor-list__name">${Utils.escapeHtml(c.name)}</span>
+          <span class="consignor-list__payout">${payoutLabel}</span>
+        </div>`;
+      });
+    }
     html += `</div>`;
 
     this.headerElements.editSaleContent.innerHTML = html;
@@ -534,6 +560,193 @@ const App = {
         this.renderEditSale(sale);
       });
     }
+
+    // Consignor: Add button
+    const addConsignorBtn = content.querySelector('#edit-sale-add-consignor');
+    if (addConsignorBtn) {
+      addConsignorBtn.addEventListener('click', () => this.openConsignorSheet(null));
+    }
+
+    // Consignor: Tap to edit
+    content.querySelectorAll('[data-consignor-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.consignorId;
+        const consignor = (sale.consignors || []).find(c => c.id === id);
+        if (consignor) this.openConsignorSheet(consignor);
+      });
+    });
+  },
+
+  // ── Consignor Sheet ──
+
+  _consignorEditId: null,
+
+  openConsignorSheet(consignor) {
+    const modal = document.getElementById('consignor-modal');
+    const title = document.getElementById('consignor-modal-title');
+    const nameInput = document.getElementById('consignor-name');
+    const payoutType = document.getElementById('consignor-payout-type');
+    const payoutValue = document.getElementById('consignor-payout-value');
+    const notesInput = document.getElementById('consignor-notes');
+    const deleteBtn = document.getElementById('consignor-delete');
+
+    if (consignor) {
+      title.textContent = 'Edit Consignor';
+      nameInput.value = consignor.name;
+      payoutType.value = consignor.payoutType;
+      payoutValue.value = consignor.payoutValue;
+      notesInput.value = consignor.notes || '';
+      deleteBtn.hidden = false;
+      this._consignorEditId = consignor.id;
+      this._renderConsignorColors(consignor.color);
+    } else {
+      title.textContent = 'Add Consignor';
+      nameInput.value = '';
+      payoutType.value = 'percentage';
+      payoutValue.value = '';
+      notesInput.value = '';
+      deleteBtn.hidden = true;
+      this._consignorEditId = null;
+      // Pick first unused color
+      const sale = Storage.getSale();
+      const existing = sale ? Storage.getConsignors() : SaleSetup.pendingConsignors;
+      const used = existing.map(c => c.color);
+      const defaultColor = CONSIGNOR_COLORS.find(c => !used.includes(c)) || CONSIGNOR_COLORS[0];
+      this._renderConsignorColors(defaultColor);
+    }
+
+    this._updateConsignorPayoutUI();
+    modal.classList.add('visible');
+    nameInput.focus();
+  },
+
+  _renderConsignorColors(selected) {
+    const container = document.getElementById('consignor-colors');
+    container.innerHTML = CONSIGNOR_COLORS.map(color => {
+      const sel = color === selected ? ' consignor-form__color-dot--selected' : '';
+      return `<div class="consignor-form__color-dot${sel}" data-color="${color}" style="background: ${color}"></div>`;
+    }).join('');
+
+    container.querySelectorAll('.consignor-form__color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        container.querySelectorAll('.consignor-form__color-dot').forEach(d => d.classList.remove('consignor-form__color-dot--selected'));
+        dot.classList.add('consignor-form__color-dot--selected');
+      });
+    });
+  },
+
+  _updateConsignorPayoutUI() {
+    const type = document.getElementById('consignor-payout-type').value;
+    const prefix = document.getElementById('consignor-payout-prefix');
+    const suffix = document.getElementById('consignor-payout-suffix');
+    const hint = document.getElementById('consignor-payout-hint');
+    const input = document.getElementById('consignor-payout-value');
+
+    if (type === 'percentage') {
+      prefix.textContent = '';
+      suffix.textContent = '%';
+      input.placeholder = '70';
+      const val = parseFloat(input.value) || 0;
+      hint.textContent = val > 0 ? `Consignor gets ${val}%, you keep ${100 - val}%` : 'Consignor gets X%, you keep the rest';
+    } else {
+      prefix.textContent = '$';
+      suffix.textContent = '';
+      input.placeholder = '5';
+      const val = parseFloat(input.value) || 0;
+      hint.textContent = val > 0 ? `You charge $${val} per item, consignor gets the rest` : 'You charge $X per item, consignor gets the rest';
+    }
+  },
+
+  _saveConsignor() {
+    const name = document.getElementById('consignor-name').value.trim();
+    const payoutType = document.getElementById('consignor-payout-type').value;
+    const payoutValue = parseFloat(document.getElementById('consignor-payout-value').value) || 0;
+    const notes = document.getElementById('consignor-notes').value.trim();
+    const selectedDot = document.querySelector('.consignor-form__color-dot--selected');
+    const color = selectedDot ? selectedDot.dataset.color : CONSIGNOR_COLORS[0];
+
+    if (!name) {
+      this._showConsignorFlash('Enter a name');
+      return;
+    }
+    if (!payoutValue || payoutValue <= 0) {
+      this._showConsignorFlash('Enter a payout value');
+      return;
+    }
+    if (payoutType === 'percentage' && payoutValue > 100) {
+      this._showConsignorFlash('Percentage cannot exceed 100%');
+      return;
+    }
+
+    const sale = Storage.getSale();
+    const consignorData = { name, color, payoutType, payoutValue, notes };
+
+    if (sale) {
+      // Sale exists — use Storage methods
+      if (this._consignorEditId) {
+        Storage.updateConsignor(this._consignorEditId, consignorData);
+      } else {
+        Storage.addConsignor({ id: Utils.generateId(), ...consignorData });
+      }
+    } else {
+      // No sale yet — use SaleSetup.pendingConsignors
+      if (this._consignorEditId) {
+        const idx = SaleSetup.pendingConsignors.findIndex(c => c.id === this._consignorEditId);
+        if (idx !== -1) SaleSetup.pendingConsignors[idx] = { ...SaleSetup.pendingConsignors[idx], ...consignorData };
+      } else {
+        SaleSetup.pendingConsignors.push({ id: Utils.generateId(), ...consignorData });
+      }
+    }
+
+    document.getElementById('consignor-modal').classList.remove('visible');
+    if (sale) this.renderEditSale(sale);
+    if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
+  },
+
+  _deleteConsignor() {
+    if (!this._consignorEditId) return;
+
+    const sale = Storage.getSale();
+    if (sale) {
+      Storage.deleteConsignor(this._consignorEditId);
+    } else {
+      SaleSetup.pendingConsignors = SaleSetup.pendingConsignors.filter(c => c.id !== this._consignorEditId);
+    }
+
+    document.getElementById('consignor-modal').classList.remove('visible');
+    this._consignorEditId = null;
+    if (sale) this.renderEditSale(sale);
+    if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
+  },
+
+  _showConsignorFlash(message) {
+    const sheet = document.querySelector('#consignor-modal .sheet');
+    if (!sheet) return;
+    const existing = sheet.querySelector('.edit-sale__flash-error');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.className = 'edit-sale__flash-error';
+    el.textContent = message;
+    sheet.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  },
+
+  _initConsignorSheetEvents() {
+    const modal = document.getElementById('consignor-modal');
+    const saveBtn = document.getElementById('consignor-save');
+    const deleteBtn = document.getElementById('consignor-delete');
+    const cancelBtn = document.getElementById('consignor-cancel');
+    const payoutType = document.getElementById('consignor-payout-type');
+    const payoutValue = document.getElementById('consignor-payout-value');
+
+    saveBtn.addEventListener('click', () => this._saveConsignor());
+    deleteBtn.addEventListener('click', () => this._deleteConsignor());
+    cancelBtn.addEventListener('click', () => modal.classList.remove('visible'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('visible');
+    });
+    payoutType.addEventListener('change', () => this._updateConsignorPayoutUI());
+    payoutValue.addEventListener('input', () => this._updateConsignorPayoutUI());
   },
 
   /**

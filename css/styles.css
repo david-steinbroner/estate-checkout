@@ -985,6 +985,194 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* === Consignor Section (Edit Sale + Setup) === */
+.consignor-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.consignor-list__item:last-child {
+  border-bottom: none;
+}
+
+.consignor-list__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.consignor-list__name {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consignor-list__payout {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.consignor-list__add {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.consignor-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* === Consignor Form (Add/Edit Sheet) === */
+.consignor-form__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-xs);
+  margin-top: var(--space-md);
+}
+
+.consignor-form__label:first-of-type {
+  margin-top: 0;
+}
+
+.consignor-form__optional {
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.consignor-form__input {
+  width: 100%;
+  height: var(--height-input);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  padding: 0 var(--space-md);
+  box-sizing: border-box;
+}
+
+.consignor-form__input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.consignor-form__colors {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding: var(--space-sm) 0;
+}
+
+.consignor-form__color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s;
+}
+
+.consignor-form__color-dot--selected {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px currentColor;
+}
+
+.consignor-form__payout-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.consignor-form__select {
+  height: var(--height-input);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  padding: 0 var(--space-md);
+  flex: 1;
+}
+
+.consignor-form__payout-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  height: var(--height-input);
+  flex: 1;
+  overflow: hidden;
+}
+
+.consignor-form__payout-input-wrap:focus-within {
+  border-color: var(--color-border-focus);
+}
+
+.consignor-form__payout-prefix,
+.consignor-form__payout-suffix {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-sm);
+  flex-shrink: 0;
+}
+
+.consignor-form__payout-prefix:empty,
+.consignor-form__payout-suffix:empty {
+  display: none;
+}
+
+.consignor-form__payout-input {
+  flex: 1;
+  height: 100%;
+  font-size: var(--font-size-base);
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.consignor-form__payout-input:focus {
+  outline: none;
+}
+
+.consignor-form__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.consignor-form__save {
+  margin-top: var(--space-md);
+}
+
+.consignor-form__delete {
+  margin-top: var(--space-sm);
+}
+
 /* === Share Sale Sheet === */
 .share-sale__qr {
   display: flex;

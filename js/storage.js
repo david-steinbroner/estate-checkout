@@ -221,5 +221,52 @@ const Storage = {
    */
   clearDraftTxnId() {
     localStorage.removeItem(this.KEYS.DRAFT_TXN_ID);
+  },
+
+  /**
+   * Get consignors from the current sale
+   */
+  getConsignors() {
+    const sale = this.getSale();
+    return (sale && sale.consignors) || [];
+  },
+
+  /**
+   * Save the full consignors array to the sale
+   */
+  saveConsignors(consignors) {
+    const sale = this.getSale();
+    if (!sale) return;
+    sale.consignors = consignors;
+    this.saveSale(sale);
+  },
+
+  /**
+   * Add a consignor to the sale
+   */
+  addConsignor(consignor) {
+    const consignors = this.getConsignors();
+    consignors.push(consignor);
+    this.saveConsignors(consignors);
+  },
+
+  /**
+   * Update a consignor by ID
+   */
+  updateConsignor(id, updates) {
+    const consignors = this.getConsignors();
+    const index = consignors.findIndex(c => c.id === id);
+    if (index === -1) return false;
+    consignors[index] = { ...consignors[index], ...updates };
+    this.saveConsignors(consignors);
+    return true;
+  },
+
+  /**
+   * Delete a consignor by ID
+   */
+  deleteConsignor(id) {
+    const consignors = this.getConsignors().filter(c => c.id !== id);
+    this.saveConsignors(consignors);
   }
 };
