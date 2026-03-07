@@ -20,6 +20,7 @@ const SaleSetup = {
     this.cacheElements();
     this.bindEvents();
     this.setDefaultDate();
+    this._updateStartDateState();
     this.rebuildDiscounts();
     this.renderDiscountList();
     this.validateForm();
@@ -33,12 +34,9 @@ const SaleSetup = {
       saleNameInput: document.getElementById('setup-sale-name'),
       startDateInput: document.getElementById('setup-start-date'),
       todayCheckbox: document.getElementById('setup-today-checkbox'),
-      datePicker: document.getElementById('setup-date-picker'),
       tbdCheckbox: document.getElementById('setup-tbd-checkbox'),
       endDatePicker: document.getElementById('setup-end-date-picker'),
       endDateInput: document.getElementById('setup-end-date'),
-      startDateError: document.getElementById('start-date-error'),
-      endDateError: document.getElementById('end-date-error'),
       discountList: document.getElementById('discount-list'),
       addDayButton: document.getElementById('add-day-button'),
       dashboardButton: document.getElementById('setup-dashboard-button'),
@@ -83,12 +81,11 @@ const SaleSetup = {
     // "Sale starts today" checkbox
     this.elements.todayCheckbox.addEventListener('change', () => {
       const checked = this.elements.todayCheckbox.checked;
-      this.elements.datePicker.hidden = checked;
       if (checked) {
         this.setDefaultDate();
-        // Auto-resolve: if end date is now in the past, re-check TBD
         this._autoResolveEndDate();
       }
+      this._updateStartDateState();
       this.rebuildDiscounts();
       this.renderDiscountList();
       this.validateForm();
@@ -101,7 +98,6 @@ const SaleSetup = {
 
       if (endDate && startDate >= endDate) {
         this._showDateError('start-date-error', 'Must be before end date.');
-        // Revert to previous value or today
         this.setDefaultDate();
         return;
       }
@@ -118,6 +114,7 @@ const SaleSetup = {
       if (checked) {
         this.elements.endDateInput.value = '';
       }
+      this._updateEndDateState();
       this.rebuildDiscounts();
       this.renderDiscountList();
       this.validateForm();
@@ -131,9 +128,11 @@ const SaleSetup = {
       if (endDate && startDate >= endDate) {
         this._showDateError('end-date-error', 'Must be after start date.');
         this.elements.endDateInput.value = '';
+        this._updateEndDateState();
         return;
       }
       this._hideDateError('end-date-error');
+      this._updateEndDateState();
       this.rebuildDiscounts();
       this.renderDiscountList();
       this.validateForm();
@@ -144,6 +143,30 @@ const SaleSetup = {
     if (addConsignorBtn) {
       addConsignorBtn.addEventListener('click', () => App.openConsignorSheet(null));
     }
+  },
+
+  /**
+   * Update start date input readonly state based on checkbox
+   */
+  _updateStartDateState() {
+    const checked = this.elements.todayCheckbox.checked;
+    if (checked) {
+      this.elements.startDateInput.classList.add('setup-section__input--readonly');
+      this.elements.startDateInput.setAttribute('tabindex', '-1');
+    } else {
+      this.elements.startDateInput.classList.remove('setup-section__input--readonly');
+      this.elements.startDateInput.removeAttribute('tabindex');
+    }
+  },
+
+  /**
+   * Update end date pencil icon visibility
+   */
+  _updateEndDateState() {
+    const iconEl = document.getElementById('setup-end-date-icon');
+    if (!iconEl) return;
+    const hasValue = !!this.elements.endDateInput.value;
+    iconEl.hidden = hasValue;
   },
 
   /**
@@ -256,7 +279,6 @@ const SaleSetup = {
     const endDate = this._getEndDate();
 
     if (!endDate) {
-      // TBD: only Day 1
       const oldDay1 = this.discounts[1];
       this.discounts = { 1: (oldDay1 !== undefined ? oldDay1 : 0) };
       return;
@@ -272,24 +294,20 @@ const SaleSetup = {
     const existingCount = existingDays.length;
 
     if (existingCount <= 2) {
-      // Reset to just Day 1 and last day
       this.discounts = {
         1: this.discounts[1] || 0,
         2: this.discounts[existingDays[existingDays.length - 1]] || 0
       };
     } else {
-      // We have middle days. Trim or keep based on totalDays.
-      const maxMiddleDays = totalDays - 2; // How many middle days can fit
+      const maxMiddleDays = totalDays - 2;
       const newDiscounts = { 1: this.discounts[1] || 0 };
 
-      // Keep existing middle days (days 2..N-1 in old schedule)
       const middleDays = existingDays.slice(1, -1);
       const keptMiddle = middleDays.slice(0, maxMiddleDays);
       keptMiddle.forEach((oldDay, i) => {
         newDiscounts[i + 2] = this.discounts[oldDay];
       });
 
-      // Last day
       const lastDayNum = keptMiddle.length + 2;
       const oldLastDay = existingDays[existingDays.length - 1];
       newDiscounts[lastDayNum] = this.discounts[oldLastDay] || 0;
@@ -299,7 +317,7 @@ const SaleSetup = {
   },
 
   /**
-   * Render the discount list
+   * Render the discount list with tap-to-edit pattern
    */
   renderDiscountList() {
     const startDate = this._getStartDate();
@@ -314,47 +332,76 @@ const SaleSetup = {
       let dateLabel = '';
       if (endDate && totalDays >= 2) {
         if (index === totalDays - 1) {
-          // Last day = end date
           dateLabel = this._formatDateLabel(endDate);
         } else {
-          // Sequential from start date
           dateLabel = this._formatDateLabel(this._addDays(startDate, index));
         }
       } else {
         dateLabel = this._formatDateLabel(this._addDays(startDate, index));
       }
 
+      // Right side: tap-to-edit discount
+      let rightHtml;
+      if (discount > 0) {
+        rightHtml = `<span class="discount-row__value" data-day="${day}">${discount}% off</span>`;
+      } else {
+        rightHtml = `<button class="discount-row__add-link" data-day="${day}">+ Add Discount</button>`;
+      }
+
       return `
         <div class="discount-row" data-day="${day}">
           <span class="discount-row__label">Day ${day} <span class="discount-row__date">&middot; ${dateLabel}</span></span>
-          <input
-            type="number"
-            class="discount-row__input"
-            value="${discount}"
-            min="0"
-            max="100"
-            data-day="${day}"
-          >
-          <span class="discount-row__suffix">% off</span>
+          <div class="discount-row__right">${rightHtml}</div>
         </div>
       `;
     }).join('');
 
     this.elements.discountList.innerHTML = html;
 
-    // Bind input events
-    this.elements.discountList.querySelectorAll('.discount-row__input').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const day = parseInt(e.target.dataset.day);
-        let value = parseInt(e.target.value) || 0;
-        value = Math.max(0, Math.min(100, value));
-        e.target.value = value;
-        this.discounts[day] = value;
+    // Bind tap-to-edit on value text and "+ Add Discount" links
+    this.elements.discountList.querySelectorAll('.discount-row__value, .discount-row__add-link').forEach(el => {
+      el.addEventListener('click', () => {
+        const day = parseInt(el.dataset.day);
+        this._openDiscountEdit(day, el.closest('.discount-row'));
       });
     });
 
-    // Update add day button visibility
     this._updateAddDayButton();
+  },
+
+  /**
+   * Open inline discount edit for a specific day
+   */
+  _openDiscountEdit(day, rowEl) {
+    const rightEl = rowEl.querySelector('.discount-row__right');
+    const current = this.discounts[day] || 0;
+
+    rightEl.innerHTML = `
+      <div class="discount-row__edit">
+        <input type="number" class="discount-row__input" value="${current || ''}"
+          min="0" max="100" inputmode="numeric" data-day="${day}" placeholder="0">
+        <span class="discount-row__suffix">% off</span>
+      </div>
+    `;
+
+    const input = rightEl.querySelector('.discount-row__input');
+    input.focus();
+    input.select();
+
+    const commitEdit = () => {
+      let value = parseInt(input.value) || 0;
+      value = Math.max(0, Math.min(100, value));
+      this.discounts[day] = value;
+      this.renderDiscountList();
+    };
+
+    input.addEventListener('blur', commitEdit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur();
+      }
+    });
   },
 
   /**
@@ -363,7 +410,6 @@ const SaleSetup = {
   _updateAddDayButton() {
     const endDate = this._getEndDate();
     if (!endDate) {
-      // TBD — hide add day
       this.elements.addDayButton.hidden = true;
       return;
     }
@@ -372,11 +418,7 @@ const SaleSetup = {
     const maxDays = this._daysBetween(startDate, endDate);
     const currentDays = Object.keys(this.discounts).length;
 
-    if (currentDays >= maxDays) {
-      this.elements.addDayButton.hidden = true;
-    } else {
-      this.elements.addDayButton.hidden = false;
-    }
+    this.elements.addDayButton.hidden = (currentDays >= maxDays);
   },
 
   /**
@@ -392,18 +434,14 @@ const SaleSetup = {
 
     if (days.length >= maxDays) return;
 
-    // Insert a new day before the last day
     const lastDay = days[days.length - 1];
     const lastDiscount = this.discounts[lastDay];
 
-    // Shift last day up by 1
     const newDiscounts = {};
     days.slice(0, -1).forEach(d => {
       newDiscounts[d] = this.discounts[d];
     });
-    // New middle day
     newDiscounts[lastDay] = 0;
-    // Last day moves up
     newDiscounts[lastDay + 1] = lastDiscount;
 
     this.discounts = newDiscounts;
@@ -433,19 +471,15 @@ const SaleSetup = {
     const endDate = this._getEndDate();
     const day1Discount = this.discounts[1] || 0;
 
-    // Build consignor names
     const sale = Storage.getSale();
     const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
     const consignorNames = consignors.map(c => c.name).join(', ');
 
-    // Format start date display
-    const todayStr = this._getStartDate();
     const isToday = this.elements.todayCheckbox.checked;
     const startLabel = isToday
-      ? `Today (${this._formatDateLabelFull(todayStr)})`
+      ? `Today (${this._formatDateLabelFull(startDate)})`
       : this._formatDateLabelFull(startDate);
 
-    // Format end date display
     const endLabel = endDate ? this._formatDateLabelFull(endDate) : null;
 
     const rows = [
@@ -501,7 +535,6 @@ const SaleSetup = {
       discounts: { ...this.discounts }
     });
 
-    // Navigate to checkout
     App.showScreen('checkout');
   },
 
@@ -641,11 +674,11 @@ const SaleSetup = {
   resetForm() {
     this.elements.saleNameInput.value = '';
     this.elements.todayCheckbox.checked = true;
-    this.elements.datePicker.hidden = true;
     this.elements.tbdCheckbox.checked = true;
     this.elements.endDatePicker.hidden = true;
     this.elements.endDateInput.value = '';
     this.setDefaultDate();
+    this._updateStartDateState();
     this.discounts = { 1: 0 };
     this.renderDiscountList();
     this.pendingConsignors = [];

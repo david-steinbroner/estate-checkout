@@ -1753,30 +1753,54 @@ body {
   padding: var(--space-lg);
 }
 
-.setup-field {
+/* Setup Section System */
+.setup-section {
   margin-bottom: var(--space-lg);
 }
 
-.setup-field--spaced {
-  margin-top: var(--space-xl);
+.setup-section--half {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 }
 
-.setup-field__label {
+.setup-section__header {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-sm);
   text-transform: uppercase;
-  letter-spacing: 0.5px; /* intentional: typographic detail */
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-sm);
 }
 
-.setup-field__checkbox {
+.setup-section__header-row {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  min-height: var(--height-touch-min);
-  font-size: var(--font-size-base);
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.setup-section__header-row .setup-section__header {
+  margin-bottom: 0;
+}
+
+.setup-section__action {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setup-section__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
   cursor: pointer;
@@ -1784,13 +1808,13 @@ body {
   margin-bottom: var(--space-sm);
 }
 
-.setup-field__checkbox input[type="checkbox"] {
-  width: 20px; /* intentional: native checkbox size */
-  height: 20px; /* intentional: native checkbox size */
+.setup-section__checkbox input[type="checkbox"] {
+  width: 18px; /* intentional: native checkbox size */
+  height: 18px; /* intentional: native checkbox size */
   accent-color: var(--color-primary);
 }
 
-.setup-field__input {
+.setup-section__input {
   width: 100%;
   height: var(--height-input);
   padding: 0 var(--space-lg);
@@ -1800,41 +1824,42 @@ body {
   background: var(--color-surface);
 }
 
-.setup-field__input:focus {
+.setup-section__input:focus {
   outline: none;
   border-color: var(--color-border-focus);
 }
 
-/* Sale Date Row */
-.setup-date-row {
+.setup-section__input--readonly {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.setup-section-row {
   display: flex;
   align-items: flex-start;
   gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 
-.setup-date-half {
-  flex: 1;
-  min-width: 0;
-}
-
-.setup-date-sublabel {
-  display: block;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-xs);
-}
-
-.setup-field__input--half {
-  width: 100%;
-}
-
-.setup-date-error {
+.setup-section__error {
   font-size: var(--font-size-xs);
   color: var(--color-danger);
   margin: var(--space-xs) 0 0;
+}
+
+.setup-section__input-wrap {
+  position: relative;
+}
+
+.setup-section__input-icon {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
 /* Discount List */
@@ -1847,9 +1872,10 @@ body {
 .discount-row {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  justify-content: space-between;
+  height: var(--height-input);
   background: var(--color-surface);
-  padding: var(--space-md) var(--space-lg);
+  padding: 0 var(--space-lg);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
@@ -1857,7 +1883,6 @@ body {
 .discount-row__label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  min-width: 100px; /* intentional: label minimum width for date */
   white-space: nowrap;
 }
 
@@ -1867,24 +1892,56 @@ body {
   font-size: var(--font-size-sm);
 }
 
-.discount-row__input {
-  width: 64px; /* intentional: discount input width */
-  height: var(--height-input);
-  padding: 0 var(--space-md);
-  font-size: var(--font-size-lg);
+.discount-row__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.discount-row__add-link {
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  text-align: center;
-  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.discount-row__value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: var(--space-sm) 0;
+}
+
+.discount-row__edit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.discount-row__input {
+  width: 48px; /* intentional: compact discount input */
+  height: 32px; /* intentional: inline edit height */
+  padding: 0 var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+  border: 1px solid var(--color-border-focus);
   border-radius: var(--radius-sm);
 }
 
 .discount-row__input:focus {
   outline: none;
-  border-color: var(--color-border-focus);
+  border-color: var(--color-primary);
 }
 
 .discount-row__suffix {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 

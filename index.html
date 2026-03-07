@@ -86,59 +86,59 @@
 
     <div class="setup-form">
       <!-- Sale Name -->
-      <div class="setup-field">
-        <label class="setup-field__label" for="setup-sale-name">Sale Name</label>
+      <div class="setup-section">
+        <span class="setup-section__header">Sale Name</span>
         <input
           type="text"
           id="setup-sale-name"
-          class="setup-field__input"
+          class="setup-section__input"
           placeholder="e.g., Johnson Estate - Oak Hill"
           autocomplete="off"
         >
       </div>
 
-      <!-- Sale Date -->
-      <div class="setup-field">
-        <label class="setup-field__label">Sale Date</label>
-        <div class="setup-date-row">
-          <div class="setup-date-half">
-            <span class="setup-date-sublabel">Start Date</span>
-            <label class="setup-field__checkbox">
-              <input type="checkbox" id="setup-today-checkbox" checked>
-              Sale starts today
-            </label>
-            <div id="setup-date-picker" hidden>
-              <input
-                type="date"
-                id="setup-start-date"
-                class="setup-field__input setup-field__input--half"
-              >
-              <p class="setup-date-error" id="start-date-error" hidden></p>
-            </div>
-          </div>
-          <div class="setup-date-half">
-            <span class="setup-date-sublabel">End Date</span>
-            <label class="setup-field__checkbox">
-              <input type="checkbox" id="setup-tbd-checkbox" checked>
-              TBD
-            </label>
-            <div id="setup-end-date-picker" hidden>
+      <!-- Start Date / End Date (side by side) -->
+      <div class="setup-section-row">
+        <div class="setup-section setup-section--half">
+          <span class="setup-section__header">Start Date</span>
+          <label class="setup-section__checkbox">
+            <input type="checkbox" id="setup-today-checkbox" checked>
+            Starts today
+          </label>
+          <input
+            type="date"
+            id="setup-start-date"
+            class="setup-section__input"
+          >
+          <p class="setup-section__error" id="start-date-error" hidden></p>
+        </div>
+        <div class="setup-section setup-section--half">
+          <span class="setup-section__header">End Date</span>
+          <label class="setup-section__checkbox">
+            <input type="checkbox" id="setup-tbd-checkbox" checked>
+            TBD
+          </label>
+          <div id="setup-end-date-picker" hidden>
+            <div class="setup-section__input-wrap">
               <input
                 type="date"
                 id="setup-end-date"
-                class="setup-field__input setup-field__input--half"
+                class="setup-section__input"
               >
-              <p class="setup-date-error" id="end-date-error" hidden></p>
+              <span class="setup-section__input-icon" id="setup-end-date-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              </span>
             </div>
           </div>
+          <p class="setup-section__error" id="end-date-error" hidden></p>
         </div>
       </div>
 
-      <!-- Discount Schedule -->
-      <div class="setup-field">
-        <div class="consignor-section__header">
-          <label class="setup-field__label">Discount Schedule</label>
-          <button type="button" class="consignor-list__add" id="add-day-button">+ Add Day</button>
+      <!-- Schedule -->
+      <div class="setup-section">
+        <div class="setup-section__header-row">
+          <span class="setup-section__header">Schedule</span>
+          <button type="button" class="setup-section__action" id="add-day-button">+ Add</button>
         </div>
         <div class="discount-list" id="discount-list">
           <!-- Discount rows added by JS -->
@@ -146,10 +146,10 @@
       </div>
 
       <!-- Consignors -->
-      <div class="setup-field setup-field--spaced">
-        <div class="consignor-section__header">
-          <label class="setup-field__label">Consignors</label>
-          <button type="button" class="consignor-list__add" id="setup-add-consignor">+ Add</button>
+      <div class="setup-section">
+        <div class="setup-section__header-row">
+          <span class="setup-section__header">Consignors</span>
+          <button type="button" class="setup-section__action" id="setup-add-consignor">+ Add</button>
         </div>
         <div id="setup-consignor-list"></div>
       </div>
