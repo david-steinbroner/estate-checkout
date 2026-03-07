@@ -57,17 +57,28 @@ const SaleSetup = {
   },
 
   /**
+   * Open native date picker on an input element
+   */
+  _openPicker(inputEl) {
+    if (typeof inputEl.showPicker === 'function') {
+      try { inputEl.showPicker(); } catch (e) { inputEl.focus(); }
+    } else {
+      inputEl.focus();
+    }
+  },
+
+  /**
    * Bind event listeners
    */
   bindEvents() {
-    // Add day button — open date picker
+    // Add day button — open the shared hidden date picker
     this.elements.addDayButton.addEventListener('click', () => {
       this._datePickerContext = { action: 'add' };
       this.elements.dayDatePicker.value = '';
-      this.elements.dayDatePicker.click();
+      this._openPicker(this.elements.dayDatePicker);
     });
 
-    // Hidden date picker change
+    // Hidden date picker change (used for + Add and edit-day)
     this.elements.dayDatePicker.addEventListener('change', () => {
       const date = this.elements.dayDatePicker.value;
       if (!date || !this._datePickerContext) return;
@@ -123,12 +134,38 @@ const SaleSetup = {
       this.validateForm();
     });
 
-    // End date input — tapping it opens a date picker to add a new last day
+    // End date input — tapping opens its own native picker
     this.elements.endDateInput.addEventListener('click', () => {
       if (this.elements.tbdCheckbox.checked) return;
-      this._datePickerContext = { action: 'end-date' };
-      this.elements.dayDatePicker.value = '';
-      this.elements.dayDatePicker.click();
+      this._openPicker(this.elements.endDateInput);
+    });
+
+    // End date change — add new last day or reject
+    this.elements.endDateInput.addEventListener('change', () => {
+      const date = this.elements.endDateInput.value;
+      if (!date || this.elements.tbdCheckbox.checked) return;
+
+      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
+      if (date < lastDay.date) {
+        this._showDateError('end-date-error', 'Remove later days from schedule first.');
+        this._syncEndDate();
+        return;
+      }
+      if (date === lastDay.date) {
+        // Same date, nothing to do
+        return;
+      }
+      // Date is after last day — add a new schedule row
+      if (this.scheduleDays.some(d => d.date === date)) {
+        this._showDateError('end-date-error', 'That date already has a day.');
+        this._syncEndDate();
+        return;
+      }
+      this.scheduleDays.push({ date, discount: 0 });
+      this._sortAndRenumber();
+      this._syncEndDate();
+      this.renderDiscountList();
+      this.validateForm();
     });
 
     // Add consignor button on setup
@@ -227,14 +264,12 @@ const SaleSetup = {
   _syncEndDate() {
     if (this.elements.tbdCheckbox.checked) {
       this.elements.endDateInput.value = '';
-      this.elements.endDateInput.classList.add('setup-section__input--readonly');
       return;
     }
 
     if (this.scheduleDays.length === 0) return;
     const lastDate = this.scheduleDays[this.scheduleDays.length - 1].date;
     this.elements.endDateInput.value = lastDate;
-    this.elements.endDateInput.classList.add('setup-section__input--readonly');
   },
 
   /**
@@ -325,6 +360,7 @@ const SaleSetup = {
           ${canDelete ? `<div class="discount-row__delete-bg" data-delete-index="${index}">${deleteIcon}</div>` : ''}
           <div class="discount-row__content">
             <span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}</span></span>
+            <input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}">
             <div class="discount-row__right">${rightHtml}</div>
           </div>
         </div>
@@ -341,15 +377,36 @@ const SaleSetup = {
       });
     });
 
-    // Bind tap on date to edit
+    // Bind tap on date label to open per-row date picker
     this.elements.discountList.querySelectorAll('.discount-row__date').forEach(el => {
-      el.addEventListener('click', () => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
         const idx = parseInt(el.dataset.editDate);
-        const dayObj = this.scheduleDays[idx];
-        if (!dayObj) return;
-        this._datePickerContext = { action: 'edit-day', oldDate: dayObj.date };
-        this.elements.dayDatePicker.value = dayObj.date;
-        this.elements.dayDatePicker.click();
+        const pickerInput = this.elements.discountList.querySelector(`[data-row-picker="${idx}"]`);
+        if (pickerInput) this._openPicker(pickerInput);
+      });
+    });
+
+    // Bind change on per-row date pickers
+    this.elements.discountList.querySelectorAll('[data-row-picker]').forEach(input => {
+      input.addEventListener('change', () => {
+        const idx = parseInt(input.dataset.rowPicker);
+        const newDate = input.value;
+        if (!newDate) return;
+        const oldDate = this.scheduleDays[idx]?.date;
+        if (newDate === oldDate) return;
+        // Duplicate check
+        if (this.scheduleDays.some(d => d.date === newDate)) {
+          this._showDateError('end-date-error', 'That date already has a day.');
+          input.value = oldDate;
+          return;
+        }
+        this.scheduleDays[idx].date = newDate;
+        this._sortAndRenumber();
+        this._syncEndDate();
+        this._syncStartDate();
+        this.renderDiscountList();
+        this.validateForm();
       });
     });
 
