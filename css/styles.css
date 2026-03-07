@@ -1847,19 +1847,12 @@ body {
   margin: var(--space-xs) 0 0;
 }
 
-.setup-section__input-wrap {
-  position: relative;
-}
-
-.setup-section__input-icon {
+.setup-hidden-input {
   position: absolute;
-  right: var(--space-md);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-secondary);
+  opacity: 0;
   pointer-events: none;
-  display: flex;
-  align-items: center;
+  width: 0;
+  height: 0;
 }
 
 /* Discount List */
@@ -1870,14 +1863,37 @@ body {
 }
 
 .discount-row {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.discount-row__delete-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 56px;
+  background: var(--color-danger);
+  color: var(--color-text-on-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.discount-row__content {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: var(--height-input);
   background: var(--color-surface);
   padding: 0 var(--space-lg);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  will-change: transform;
+  z-index: 1;
 }
 
 .discount-row__label {
@@ -1888,8 +1904,10 @@ body {
 
 .discount-row__date {
   font-weight: var(--font-weight-normal);
-  color: var(--color-text-secondary);
+  color: var(--color-primary);
   font-size: var(--font-size-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .discount-row__right {

@@ -115,24 +115,19 @@
         <div class="setup-section setup-section--half">
           <span class="setup-section__header">End Date</span>
           <label class="setup-section__checkbox">
-            <input type="checkbox" id="setup-tbd-checkbox" checked>
+            <input type="checkbox" id="setup-tbd-checkbox">
             TBD
           </label>
-          <div id="setup-end-date-picker" hidden>
-            <div class="setup-section__input-wrap">
-              <input
-                type="date"
-                id="setup-end-date"
-                class="setup-section__input"
-              >
-              <span class="setup-section__input-icon" id="setup-end-date-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              </span>
-            </div>
-          </div>
+          <input
+            type="date"
+            id="setup-end-date"
+            class="setup-section__input setup-section__input--readonly"
+          >
           <p class="setup-section__error" id="end-date-error" hidden></p>
         </div>
       </div>
+      <!-- Hidden date input for schedule day picking -->
+      <input type="date" id="setup-day-date-picker" class="setup-hidden-input">
 
       <!-- Schedule -->
       <div class="setup-section">
