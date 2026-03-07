@@ -1755,13 +1755,17 @@ body {
 
 /* Setup Section System */
 .setup-section {
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
 }
 
 .setup-section--half {
   flex: 1;
   min-width: 0;
   margin-bottom: 0;
+}
+
+.setup-section--half .setup-section__input {
+  max-width: 90%; /* intentional: prevent date inputs from touching in 50% split */
 }
 
 .setup-section__header {
@@ -1837,8 +1841,8 @@ body {
 .setup-section-row {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-lg);
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
 }
 
 .setup-section__error {
