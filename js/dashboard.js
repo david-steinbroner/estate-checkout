@@ -344,6 +344,9 @@ const Dashboard = {
       ? `Day ${txn.saleDay} — ${txn.discount}% off`
       : 'No discount';
 
+    const consignors = Storage.getConsignors();
+    const consignorTotals = {}; // { id: { name, color, count, total } }
+
     const itemsHtml = (txn.items || []).map(item => {
       const qty = item.quantity || 1;
       let desc = item.description || 'Item';
@@ -351,6 +354,22 @@ const Dashboard = {
         const unitPrice = item.finalPrice / qty;
         desc += ` x${qty} @${Utils.formatCurrency(unitPrice)}`;
       }
+
+      // Consignor tag
+      let consignorTag = '';
+      if (item.consignorId) {
+        const c = consignors.find(x => x.id === item.consignorId);
+        if (c) {
+          consignorTag = ` <span class="dashboard-detail__consignor"><span class="dashboard-detail__consignor-dot" style="background: ${c.color}"></span>${Utils.escapeHtml(c.name)}</span>`;
+          // Accumulate totals
+          if (!consignorTotals[c.id]) {
+            consignorTotals[c.id] = { name: c.name, color: c.color, count: 0, total: 0 };
+          }
+          consignorTotals[c.id].count += qty;
+          consignorTotals[c.id].total += item.finalPrice;
+        }
+      }
+
       const hasHaggle = item.haggleType && item.haggleValue;
       const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
 
@@ -369,11 +388,25 @@ const Dashboard = {
 
       return `
         <li class="dashboard-detail__item">
-          <span class="dashboard-detail__desc">${Utils.escapeHtml(desc)}</span>
+          <span class="dashboard-detail__desc">${Utils.escapeHtml(desc)}${consignorTag}</span>
           <span class="dashboard-detail__price">${priceHtml}</span>
         </li>
       `;
     }).join('');
+
+    // Consignor summary (only if multiple consignors in this transaction)
+    const consignorIds = Object.keys(consignorTotals);
+    let consignorSummaryHtml = '';
+    if (consignorIds.length > 0) {
+      const lines = consignorIds.map(id => {
+        const ct = consignorTotals[id];
+        return `<div class="dashboard-detail__consignor-line">
+          <span class="dashboard-detail__consignor-dot" style="background: ${ct.color}"></span>
+          <span>${Utils.escapeHtml(ct.name)}: ${ct.count} item${ct.count !== 1 ? 's' : ''} · ${Utils.formatCurrency(ct.total)}</span>
+        </div>`;
+      }).join('');
+      consignorSummaryHtml = `<div class="dashboard-detail__consignor-summary">${lines}</div>`;
+    }
 
     // Action buttons vary by status
     const status = txn.status || 'unpaid';
@@ -439,6 +472,7 @@ const Dashboard = {
         ${itemsHtml}
       </ul>
       ${ticketDiscountHtml}
+      ${consignorSummaryHtml}
       ${actionsHtml}
     `;
   },

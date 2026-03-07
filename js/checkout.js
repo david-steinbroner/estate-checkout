@@ -591,6 +591,7 @@ const Checkout = {
       return;
     }
 
+    const consignors = Storage.getConsignors();
     const html = this.items.map((item, index) => {
       const hasDesc = item.description && item.description.trim().length > 0;
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
@@ -598,9 +599,16 @@ const Checkout = {
       const qty = item.quantity || 1;
       if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
 
+      let dotHtml = '';
+      if (item.consignorId) {
+        const c = consignors.find(x => x.id === item.consignorId);
+        if (c) dotHtml = `<span class="item-row__consignor-dot" style="background: ${c.color}"></span>`;
+      }
+
       return `
         <li class="item-row" data-id="${item.id}">
           <span class="item-row__number">${index + 1}.</span>
+          ${dotHtml}
           <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
             ${this.renderItemPrices(item)}
