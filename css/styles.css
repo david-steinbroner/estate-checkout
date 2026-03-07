@@ -495,14 +495,12 @@ body {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 90px;
+  width: 56px;
   background: var(--color-danger);
   color: var(--color-text-on-danger);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }

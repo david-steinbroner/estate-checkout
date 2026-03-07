@@ -760,7 +760,7 @@ const Checkout = {
 
         return `
           <li class="item-row item-row--swipeable${haggleClass}" data-id="${item.id}">
-            <div class="item-row__delete-bg" data-swipe-delete="${item.id}">Delete</div>
+            <div class="item-row__delete-bg" data-swipe-delete="${item.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
             <div class="item-row__content">
               ${consignorDotHtml}
               <span class="item-row__number">${index + 1}.</span>
@@ -853,8 +853,8 @@ const Checkout = {
     const content = row.querySelector('.item-row__content');
     if (!content) return;
 
-    const MAX_SWIPE = 90;
-    const DELETE_THRESHOLD = 60;
+    const MAX_SWIPE = 56;
+    const DELETE_THRESHOLD = 40;
     let startX = 0;
     let startY = 0;
     let currentX = 0;
