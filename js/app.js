@@ -42,6 +42,7 @@ const App = {
       // Header menu sheet
       menuModal: document.getElementById('header-menu-modal'),
       menuDashboard: document.getElementById('menu-dashboard'),
+      menuPayouts: document.getElementById('menu-payouts'),
       menuScan: document.getElementById('menu-scan'),
       menuShare: document.getElementById('menu-share'),
       menuEndDay: document.getElementById('menu-end-day'),
@@ -94,6 +95,12 @@ const App = {
       this.headerElements.menuDashboard.addEventListener('click', () => {
         this.closeMenu();
         this.showScreen('dashboard');
+      });
+    }
+    if (this.headerElements.menuPayouts) {
+      this.headerElements.menuPayouts.addEventListener('click', () => {
+        this.closeMenu();
+        this.showScreen('payouts');
       });
     }
     if (this.headerElements.menuScan) {
@@ -277,6 +284,11 @@ const App = {
     const sale = Storage.getSale();
     if (this.headerElements.menuEndDay) {
       this.headerElements.menuEndDay.textContent = (sale && sale.status === 'paused') ? 'Resume Day' : 'End Day';
+    }
+    // Show Consignor Payouts only if consignors exist
+    if (this.headerElements.menuPayouts) {
+      const hasConsignors = sale && sale.consignors && sale.consignors.length > 0;
+      this.headerElements.menuPayouts.hidden = !hasConsignors;
     }
     this.headerElements.menuModal.classList.add('visible');
   },
@@ -889,6 +901,8 @@ const App = {
       } else if (screenName === 'dashboard') {
         Dashboard.resetFilters();
         Dashboard.render(data);
+      } else if (screenName === 'payouts') {
+        Payouts.render();
       } else if (screenName === 'paused') {
         this.renderPausedScreen();
       }

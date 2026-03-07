@@ -1893,6 +1893,152 @@ body {
   display: none;
 }
 
+/* === Consignor Payouts Screen === */
+.payouts-screen {
+  background: var(--color-bg);
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.payouts-content {
+  padding: var(--space-lg);
+  padding-top: calc(var(--height-header) + var(--space-lg));
+}
+
+.payouts__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-lg);
+}
+
+.payouts__totals {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-sm);
+}
+
+.payouts__total-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-base);
+  padding: var(--space-xs) 0;
+  color: var(--color-text-secondary);
+}
+
+.payouts__total-line--highlight {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.payouts__total-value {
+  font-weight: var(--font-weight-bold);
+}
+
+.payouts__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xl);
+}
+
+.payouts__section {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.payouts__section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.payouts__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.payouts__name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.payouts__arrangement {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.payouts__warning {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-sm);
+}
+
+.payouts__stats {
+  margin-bottom: var(--space-sm);
+}
+
+.payouts__stat-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-base);
+  padding: 3px 0;
+  color: var(--color-text-secondary);
+}
+
+.payouts__stat-line--payout {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.payouts__stat-line--operator {
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+.payouts__view-items {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.payouts__items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: none;
+}
+
+.payouts__items--visible {
+  display: block;
+}
+
+.payouts__item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 3px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.payouts__item-row:last-child {
+  border-bottom: none;
+}
+
 /* === Sale Paused Screen === */
 .paused-screen {
   background: var(--color-bg);
