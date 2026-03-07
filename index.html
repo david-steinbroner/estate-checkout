@@ -319,6 +319,14 @@
         <span class="add-item__qty-value" id="add-item-qty">1</span>
         <button class="add-item__qty-btn" id="add-item-qty-plus" aria-label="Increase quantity">+</button>
       </div>
+      <div class="add-item__consignor-row" id="add-item-consignor-row" hidden>
+        <span class="add-item__consignor-label">Consignor:</span>
+        <button class="add-item__consignor-btn" id="add-item-consignor-btn" type="button">
+          <span class="add-item__consignor-dot" id="add-item-consignor-dot"></span>
+          <span id="add-item-consignor-name">None</span>
+          <span class="add-item__consignor-arrow">▼</span>
+        </button>
+      </div>
       <div class="numpad" id="numpad">
         <button class="numpad__button" data-value="1">1</button>
         <button class="numpad__button" data-value="2">2</button>
@@ -503,6 +511,14 @@
         <button class="sheet__btn sheet__btn--danger" id="cancel-confirm-yes">Cancel Invoice</button>
         <button class="sheet__btn sheet__btn--secondary" id="cancel-confirm-no">Keep Invoice</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Consignor Picker Sheet -->
+  <div class="overlay" id="consignor-picker-modal">
+    <div class="sheet">
+      <p class="sheet__title">Select Consignor</p>
+      <ul class="consignor-picker__list" id="consignor-picker-list"></ul>
     </div>
   </div>
 

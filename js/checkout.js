@@ -47,6 +47,12 @@ const Checkout = {
   editingInvoiceId: null,
   editingInvoiceDirty: false,
 
+  // Selected consignor for Add Item sheet
+  addItemConsignorId: null,
+
+  // Consignor picker callback
+  _consignorPickerCallback: null,
+
   // Item sheet state
   isSheetOpen: false,
 
@@ -101,6 +107,10 @@ const Checkout = {
       addItemQtyMinus: document.getElementById('add-item-qty-minus'),
       addItemQtyPlus: document.getElementById('add-item-qty-plus'),
       addItemQtyValue: document.getElementById('add-item-qty'),
+      addItemConsignorRow: document.getElementById('add-item-consignor-row'),
+      addItemConsignorBtn: document.getElementById('add-item-consignor-btn'),
+      addItemConsignorDot: document.getElementById('add-item-consignor-dot'),
+      addItemConsignorName: document.getElementById('add-item-consignor-name'),
       numpad: document.getElementById('numpad'),
       // Haggle sheet
       haggleModal: document.getElementById('haggle-modal'),
@@ -200,6 +210,15 @@ const Checkout = {
           this.updateQtyDisplay();
           this.updatePriceDisplay();
         }
+      });
+    }
+    // Consignor selector in Add Item sheet
+    if (this.elements.addItemConsignorBtn) {
+      this.elements.addItemConsignorBtn.addEventListener('click', () => {
+        this.openConsignorPicker(this.addItemConsignorId, (id) => {
+          this.addItemConsignorId = id;
+          this._updateAddItemConsignorDisplay();
+        });
       });
     }
     // Mic button pointer events are bound in Speech.bindEvents()
@@ -422,6 +441,18 @@ const Checkout = {
     this.updatePriceDisplay();
     this.updateQtyDisplay();
     if (this.elements.addItemDesc) this.elements.addItemDesc.value = '';
+
+    // Show consignor row only if consignors exist
+    const consignors = Storage.getConsignors();
+    if (this.elements.addItemConsignorRow) {
+      this.elements.addItemConsignorRow.hidden = consignors.length === 0;
+    }
+    // Keep last-used consignor if it still exists, else reset
+    if (this.addItemConsignorId && !consignors.find(c => c.id === this.addItemConsignorId)) {
+      this.addItemConsignorId = null;
+    }
+    this._updateAddItemConsignorDisplay();
+
     if (this.elements.addItemModal) this.elements.addItemModal.classList.add('visible');
   },
 
@@ -465,7 +496,8 @@ const Checkout = {
       dayDiscountedPrice: dayDiscountedPrice,
       haggleType: null,
       haggleValue: null,
-      finalPrice: dayDiscountedPrice * qty
+      finalPrice: dayDiscountedPrice * qty,
+      consignorId: this.addItemConsignorId || null
     };
 
     this.items.push(item);
@@ -706,10 +738,23 @@ const Checkout = {
         if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
         const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
+        // Consignor dot
+        let consignorDotHtml = '';
+        if (item.consignorId) {
+          const consignors = Storage.getConsignors();
+          const c = consignors.find(x => x.id === item.consignorId);
+          if (c) {
+            consignorDotHtml = `<span class="item-row__consignor-dot" style="background: ${c.color}" data-item-consignor="${item.id}" title="${Utils.escapeHtml(c.name)}"></span>`;
+          }
+        } else if (Storage.getConsignors().length > 0) {
+          consignorDotHtml = `<span class="item-row__consignor-dot" style="background: transparent; border: 1px dashed var(--color-border)" data-item-consignor="${item.id}"></span>`;
+        }
+
         return `
           <li class="item-row item-row--swipeable${haggleClass}" data-id="${item.id}">
             <div class="item-row__delete-bg" data-swipe-delete="${item.id}">Delete</div>
             <div class="item-row__content">
+              ${consignorDotHtml}
               <span class="item-row__number">${index + 1}.</span>
               <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
               <div class="item-row__prices" data-edit-price="${item.id}">
@@ -771,6 +816,24 @@ const Checkout = {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.changeItemQty(btn.dataset.qtyDec, -1);
+      });
+    });
+
+    // Bind consignor dot tap to change consignor
+    this.elements.itemSheetList.querySelectorAll('[data-item-consignor]').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const itemId = dot.dataset.itemConsignor;
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+        this.openConsignorPicker(item.consignorId || null, (id) => {
+          this.checkEditDirty();
+          item.consignorId = id;
+          this.saveCart();
+          this.saveDraftTransaction();
+          this.transactionSaved = false;
+          this.renderItemSheet();
+        });
       });
     });
   },
@@ -1425,6 +1488,69 @@ const Checkout = {
   setPriceFromSpeech(price, description) {
     this.priceInput = price.toString();
     this.updatePriceDisplay();
+  },
 
+  /**
+   * Update the consignor display in the Add Item sheet
+   */
+  _updateAddItemConsignorDisplay() {
+    if (!this.elements.addItemConsignorDot || !this.elements.addItemConsignorName) return;
+    if (this.addItemConsignorId) {
+      const consignors = Storage.getConsignors();
+      const c = consignors.find(x => x.id === this.addItemConsignorId);
+      if (c) {
+        this.elements.addItemConsignorDot.style.background = c.color;
+        this.elements.addItemConsignorDot.textContent = '\u00A0'; // non-empty to show
+        this.elements.addItemConsignorName.textContent = c.name;
+        return;
+      }
+    }
+    this.elements.addItemConsignorDot.style.background = '';
+    this.elements.addItemConsignorDot.textContent = '';
+    this.elements.addItemConsignorName.textContent = 'None';
+  },
+
+  /**
+   * Open the consignor picker sheet
+   * @param {string|null} currentId - currently selected consignor ID
+   * @param {function} onSelect - callback with selected ID (or null for None)
+   */
+  openConsignorPicker(currentId, onSelect) {
+    const modal = document.getElementById('consignor-picker-modal');
+    const list = document.getElementById('consignor-picker-list');
+    const consignors = Storage.getConsignors();
+
+    let html = `<li class="consignor-picker__item${!currentId ? ' consignor-picker__item--selected' : ''}" data-consignor-pick="">
+      <span class="consignor-picker__name">None</span>
+      ${!currentId ? '<span class="consignor-picker__check">✓</span>' : ''}
+    </li>`;
+
+    consignors.forEach(c => {
+      const selected = currentId === c.id;
+      html += `<li class="consignor-picker__item${selected ? ' consignor-picker__item--selected' : ''}" data-consignor-pick="${c.id}">
+        <span class="consignor-picker__dot" style="background: ${c.color}"></span>
+        <span class="consignor-picker__name">${Utils.escapeHtml(c.name)}</span>
+        ${selected ? '<span class="consignor-picker__check">✓</span>' : ''}
+      </li>`;
+    });
+
+    list.innerHTML = html;
+
+    list.querySelectorAll('[data-consignor-pick]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.consignorPick || null;
+        onSelect(id);
+        modal.classList.remove('visible');
+      });
+    });
+
+    modal.addEventListener('click', function handler(e) {
+      if (e.target === modal) {
+        modal.classList.remove('visible');
+        modal.removeEventListener('click', handler);
+      }
+    });
+
+    modal.classList.add('visible');
   }
 };
