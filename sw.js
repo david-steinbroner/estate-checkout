@@ -3,7 +3,7 @@
  * Provides offline support via stale-while-revalidate strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v115';
+const CACHE_NAME = 'estate-checkout-v116';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

@@ -55,6 +55,7 @@ const Checkout = {
 
   // Item sheet state
   isSheetOpen: false,
+  _expandedItemId: null,
 
   // Haggle sheet state — which item is being haggled
   haggleItemId: null,
@@ -607,7 +608,6 @@ const Checkout = {
 
       return `
         <li class="item-row" data-id="${item.id}">
-          <span class="item-row__number">${index + 1}.</span>
           ${dotHtml}
           <span class="${descClass}">${descText}</span>
           <div class="item-row__prices">
@@ -738,40 +738,50 @@ const Checkout = {
     if (this.items.length === 0) {
       this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';
     } else {
-      const html = this.items.map((item, index) => {
+      const consignors = Storage.getConsignors();
+      const html = this.items.map((item) => {
         const hasDesc = item.description && item.description.trim().length > 0;
         const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
-        let descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+        const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
         const qty = item.quantity || 1;
-        if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
         const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
+        const isExpanded = this._expandedItemId === item.id;
 
         // Consignor dot
         let consignorDotHtml = '';
         if (item.consignorId) {
-          const consignors = Storage.getConsignors();
           const c = consignors.find(x => x.id === item.consignorId);
           if (c) {
-            consignorDotHtml = `<span class="item-row__consignor-dot" style="background: ${c.color}" data-item-consignor="${item.id}" title="${Utils.escapeHtml(c.name)}"></span>`;
+            consignorDotHtml = `<span class="item-row__consignor-dot" data-item-consignor="${item.id}" style="background: ${c.color}" title="${Utils.escapeHtml(c.name)}"></span>`;
           }
-        } else if (Storage.getConsignors().length > 0) {
-          consignorDotHtml = `<span class="item-row__consignor-dot" style="background: transparent; border: 1px dashed var(--color-border)" data-item-consignor="${item.id}"></span>`;
+        } else if (consignors.length > 0) {
+          consignorDotHtml = `<span class="item-row__consignor-dot" data-item-consignor="${item.id}" style="background: transparent; border: 1px dashed var(--color-border)"></span>`;
         }
 
+        // Qty badge (only shown when collapsed and qty > 1)
+        const qtyBadge = qty > 1 ? `<span class="item-row__qty-badge">&times;${qty}</span>` : '';
+
         return `
-          <li class="item-row item-row--swipeable${haggleClass}" data-id="${item.id}">
+          <li class="item-row item-row--swipeable${haggleClass}${isExpanded ? ' item-row--expanded' : ''}" data-id="${item.id}">
             <div class="item-row__delete-bg" data-swipe-delete="${item.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
-            <div class="item-row__content">
+            <div class="item-row__content" data-row-toggle="${item.id}">
               ${consignorDotHtml}
-              <span class="item-row__number">${index + 1}.</span>
               <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
+              ${qtyBadge}
               <div class="item-row__prices" data-edit-price="${item.id}">
                 ${this.renderItemPrices(item)}
               </div>
-              <div class="item-row__qty-controls" data-qty-id="${item.id}">
-                <button class="item-row__qty-btn" data-qty-dec="${item.id}">&minus;</button>
-                <span class="item-row__qty-num">${qty}</span>
-                <button class="item-row__qty-btn" data-qty-inc="${item.id}">+</button>
+            </div>
+            <div class="item-row__expand-area"${isExpanded ? ' style="max-height: 48px"' : ''}>
+              <div class="item-row__expand-inner">
+                <div class="item-row__qty-controls" data-qty-id="${item.id}">
+                  <button class="item-row__qty-btn" data-qty-dec="${item.id}">&minus;</button>
+                  <span class="item-row__qty-num">${qty}</span>
+                  <button class="item-row__qty-btn" data-qty-inc="${item.id}">+</button>
+                </div>
+                <button class="item-row__trash-btn" data-trash-delete="${item.id}" aria-label="Delete item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
               </div>
             </div>
           </li>
@@ -796,6 +806,29 @@ const Checkout = {
 
     // Show swipe hint on first open
     this.showSwipeHint();
+
+    // Bind row tap to expand/collapse
+    this.elements.itemSheetList.querySelectorAll('[data-row-toggle]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        // Don't toggle if user tapped an interactive child (desc edit, price, consignor dot)
+        if (e.target.closest('[data-edit-desc]') || e.target.closest('[data-edit-price]') || e.target.closest('[data-item-consignor]')) return;
+        const itemId = el.dataset.rowToggle;
+        this._expandedItemId = this._expandedItemId === itemId ? null : itemId;
+        // Animate without full re-render
+        this.elements.itemSheetList.querySelectorAll('.item-row').forEach(row => {
+          const id = row.dataset.id;
+          const expandArea = row.querySelector('.item-row__expand-area');
+          if (!expandArea) return;
+          if (id === this._expandedItemId) {
+            row.classList.add('item-row--expanded');
+            expandArea.style.maxHeight = expandArea.scrollHeight + 'px';
+          } else {
+            row.classList.remove('item-row--expanded');
+            expandArea.style.maxHeight = '0';
+          }
+        });
+      });
+    });
 
     // Bind tap-to-edit-description inline
     this.elements.itemSheetList.querySelectorAll('[data-edit-desc]').forEach(el => {
@@ -824,6 +857,14 @@ const Checkout = {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.changeItemQty(btn.dataset.qtyDec, -1);
+      });
+    });
+
+    // Bind trash button delete
+    this.elements.itemSheetList.querySelectorAll('[data-trash-delete]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeItem(btn.dataset.trashDelete);
       });
     });
 
