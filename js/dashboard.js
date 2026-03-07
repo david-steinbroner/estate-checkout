@@ -101,6 +101,16 @@ const Dashboard = {
         }
       });
     }
+
+    // Cancel confirmation sheet
+    const cancelModal = document.getElementById('cancel-confirm-modal');
+    if (cancelModal) {
+      cancelModal.querySelector('#cancel-confirm-yes').addEventListener('click', () => this.confirmCancelInvoice());
+      cancelModal.querySelector('#cancel-confirm-no').addEventListener('click', () => this.dismissCancelConfirm());
+      cancelModal.addEventListener('click', (e) => {
+        if (e.target === cancelModal) this.dismissCancelConfirm();
+      });
+    }
   },
 
   /**
@@ -393,7 +403,7 @@ const Dashboard = {
             Edit Invoice
           </button>
           <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-            Generate Invoice
+            See Invoice
           </button>
           <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
             Cancel
@@ -407,7 +417,7 @@ const Dashboard = {
             Mark as Unpaid
           </button>
           <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-            Generate Invoice
+            See Invoice
           </button>
         </div>
       `;
@@ -571,19 +581,52 @@ const Dashboard = {
   },
 
   /**
-   * Cancel an invoice (set to void with 'Cancelled' reason)
+   * Show cancel confirmation sheet
    */
   cancelInvoice(txnId) {
     const txn = Storage.getTransaction(txnId);
     if (!txn || txn.status === 'void') return;
 
-    Storage.updateTransaction(txnId, {
+    this._pendingCancelId = txnId;
+    const defaultLabel = txn.status === 'open' ? 'Order #' : 'Invoice #';
+    const label = txn.orderName || (defaultLabel + (txn.customerNumber || '?'));
+
+    const modal = document.getElementById('cancel-confirm-modal');
+    modal.querySelector('.cancel-confirm__title').textContent = `Cancel ${label}?`;
+    modal.classList.add('visible');
+  },
+
+  /**
+   * Confirm the cancellation
+   */
+  confirmCancelInvoice() {
+    if (!this._pendingCancelId) return;
+
+    Storage.updateTransaction(this._pendingCancelId, {
       status: 'void',
       voidedAt: Utils.getTimestamp(),
       voidReason: 'Cancelled'
     });
 
+    // If cancelling the current draft, clear draft tracking
+    if (Checkout.draftTransactionId === this._pendingCancelId) {
+      Storage.clearDraftTxnId();
+      Checkout.draftTransactionId = null;
+      Checkout.items = [];
+      Checkout.saveCart();
+    }
+
+    this._pendingCancelId = null;
+    document.getElementById('cancel-confirm-modal').classList.remove('visible');
     this.render();
+  },
+
+  /**
+   * Dismiss the cancel confirmation
+   */
+  dismissCancelConfirm() {
+    this._pendingCancelId = null;
+    document.getElementById('cancel-confirm-modal').classList.remove('visible');
   },
 
   /**
