@@ -2649,10 +2649,10 @@ body {
 .dashboard-filter {
   display: inline-flex;
   align-items: center;
-  height: var(--height-touch-min);
-  padding: 0 var(--space-xl);
+  height: 32px;
+  padding: 0 var(--space-md);
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
