@@ -11,14 +11,14 @@
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v111
-**Development sessions:** 46 (2026-02-27 through 2026-03-06)
+**Service worker cache:** v116
+**Development sessions:** 47 (2026-02-27 through 2026-03-06)
 **JS modules:** 12 (app, checkout, speech, qr, scan, payment, dashboard, payouts, sale-setup, onboarding, storage, utils)
 
-### What's Working (confirmed through Session 46)
+### What's Working (confirmed through Session 47)
 - **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
 - **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
-- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), full item list sheet with split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
+- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items), full item list sheet with tap-to-expand rows (collapsed: dot + name + qty badge + price; expanded: ± qty stepper + trash delete), swipe-to-delete, split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
 - **Order naming** — merged into hint strip ("Order #3 — 2 items — tap to edit order name and items"). Tap opens item sheet with "Order #X" title (tap to rename). Sequential numbering. Custom names preserved through edit cycle. Pre-QR uses "Order", post-QR uses "Invoice".
 - **No-description prompt** — bottom sheet every time item added without description. "Add Description" opens dedicated entry sheet with text input + mic button.
 - **Description + price editing** — In item edit sheet, tapping description opens description edit sheet, tapping price opens adjust price sheet. Both editable after item is added.
@@ -78,7 +78,7 @@
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 46) |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 47) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 
@@ -113,6 +113,7 @@ Session 43 (2026-03-05): **Checkout UX polish** — Description mic button, hint
 Session 44 (2026-03-05): **Dashboard status overhaul** — 5-status system (Open/Unpaid/Paid/Edited/Cancelled), draft transaction persistence, filter pills, lazy voiding, order/invoice naming distinction, dynamic done button, true-centered nav bar. Cart banner removed. Service worker v73 → v85.
 Session 45 (2026-03-06): **iOS mic + dashboard bug fixes** — Dashboard TDZ fix, error isolation for row rendering, iOS Safari mic release (destroy/recreate recognition), iOS Chrome early no-speech silent retry, permission persistence to localStorage, quick-tap threshold fix. Service worker v85 → v89.
 Session 46 (2026-03-06): **Consignor system + invoice UX** — Invoice Discount sheet redesign (3-mode toggle, live preview, validation). Dashboard: "See Invoice" rename, cancel confirmation sheet. Full consignor system: data model, storage methods, management UI in Setup + Edit Sale, tagging in Add Item + edit sheet, display on checkout/dashboard, Consignor Payouts screen with per-consignor payout breakdown. New `js/payouts.js` module (12 total). Service worker v89 → v111.
+Session 47 (2026-03-06): **Item sheet row simplification** — Removed row numbers, collapsed qty controls into tap-to-expand rows (qty badge pill + trash icon), smooth max-height animation. Service worker v115 → v116.
 
 ---
 

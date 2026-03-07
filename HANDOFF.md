@@ -3,11 +3,14 @@
 **Last updated:** 2026-03-06
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v111
+**Service worker cache:** v116
 
 ---
 
 ## What Was Accomplished
+
+### Session 47 (2026-03-06)
+- **Item sheet row simplification** — Removed row numbers from both item edit sheet and inline item list. Collapsed quantity controls into tap-to-expand pattern: default row shows consignor dot, description, qty badge pill (×N if >1), and line total price. Tapping a row expands it to reveal ± qty stepper (larger 32px buttons) and red trash icon for delete. Tapping again or another row collapses. Swipe-to-delete still available as secondary gesture. Added CSS for `.item-row__qty-badge`, `.item-row__expand-area` (max-height transition), `.item-row__expand-inner`, `.item-row__trash-btn`. Service worker v115 → v116.
 
 ### Session 46 (2026-03-06)
 - **Invoice Discount sheet redesign** — Replaced single-mode sheet with 3-mode toggle (% off, $ off, New Price). Live 3-line preview (subtotal, discount savings, new total). Validation: % > 100, $ > subtotal, new price > subtotal. Mode switch clears input, updates placeholder, refocuses. `Utils.applyTicketDiscount()` extended with `newprice` type. Service worker v105 → v106.
