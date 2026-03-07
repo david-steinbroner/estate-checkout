@@ -416,10 +416,6 @@ body {
 }
 
 /* Inline list hides remove buttons — they're in the sheet */
-.item-list-container .item-row__remove {
-  display: none;
-}
-
 .item-list-container .item-row__number,
 .item-list-container .item-row__desc,
 .item-list-container .item-row__final {
@@ -474,37 +470,67 @@ body {
 }
 
 .sheet__item-list .item-row {
-  padding: var(--space-md);
   min-height: var(--height-touch-min);
   background: var(--color-bg);
   border-radius: var(--radius-sm);
   border-bottom: none;
 }
 
+.sheet__item-list .item-row__content {
+  padding: var(--space-md);
+}
+
 .sheet__item-list .item-row:last-child {
   border-bottom: none;
 }
 
-.sheet__item-list .item-row__remove {
-  display: flex;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--color-danger-light);
-  color: var(--color-danger);
-  border-radius: 50%;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
+/* Swipe-to-delete structure */
+.item-row--swipeable {
+  position: relative;
+  overflow: hidden;
 }
 
-.item-row__remove-icon {
-  font-size: 14px;
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
+.item-row__delete-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 90px;
+  background: var(--color-danger);
+  color: var(--color-text-on-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.item-row__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--color-bg);
+  will-change: transform;
+  z-index: 1;
+}
+
+/* Swipe hint tooltip */
+.swipe-hint {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-sm);
+  transition: opacity 0.3s ease-out;
+}
+
+.swipe-hint--fading {
+  opacity: 0;
 }
 
 .item-row__qty {

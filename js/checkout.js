@@ -697,18 +697,20 @@ const Checkout = {
         const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
         return `
-          <li class="item-row${haggleClass}" data-id="${item.id}">
-            <span class="item-row__number">${index + 1}.</span>
-            <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
-            <div class="item-row__prices" data-edit-price="${item.id}">
-              ${this.renderItemPrices(item)}
+          <li class="item-row item-row--swipeable${haggleClass}" data-id="${item.id}">
+            <div class="item-row__delete-bg" data-swipe-delete="${item.id}">Delete</div>
+            <div class="item-row__content">
+              <span class="item-row__number">${index + 1}.</span>
+              <span class="${descClass}" data-edit-desc="${item.id}">${descText}</span>
+              <div class="item-row__prices" data-edit-price="${item.id}">
+                ${this.renderItemPrices(item)}
+              </div>
+              <div class="item-row__qty-controls" data-qty-id="${item.id}">
+                <button class="item-row__qty-btn" data-qty-dec="${item.id}">&minus;</button>
+                <span class="item-row__qty-num">${qty}</span>
+                <button class="item-row__qty-btn" data-qty-inc="${item.id}">+</button>
+              </div>
             </div>
-            <div class="item-row__qty-controls" data-qty-id="${item.id}">
-              <button class="item-row__qty-btn" data-qty-dec="${item.id}">&minus;</button>
-              <span class="item-row__qty-num">${qty}</span>
-              <button class="item-row__qty-btn" data-qty-inc="${item.id}">+</button>
-            </div>
-            <button class="item-row__remove" data-remove="${item.id}" aria-label="Remove item"><span class="item-row__remove-icon">✕</span></button>
           </li>
         `;
       }).join('');
@@ -716,13 +718,21 @@ const Checkout = {
       this.elements.itemSheetList.innerHTML = html;
     }
 
-    // Bind remove buttons in sheet
-    this.elements.itemSheetList.querySelectorAll('[data-remove]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    // Bind swipe-to-delete on item rows
+    this.elements.itemSheetList.querySelectorAll('.item-row--swipeable').forEach(row => {
+      this.bindSwipeToDelete(row);
+    });
+
+    // Bind tap on revealed delete area
+    this.elements.itemSheetList.querySelectorAll('[data-swipe-delete]').forEach(el => {
+      el.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.removeItem(btn.dataset.remove);
+        this.removeItem(el.dataset.swipeDelete);
       });
     });
+
+    // Show swipe hint on first open
+    this.showSwipeHint();
 
     // Bind tap-to-edit-description inline
     this.elements.itemSheetList.querySelectorAll('[data-edit-desc]').forEach(el => {
@@ -753,6 +763,81 @@ const Checkout = {
         this.changeItemQty(btn.dataset.qtyDec, -1);
       });
     });
+  },
+
+  /**
+   * Bind swipe-to-delete touch events on an item row
+   */
+  bindSwipeToDelete(row) {
+    const content = row.querySelector('.item-row__content');
+    if (!content) return;
+
+    const MAX_SWIPE = 90;
+    const DELETE_THRESHOLD = 60;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let swiping = false;
+
+    content.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      currentX = 0;
+      swiping = false;
+      content.style.transition = 'none';
+    }, { passive: true });
+
+    content.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+
+      // Only swipe left, and only if more horizontal than vertical
+      if (!swiping && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        swiping = true;
+      }
+      if (!swiping) return;
+
+      e.preventDefault();
+      currentX = Math.max(-MAX_SWIPE, Math.min(0, deltaX));
+      content.style.transform = `translateX(${currentX}px)`;
+    }, { passive: false });
+
+    content.addEventListener('touchend', () => {
+      content.style.transition = 'transform 0.2s ease-out';
+      if (currentX < -DELETE_THRESHOLD) {
+        // Snap to reveal delete
+        content.style.transform = `translateX(-${MAX_SWIPE}px)`;
+      } else {
+        // Snap back
+        content.style.transform = 'translateX(0)';
+      }
+      swiping = false;
+    });
+  },
+
+  /**
+   * Show one-time swipe hint tooltip
+   */
+  showSwipeHint() {
+    if (this.items.length === 0) return;
+    if (localStorage.getItem('estate_swipe_hint_seen')) return;
+
+    localStorage.setItem('estate_swipe_hint_seen', '1');
+
+    const hint = document.createElement('div');
+    hint.className = 'swipe-hint';
+    hint.textContent = 'Swipe left on an item to delete';
+    this.elements.itemSheetList.parentNode.insertBefore(hint, this.elements.itemSheetList);
+
+    const dismiss = () => {
+      hint.classList.add('swipe-hint--fading');
+      setTimeout(() => hint.remove(), 300);
+    };
+
+    hint.addEventListener('click', dismiss);
+    setTimeout(dismiss, 3500);
   },
 
   /**
