@@ -631,7 +631,6 @@ const App = {
 
     this._updateConsignorPayoutUI();
     modal.classList.add('visible');
-    nameInput.focus();
   },
 
   _renderConsignorColors(selected) {
