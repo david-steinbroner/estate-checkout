@@ -383,7 +383,7 @@ const Checkout = {
     if (this.elements.addItemPrice) {
       if (this.addItemQty > 1 && price > 0) {
         const total = price * this.addItemQty;
-        this.elements.addItemPrice.textContent = `${this.addItemQty} x ${Utils.formatCurrency(price)} = ${Utils.formatCurrency(total)}`;
+        this.elements.addItemPrice.textContent = `${Utils.formatCurrency(price)} x ${this.addItemQty} = ${Utils.formatCurrency(total)}`;
       } else {
         this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
       }
