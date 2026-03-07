@@ -1,6 +1,6 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-06
+**Last updated:** 2026-03-07
 **Last session by:** Claude Code
 **Current version:** v0.1
 **Service worker cache:** v116
@@ -8,6 +8,14 @@
 ---
 
 ## What Was Accomplished
+
+### Session 48 (2026-03-07)
+- **Sale setup page redesign — date-driven schedule** — Complete rewrite of the sale setup page. Sale name no longer required (optional). New SALE DATE section with start date ("Starts today" checkbox + date picker) and end date (TBD checkbox + date picker) side by side at 50% width. Discount schedule driven by date range: TBD = Day 1 only, end date set = Day 1 + last day, "+ Add Day" inserts between. Date labels on all discount rows ("Day N · Mon D"). Sale confirmation bottom sheet shows summary before starting (name, dates, Day 1 discount, consignors) with default/empty values in lighter gray. Added `endDate` field to sale object.
+- **Uniform section system** — Replaced inconsistent `.setup-field`/`.setup-date-sublabel`/`.consignor-section__header` classes with unified `.setup-section` system. All section headers use same `font-size-xs`, uppercase, semibold styling. Reusable `.setup-section__header-row` with optional right-aligned `.setup-section__action` link. Renamed "Discount Schedule" to "Schedule", moved "+ Add" to section header.
+- **Tap-to-edit discount rows** — Removed always-visible input boxes. 0% shows tappable "+ Add Discount" link (primary color). >0% shows tappable "X% off" text. Tapping either opens inline input with `inputmode="numeric"`, left-aligned, commits on blur/Enter.
+- **Schedule days as source of truth** — Fundamental data model change. Schedule days stored as `[{ date, discount }]` array instead of `{ dayNum: percent }` map. End date is read-only mirror of last schedule day. TBD unchecked by default. "+ Add" always visible, opens native date picker to select date first, inserts chronologically. Day dates tappable to edit via date picker, re-sorts on change. Swipe-to-delete on schedule rows (same pattern as item rows), Day 1 protected. Start date ↔ Day 1 bidirectional sync. `_buildDiscountsObject()` converts back to `{ 1: 0, 2: 25 }` format for sale creation.
+- **Native date picker fix** — Added `_openPicker()` helper using `.showPicker()` with `.focus()` fallback. Per-row hidden `<input type="date">` elements for editing day dates. End date input made tappable (removed readonly) with change handler for adding new last day or rejecting dates before existing days.
+- **CSS/spacing fixes** — Date inputs capped at `max-width: 90%` in half-width sections. Section spacing increased from `--space-lg` to `--space-xl`.
 
 ### Session 47 (2026-03-06)
 - **Item sheet row simplification** — Removed row numbers from both item edit sheet and inline item list. Collapsed quantity controls into tap-to-expand pattern: default row shows consignor dot, description, qty badge pill (×N if >1), and line total price. Tapping a row expands it to reveal ± qty stepper (larger 32px buttons) and red trash icon for delete. Tapping again or another row collapses. Swipe-to-delete still available as secondary gesture. Added CSS for `.item-row__qty-badge`, `.item-row__expand-area` (max-height transition), `.item-row__expand-inner`, `.item-row__trash-btn`. Service worker v115 → v116.
