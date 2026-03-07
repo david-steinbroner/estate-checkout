@@ -3,11 +3,21 @@
 **Last updated:** 2026-03-06
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v89
+**Service worker cache:** v111
 
 ---
 
 ## What Was Accomplished
+
+### Session 46 (2026-03-06)
+- **Invoice Discount sheet redesign** — Replaced single-mode sheet with 3-mode toggle (% off, $ off, New Price). Live 3-line preview (subtotal, discount savings, new total). Validation: % > 100, $ > subtotal, new price > subtotal. Mode switch clears input, updates placeholder, refocuses. `Utils.applyTicketDiscount()` extended with `newprice` type. Service worker v105 → v106.
+- **Dashboard invoice actions** — Renamed "Generate Invoice" to "See Invoice" for unpaid/paid transactions (open keeps "Create Invoice"). Added cancel confirmation sheet with "Cancel Invoice" / "Keep Invoice" buttons, overlay backdrop dismiss. Cancelling a draft clears checkout draft tracking. Service worker v106 → v107.
+- **Consignor data model + Storage** — Added `CONSIGNOR_COLORS` palette (10 colors) in utils.js. Added `consignors` array to sale object. Storage methods: `getConsignors()`, `saveConsignors()`, `addConsignor()`, `updateConsignor()`, `deleteConsignor()`. Service worker v107 → v108.
+- **Consignor management UI** — Consignors section in both Sale Setup screen and Edit Sale sheet. Add/Edit Consignor bottom sheet with name, color picker (10 tappable dots, auto-selects first unused), payout type dropdown (Percentage/Flat Fee), value input with live hint text, optional notes. Delete with confirmation. Pre-sale consignors stored in `SaleSetup.pendingConsignors`, transferred to sale on creation.
+- **Consignor tagging in Add Item sheet** — Consignor selector row between qty stepper and numpad (hidden when no consignors exist). Remembers last-used consignor across consecutive items. Consignor picker bottom sheet with "None" + all consignors (colored dot, name, checkmark). `consignorId` saved on item object. Service worker v108 → v109.
+- **Consignor tagging in item edit sheet** — Colored consignor dot on each item row (tappable to change). Dashed empty dot for untagged items when consignors are configured. Shares the consignor picker sheet.
+- **Consignor display throughout app** — Checkout item list shows colored dot before description. Dashboard transaction detail shows dot + consignor name inline with each item. Dashboard consignor summary at bottom of expanded transaction (items/total per consignor). Service worker v109 → v110.
+- **Consignor Payouts screen** — New screen accessible from hamburger menu (hidden when no consignors). Sale total + operator cut summary. Per-consignor cards with arrangement, items sold, revenue, payout split. Percentage and flat fee calculations. Warning when flat fee exceeds revenue. Expandable "View Items" accordion. Untagged items section. Only counts paid transactions. New `js/payouts.js` module. Service worker v110 → v111.
 
 ### Session 45 (2026-03-06)
 - **Dashboard TDZ bug fix** — `renderTransactionRow()` referenced `status` before its `const` declaration (temporal dead zone). Moved `const status = txn.status || 'unpaid'` to top of function. This was causing the entire transaction list to render blank while filter pill counts (computed separately) showed correct numbers.

@@ -11,11 +11,11 @@
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v89
-**Development sessions:** 45 (2026-02-27 through 2026-03-06)
-**JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, sale-setup, onboarding, storage, utils)
+**Service worker cache:** v111
+**Development sessions:** 46 (2026-02-27 through 2026-03-06)
+**JS modules:** 12 (app, checkout, speech, qr, scan, payment, dashboard, payouts, sale-setup, onboarding, storage, utils)
 
-### What's Working (confirmed through Session 45)
+### What's Working (confirmed through Session 46)
 - **Sale Setup** — name, "Sale starts today" checkbox (default checked, uncheck reveals date picker), discount schedule with Add Day. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
 - **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
 - **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items with numbering, e.g. "1. Book $12.00"), full item list sheet with split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
@@ -35,12 +35,15 @@
 - **iOS mic reliability** — Recognition instance destroyed/recreated on page background to release mic hardware. Silent retry for early no-speech. Permission persisted to localStorage for iOS where Permissions API unavailable.
 - **Discount auto-calculation** — timezone-aware day detection, configurable per-day percentages
 - **Item-level haggle discounts** — tap price in edit sheet to open haggle sheet; new price, $ off, or % off; stacks on top of day discount with visual stacking display (~~$20~~ ~~$15~~ $12)
-- **Ticket-level discounts** — % off or $ off entire ticket; accessible from expandable total bar and QR screen; stacks with day + haggle discounts
+- **Ticket-level discounts** — % off, $ off, or New Price for entire invoice; 3-mode toggle with live preview (subtotal, savings, new total); accessible from expandable total bar and QR screen; stacks with day + haggle discounts; validation prevents exceeding subtotal
 - **Expandable running total** — collapsed shows final total + chevron; expanded shows full price breakdown (original, day discount, haggles, subtotal, ticket discount, total, savings) plus Add/Edit Ticket Discount button
 - **Shared sale / multi-worker join** — Share Sale generates QR + human-readable sale code (e.g., JOH-8291); Worker 2 scans with phone camera to join same sale config; independent transaction tracking per device
 - **Multi-day sale flow** — End Day pauses sale with stats, Resume Sale advances day with correct discount, End Sale is permanent; sale states: active/paused/ended; stale sale warning after 7 days
 - **Keyboard avoidance** — visualViewport API repositions all overlay sheets above iOS keyboard when inputs are focused
 - **Standardized sheets** — All 17 modals use `.overlay` + `.visible` class pattern with z-index 100
+- **Consignor tracking** — Add consignors to sale (name, color, payout type/value, notes). Tag items to consignors in Add Item sheet and edit sheet. Colored dots on checkout list, edit sheet, and dashboard. Consignor summary in dashboard transaction detail. Supports percentage and flat fee payout arrangements.
+- **Consignor Payouts screen** — Accessible from hamburger menu. Sale total + operator cut summary. Per-consignor breakdown (items sold, revenue, payout split). Expandable item lists. Untagged items section. Only counts paid transactions.
+- **Invoice cancel confirmation** — Cancel action on dashboard shows confirmation sheet ("Cancel Invoice?" / "Keep Invoice") instead of immediate cancellation
 - **PWA + offline** — service worker cache-first strategy (untested in airplane mode)
 - **Cloudflare Pages auto-deploy** from GitHub main branch
 
@@ -75,7 +78,7 @@
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 45) |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 46) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 
@@ -109,6 +112,7 @@ Session 42 (2026-03-05): **Edit Sale sheet enhancements** — Current Day change
 Session 43 (2026-03-05): **Checkout UX polish** — Description mic button, hint strip merged into total bar, QR screen 2x2 button grid, ticket/order renamed to invoice throughout. Service worker v63 → v73.
 Session 44 (2026-03-05): **Dashboard status overhaul** — 5-status system (Open/Unpaid/Paid/Edited/Cancelled), draft transaction persistence, filter pills, lazy voiding, order/invoice naming distinction, dynamic done button, true-centered nav bar. Cart banner removed. Service worker v73 → v85.
 Session 45 (2026-03-06): **iOS mic + dashboard bug fixes** — Dashboard TDZ fix, error isolation for row rendering, iOS Safari mic release (destroy/recreate recognition), iOS Chrome early no-speech silent retry, permission persistence to localStorage, quick-tap threshold fix. Service worker v85 → v89.
+Session 46 (2026-03-06): **Consignor system + invoice UX** — Invoice Discount sheet redesign (3-mode toggle, live preview, validation). Dashboard: "See Invoice" rename, cancel confirmation sheet. Full consignor system: data model, storage methods, management UI in Setup + Edit Sale, tagging in Add Item + edit sheet, display on checkout/dashboard, Consignor Payouts screen with per-consignor payout breakdown. New `js/payouts.js` module (12 total). Service worker v89 → v111.
 
 ---
 
@@ -154,8 +158,8 @@ Session 45 (2026-03-06): **iOS mic + dashboard bug fixes** — Dashboard TDZ fix
 - Setup screen usability: could a 60-year-old figure it out with 2 min training?
 - Onboarding walkthrough: is it enough, or do users dismiss and get confused?
 - PWA vs App Store: do operators ask "is this in the App Store?" — does it matter for adoption?
-- **Consignor/seller tagging:** Is this a checkout-time problem (worker records consignor # per item while ringing up) or a back-office problem (operator tallies payouts after the sale)? If checkout-time, it could be a lightweight optional tag in v0.2. If back-office, it's a reporting/export feature. Need Allison follow-up to clarify.
-- **"Store mode" expansion:** Allison uses Square for payment but tracks consignors on notepads — Square has vendor features but she doesn't use them (too slow/complex for real-time checkout). Could we become the fast-entry front end for consignment tracking that feeds into a payout report? Path A: lightweight seller tag in checkout flow + payout breakdown in dashboard. Path B: full store mode for consignment shops. Path A first — validate with field data before considering B. See principle #5.
+- **Consignor/seller tagging:** Shipped in Session 46. Lightweight tag in checkout flow (one-tap consignor picker in Add Item sheet) + Consignor Payouts screen with per-consignor payout breakdown. Supports percentage and flat fee arrangements. Needs field validation — is this fast enough to not slow down checkout?
+- **"Store mode" expansion:** Path A (lightweight seller tag + payout breakdown) now shipped. Validate with field data before considering Path B (full store mode for consignment shops). See principle #5.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
-**Current priority:** v0.1 feature-complete (discounts, multi-worker, multi-day, checkout UX overhaul all shipped). Next: end-to-end testing on mobile Chrome and Safari, then field test. Sending prototype to Alissa tonight.
+**Current priority:** v0.1 feature-complete (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking all shipped). Next: end-to-end testing on mobile Chrome and Safari, then field test.
 
 > **Roadmap alignment:** The version structure below matches PRODUCT_STRATEGY.md §11. All items beyond v0.1 are hypotheses that will be validated by field test feedback. See PRODUCT_STRATEGY.md for the strategic rationale behind each version.
 
@@ -27,13 +27,16 @@ Scope is driven entirely by what we learn in field tests. These are likely candi
 - ~~Total-level discount~~ → Ticket-level discount (% or $ off)
 - ~~Toggle to apply/not apply day discount per item~~ → Haggle system replaces this need
 
+**Moved to v0.1 (completed 2026-03-06):**
+- ~~Consignor/seller tagging~~ → Full consignor system: data model, management UI, item tagging, colored dots throughout, Consignor Payouts screen with payout breakdown
+- ~~Vendor payout reporting~~ → Consignor Payouts screen covers this for estate sales
+
 ## v0.3 — Adjacent Segments: Vintage Markets & Multi-Vendor Sales
 
 Hypothesis: same checkout pain exists at vintage markets, flea markets, pop-up shops. See MARKET_INTEL.md §4.
 
-- [ ] Multi-vendor support (track sales by vendor/booth within a single event)
+- [ ] Multi-vendor support (track sales by vendor/booth within a single event — extends consignor model)
 - [ ] Flexible discount schedules (time-based, category-based — not just day-based)
-- [ ] Vendor payout reporting (split revenue between market organizer and vendors)
 - [ ] Possibly a "market organizer" mode
 
 ## v0.4 — Broader Event Types
