@@ -55,9 +55,24 @@ const SaleSetup = {
       this.addDay();
     });
 
-    // Start sale button
+    // Start sale button — open confirmation sheet
     this.elements.startSaleButton.addEventListener('click', () => {
+      this.showConfirmation();
+    });
+
+    // Confirmation sheet buttons
+    document.getElementById('sale-confirm-start').addEventListener('click', () => {
+      this.dismissConfirmation();
       this.startSale();
+    });
+    document.getElementById('sale-confirm-back').addEventListener('click', () => {
+      this.dismissConfirmation();
+    });
+
+    // Dismiss confirmation on overlay backdrop click
+    const confirmModal = document.getElementById('sale-confirm-modal');
+    confirmModal.addEventListener('click', (e) => {
+      if (e.target === confirmModal) this.dismissConfirmation();
     });
 
     // Dashboard button
@@ -405,6 +420,68 @@ const SaleSetup = {
 
     this.elements.startSaleButton.disabled = !isValid;
     return isValid;
+  },
+
+  /**
+   * Show the confirmation bottom sheet with a summary of sale settings
+   */
+  showConfirmation() {
+    if (!this.validateForm()) return;
+
+    const name = this.elements.saleNameInput.value.trim();
+    const startDate = this._getStartDate();
+    const endDate = this._getEndDate();
+    const day1Discount = this.discounts[1] || 0;
+
+    // Build consignor names
+    const sale = Storage.getSale();
+    const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
+    const consignorNames = consignors.map(c => c.name).join(', ');
+
+    // Format start date display
+    const todayStr = this._getStartDate();
+    const isToday = this.elements.todayCheckbox.checked;
+    const startLabel = isToday
+      ? `Today (${this._formatDateLabelFull(todayStr)})`
+      : this._formatDateLabelFull(startDate);
+
+    // Format end date display
+    const endLabel = endDate ? this._formatDateLabelFull(endDate) : null;
+
+    const rows = [
+      { label: 'Name', value: name || '(none)', isDefault: !name },
+      { label: 'Starts', value: startLabel, isDefault: false },
+      { label: 'Ends', value: endLabel || 'TBD', isDefault: !endLabel },
+      { label: 'Day 1', value: `${day1Discount}% off`, isDefault: false },
+      { label: 'Consignors', value: consignorNames || 'None', isDefault: !consignorNames }
+    ];
+
+    const summaryEl = document.getElementById('sale-confirm-summary');
+    summaryEl.innerHTML = rows.map(r => `
+      <div class="sale-confirm__row">
+        <span class="sale-confirm__label">${r.label}</span>
+        <span class="sale-confirm__value${r.isDefault ? ' sale-confirm__value--default' : ''}">${Utils.escapeHtml(r.value)}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('sale-confirm-modal').classList.add('visible');
+  },
+
+  /**
+   * Dismiss the confirmation bottom sheet
+   */
+  dismissConfirmation() {
+    document.getElementById('sale-confirm-modal').classList.remove('visible');
+  },
+
+  /**
+   * Format a date string as "Mon D, YYYY" (e.g., "Mar 10, 2026")
+   */
+  _formatDateLabelFull(dateStr) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   },
 
   /**

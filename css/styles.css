@@ -1960,6 +1960,58 @@ body {
   display: none;
 }
 
+/* Sale Confirmation Sheet */
+.sale-confirm__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.sale-confirm__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--font-size-base);
+  line-height: 1.4;
+}
+
+.sale-confirm__label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  min-width: 80px;
+}
+
+.sale-confirm__value {
+  text-align: right;
+  font-weight: var(--font-weight-medium);
+}
+
+.sale-confirm__value--default {
+  color: #aaa; /* intentional: lighter gray for empty/default values */
+  font-weight: var(--font-weight-normal);
+}
+
+.sale-confirm__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
+
+.sale-confirm__buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.sale-confirm__start {
+  flex: 1;
+}
+
+.sale-confirm__back {
+  flex: 1;
+}
+
 /* === Consignor Payouts Screen === */
 .payouts-screen {
   background: var(--color-bg);
