@@ -1084,6 +1084,87 @@ body {
   margin-bottom: var(--space-lg);
 }
 
+/* === Invoice Discount Sheet === */
+.invoice-discount-sheet {
+  text-align: left;
+}
+
+.invoice-discount__modes {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.invoice-discount__mode {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.invoice-discount__mode:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.invoice-discount__mode input[type="radio"] {
+  display: none;
+}
+
+.invoice-discount__input {
+  width: 100%;
+  height: var(--height-input);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  margin-bottom: var(--space-lg);
+  padding: 0 var(--space-lg);
+  box-sizing: border-box;
+}
+
+.invoice-discount__input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.invoice-discount__preview {
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.invoice-discount__line {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) 0;
+}
+
+.invoice-discount__line--discount {
+  color: var(--color-success);
+}
+
+.invoice-discount__line--total {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-xs);
+  padding-top: var(--space-sm);
+}
+
 /* === Feedback Flash === */
 .flash {
   position: fixed;

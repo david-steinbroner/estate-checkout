@@ -125,6 +125,8 @@ const Utils = {
       return Math.max(0, subtotal - ticketDiscount.value);
     } else if (ticketDiscount.type === 'percent') {
       return Math.max(0, subtotal * (1 - ticketDiscount.value / 100));
+    } else if (ticketDiscount.type === 'newprice') {
+      return Math.max(0, Math.min(subtotal, ticketDiscount.value));
     }
 
     return subtotal;

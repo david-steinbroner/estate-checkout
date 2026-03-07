@@ -114,10 +114,13 @@ const Checkout = {
       // Invoice discount sheet
       ticketDiscountModal: document.getElementById('ticket-discount-modal'),
       ticketDiscountInput: document.getElementById('ticket-discount-input'),
-      ticketDiscountPreview: document.getElementById('ticket-discount-preview'),
       ticketDiscountApply: document.getElementById('ticket-discount-apply'),
       ticketDiscountRemove: document.getElementById('ticket-discount-remove'),
-      ticketDiscountCancel: document.getElementById('ticket-discount-cancel')
+      ticketDiscountCancel: document.getElementById('ticket-discount-cancel'),
+      ticketDiscountSubtotal: document.getElementById('ticket-discount-subtotal'),
+      ticketDiscountSavingsRow: document.getElementById('ticket-discount-savings-row'),
+      ticketDiscountSavings: document.getElementById('ticket-discount-savings'),
+      ticketDiscountNewTotal: document.getElementById('ticket-discount-new-total')
     };
   },
 
@@ -292,7 +295,14 @@ const Checkout = {
       });
       this.elements.ticketDiscountInput.addEventListener('input', () => this.updateTicketDiscountPreview());
       document.querySelectorAll('input[name="ticket-discount-type"]').forEach(radio => {
-        radio.addEventListener('change', () => this.updateTicketDiscountPreview());
+        radio.addEventListener('change', () => {
+          this.elements.ticketDiscountInput.value = '';
+          const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+          this.elements.ticketDiscountInput.placeholder =
+            type === 'percent' ? 'Percentage' : type === 'dollar' ? 'Amount' : 'New Price';
+          this.updateTicketDiscountPreview();
+          this.elements.ticketDiscountInput.focus();
+        });
       });
     }
   },
@@ -1294,6 +1304,7 @@ const Checkout = {
    */
   openTicketDiscountSheet() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+    this.elements.ticketDiscountSubtotal.textContent = Utils.formatCurrency(subtotal);
 
     // Pre-fill if invoice discount exists
     if (this.ticketDiscount && this.ticketDiscount.value) {
@@ -1305,6 +1316,10 @@ const Checkout = {
       this.elements.ticketDiscountInput.value = '';
       this.elements.ticketDiscountRemove.hidden = true;
     }
+
+    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+    this.elements.ticketDiscountInput.placeholder =
+      type === 'percent' ? 'Percentage' : type === 'dollar' ? 'Amount' : 'New Price';
 
     this.updateTicketDiscountPreview();
     this.elements.ticketDiscountModal.classList.add('visible');
@@ -1320,7 +1335,17 @@ const Checkout = {
     const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
 
     const newTotal = Utils.applyTicketDiscount(subtotal, { type, value: rawValue });
-    this.elements.ticketDiscountPreview.textContent = `Total: ${Utils.formatCurrency(newTotal)}`;
+    const savings = subtotal - newTotal;
+
+    this.elements.ticketDiscountSubtotal.textContent = Utils.formatCurrency(subtotal);
+    this.elements.ticketDiscountNewTotal.textContent = Utils.formatCurrency(newTotal);
+
+    if (savings > 0) {
+      this.elements.ticketDiscountSavingsRow.hidden = false;
+      this.elements.ticketDiscountSavings.textContent = '−' + Utils.formatCurrency(savings);
+    } else {
+      this.elements.ticketDiscountSavingsRow.hidden = true;
+    }
   },
 
   /**
@@ -1332,6 +1357,21 @@ const Checkout = {
 
     if (!rawValue) {
       this.showFlash('error', 'Enter a value');
+      return;
+    }
+
+    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
+
+    if (type === 'percent' && rawValue > 100) {
+      this.showFlash('error', 'Percentage cannot exceed 100%');
+      return;
+    }
+    if (type === 'dollar' && rawValue > subtotal) {
+      this.showFlash('error', 'Discount exceeds subtotal');
+      return;
+    }
+    if (type === 'newprice' && rawValue > subtotal) {
+      this.showFlash('error', 'New price exceeds subtotal');
       return;
     }
 

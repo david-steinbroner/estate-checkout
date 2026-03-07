@@ -448,25 +448,40 @@
 
   <!-- Invoice Discount Sheet -->
   <div class="overlay" id="ticket-discount-modal">
-    <div class="sheet">
+    <div class="sheet invoice-discount-sheet">
       <p class="sheet__title">Invoice Discount</p>
-      <div class="haggle-options">
-        <label class="haggle-option">
+      <div class="invoice-discount__modes">
+        <label class="invoice-discount__mode">
           <input type="radio" name="ticket-discount-type" value="percent" checked>
-          <span class="haggle-option__label">% off</span>
+          <span class="invoice-discount__mode-label">% off</span>
         </label>
-        <label class="haggle-option">
+        <label class="invoice-discount__mode">
           <input type="radio" name="ticket-discount-type" value="dollar">
-          <span class="haggle-option__label">$ off</span>
+          <span class="invoice-discount__mode-label">$ off</span>
+        </label>
+        <label class="invoice-discount__mode">
+          <input type="radio" name="ticket-discount-type" value="newprice">
+          <span class="invoice-discount__mode-label">New Price</span>
         </label>
       </div>
-      <input type="text" inputmode="decimal" class="haggle-input" id="ticket-discount-input" placeholder="0" autocomplete="off">
-      <p class="haggle-preview" id="ticket-discount-preview">Total: $0.00</p>
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="ticket-discount-apply">Apply</button>
-        <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
-        <button class="sheet__btn sheet__btn--secondary" id="ticket-discount-cancel">Cancel</button>
+      <input type="text" inputmode="decimal" class="invoice-discount__input" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
+      <div class="invoice-discount__preview" id="ticket-discount-preview">
+        <div class="invoice-discount__line">
+          <span>Subtotal</span>
+          <span id="ticket-discount-subtotal">$0.00</span>
+        </div>
+        <div class="invoice-discount__line invoice-discount__line--discount" id="ticket-discount-savings-row" hidden>
+          <span>Discount</span>
+          <span id="ticket-discount-savings">−$0.00</span>
+        </div>
+        <div class="invoice-discount__line invoice-discount__line--total">
+          <span>New Total</span>
+          <span id="ticket-discount-new-total">$0.00</span>
+        </div>
       </div>
+      <button class="add-item__confirm" id="ticket-discount-apply">Apply Discount</button>
+      <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
+      <button class="add-item__cancel" id="ticket-discount-cancel">Cancel</button>
     </div>
   </div>
 
