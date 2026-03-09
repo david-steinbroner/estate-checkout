@@ -19,11 +19,7 @@ const App = {
     this.initModules();
     this.route();
 
-    // Show onboarding walkthrough on first launch
-    if (Onboarding.shouldShow()) {
-      Onboarding.show('single');
-    }
-  },
+},
 
   // Pending join data (from URL parameter, awaiting user confirmation)
   pendingJoinData: null,
@@ -76,7 +72,6 @@ const App = {
       // Setup menu
       setupMenuBtn: document.getElementById('setup-menu-btn'),
       setupMenuModal: document.getElementById('setup-menu-modal'),
-      setupMenuHow: document.getElementById('setup-menu-how'),
       setupMenuCancel: document.getElementById('setup-menu-cancel')
     };
   },
@@ -250,12 +245,6 @@ const App = {
     if (this.headerElements.setupMenuBtn) {
       this.headerElements.setupMenuBtn.addEventListener('click', () => {
         this.headerElements.setupMenuModal.classList.add('visible');
-      });
-    }
-    if (this.headerElements.setupMenuHow) {
-      this.headerElements.setupMenuHow.addEventListener('click', () => {
-        this.headerElements.setupMenuModal.classList.remove('visible');
-        Onboarding.show('single');
       });
     }
     if (this.headerElements.setupMenuCancel) {
@@ -829,7 +818,6 @@ const App = {
     Scan.init();
     Payment.init();
     Dashboard.init();
-    Onboarding.init();
   },
 
   /**

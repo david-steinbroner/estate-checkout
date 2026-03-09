@@ -3,7 +3,7 @@
  * Provides offline support via stale-while-revalidate strategy
  */
 
-const CACHE_NAME = 'estate-checkout-v116';
+const CACHE_NAME = 'estate-checkout-v117';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -18,7 +18,6 @@ const ASSETS_TO_CACHE = [
   '/js/payment.js',
   '/js/dashboard.js',
   '/js/payouts.js',
-  '/js/onboarding.js',
   '/js/storage.js',
   '/js/utils.js',
   '/lib/qrcode.min.js',

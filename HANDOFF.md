@@ -1,13 +1,17 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-07
+**Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v116
+**Service worker cache:** v117
 
 ---
 
 ## What Was Accomplished
+
+### Session 49 (2026-03-09)
+- **Removed onboarding walkthrough entirely** — Deleted `js/onboarding.js` file, removed onboarding overlay HTML from `index.html`, removed "How It Works" button from setup menu sheet, removed all `Onboarding` references from `app.js` (init call, shouldShow check, click handler, element caching), removed all `.onboarding*` CSS rules and `@keyframes onboarding-fade-in` from `styles.css`, removed `/js/onboarding.js` from service worker cache list, bumped cache to v117.
+- **Note:** The `estate_onboarding_seen` localStorage key is now orphaned. It's harmless and will be ignored.
 
 ### Session 48 (2026-03-07)
 - **Sale setup page redesign — date-driven schedule** — Complete rewrite of the sale setup page. Sale name no longer required (optional). New SALE DATE section with start date ("Starts today" checkbox + date picker) and end date (TBD checkbox + date picker) side by side at 50% width. Discount schedule driven by date range: TBD = Day 1 only, end date set = Day 1 + last day, "+ Add Day" inserts between. Date labels on all discount rows ("Day N · Mon D"). Sale confirmation bottom sheet shows summary before starting (name, dates, Day 1 discount, consignors) with default/empty values in lighter gray. Added `endDate` field to sale object.

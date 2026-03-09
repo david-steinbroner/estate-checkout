@@ -77,7 +77,6 @@ A feature is DONE when:
     scan.js               # QR scanning (BarcodeDetector + html5-qrcode fallback)
     payment.js            # Payment receive screen
     dashboard.js          # Sale dashboard (stats, filters, sort, transaction list)
-    onboarding.js         # First-run walkthrough (3-card overlay)
     storage.js            # localStorage abstraction
     utils.js              # Shared helpers (currency, dates, escaping)
   /assets/
@@ -130,7 +129,6 @@ A feature is DONE when:
 
 **IN SCOPE for v0.1:**
 - Sale setup (name, start date, discount schedule)
-- First-run onboarding walkthrough with "How It Works" replay
 - Checkout pad with number pad entry, Add Item, Create Ticket
 - Expandable item list with running total, savings display, and auto-applied discounts
 - Speech-to-text input with hold-to-talk, parser, confirmation, guide sheet, quick-tap detection
