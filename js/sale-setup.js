@@ -60,10 +60,26 @@ const SaleSetup = {
    * Open native date picker on an input element
    */
   _openPicker(inputEl) {
+    // iOS Safari won't open pickers on zero-dimension elements.
+    // Temporarily expand the input so the browser can anchor the picker.
+    const needsExpand = inputEl.classList.contains('setup-hidden-input');
+    if (needsExpand) {
+      inputEl.style.width = '1px';
+      inputEl.style.height = '1px';
+      inputEl.style.overflow = 'visible';
+    }
     if (typeof inputEl.showPicker === 'function') {
       try { inputEl.showPicker(); } catch (e) { inputEl.focus(); }
     } else {
       inputEl.focus();
+    }
+    if (needsExpand) {
+      // Collapse after a tick — picker is already open
+      setTimeout(() => {
+        inputEl.style.width = '';
+        inputEl.style.height = '';
+        inputEl.style.overflow = '';
+      }, 50);
     }
   },
 

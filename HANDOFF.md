@@ -3,11 +3,14 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v117
+**Service worker cache:** v118
 
 ---
 
 ## What Was Accomplished
+
+### Session 50 (2026-03-09)
+- **Fix date pickers not opening on iOS Safari/Chrome** — The "+ Add" button in Schedule header and the day date labels (e.g., "Mar 9") were not opening the native date picker on mobile. Root cause: `.setup-hidden-input` CSS used `width: 1px; height: 1px; overflow: hidden`, which prevents iOS Safari from anchoring `showPicker()` on near-zero-dimension elements. Fixed by: (1) changing CSS to `width: 0; height: 0; border: 0; padding: 0` without `overflow: hidden`, and (2) updating `_openPicker()` to temporarily expand hidden inputs to 1×1px before calling `showPicker()`, then collapse after a tick. Service worker v117 → v118.
 
 ### Session 49 (2026-03-09)
 - **Removed onboarding walkthrough entirely** — Deleted `js/onboarding.js` file, removed onboarding overlay HTML from `index.html`, removed "How It Works" button from setup menu sheet, removed all `Onboarding` references from `app.js` (init call, shouldShow check, click handler, element caching), removed all `.onboarding*` CSS rules and `@keyframes onboarding-fade-in` from `styles.css`, removed `/js/onboarding.js` from service worker cache list, bumped cache to v117.
