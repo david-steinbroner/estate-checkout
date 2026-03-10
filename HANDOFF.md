@@ -1,9 +1,9 @@
 # HANDOFF — Estate Sale Checkout MVP
 
-**Last updated:** 2026-03-09
+**Last updated:** 2026-03-10
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v126
+**Service worker cache:** v127
 
 ---
 

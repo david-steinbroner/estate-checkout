@@ -1,6 +1,6 @@
 # PM TRACKER — Estate Checkout
 
-**Last updated:** 2026-03-07
+**Last updated:** 2026-03-10
 **Purpose:** Tracking doc for Claude (PM partner) to maintain context across chat sessions. Human should add this to the project files.
 
 ---
@@ -11,17 +11,16 @@
 **Current priority:** End-to-end testing on mobile Chrome and Safari, then field test
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
-**Service worker cache:** v116
-**Development sessions:** 56 (2026-02-27 through 2026-03-09)
-**JS modules:** 12 (app, checkout, speech, qr, scan, payment, dashboard, payouts, sale-setup, onboarding, storage, utils)
+**Service worker cache:** v127
+**Development sessions:** 56 (2026-02-27 through 2026-03-10)
+**JS modules:** 11 (app, checkout, speech, qr, scan, payment, dashboard, payouts, sale-setup, storage, utils)
 
 ### What's Working (confirmed through Session 56)
-- **Sale Setup** — Optional name, start/end date with checkboxes ("Starts today" / "TBD"), unified section system. Schedule days are source of truth (array of date+discount). End date mirrors last schedule day. "+ Add" opens native date picker, inserts chronologically. Day dates tappable to edit. Swipe-to-delete on schedule rows. Tap-to-edit discount values. Sale confirmation bottom sheet before starting. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
-- **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
-- **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items), full item list sheet with tap-to-expand rows (collapsed: dot + name + qty badge + price; expanded: ± qty stepper + trash delete), swipe-to-delete, split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
+- **Sale Setup** — Optional name, start/end date with checkboxes ("Starts today" / "TBD"), unified section system. Schedule days are source of truth (array of date+discount). End date mirrors last schedule day (with `_syncing` guard to prevent cascading change events on iOS). "+ Add" opens native date picker via invisible overlay input, inserts day chronologically. Day dates tappable to edit via per-row hidden date input. Swipe-to-delete on schedule rows. Tap-to-edit discount values. Start date ↔ Day 1 bidirectional sync. Adding a day auto-unchecks TBD. Inline date validation errors with auto-hide. Sale confirmation bottom sheet with full schedule display (all days + discounts). Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
+- **Checkout pad** — number pad (48px keys), price display, Add Item (auto-focus description, inline validation errors, single-item price display), running total, savings display, inline item preview (last 2-3 items), full item list sheet with tap-to-edit rows (consignor dot + description + qty badge + line total + pencil icon), swipe-to-delete, tapping row opens Edit Item sheet (reuses Add Item sheet with pre-populated fields and "Save Changes" button), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
 - **Order naming** — merged into hint strip ("Order #3 — 2 items — tap to edit order name and items"). Tap opens item sheet with "Order #X" title (tap to rename). Sequential numbering. Custom names preserved through edit cycle. Pre-QR uses "Order", post-QR uses "Invoice".
 - **No-description prompt** — bottom sheet every time item added without description. "Add Description" opens dedicated entry sheet with text input + mic button.
-- **Description + price editing** — In item edit sheet, tapping description opens description edit sheet, tapping price opens adjust price sheet. Both editable after item is added.
+- **Description + price editing** — Tapping item row in item sheet opens Edit Item sheet (reuses Add Item sheet) with all fields pre-populated. Description, price, qty, and consignor all editable.
 - **Speech-to-text** — hold-to-talk, natural language parser (number words, compound prices, description extraction), confirm/edit/cancel flow, post-permission guide sheet, quick-tap detection ("Hold the button longer"), progressive failure tips, mic permission flow with custom modal, iOS early no-speech silent retry, permission persistence to localStorage
 - **QR Handoff** — QR code, itemized summary, 2x2 button grid (Edit Invoice, Mark Paid, Discount, New Order), Mark Paid directly marks paid and navigates to dashboard
 - **Edit Invoice loop** — lazy voiding (original not voided until first cart mutation), repeated edit cycles preserve customer number and reopenedFrom chain
@@ -86,7 +85,7 @@
 
 ---
 
-## Recent Development Arc (Sessions 4–32)
+## Recent Development Arc (Sessions 4–56)
 
 Sessions 4–9: Built QR scan/receive, payment flow, dashboard, speech-to-text with parser
 Sessions 10–13: Header consolidation, shared nav bar, description prompt fixes, camera/mic cleanup
@@ -115,6 +114,11 @@ Session 45 (2026-03-06): **iOS mic + dashboard bug fixes** — Dashboard TDZ fix
 Session 46 (2026-03-06): **Consignor system + invoice UX** — Invoice Discount sheet redesign (3-mode toggle, live preview, validation). Dashboard: "See Invoice" rename, cancel confirmation sheet. Full consignor system: data model, storage methods, management UI in Setup + Edit Sale, tagging in Add Item + edit sheet, display on checkout/dashboard, Consignor Payouts screen with per-consignor payout breakdown. New `js/payouts.js` module (12 total). Service worker v89 → v111.
 Session 47 (2026-03-06): **Item sheet row simplification** — Removed row numbers, collapsed qty controls into tap-to-expand rows (qty badge pill + trash icon), smooth max-height animation. Service worker v115 → v116.
 Session 48 (2026-03-07): **Sale setup page redesign** — Complete rewrite. Date-driven schedule → schedule-driven dates. Uniform section system. Tap-to-edit discount rows. Sale confirmation sheet. Schedule days as `[{date, discount}]` source of truth. End date mirrors last day. Swipe-to-delete on schedule rows. Native date picker integration via `showPicker()`. `endDate` field on sale object.
+Session 49 (2026-03-09): **Remove onboarding walkthrough** — Deleted `js/onboarding.js`, removed all references from HTML/CSS/app.js/sw.js. "How It Works" menu item removed.
+Sessions 50–53 (2026-03-09): **Date picker fixes** — Replaced fragile `showPicker()` with invisible overlay input approach. Fixed TBD not unchecking on "+ Add". Fixed spurious "Day already exists" error from cascading change events with `_syncing` guard flag. Re-added end date validation with guard protection.
+Session 54 (2026-03-09): **Sale confirmation full schedule** — Confirmation sheet shows all schedule days with dates and discounts instead of single "Day 1" summary.
+Session 55 (2026-03-09): **Add Item sheet UX** — Auto-focus description, remove price multiplication display, inline validation errors with priority ordering.
+Session 56 (2026-03-09): **Item edit sheet redesign** — Replace tap-to-expand with tap-to-edit. Rows show consignor dot + description + qty badge + line total + pencil icon. Tapping opens Add Item sheet in edit mode. Swipe-to-delete retained.
 
 ---
 
