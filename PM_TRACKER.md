@@ -12,10 +12,10 @@
 **Deployment:** Live on Cloudflare Pages (estate-checkout.pages.dev)
 **Repo:** https://github.com/david-steinbroner/estate-checkout
 **Service worker cache:** v116
-**Development sessions:** 48 (2026-02-27 through 2026-03-07)
+**Development sessions:** 56 (2026-02-27 through 2026-03-09)
 **JS modules:** 12 (app, checkout, speech, qr, scan, payment, dashboard, payouts, sale-setup, onboarding, storage, utils)
 
-### What's Working (confirmed through Session 48)
+### What's Working (confirmed through Session 56)
 - **Sale Setup** — Optional name, start/end date with checkboxes ("Starts today" / "TBD"), unified section system. Schedule days are source of truth (array of date+discount). End date mirrors last schedule day. "+ Add" opens native date picker, inserts chronologically. Day dates tappable to edit. Swipe-to-delete on schedule rows. Tap-to-edit discount values. Sale confirmation bottom sheet before starting. Start Sale + Join Sale side by side. ☰ menu with "How It Works" and "Send Feedback (Coming soon)".
 - **First-run onboarding** — 3-card walkthrough (Set Up Your Sale, Ring Up Items, Mark It Paid), step dots, fade transitions, Skip, replays from ☰ menu "How It Works"
 - **Checkout pad** — number pad (48px keys), price display, Add Item, running total, savings display, inline item preview (last 2-3 items), full item list sheet with tap-to-expand rows (collapsed: dot + name + qty badge + price; expanded: ± qty stepper + trash delete), swipe-to-delete, split tap targets (description edit / price edit), inline "Added!" flash animation, Clear All (confirmation sheet), dynamic done button ("Create Invoice" / "See Invoice" / "Create New Invoice")
@@ -78,7 +78,7 @@
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
 | CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
-| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 48) |
+| HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 56) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |
 

@@ -548,6 +548,16 @@ body {
   white-space: nowrap;
 }
 
+/* Pencil edit icon on item rows */
+.item-row__edit-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  margin-left: var(--space-xs);
+}
+
 /* Expandable area below row content */
 .item-row__expand-area {
   max-height: 0;

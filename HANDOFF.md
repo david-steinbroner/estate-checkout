@@ -9,6 +9,10 @@
 
 ## What Was Accomplished
 
+### Session 56 (2026-03-09)
+- **Redesign item edit sheet** — Replaced tap-to-expand pattern with tap-to-edit. Rows now show consignor dot, description, qty badge, line total, and a pencil icon. Tapping a row opens the Add Item sheet in edit mode (pre-populated fields, "Save Changes" button). Added `editingItemIndex` property and `openEditItemSheet(index)` method to Checkout. Modified `confirmAddItem()` to handle both add and edit modes — edit updates existing item and re-opens item sheet. Removed expand/collapse HTML, inline desc edit, price haggle click, qty controls, trash button, and consignor dot tap from item sheet rows. Swipe-to-delete retained.
+- Service worker v126 → v127.
+
 ### Session 55 (2026-03-09)
 - **Add Item sheet: focus description first** — Description input auto-focuses with keyboard when the sheet opens (50ms setTimeout after visible).
 - **Add Item sheet: remove multiplication from price display** — Price display now always shows the single-item price (e.g., "$5.00"), never "x 2 = $10.00". Qty is visible in the stepper row.
