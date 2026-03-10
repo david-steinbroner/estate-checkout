@@ -3,11 +3,19 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v122
+**Service worker cache:** v123
 
 ---
 
 ## What Was Accomplished
+
+### Session 52 (2026-03-09)
+- **Date picker validation errors** — Added 3 validation checks with inline error messages:
+  - End date before start date → "End date must be after start date." (re-added `#end-date-error` element)
+  - Start date after end date → "Start date must be before end date." (uses existing `#start-date-error`)
+  - "+ Add" duplicate date → "Day already exists. Select a different date." (new `#schedule-error` element)
+- **Bug 1 (picker dismisses immediately)** — Investigated; not a bug. The code uses `change` events (not `input`), which fire only after the user confirms on both iOS ("Done") and Android ("OK"). No code change needed.
+- Service worker v122 → v123.
 
 ### Session 51 (2026-03-09)
 - **Fix TBD not unchecking when adding schedule day** — When TBD was checked and the user added a day via "+ Add", TBD stayed checked and end date stayed blank. Now the "+ Add" change handler unchecks TBD before calling `_syncEndDate()`, so the end date field updates correctly.

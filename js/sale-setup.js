@@ -60,8 +60,9 @@ const SaleSetup = {
     this.elements.dayDatePicker.addEventListener('change', () => {
       const date = this.elements.dayDatePicker.value;
       if (!date) return;
-      // Duplicate check — silently ignore
+      // Duplicate check
       if (this.scheduleDays.some(d => d.date === date)) {
+        this._showDateError('schedule-error', 'Day already exists. Select a different date.');
         this.elements.dayDatePicker.value = '';
         return;
       }
@@ -115,6 +116,12 @@ const SaleSetup = {
     this.elements.startDateInput.addEventListener('change', () => {
       const newDate = this.elements.startDateInput.value;
       if (!newDate) return;
+      const endDate = this._getEndDate();
+      if (endDate && newDate > endDate) {
+        this._showDateError('start-date-error', 'Start date must be before end date.');
+        this.elements.startDateInput.value = this.scheduleDays[0]?.date || this._todayString();
+        return;
+      }
       this._setStartDate(newDate);
       this.validateForm();
     });
@@ -129,6 +136,13 @@ const SaleSetup = {
     this.elements.endDateInput.addEventListener('change', () => {
       const date = this.elements.endDateInput.value;
       if (!date || this.elements.tbdCheckbox.checked) return;
+
+      const startDate = this._getStartDate();
+      if (date < startDate) {
+        this._showDateError('end-date-error', 'End date must be after start date.');
+        this._syncEndDate();
+        return;
+      }
 
       const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
       // Only add a new row if date is after all existing days and not a duplicate
