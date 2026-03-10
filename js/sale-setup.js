@@ -68,6 +68,10 @@ const SaleSetup = {
       }
       this.scheduleDays.push({ date, discount: 0 });
       this._sortAndRenumber();
+      // If TBD was checked, uncheck it — user explicitly added a day
+      if (this.elements.tbdCheckbox.checked) {
+        this.elements.tbdCheckbox.checked = false;
+      }
       this._syncEndDate();
       this._syncStartDate();
       this.renderDiscountList();

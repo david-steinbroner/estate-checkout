@@ -3,11 +3,14 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v119
+**Service worker cache:** v120
 
 ---
 
 ## What Was Accomplished
+
+### Session 51 (2026-03-09)
+- **Fix TBD not unchecking when adding schedule day** — When TBD was checked and the user added a day via "+ Add", TBD stayed checked and end date stayed blank. Now the "+ Add" change handler unchecks TBD before calling `_syncEndDate()`, so the end date field updates correctly. Service worker v119 → v120.
 
 ### Session 50 (2026-03-09)
 - **Cross-browser date picker fix — overlay approach** — Replaced the fragile `showPicker()` / `_openPicker()` mechanism with a native overlay pattern. Invisible `<input type="date">` elements now sit directly on top of their tap targets at full size (`position: absolute; opacity: 0; width: 100%; height: 100%`), so the user's tap physically lands on a real date input — no programmatic picker triggering needed. Works on all iOS Safari (14+) and Android Chrome versions.
