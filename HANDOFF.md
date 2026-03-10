@@ -3,7 +3,7 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v121
+**Service worker cache:** v122
 
 ---
 
@@ -11,7 +11,7 @@
 
 ### Session 51 (2026-03-09)
 - **Fix TBD not unchecking when adding schedule day** — When TBD was checked and the user added a day via "+ Add", TBD stayed checked and end date stayed blank. Now the "+ Add" change handler unchecks TBD before calling `_syncEndDate()`, so the end date field updates correctly.
-- **Fix spurious "That date already has a day" error on end date** — The end date change handler showed an error when the selected date matched an existing schedule day (e.g., after "+ Add" triggered `_syncEndDate()` which set the end date value, or when the user tapped the end date and confirmed the current value). Fixed by treating any existing schedule date as a no-op (just re-sync) instead of showing an error. Service worker v120 → v121.
+- **Remove end-date-error entirely** — The "That date already has a day" error under end date was confusing and kept reappearing due to iOS change events. Removed all `_showDateError('end-date-error', ...)` calls (3 total: end date handler, "+ Add" handler, per-row picker handler). Duplicate date picks are now silently ignored (revert/re-sync). Removed `#end-date-error` element from index.html. End date is now a pure display field. Service worker v121 → v122.
 
 ### Session 50 (2026-03-09)
 - **Cross-browser date picker fix — overlay approach** — Replaced the fragile `showPicker()` / `_openPicker()` mechanism with a native overlay pattern. Invisible `<input type="date">` elements now sit directly on top of their tap targets at full size (`position: absolute; opacity: 0; width: 100%; height: 100%`), so the user's tap physically lands on a real date input — no programmatic picker triggering needed. Works on all iOS Safari (14+) and Android Chrome versions.

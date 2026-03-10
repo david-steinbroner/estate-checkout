@@ -60,9 +60,8 @@ const SaleSetup = {
     this.elements.dayDatePicker.addEventListener('change', () => {
       const date = this.elements.dayDatePicker.value;
       if (!date) return;
-      // Duplicate check
+      // Duplicate check — silently ignore
       if (this.scheduleDays.some(d => d.date === date)) {
-        this._showDateError('end-date-error', 'That date already has a day.');
         this.elements.dayDatePicker.value = '';
         return;
       }
@@ -126,29 +125,23 @@ const SaleSetup = {
       this.validateForm();
     });
 
-    // End date change — add new last day or reject
+    // End date change — add new last day if after all existing days, otherwise reset
     this.elements.endDateInput.addEventListener('change', () => {
       const date = this.elements.endDateInput.value;
       if (!date || this.elements.tbdCheckbox.checked) return;
 
-      // If this date already exists in schedule, just sync (no error)
-      if (this.scheduleDays.some(d => d.date === date)) {
-        this._syncEndDate();
-        return;
-      }
-
       const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
-      if (date < lastDay.date) {
-        this._showDateError('end-date-error', 'End date can\'t be before existing days.');
+      // Only add a new row if date is after all existing days and not a duplicate
+      if (date > lastDay.date && !this.scheduleDays.some(d => d.date === date)) {
+        this.scheduleDays.push({ date, discount: 0 });
+        this._sortAndRenumber();
         this._syncEndDate();
+        this.renderDiscountList();
+        this.validateForm();
         return;
       }
-      // Date is after last day — add a new schedule row
-      this.scheduleDays.push({ date, discount: 0 });
-      this._sortAndRenumber();
+      // Otherwise silently reset to match the schedule
       this._syncEndDate();
-      this.renderDiscountList();
-      this.validateForm();
     });
 
     // Add consignor button on setup
@@ -315,9 +308,8 @@ const SaleSetup = {
         if (!newDate) return;
         const oldDate = this.scheduleDays[idx]?.date;
         if (newDate === oldDate) return;
-        // Duplicate check
+        // Duplicate check — silently revert
         if (this.scheduleDays.some(d => d.date === newDate)) {
-          this._showDateError('end-date-error', 'That date already has a day.');
           input.value = oldDate;
           return;
         }
