@@ -1861,6 +1861,12 @@ body {
   margin: var(--space-xs) 0 0;
 }
 
+.sheet__field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin: var(--space-xs) 0 0;
+}
+
 .setup-hidden-input {
   position: absolute;
   top: 0;

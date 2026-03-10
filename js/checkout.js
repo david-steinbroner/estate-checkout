@@ -411,12 +411,7 @@ const Checkout = {
   updatePriceDisplay() {
     const price = parseFloat(this.priceInput) || 0;
     if (this.elements.addItemPrice) {
-      if (this.addItemQty > 1 && price > 0) {
-        const total = price * this.addItemQty;
-        this.elements.addItemPrice.textContent = `${Utils.formatCurrency(price)} x ${this.addItemQty} = ${Utils.formatCurrency(total)}`;
-      } else {
-        this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
-      }
+      this.elements.addItemPrice.textContent = Utils.formatCurrency(price);
     }
   },
 
@@ -455,6 +450,11 @@ const Checkout = {
     this._updateAddItemConsignorDisplay();
 
     if (this.elements.addItemModal) this.elements.addItemModal.classList.add('visible');
+
+    // Focus description field so keyboard appears
+    setTimeout(() => {
+      if (this.elements.addItemDesc) this.elements.addItemDesc.focus();
+    }, 50);
   },
 
   /**
@@ -467,22 +467,31 @@ const Checkout = {
   /**
    * Confirm adding item from the Add Item sheet
    */
+  /**
+   * Show a brief inline error under a field, auto-hides after 2.5s
+   */
+  _showFieldError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => { el.hidden = true; }, 2500);
+  },
+
   confirmAddItem() {
     this.checkEditDirty();
 
     const price = parseFloat(this.priceInput);
     const description = this.elements.addItemDesc ? this.elements.addItemDesc.value.trim() : '';
 
-    if ((!price || price <= 0) && !description) {
-      this.showFlash('error', 'Enter a price');
+    // Validate — description error takes priority when both empty
+    if (!description) {
+      this._showFieldError('add-item-desc-error', 'Enter an item description');
       return;
     }
     if (!price || price <= 0) {
-      this.showFlash('error', 'Enter a price');
-      return;
-    }
-    if (!description) {
-      this.showFlash('error', 'Enter an item description');
+      this._showFieldError('add-item-price-error', 'Enter a price');
       return;
     }
     const qty = this.addItemQty;

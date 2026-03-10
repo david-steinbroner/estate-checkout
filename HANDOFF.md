@@ -3,11 +3,17 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v125
+**Service worker cache:** v126
 
 ---
 
 ## What Was Accomplished
+
+### Session 55 (2026-03-09)
+- **Add Item sheet: focus description first** — Description input auto-focuses with keyboard when the sheet opens (50ms setTimeout after visible).
+- **Add Item sheet: remove multiplication from price display** — Price display now always shows the single-item price (e.g., "$5.00"), never "x 2 = $10.00". Qty is visible in the stepper row.
+- **Add Item sheet: inline validation errors** — Replaced `showFlash('error')` calls with inline errors under each field using new `.sheet__field-error` class. Description error takes priority when both fields empty. Errors auto-hide after 2.5s. Added `_showFieldError()` helper to Checkout.
+- Service worker v125 → v126.
 
 ### Session 54 (2026-03-09)
 - **Sale confirmation shows full schedule** — Replaced single "Day 1" row and "Ends" row with a "Days" count row (e.g., "3 days" or "TBD") and individual rows for every schedule day showing date and discount (e.g., "Day 2 · Mar 11 — 25% off"). Days with no discount show "No discount" in lighter gray (isDefault styling). Service worker v124 → v125.
