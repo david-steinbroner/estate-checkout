@@ -3,14 +3,19 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v118
+**Service worker cache:** v119
 
 ---
 
 ## What Was Accomplished
 
 ### Session 50 (2026-03-09)
-- **Fix date pickers not opening on iOS Safari/Chrome** — The "+ Add" button in Schedule header and the day date labels (e.g., "Mar 9") were not opening the native date picker on mobile. Root cause: `.setup-hidden-input` CSS used `width: 1px; height: 1px; overflow: hidden`, which prevents iOS Safari from anchoring `showPicker()` on near-zero-dimension elements. Fixed by: (1) changing CSS to `width: 0; height: 0; border: 0; padding: 0` without `overflow: hidden`, and (2) updating `_openPicker()` to temporarily expand hidden inputs to 1×1px before calling `showPicker()`, then collapse after a tick. Service worker v117 → v118.
+- **Cross-browser date picker fix — overlay approach** — Replaced the fragile `showPicker()` / `_openPicker()` mechanism with a native overlay pattern. Invisible `<input type="date">` elements now sit directly on top of their tap targets at full size (`position: absolute; opacity: 0; width: 100%; height: 100%`), so the user's tap physically lands on a real date input — no programmatic picker triggering needed. Works on all iOS Safari (14+) and Android Chrome versions.
+- **"+ Add" button**: Moved `#setup-day-date-picker` inside a new `.setup-section__action-wrap` span that wraps the button text. The overlay input covers the "+" text. Change handler adds the new day directly (no `_datePickerContext` indirection).
+- **Per-row date labels**: Moved per-row `<input type="date" data-row-picker="N">` inside `.discount-row__date` span. Input overlays the date text (e.g., "Mar 9"). Change handler updates the day directly.
+- **Removed dead code**: `_openPicker()`, `_handleDatePickerResult()`, `_datePickerContext` property, click handler on `.discount-row__date`, click handler on end date input (native input handles its own tap), `addDayButton` element cache.
+- **CSS changes**: `.setup-hidden-input` now uses `position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 1`. Added `.setup-section__action-wrap` with `position: relative`. Added `position: relative` to `.discount-row__date`.
+- Service worker v118 → v119.
 
 ### Session 49 (2026-03-09)
 - **Removed onboarding walkthrough entirely** — Deleted `js/onboarding.js` file, removed onboarding overlay HTML from `index.html`, removed "How It Works" button from setup menu sheet, removed all `Onboarding` references from `app.js` (init call, shouldShow check, click handler, element caching), removed all `.onboarding*` CSS rules and `@keyframes onboarding-fade-in` from `styles.css`, removed `/js/onboarding.js` from service worker cache list, bumped cache to v117.

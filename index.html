@@ -126,14 +126,13 @@
           <p class="setup-section__error" id="end-date-error" hidden></p>
         </div>
       </div>
-      <!-- Hidden date input for schedule day picking -->
-      <input type="date" id="setup-day-date-picker" class="setup-hidden-input">
-
       <!-- Schedule -->
       <div class="setup-section">
         <div class="setup-section__header-row">
           <span class="setup-section__header">Schedule</span>
-          <button type="button" class="setup-section__action" id="add-day-button">+ Add</button>
+          <span class="setup-section__action-wrap" id="add-day-button">+ Add
+            <input type="date" id="setup-day-date-picker" class="setup-hidden-input">
+          </span>
         </div>
         <div class="discount-list" id="discount-list">
           <!-- Discount rows added by JS -->

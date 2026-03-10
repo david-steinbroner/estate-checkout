@@ -13,9 +13,6 @@ const SaleSetup = {
   // DOM element references
   elements: {},
 
-  // Context for the hidden date picker (what action triggered it)
-  _datePickerContext: null,
-
   /**
    * Initialize sale setup screen
    */
@@ -37,7 +34,6 @@ const SaleSetup = {
       endDateInput: document.getElementById('setup-end-date'),
       dayDatePicker: document.getElementById('setup-day-date-picker'),
       discountList: document.getElementById('discount-list'),
-      addDayButton: document.getElementById('add-day-button'),
       dashboardButton: document.getElementById('setup-dashboard-button'),
       startSaleButton: document.getElementById('start-sale-button')
     };
@@ -57,49 +53,25 @@ const SaleSetup = {
   },
 
   /**
-   * Open native date picker on an input element
-   */
-  _openPicker(inputEl) {
-    // iOS Safari won't open pickers on zero-dimension elements.
-    // Temporarily expand the input so the browser can anchor the picker.
-    const needsExpand = inputEl.classList.contains('setup-hidden-input');
-    if (needsExpand) {
-      inputEl.style.width = '1px';
-      inputEl.style.height = '1px';
-      inputEl.style.overflow = 'visible';
-    }
-    if (typeof inputEl.showPicker === 'function') {
-      try { inputEl.showPicker(); } catch (e) { inputEl.focus(); }
-    } else {
-      inputEl.focus();
-    }
-    if (needsExpand) {
-      // Collapse after a tick — picker is already open
-      setTimeout(() => {
-        inputEl.style.width = '';
-        inputEl.style.height = '';
-        inputEl.style.overflow = '';
-      }, 50);
-    }
-  },
-
-  /**
    * Bind event listeners
    */
   bindEvents() {
-    // Add day button — open the shared hidden date picker
-    this.elements.addDayButton.addEventListener('click', () => {
-      this._datePickerContext = { action: 'add' };
-      this.elements.dayDatePicker.value = '';
-      this._openPicker(this.elements.dayDatePicker);
-    });
-
-    // Hidden date picker change (used for + Add and edit-day)
+    // "+ Add" date picker — overlay input inside the button, fires on native tap
     this.elements.dayDatePicker.addEventListener('change', () => {
       const date = this.elements.dayDatePicker.value;
-      if (!date || !this._datePickerContext) return;
-      this._handleDatePickerResult(date);
-      this._datePickerContext = null;
+      if (!date) return;
+      // Duplicate check
+      if (this.scheduleDays.some(d => d.date === date)) {
+        this._showDateError('end-date-error', 'That date already has a day.');
+        this.elements.dayDatePicker.value = '';
+        return;
+      }
+      this.scheduleDays.push({ date, discount: 0 });
+      this._sortAndRenumber();
+      this._syncEndDate();
+      this._syncStartDate();
+      this.renderDiscountList();
+      this.validateForm();
       this.elements.dayDatePicker.value = '';
     });
 
@@ -150,12 +122,6 @@ const SaleSetup = {
       this.validateForm();
     });
 
-    // End date input — tapping opens its own native picker
-    this.elements.endDateInput.addEventListener('click', () => {
-      if (this.elements.tbdCheckbox.checked) return;
-      this._openPicker(this.elements.endDateInput);
-    });
-
     // End date change — add new last day or reject
     this.elements.endDateInput.addEventListener('change', () => {
       const date = this.elements.endDateInput.value;
@@ -188,58 +154,6 @@ const SaleSetup = {
     const addConsignorBtn = document.getElementById('setup-add-consignor');
     if (addConsignorBtn) {
       addConsignorBtn.addEventListener('click', () => App.openConsignorSheet(null));
-    }
-  },
-
-  /**
-   * Handle result from the hidden date picker
-   */
-  _handleDatePickerResult(date) {
-    const ctx = this._datePickerContext;
-    if (!ctx) return;
-
-    if (ctx.action === 'add') {
-      // Check for duplicate date
-      if (this.scheduleDays.some(d => d.date === date)) {
-        this._showDateError('end-date-error', 'That date already has a day.');
-        return;
-      }
-      this.scheduleDays.push({ date, discount: 0 });
-      this._sortAndRenumber();
-      this._syncEndDate();
-      this._syncStartDate();
-      this.renderDiscountList();
-      this.validateForm();
-
-    } else if (ctx.action === 'end-date') {
-      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
-      if (date <= lastDay.date) {
-        this._showDateError('end-date-error', 'Remove later days from schedule first.');
-        return;
-      }
-      // Add a new day at the selected end date
-      this.scheduleDays.push({ date, discount: 0 });
-      this._sortAndRenumber();
-      this._syncEndDate();
-      this.renderDiscountList();
-      this.validateForm();
-
-    } else if (ctx.action === 'edit-day') {
-      const oldDate = ctx.oldDate;
-      // Check for duplicate
-      if (date !== oldDate && this.scheduleDays.some(d => d.date === date)) {
-        this._showDateError('end-date-error', 'That date already has a day.');
-        return;
-      }
-      const dayObj = this.scheduleDays.find(d => d.date === oldDate);
-      if (dayObj) {
-        dayObj.date = date;
-        this._sortAndRenumber();
-        this._syncEndDate();
-        this._syncStartDate();
-        this.renderDiscountList();
-        this.validateForm();
-      }
     }
   },
 
@@ -375,8 +289,7 @@ const SaleSetup = {
         <div class="discount-row" data-day-index="${index}">
           ${canDelete ? `<div class="discount-row__delete-bg" data-delete-index="${index}">${deleteIcon}</div>` : ''}
           <div class="discount-row__content">
-            <span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}</span></span>
-            <input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}">
+            <span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}<input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}"></span></span>
             <div class="discount-row__right">${rightHtml}</div>
           </div>
         </div>
@@ -393,17 +306,7 @@ const SaleSetup = {
       });
     });
 
-    // Bind tap on date label to open per-row date picker
-    this.elements.discountList.querySelectorAll('.discount-row__date').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const idx = parseInt(el.dataset.editDate);
-        const pickerInput = this.elements.discountList.querySelector(`[data-row-picker="${idx}"]`);
-        if (pickerInput) this._openPicker(pickerInput);
-      });
-    });
-
-    // Bind change on per-row date pickers
+    // Per-row date pickers — overlay input handles native tap, change event does the update
     this.elements.discountList.querySelectorAll('[data-row-picker]').forEach(input => {
       input.addEventListener('change', () => {
         const idx = parseInt(input.dataset.rowPicker);
