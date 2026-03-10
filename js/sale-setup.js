@@ -131,22 +131,19 @@ const SaleSetup = {
       const date = this.elements.endDateInput.value;
       if (!date || this.elements.tbdCheckbox.checked) return;
 
-      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
-      if (date < lastDay.date) {
-        this._showDateError('end-date-error', 'Remove later days from schedule first.');
+      // If this date already exists in schedule, just sync (no error)
+      if (this.scheduleDays.some(d => d.date === date)) {
         this._syncEndDate();
         return;
       }
-      if (date === lastDay.date) {
-        // Same date, nothing to do
+
+      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
+      if (date < lastDay.date) {
+        this._showDateError('end-date-error', 'End date can\'t be before existing days.');
+        this._syncEndDate();
         return;
       }
       // Date is after last day — add a new schedule row
-      if (this.scheduleDays.some(d => d.date === date)) {
-        this._showDateError('end-date-error', 'That date already has a day.');
-        this._syncEndDate();
-        return;
-      }
       this.scheduleDays.push({ date, discount: 0 });
       this._sortAndRenumber();
       this._syncEndDate();
