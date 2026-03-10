@@ -13,6 +13,9 @@ const SaleSetup = {
   // DOM element references
   elements: {},
 
+  // Guard flag to prevent cascading change events during sync
+  _syncing: false,
+
   /**
    * Initialize sale setup screen
    */
@@ -59,11 +62,11 @@ const SaleSetup = {
     // "+ Add" date picker — overlay input inside the button, fires on native tap
     this.elements.dayDatePicker.addEventListener('change', () => {
       const date = this.elements.dayDatePicker.value;
+      this.elements.dayDatePicker.value = '';
       if (!date) return;
       // Duplicate check
       if (this.scheduleDays.some(d => d.date === date)) {
         this._showDateError('schedule-error', 'Day already exists. Select a different date.');
-        this.elements.dayDatePicker.value = '';
         return;
       }
       this.scheduleDays.push({ date, discount: 0 });
@@ -76,7 +79,6 @@ const SaleSetup = {
       this._syncStartDate();
       this.renderDiscountList();
       this.validateForm();
-      this.elements.dayDatePicker.value = '';
     });
 
     // Start sale button — open confirmation sheet
@@ -114,6 +116,7 @@ const SaleSetup = {
 
     // Start date input change
     this.elements.startDateInput.addEventListener('change', () => {
+      if (this._syncing) return;
       const newDate = this.elements.startDateInput.value;
       if (!newDate) return;
       const endDate = this._getEndDate();
@@ -134,6 +137,7 @@ const SaleSetup = {
 
     // End date change — add new last day if after all existing days, otherwise reset
     this.elements.endDateInput.addEventListener('change', () => {
+      if (this._syncing) return;
       const date = this.elements.endDateInput.value;
       if (!date || this.elements.tbdCheckbox.checked) return;
 
@@ -186,8 +190,10 @@ const SaleSetup = {
    */
   _syncStartDate() {
     if (this.scheduleDays.length === 0) return;
+    this._syncing = true;
     const day1Date = this.scheduleDays[0].date;
     this.elements.startDateInput.value = day1Date;
+    this._syncing = false;
 
     // If "Starts today" is checked but Day 1 is not today, uncheck it
     if (this.elements.todayCheckbox.checked && day1Date !== this._todayString()) {
@@ -200,14 +206,20 @@ const SaleSetup = {
    * Sync end date field to match last schedule day
    */
   _syncEndDate() {
+    this._syncing = true;
     if (this.elements.tbdCheckbox.checked) {
       this.elements.endDateInput.value = '';
+      this._syncing = false;
       return;
     }
 
-    if (this.scheduleDays.length === 0) return;
+    if (this.scheduleDays.length === 0) {
+      this._syncing = false;
+      return;
+    }
     const lastDate = this.scheduleDays[this.scheduleDays.length - 1].date;
     this.elements.endDateInput.value = lastDate;
+    this._syncing = false;
   },
 
   /**
