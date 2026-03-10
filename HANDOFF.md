@@ -3,11 +3,14 @@
 **Last updated:** 2026-03-09
 **Last session by:** Claude Code
 **Current version:** v0.1
-**Service worker cache:** v124
+**Service worker cache:** v125
 
 ---
 
 ## What Was Accomplished
+
+### Session 54 (2026-03-09)
+- **Sale confirmation shows full schedule** — Replaced single "Day 1" row and "Ends" row with a "Days" count row (e.g., "3 days" or "TBD") and individual rows for every schedule day showing date and discount (e.g., "Day 2 · Mar 11 — 25% off"). Days with no discount show "No discount" in lighter gray (isDefault styling). Service worker v124 → v125.
 
 ### Session 53 (2026-03-09)
 - **Fix spurious "Day already exists" error on + Add** — Adding a day via "+ Add" could trigger a cascading `change` event on the end date input (iOS fires change when `.value` is set programmatically by `_syncEndDate()`). Fixed with a `_syncing` guard flag: `_syncEndDate()` and `_syncStartDate()` set `_syncing = true` while updating input values, and the start/end date change handlers early-return if `_syncing` is true. Also clear `dayDatePicker.value` immediately at the top of the handler (before any logic) to prevent stale value re-reads during cascades. Service worker v123 → v124.

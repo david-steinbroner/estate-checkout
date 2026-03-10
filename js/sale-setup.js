@@ -517,13 +517,26 @@ const SaleSetup = {
       ? `Today (${this._formatDateLabelFull(startDate)})`
       : this._formatDateLabelFull(startDate);
 
-    const endLabel = endDate ? this._formatDateLabelFull(endDate) : null;
+    const daysLabel = endDate
+      ? `${this.scheduleDays.length} day${this.scheduleDays.length !== 1 ? 's' : ''}`
+      : 'TBD';
+
+    // Build schedule rows for each day
+    const scheduleRows = this.scheduleDays.map((dayObj, i) => {
+      const dateLabel = this._formatDateLabel(dayObj.date);
+      const discountLabel = dayObj.discount > 0 ? `${dayObj.discount}% off` : 'No discount';
+      return {
+        label: `Day ${i + 1} \u00B7 ${dateLabel}`,
+        value: discountLabel,
+        isDefault: dayObj.discount === 0
+      };
+    });
 
     const rows = [
       { label: 'Name', value: name || '(none)', isDefault: !name },
       { label: 'Starts', value: startLabel, isDefault: false },
-      { label: 'Ends', value: endLabel || 'TBD', isDefault: !endLabel },
-      { label: 'Day 1', value: `${day1Discount}% off`, isDefault: false },
+      { label: 'Days', value: daysLabel, isDefault: !endDate },
+      ...scheduleRows,
       { label: 'Consignors', value: consignorNames || 'None', isDefault: !consignorNames }
     ];
 
