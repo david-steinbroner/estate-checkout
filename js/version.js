@@ -4,9 +4,17 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v132';
+const APP_VERSION = 'v133';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v133',
+    date: '2026-04-23',
+    changes: [
+      'Bigger, bolder screen titles — Apple Wallet style',
+      'Status pills (Paid, Open, Unpaid, Cancelled) now show a small icon next to the label — faster to scan at a glance'
+    ]
+  },
   {
     version: 'v132',
     date: '2026-04-23',

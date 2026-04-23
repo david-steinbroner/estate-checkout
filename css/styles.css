@@ -472,8 +472,9 @@ body {
 }
 
 .sheet__title-input {
-  font-size: var(--font-size-xl);
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
   color: var(--color-text);
   border: 1px solid var(--color-border-focus);
   border-radius: var(--radius-sm);
@@ -1609,10 +1610,18 @@ body {
 }
 
 .sheet__title {
-  font-size: var(--font-size-xl);
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin-bottom: var(--space-xs);
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+}
+
+.sheet__title--small {
+  font-size: var(--font-size-xl);
+  letter-spacing: 0;
+  line-height: var(--line-height-normal);
 }
 
 /* === Version label in menu === */
@@ -3106,33 +3115,59 @@ body {
 
 .dashboard-txn__status {
   display: inline-flex;
-  font-size: var(--font-size-sm);
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  padding: var(--space-xs) var(--space-md);
+  padding: 3px var(--space-md);
   border-radius: var(--radius-pill);
   margin-left: auto;
   margin-right: var(--space-sm);
+  letter-spacing: 0.01em;
+}
+
+.dashboard-txn__status::before {
+  font-size: 11px;
+  line-height: 1;
+  display: inline-block;
 }
 
 .dashboard-txn__status--paid {
-  background: var(--color-success-light);
+  background: var(--color-status-paid-bg);
   color: var(--color-success);
+}
+.dashboard-txn__status--paid::before {
+  content: '✓';
+  font-weight: var(--font-weight-bold);
 }
 
 .dashboard-txn__status--open {
   background: var(--color-primary-light);
   color: var(--color-primary);
 }
+.dashboard-txn__status--open::before {
+  content: '●';
+  font-size: 8px;
+}
 
 .dashboard-txn__status--unpaid {
-  background: var(--color-pending-light);
+  background: var(--color-status-pending-bg);
   color: var(--color-pending);
+}
+.dashboard-txn__status--unpaid::before {
+  content: '●';
+  font-size: 8px;
 }
 
 .dashboard-txn__status--edited,
 .dashboard-txn__status--cancelled {
   background: var(--color-bg-hover);
   color: var(--color-text-secondary);
+}
+.dashboard-txn__status--edited::before,
+.dashboard-txn__status--cancelled::before {
+  content: '✕';
+  font-weight: var(--font-weight-bold);
 }
 
 /* Open invoice styling */
