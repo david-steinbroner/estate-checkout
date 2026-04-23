@@ -1,9 +1,15 @@
 /**
  * sw.js - Service Worker for Estate Checkout
- * Provides offline support via stale-while-revalidate strategy
+ *
+ * Strategy:
+ *  - Network-first for core code (HTML, CSS, JS): fetch fresh, fall back to cache if offline.
+ *    This ensures new versions show up on every app open when online.
+ *  - Cache-first for external libs (unpkg, /lib/*): these don't change, save bandwidth.
+ *  - skipWaiting + clients.claim: new service workers activate immediately.
+ *  - Offline fallback: any HTML request that fails returns cached /index.html.
  */
 
-const CACHE_NAME = 'estate-checkout-v127';
+const CACHE_NAME = 'estate-checkout-v132';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -20,12 +26,32 @@ const ASSETS_TO_CACHE = [
   '/js/payouts.js',
   '/js/storage.js',
   '/js/utils.js',
+  '/js/version.js',
   '/lib/qrcode.min.js',
   '/manifest.json',
   'https://unpkg.com/html5-qrcode'
 ];
 
-// Install: cache all static assets
+// Paths that use network-first (our own core code — want freshness over speed)
+const NETWORK_FIRST_PATTERNS = [
+  /^\/$/,
+  /^\/index\.html$/,
+  /^\/ticket\.html$/,
+  /^\/css\//,
+  /^\/js\//,
+  /^\/manifest\.json$/
+];
+
+function isNetworkFirst(url) {
+  try {
+    const pathname = new URL(url).pathname;
+    return NETWORK_FIRST_PATTERNS.some((pattern) => pattern.test(pathname));
+  } catch {
+    return false;
+  }
+}
+
+// Install: cache all static assets, activate new SW immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -34,7 +60,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: clean up old caches
+// Activate: clean up old caches, take control of open clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
@@ -49,29 +75,60 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: stale-while-revalidate — serve from cache, update in background
+// Fetch: route by strategy
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // Only cache successful same-origin or CORS responses
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Network failed — fall back to cached version or offline fallback
-        if (cachedResponse) return cachedResponse;
-        if ((event.request.headers.get('accept') || '').includes('text/html')) {
-          return caches.match('/index.html');
-        }
-      });
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
 
-      // Return cached response immediately, or wait for network
-      return cachedResponse || fetchPromise;
-    })
-  );
+  const url = event.request.url;
+
+  if (isNetworkFirst(url)) {
+    event.respondWith(networkFirst(event.request));
+  } else {
+    event.respondWith(cacheFirst(event.request));
+  }
+});
+
+// Network-first: try network, fall back to cache, final fallback to index.html for HTML
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (err) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    if ((request.headers.get('accept') || '').includes('text/html')) {
+      const fallback = await caches.match('/index.html');
+      if (fallback) return fallback;
+    }
+    throw err;
+  }
+}
+
+// Cache-first: serve cached if available, else fetch and cache
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (err) {
+    // Offline and not in cache — nothing we can do
+    throw err;
+  }
+}
+
+// Allow app to request immediate activation of a waiting SW
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });

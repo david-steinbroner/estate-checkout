@@ -44,6 +44,11 @@ const App = {
       menuEndDay: document.getElementById('menu-end-day'),
       menuEndSale: document.getElementById('menu-end-sale'),
       menuCancel: document.getElementById('menu-cancel'),
+      menuWhatsNew: document.getElementById('menu-whats-new'),
+      menuVersionLabel: document.getElementById('menu-version-label'),
+      versionHistoryModal: document.getElementById('version-history-modal'),
+      versionHistoryContent: document.getElementById('version-history-content'),
+      versionHistoryDone: document.getElementById('version-history-done'),
       // End sale confirmation
       endSaleConfirmModal: document.getElementById('end-sale-confirm-modal'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
@@ -157,6 +162,23 @@ const App = {
     if (this.headerElements.menuModal) {
       this.headerElements.menuModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.menuModal) this.closeMenu();
+      });
+    }
+
+    // Version / What's New
+    this._initVersionHistory();
+    if (this.headerElements.menuWhatsNew) {
+      this.headerElements.menuWhatsNew.addEventListener('click', () => {
+        this.closeMenu();
+        this.openVersionHistory();
+      });
+    }
+    if (this.headerElements.versionHistoryDone) {
+      this.headerElements.versionHistoryDone.addEventListener('click', () => this.closeVersionHistory());
+    }
+    if (this.headerElements.versionHistoryModal) {
+      this.headerElements.versionHistoryModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.versionHistoryModal) this.closeVersionHistory();
       });
     }
 
@@ -721,6 +743,41 @@ const App = {
     if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
   },
 
+  _initVersionHistory() {
+    // Populate version label in menu
+    if (this.headerElements.menuVersionLabel && typeof APP_VERSION !== 'undefined') {
+      this.headerElements.menuVersionLabel.textContent = `Version ${APP_VERSION}`;
+    }
+    // Render version history content
+    if (this.headerElements.versionHistoryContent && typeof VERSION_HISTORY !== 'undefined') {
+      const html = VERSION_HISTORY.map((entry) => {
+        const changesHtml = entry.changes.map((c) => `<li>${c}</li>`).join('');
+        return `
+          <div class="version-history__entry">
+            <p class="version-history__header">
+              <span class="version-history__version">${entry.version}</span>
+              <span class="version-history__date">${entry.date}</span>
+            </p>
+            <ul class="version-history__list">${changesHtml}</ul>
+          </div>
+        `;
+      }).join('');
+      this.headerElements.versionHistoryContent.innerHTML = html;
+    }
+  },
+
+  openVersionHistory() {
+    if (this.headerElements.versionHistoryModal) {
+      this.headerElements.versionHistoryModal.classList.add('visible');
+    }
+  },
+
+  closeVersionHistory() {
+    if (this.headerElements.versionHistoryModal) {
+      this.headerElements.versionHistoryModal.classList.remove('visible');
+    }
+  },
+
   _showConsignorFlash(message) {
     const sheet = document.querySelector('#consignor-modal .sheet');
     if (!sheet) return;
@@ -787,7 +844,19 @@ const App = {
   },
 
   /**
-   * Register service worker for offline support
+   * Register service worker for offline support + auto-update.
+   *
+   * Auto-update flow:
+   *  1. On every app launch, register SW and call registration.update() to force
+   *     the browser to check for a new sw.js from the server.
+   *  2. When a new SW finishes installing, it activates immediately (skipWaiting
+   *     in sw.js). The browser fires 'controllerchange' when the new SW takes
+   *     control.
+   *  3. On controllerchange, reload the page silently so the user sees the new
+   *     version without any manual refresh. localStorage preserves sale state.
+   *
+   * This eliminates the iOS Safari "can't force refresh" pain — every app reopen
+   * pulls the latest code automatically when online.
    */
   registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
@@ -795,13 +864,49 @@ const App = {
     // Auto-reload when a new service worker takes control
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
+      if (refreshing) return;
+      refreshing = true;
+      console.log('[SW] New version activated — reloading');
+      window.location.reload();
     });
 
-    navigator.serviceWorker.register('/sw.js')
+    // updateViaCache: 'none' tells the browser to bypass HTTP cache when checking
+    // for sw.js updates — critical for iOS Safari, which otherwise caches sw.js
+    // aggressively and can miss new versions for hours or days.
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+      .then((registration) => {
+        // Force a check for updates on every launch
+        registration.update().catch(() => {
+          // Offline or fetch failed — harmless, existing SW keeps working
+        });
+
+        // Also check for updates when the tab regains focus (user returning
+        // from another app) — catches cases where the app was left open for
+        // a long time and a new version shipped in between.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update().catch(() => {});
+          }
+        });
+
+        // If a new SW is already waiting when we register, activate it
+        if (registration.waiting) {
+          registration.waiting.postMessage({ action: 'skipWaiting' });
+        }
+
+        // Listen for new SWs installing during this session
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // A new worker is installed and an old one is controlling the page.
+              // Tell the new worker to take over immediately.
+              newWorker.postMessage({ action: 'skipWaiting' });
+            }
+          });
+        });
+      })
       .catch((error) => {
         console.error('Service Worker registration failed:', error);
       });

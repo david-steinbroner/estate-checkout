@@ -406,9 +406,22 @@
         <button class="sheet__btn sheet__btn--secondary" id="menu-scan">Scan Invoice</button>
         <button class="sheet__btn sheet__btn--secondary" id="menu-share">Share Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="menu-edit-sale">Edit Sale</button>
+        <button class="sheet__btn sheet__btn--secondary" id="menu-whats-new">What's New</button>
         <button class="sheet__btn sheet__btn--primary" id="menu-end-day">End Day</button>
         <button class="sheet__btn sheet__btn--danger-outline" id="menu-end-sale">End Sale Permanently</button>
         <button class="sheet__btn sheet__btn--secondary" id="menu-cancel">Cancel</button>
+      </div>
+      <p class="sheet__version" id="menu-version-label"></p>
+    </div>
+  </div>
+
+  <!-- Version History Sheet -->
+  <div class="overlay" id="version-history-modal">
+    <div class="sheet">
+      <p class="sheet__title">What's New</p>
+      <div class="version-history" id="version-history-content"></div>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--secondary" id="version-history-done">Done</button>
       </div>
     </div>
   </div>
@@ -676,6 +689,7 @@
   <script src="/js/dashboard.js"></script>
   <script src="/js/payouts.js"></script>
   <script src="/js/sale-setup.js"></script>
+  <script src="/js/version.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>

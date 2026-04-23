@@ -4,66 +4,85 @@
  * Target: 375x667 viewport (iPhone SE) as minimum
  */
 
-/* === CSS Variables === */
+/* === CSS Variables ===
+ * Design System V2 — iOS-native (Apple Wallet / Venmo references)
+ * See DESIGN_SYSTEM_V2.md for the full spec.
+ * STEP 1 of migration: palette + typography token swap.
+ * Token names are preserved for backward compat; values shifted to iOS system.
+ */
 :root {
   /* === Colors: Surface & Background === */
-  --color-bg: #f5f5f5;
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
+  --color-bg: #F2F2F7;                  /* iOS systemGroupedBackground */
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-tinted: #F2F2F7;      /* V2: grouped card bg on white */
 
   /* === Colors: Text === */
-  --color-text: #1a1a1a;
-  --color-text-secondary: #666666;
-  --color-text-on-dark: #ffffff;
-  --color-text-on-primary: #ffffff;
-  --color-text-on-success: #ffffff;
-  --color-text-on-danger: #ffffff;
+  --color-text: #1C1C1E;                /* iOS label */
+  --color-text-secondary: #8E8E93;      /* iOS secondaryLabel */
+  --color-text-tertiary: #C7C7CC;       /* V2: iOS tertiaryLabel */
+  --color-text-on-dark: #FFFFFF;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-on-success: #FFFFFF;
+  --color-text-on-danger: #FFFFFF;
+  --color-text-link: #007AFF;           /* V2: blue text links */
+  --color-text-destructive: #FF3B30;    /* V2: red text links */
 
   /* === Colors: Brand / Primary === */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: rgba(37, 99, 235, 0.1);
+  --color-primary: #007AFF;             /* iOS systemBlue */
+  --color-primary-dark: #0051D5;
+  --color-primary-light: rgba(0, 122, 255, 0.15);
+  --color-primary-tint: rgba(0, 122, 255, 0.15);  /* V2: secondary button bg */
 
   /* === Colors: Semantic — Success === */
-  --color-success: #16a34a;
-  --color-success-dark: #15803d;
-  --color-success-light: rgba(22, 163, 74, 0.15);
+  --color-success: #34C759;             /* iOS systemGreen */
+  --color-success-dark: #248A3D;
+  --color-success-light: rgba(52, 199, 89, 0.15);
+  --color-success-tint: rgba(52, 199, 89, 0.15);
 
   /* === Colors: Semantic — Danger === */
-  --color-danger: #dc2626;
-  --color-danger-dark: #b91c1c;
-  --color-danger-light: rgba(220, 38, 38, 0.1);
+  --color-danger: #FF3B30;              /* iOS systemRed */
+  --color-danger-dark: #D70015;
+  --color-danger-light: rgba(255, 59, 48, 0.15);
 
   /* === Colors: Semantic — Warning/Pending === */
-  --color-pending: #b45309;
-  --color-pending-light: rgba(217, 119, 6, 0.15);
+  --color-pending: #FF9500;             /* iOS systemOrange */
+  --color-pending-light: rgba(255, 149, 0, 0.15);
+  --color-warning: #FFCC00;             /* V2: iOS systemYellow (rare use) */
+
+  /* === Colors: Status pill backgrounds (V2) === */
+  --color-status-paid-bg: rgba(52, 199, 89, 0.15);
+  --color-status-pending-bg: rgba(255, 149, 0, 0.15);
+  --color-status-voided-bg: rgba(255, 59, 48, 0.15);
 
   /* === Colors: Borders & Dividers === */
-  --color-border: #e5e5e5;
+  --color-border: #C6C6C8;              /* iOS separator */
   --color-border-focus: var(--color-primary);
+  --color-divider: #E5E5EA;             /* V2: lighter between-rows separator */
 
   /* === Colors: Interactive States === */
-  --color-bg-hover: #e5e5e5;
-  --color-bg-active: #d4d4d4;
-  --color-disabled: #999999;
+  --color-bg-hover: #E5E5EA;
+  --color-bg-active: #D1D1D6;
+  --color-disabled: #AEAEB2;
 
   /* === Colors: Overlays === */
   --overlay-light: rgba(0, 0, 0, 0.2);
   --overlay-medium: rgba(0, 0, 0, 0.5);
   --overlay-dark: rgba(0, 0, 0, 0.7);
   --overlay-opaque: rgba(0, 0, 0, 0.8);
-  --overlay-success: rgba(22, 163, 74, 0.95);
+  --overlay-success: rgba(52, 199, 89, 0.95);
+  --overlay-sheet-backdrop: rgba(0, 0, 0, 0.4);  /* V2: bottom sheet backdrop */
 
   /* === Colors: Scan Screen === */
   --color-scan-bg: #000000;
 
   /* === Colors: Animation-specific === */
-  --color-mic-highlight: rgba(37, 99, 235, 0.5);
-  --color-mic-pulse: rgba(220, 38, 38, 0.5);
+  --color-mic-highlight: rgba(0, 122, 255, 0.5);
+  --color-mic-pulse: rgba(255, 59, 48, 0.5);
   --color-scan-border: rgba(255, 255, 255, 0.6);
   --color-spinner-track: rgba(255, 255, 255, 0.3);
 
-  /* === Spacing === */
+  /* === Spacing (unchanged in step 1; structural migration shifts these later) === */
   --space-xs: 2px;
   --space-sm: 4px;
   --space-md: 8px;
@@ -72,21 +91,32 @@
   --space-2xl: 24px;
   --space-3xl: 32px;
 
-  /* === Typography: Font Family === */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* === Typography: Font Family (V2 adds SF Pro variants + rounded for numbers) === */
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
 
-  /* === Typography: Font Sizes === */
-  --font-size-xs: 11px;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-lg: 16px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 28px;
-  --font-size-price: 36px;
+  /* === Typography: Font Sizes (V2 scale — iOS-native) === */
+  --font-size-xs: 13px;        /* V2 footnote (was 11px) */
+  --font-size-sm: 15px;        /* iOS callout (was 12px) */
+  --font-size-base: 17px;      /* V2 body — iOS default body (was 14px) */
+  --font-size-lg: 20px;        /* V2 body-large — numpad digits (was 16px) */
+  --font-size-xl: 22px;        /* V2 title — card titles (was 20px) */
+  --font-size-2xl: 32px;       /* V2 title-large — screen titles (was 28px) */
+  --font-size-price: 56px;     /* V2 hero — running total, today's revenue (was 36px) */
   --font-size-icon: 48px;      /* Onboarding/speech icons */
   --font-size-icon-lg: 72px;   /* Payment success checkmark */
 
+  /* === Typography: V2 semantic aliases (use these in new work) === */
+  --font-size-hero: 56px;
+  --font-size-title-large: 32px;
+  --font-size-title: 22px;
+  --font-size-body-large: 20px;
+  --font-size-body: 17px;
+  --font-size-footnote: 13px;
+  --font-size-caption: 11px;
+
   /* === Typography: Font Weights === */
+  --font-weight-regular: 400;  /* V2 alias */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -95,6 +125,7 @@
   /* === Typography: Line Heights === */
   --line-height-tight: 1;
   --line-height-normal: 1.3;
+  --line-height-default: 1.4;  /* V2 alias — body text */
   --line-height-relaxed: 1.5;
 
   /* === Border Radius === */
@@ -1582,6 +1613,71 @@ body {
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin-bottom: var(--space-xs);
+}
+
+/* === Version label in menu === */
+.sheet__version {
+  font-size: var(--font-size-footnote);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin-top: var(--space-lg);
+  letter-spacing: 0.02em;
+}
+
+/* === Version History sheet === */
+.version-history {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: var(--space-lg);
+  padding-right: var(--space-xs);
+}
+
+.version-history__entry {
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.version-history__entry:last-child {
+  border-bottom: none;
+}
+
+.version-history__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+.version-history__version {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.version-history__date {
+  font-size: var(--font-size-footnote);
+  color: var(--color-text-secondary);
+}
+
+.version-history__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.version-history__list li {
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  line-height: var(--line-height-default);
+  padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
+  position: relative;
+}
+
+.version-history__list li::before {
+  content: '•';
+  position: absolute;
+  left: var(--space-xs);
+  color: var(--color-text-secondary);
 }
 
 .sheet__text {

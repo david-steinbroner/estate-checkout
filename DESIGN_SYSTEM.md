@@ -1,5 +1,13 @@
 # DESIGN SYSTEM — Estate Checkout
 
+> **⚠ DEPRECATED — 2026-04-23**
+>
+> This document is no longer the source of truth. It has been superseded by `DESIGN_SYSTEM_V2.md`, which shifts direction from a Tailwind-based SaaS palette to iOS-native (Apple Wallet + Venmo references) and formalizes consignor rules based on field feedback.
+>
+> This file is retained for historical context only. **Do not implement against it.** All new work follows `DESIGN_SYSTEM_V2.md`.
+
+---
+
 **Last updated:** 2026-03-03
 **Status:** Implementation complete. All 10 prompts executed. System fully tokenized.
 **Scope:** This document defines the complete design system for Estate Checkout. It is the single source of truth for all visual and interaction decisions. Every screen in the app must conform to this spec.
