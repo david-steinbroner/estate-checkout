@@ -115,7 +115,7 @@ const Checkout = {
       addItemQtyMinus: document.getElementById('add-item-qty-minus'),
       addItemQtyPlus: document.getElementById('add-item-qty-plus'),
       addItemQtyValue: document.getElementById('add-item-qty'),
-      addItemConsignorRow: document.getElementById('add-item-consignor-row'),
+      addItemConsignorRow: document.getElementById('add-item-consignor-btn'),
       addItemConsignorBtn: document.getElementById('add-item-consignor-btn'),
       addItemConsignorDot: document.getElementById('add-item-consignor-dot'),
       addItemConsignorName: document.getElementById('add-item-consignor-name'),
@@ -1600,7 +1600,7 @@ const Checkout = {
     }
     this.elements.addItemConsignorDot.style.background = '';
     this.elements.addItemConsignorDot.textContent = '';
-    this.elements.addItemConsignorName.textContent = 'None';
+    this.elements.addItemConsignorName.textContent = 'Select consignor';
   },
 
   /**

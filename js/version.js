@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v142';
+const APP_VERSION = 'v143';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v143',
+    date: '2026-04-24',
+    changes: [
+      'Consignor selector is now a proper chip on the Add Item screen — sits right above the "Add Item" button so it\'s easy to see and tap',
+      'The chip shows "Consigned by" and the consignor name in bold, with their color dot on the left',
+      'When no consignor is picked yet, it reads "Select consignor" with a dashed circle — clearer call to action than "None"',
+      'Only appears when the sale has at least one consignor set up'
+    ]
+  },
   {
     version: 'v142',
     date: '2026-04-24',

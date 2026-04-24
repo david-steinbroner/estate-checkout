@@ -365,14 +365,6 @@
         <span class="add-item__qty-value" id="add-item-qty">1</span>
         <button class="add-item__qty-btn" id="add-item-qty-plus" aria-label="Increase quantity">+</button>
       </div>
-      <div class="add-item__consignor-row" id="add-item-consignor-row" hidden>
-        <span class="add-item__consignor-label">Consignor:</span>
-        <button class="add-item__consignor-btn" id="add-item-consignor-btn" type="button">
-          <span class="add-item__consignor-dot" id="add-item-consignor-dot"></span>
-          <span id="add-item-consignor-name">None</span>
-          <span class="add-item__consignor-arrow">▼</span>
-        </button>
-      </div>
       <div class="numpad" id="numpad">
         <button class="numpad__button" data-value="1">1</button>
         <button class="numpad__button" data-value="2">2</button>
@@ -387,6 +379,15 @@
         <button class="numpad__button" data-value="0">0</button>
         <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
       </div>
+      <!-- Consignor chip (V2 §1.6: above Add Item, prominent chip selector) -->
+      <button class="consignor-chip" id="add-item-consignor-btn" type="button" hidden>
+        <span class="consignor-chip__dot" id="add-item-consignor-dot"></span>
+        <span class="consignor-chip__label">
+          <span class="consignor-chip__prefix">Consigned by</span>
+          <span class="consignor-chip__name" id="add-item-consignor-name">Select consignor</span>
+        </span>
+        <svg class="consignor-chip__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+      </button>
       <button class="add-item__confirm" id="add-item-confirm">Add Item</button>
       <button class="add-item__cancel" id="add-item-cancel">Cancel</button>
     </div>
