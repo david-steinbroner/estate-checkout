@@ -128,11 +128,12 @@
   --line-height-default: 1.4;  /* V2 alias — body text */
   --line-height-relaxed: 1.5;
 
-  /* === Border Radius === */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 12px;
-  --radius-pill: 999px;
+  /* === Border Radius (V2 §2.1 spec values) === */
+  --radius-sm: 8px;       /* chips, small pills */
+  --radius-md: 10px;      /* buttons, inputs, picker buttons (iOS default) */
+  --radius-lg: 14px;      /* grouped list cards (iOS default) */
+  --radius-xl: 20px;      /* bottom sheets (top corners) */
+  --radius-pill: 999px;   /* status pills, segmented control inner pills */
 
   /* === Component Heights === */
   /* 48px for all interactive elements: buttons, inputs, numpad keys */
@@ -830,21 +831,25 @@ body {
 
 .entry-screen__input {
   width: 100%;
+  min-width: 0;
   height: var(--height-input);
   padding: 0 56px 0 var(--space-lg);
-  border: 1px solid var(--color-divider);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: var(--color-surface-tinted);
   color: var(--color-text);
   font-size: var(--font-size-base);
   outline: none;
   box-sizing: border-box;
-  transition: border-color var(--duration-fast, 150ms) ease;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: var(--font-family);
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
 .entry-screen__input:focus {
-  border-color: var(--color-primary);
   background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .entry-screen__mic {
@@ -1431,20 +1436,29 @@ body {
   letter-spacing: 0;
 }
 
+/* Canonical input visual — see V2 §2.2. All input classes alias to this style.
+   Tinted bg, no border at rest, focus = white bg + primary border. */
 .consignor-form__input {
   width: 100%;
+  min-width: 0;
   height: var(--height-input);
   font-size: var(--font-size-base);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 0 var(--space-md);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
+  padding: 0 var(--space-lg);
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: var(--font-family);
+  outline: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
 .consignor-form__input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .consignor-form__colors {
@@ -1475,29 +1489,124 @@ body {
   align-items: center;
 }
 
-.consignor-form__select {
-  height: var(--height-input);
-  font-size: var(--font-size-base);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 0 var(--space-md);
+/* === ec-picker-button (V2 §2.2 — replaces native <select>) === */
+.ec-picker-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
   flex: 1;
+  height: var(--height-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
+  padding: 0 var(--space-lg);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
+}
+
+.ec-picker-button:active {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.ec-picker-button__label {
+  flex: 1;
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ec-picker-button__chevron {
+  width: 12px;
+  height: 8px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* === ec-picker-list (V2 §2.2 — bottom-sheet selection rows) === */
+.ec-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ec-picker-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-md);
+  row-gap: 2px;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-divider);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast, 150ms) ease;
+}
+
+.ec-picker-item:last-child {
+  border-bottom: none;
+}
+
+.ec-picker-item:active {
+  background: var(--color-bg-hover);
+}
+
+.ec-picker-item__label {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.ec-picker-item__hint {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-default);
+}
+
+.ec-picker-item__check {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  visibility: hidden;
+}
+
+.ec-picker-item--selected .ec-picker-item__check {
+  visibility: visible;
 }
 
 .consignor-form__payout-input-wrap {
   display: flex;
   align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
   height: var(--height-input);
   flex: 1;
   overflow: hidden;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
 .consignor-form__payout-input-wrap:focus-within {
-  border-color: var(--color-border-focus);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .consignor-form__payout-prefix,
@@ -1618,20 +1727,28 @@ body {
 
 .haggle-input {
   width: 100%;
+  min-width: 0;
   height: var(--height-input);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   text-align: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
   margin-bottom: var(--space-lg);
   padding: 0 var(--space-lg);
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: var(--font-family);
+  outline: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
 .haggle-input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .haggle-preview {
@@ -1678,21 +1795,28 @@ body {
 
 .invoice-discount__input {
   width: 100%;
+  min-width: 0;
   height: var(--height-input);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   text-align: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
   margin-bottom: var(--space-lg);
   padding: 0 var(--space-lg);
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: var(--font-family);
+  outline: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
 .invoice-discount__input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .invoice-discount__preview {
@@ -2237,34 +2361,31 @@ body {
 
 .setup-section__input {
   width: 100%;
-  min-width: 0; /* allow flex/grid children to shrink below intrinsic min-width */
+  min-width: 0;
   height: var(--height-input);
   padding: 0 var(--space-lg);
   font-size: var(--font-size-base);
-  border: 1px solid var(--color-border);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
   box-sizing: border-box;
-  /* iOS Safari date inputs have a shadow-DOM placeholder ("mm/dd/yyyy")
-     with its own intrinsic min-width that can blow past width:100%.
-     Opting out of native appearance forces the input to honor our width. */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   font-family: var(--font-family);
-  color: var(--color-text);
+  outline: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
-/* Date inputs need extra-explicit handling for iOS — they're the most
-   likely to have a native shadow-DOM that ignores width constraints. */
 .setup-section__input[type="date"] {
   display: block;
   -webkit-min-logical-width: 0;
 }
 
 .setup-section__input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .setup-section__input--readonly {

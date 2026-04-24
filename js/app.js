@@ -16,6 +16,7 @@ const App = {
     this.registerServiceWorker();
     this.cacheHeaderElements();
     this.bindHeaderEvents();
+    this._bindPayoutTypePicker();
     this.initModules();
     this.route();
 
@@ -665,19 +666,63 @@ const App = {
     const suffix = document.getElementById('consignor-payout-suffix');
     const hint = document.getElementById('consignor-payout-hint');
     const input = document.getElementById('consignor-payout-value');
+    const typeLabel = document.getElementById('consignor-payout-type-label');
 
     if (type === 'percentage') {
       prefix.textContent = '';
       suffix.textContent = '%';
       input.placeholder = '70';
+      if (typeLabel) typeLabel.textContent = 'Percentage';
       const val = parseFloat(input.value) || 0;
       hint.textContent = val > 0 ? `Consignor gets ${val}%, you keep ${100 - val}%` : 'Consignor gets X%, you keep the rest';
     } else {
       prefix.textContent = '$';
       suffix.textContent = '';
       input.placeholder = '5';
+      if (typeLabel) typeLabel.textContent = 'Flat Fee';
       const val = parseFloat(input.value) || 0;
       hint.textContent = val > 0 ? `You charge $${val} per item, consignor gets the rest` : 'You charge $X per item, consignor gets the rest';
+    }
+  },
+
+  _openPayoutTypePicker() {
+    const modal = document.getElementById('payout-type-picker-modal');
+    if (!modal) return;
+    const currentValue = document.getElementById('consignor-payout-type').value;
+    modal.querySelectorAll('[data-payout-type]').forEach(el => {
+      el.classList.toggle('ec-picker-item--selected', el.dataset.payoutType === currentValue);
+    });
+    modal.classList.add('visible');
+  },
+
+  _closePayoutTypePicker() {
+    const modal = document.getElementById('payout-type-picker-modal');
+    if (modal) modal.classList.remove('visible');
+  },
+
+  _bindPayoutTypePicker() {
+    if (this._payoutTypePickerBound) return;
+    this._payoutTypePickerBound = true;
+
+    const btn = document.getElementById('consignor-payout-type-btn');
+    if (btn) {
+      btn.addEventListener('click', () => this._openPayoutTypePicker());
+    }
+
+    const modal = document.getElementById('payout-type-picker-modal');
+    if (modal) {
+      modal.querySelectorAll('[data-payout-type]').forEach(el => {
+        el.addEventListener('click', () => {
+          const value = el.dataset.payoutType;
+          const hidden = document.getElementById('consignor-payout-type');
+          if (hidden) hidden.value = value;
+          this._updateConsignorPayoutUI();
+          this._closePayoutTypePicker();
+        });
+      });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) this._closePayoutTypePicker();
+      });
     }
   },
 

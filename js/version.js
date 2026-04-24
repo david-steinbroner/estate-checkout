@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v148';
+const APP_VERSION = 'v149';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v149',
+    date: '2026-04-24',
+    changes: [
+      'All text fields across the app now share one consistent look: light gray tinted background, no border at rest, white background + blue border on focus (Apple Wallet / Venmo style)',
+      'Slightly more rounded corners across buttons, inputs, and cards (10–14px instead of 6–12px) to match modern iOS',
+      'The Payout Type picker (Percentage / Flat Fee) on the Add Consignor sheet is no longer a generic dropdown — it\'s now a clean tappable pill that opens a bottom sheet with descriptions for each option'
+    ]
+  },
   {
     version: 'v148',
     date: '2026-04-24',

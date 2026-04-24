@@ -400,15 +400,62 @@ All components live in `css/styles.css`. All classes prefixed `.ec-`.
 
 ### Inputs
 
-**`.ec-input` — Text Input**
-- Background: `--color-surface`
-- Border: 1px solid `--color-divider`
-- On focus: 2px border `--color-primary`
-- Height: `--height-interactive`
-- Radius: `--radius-md`
-- Padding: 0 `--space-md`
-- Font: body size, regular
-- Label above (small footnote, secondary color)
+**`.ec-input` — Text Input (Wallet/Venmo modern pattern)**
+
+Reference: Apple Wallet "Card Details", Venmo "What's this for?", Facebook Marketplace listing form. The dominant post-iOS-15 pattern is **tinted background, no border at rest** — a clean, low-chrome look. White-with-border is the older Settings-app pattern and feels heavier.
+
+- Background: `--color-surface-tinted` (light gray; iOS `secondarySystemBackground`)
+- Border: **none at rest**
+- On focus: background flips to `--color-surface` (white), border becomes 1px solid `--color-primary`
+- Height: `--height-interactive` (48px)
+- Radius: `--radius-md` (10px)
+- Padding: 0 `--space-lg`
+- Font: body size (17px), regular, color `--color-text`
+- Required: `box-sizing: border-box`, `min-width: 0`, `-webkit-appearance: none`, `appearance: none` — the iOS Safari shadow-DOM lessons from v148 are now table stakes for every input.
+- Label: above the input, footnote (13px) semibold uppercase secondary color (iOS Settings caps style). Avoid placing both a label AND a placeholder — pick one source of truth.
+
+**Variants:**
+- `.ec-input--center` — `text-align: center` for amount inputs in centered sheets (haggle, invoice discount)
+- `.ec-input--bold` — bold weight (for prominent amount entry)
+- `.ec-input--with-action` — `padding-right: 56px` to make room for an inline icon button (mic, clear-X)
+- `.ec-input--hero` — no background, no border, 56px font, used for the giant hero amount on Entry screens (Add Item)
+
+**States:**
+- `:disabled` — `opacity: 0.5; pointer-events: none`
+- `:invalid` — `border: 1px solid --color-danger` (replaces focus border)
+
+### Pickers
+
+**Native HTML controls (`<select>`, `<input type="date">`) are not used as visible UI** — they look out-of-place in an otherwise iOS-native app. Native `<input type="date">` is allowed because the platform picker it opens IS native iOS, but the input itself must be styled with `appearance: none` to prevent shadow-DOM width overflow on iOS (per v148 fix).
+
+**`.ec-picker-button` — Tappable picker that opens a bottom sheet**
+
+Use anywhere a native `<select>` would otherwise appear. Visually mirrors `.ec-input` for consistency.
+
+- Background: `--color-surface-tinted`
+- Border: none at rest; 1px primary border on `:active`
+- Height: `--height-interactive` (48px)
+- Radius: `--radius-md` (10px)
+- Padding: 0 `--space-lg`
+- Layout: flex row — leading icon/dot (optional), label (body, regular, primary text), chevron-down at right (`--color-text-secondary`)
+- Tapping opens a bottom-sheet picker (see below) and updates a hidden input or data state on selection.
+
+**`.ec-picker-list` / `.ec-picker-item` — Bottom-sheet picker rows**
+
+Standardizes the bottom-sheet selection pattern across the app (currently the consignor picker; will also be used for payout type, future filter pickers, etc.).
+
+- Container: `.ec-picker-list` — `<ul>`, no list style, no padding, divider between items
+- Each row: `.ec-picker-item`, 48px min height, full-width, `--space-lg` horizontal padding
+- Layout: optional leading icon/dot, label (body, regular), trailing checkmark (✓) when selected, secondary tint
+- Active state: `--color-bg-hover` background
+
+**`.ec-color-picker` / `.ec-color-dot` — Color swatch grid**
+
+For consignor color picker. Already a clean implementation — codified here as the canonical pattern.
+
+- Container: `.ec-color-picker` — flex row, `--space-md` gap, wraps
+- Each dot: `.ec-color-dot`, 32×32 circle, `border-radius: 50%`
+- Selected: 2px solid `--color-text` ring + 2px white inset (creates floating ring)
 
 **`.ec-numpad` — Custom Numpad (Checkout only)**
 - Grid: 4 rows × 3 cols, `--space-sm` gap

@@ -620,6 +620,25 @@
     </div>
   </div>
 
+  <!-- Payout Type Picker Sheet -->
+  <div class="overlay" id="payout-type-picker-modal">
+    <div class="sheet">
+      <p class="sheet__title">Payout type</p>
+      <ul class="ec-picker-list" id="payout-type-picker-list">
+        <li class="ec-picker-item" data-payout-type="percentage">
+          <span class="ec-picker-item__label">Percentage</span>
+          <span class="ec-picker-item__hint">Consignor gets X% of the sale price</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+        <li class="ec-picker-item" data-payout-type="flat">
+          <span class="ec-picker-item__label">Flat Fee</span>
+          <span class="ec-picker-item__hint">You charge $X per item, consignor gets the rest</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <!-- Add/Edit Consignor Sheet -->
   <div class="overlay" id="consignor-modal">
     <div class="sheet">
@@ -633,10 +652,11 @@
 
       <label class="consignor-form__label">Payout</label>
       <div class="consignor-form__payout-row">
-        <select class="consignor-form__select" id="consignor-payout-type">
-          <option value="percentage">Percentage</option>
-          <option value="flat">Flat Fee</option>
-        </select>
+        <input type="hidden" id="consignor-payout-type" value="percentage">
+        <button type="button" class="ec-picker-button consignor-form__payout-type-btn" id="consignor-payout-type-btn">
+          <span class="ec-picker-button__label" id="consignor-payout-type-label">Percentage</span>
+          <svg class="ec-picker-button__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+        </button>
         <div class="consignor-form__payout-input-wrap">
           <span class="consignor-form__payout-prefix" id="consignor-payout-prefix"></span>
           <input type="text" inputmode="decimal" class="consignor-form__payout-input" id="consignor-payout-value" placeholder="70" autocomplete="off">
