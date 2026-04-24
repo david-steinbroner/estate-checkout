@@ -441,20 +441,74 @@
   </div>
 
   <!-- End Day / End Sale Sheet -->
-  <!-- Header Menu Sheet -->
+  <!-- Header Menu Sheet — V2 §1.4.G Grouped List Card pattern -->
   <div class="overlay" id="header-menu-modal">
-    <div class="sheet">
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--secondary" id="menu-dashboard">Dashboard</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-payouts" hidden>Consignor Payouts</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-scan">Scan Invoice</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-share">Share Sale</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-edit-sale">Edit Sale</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-whats-new">What's New</button>
-        <button class="sheet__btn sheet__btn--primary" id="menu-end-day">End Day</button>
-        <button class="sheet__btn sheet__btn--danger-outline" id="menu-end-sale">End Sale Permanently</button>
-        <button class="sheet__btn sheet__btn--secondary" id="menu-cancel">Cancel</button>
-      </div>
+    <div class="sheet sheet--menu">
+      <!-- Navigation card -->
+      <ul class="ec-menu-list">
+        <li class="ec-menu-item" id="menu-dashboard" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3" height="7"/><rect x="8.5" y="6" width="3" height="11"/><rect x="14" y="3" width="3" height="14"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Dashboard</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-payouts" tabindex="0" role="button" hidden>
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1v18"/><path d="M14 5H7.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Consignor Payouts</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-scan" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 7V5a2 2 0 0 0-2-2h-2"/><path d="M3 13v2a2 2 0 0 0 2 2h2"/><path d="M17 13v2a2 2 0 0 1-2 2h-2"/><path d="M7 10h6"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Scan Invoice</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-share" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v10"/><path d="M6 6l4-4 4 4"/><path d="M4 12v3a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Share Sale</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-edit-sale" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5l3.5 3.5L7 16.5 3 17l.5-4z"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Edit Sale</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-whats-new" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 5 5 .5-4 3.5 1.5 5L10 13l-4.5 3L7 11 3 7.5 8 7z"/></svg>
+          </span>
+          <span class="ec-menu-item__label">What's New</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+      </ul>
+
+      <!-- Sale-state actions card -->
+      <ul class="ec-menu-list">
+        <li class="ec-menu-item ec-menu-item--primary" id="menu-end-day" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v16"/><path d="M6 6l4-4 4 4"/></svg>
+          </span>
+          <span class="ec-menu-item__label">End Day</span>
+        </li>
+        <li class="ec-menu-item ec-menu-item--danger" id="menu-end-sale" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M7 7l6 6M13 7l-6 6"/></svg>
+          </span>
+          <span class="ec-menu-item__label">End Sale Permanently</span>
+        </li>
+      </ul>
+
+      <!-- Cancel (iOS action-sheet convention: separated, bolder) -->
+      <button class="ec-menu-cancel" id="menu-cancel" type="button">Cancel</button>
+
       <p class="sheet__version" id="menu-version-label"></p>
     </div>
   </div>

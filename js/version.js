@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v151';
+const APP_VERSION = 'v152';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v152',
+    date: '2026-04-24',
+    changes: [
+      'Hamburger menu redesigned — looks like a real iOS action sheet now (grouped list cards with icons and chevrons) instead of a stack of huge buttons',
+      'Navigation items (Dashboard, Payouts, Scan, Share, Edit, What\'s New) live in the first white card',
+      'State-change actions (End Day in green, End Sale Permanently in red) live in a second white card below',
+      'Cancel lives as a bolder standalone button at the bottom — iOS convention',
+      'Icons on every row for quick scanning'
+    ]
+  },
   {
     version: 'v151',
     date: '2026-04-24',

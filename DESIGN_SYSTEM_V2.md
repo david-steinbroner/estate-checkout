@@ -162,12 +162,19 @@ Estate Checkout has 8 screen archetypes. Every screen in the app must fit one.
 - **Single text link** for primary action (e.g. "Start a sale")
 
 ### G. Settings / Menu Screen
-*Examples: main menu, settings*
+*Examples: main hamburger menu, settings, setup menu*
 
-- iOS Settings-style Grouped List Cards
+- iOS Settings / action-sheet style **Grouped List Cards**
 - **Never a grid of icons** (Facebook grid is banned — too busy)
-- Each row: icon left (small, semantic color), label, chevron right
-- Group related settings into separate cards
+- **Never a stack of full-width buttons** either — buttons are for primary actions, not menu navigation. Buttons visually compete for attention; menu rows don't.
+- Each row: icon left (20×20 outlined SVG, secondary color for nav items, semantic color for actions), label (body 17px, left-aligned), chevron right for navigation items
+- Group related rows into separate cards. Typical layout for a hamburger menu:
+  1. **Navigation card** — all "go to X" items (Dashboard, Share Sale, Edit Sale, etc.)
+  2. **Actions card** — state-changing actions (End Day in primary color, End Sale Permanently in destructive color)
+  3. **Cancel** — as a separate, bolder standalone row below the cards. iOS action-sheet convention.
+- Sheet background: `--color-bg` (tinted) so the white cards float with visual separation
+- Cards: `--radius-lg`, no shadow, 1px divider between rows inset from the left by the icon+gap width
+- Version label (if present) below Cancel, small tertiary text
 
 ### H. Bottom Sheet
 *For: confirmations, pickers, context actions that need more than a menu*
