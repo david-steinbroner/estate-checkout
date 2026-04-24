@@ -42,7 +42,10 @@ const Dashboard = {
       sortButton: document.getElementById('dashboard-sort'),
       transactionList: document.getElementById('dashboard-transactions'),
       emptyState: document.getElementById('dashboard-empty'),
-      newCustomerButton: document.getElementById('dashboard-new-customer')
+      newCustomerButton: document.getElementById('dashboard-new-customer'),
+      consignorRevenue: document.getElementById('consignor-revenue'),
+      consignorRevenueList: document.getElementById('consignor-revenue-list'),
+      consignorRevenueMore: document.getElementById('consignor-revenue-more')
     };
   },
 
@@ -55,6 +58,13 @@ const Dashboard = {
       this.elements.newCustomerButton.addEventListener('click', () => {
         Checkout.clearAll();
         App.showScreen('checkout');
+      });
+    }
+
+    // "View all" on Revenue by consignor card → open full Payouts page
+    if (this.elements.consignorRevenueMore) {
+      this.elements.consignorRevenueMore.addEventListener('click', () => {
+        App.showScreen('payouts');
       });
     }
 
@@ -123,6 +133,9 @@ const Dashboard = {
     // Summary stats always reflect full sale data (unfiltered)
     this.renderStats(transactions);
 
+    // Revenue by consignor card (V2 §1.6)
+    this.renderConsignorRevenue(transactions);
+
     // Render filter pills with counts
     this.renderFilterPills(transactions);
 
@@ -158,6 +171,76 @@ const Dashboard = {
       const txnTime = new Date(txn.timestamp).getTime();
       return txnTime >= saleCreatedAt;
     });
+  },
+
+  /**
+   * Render the "Revenue by consignor" card (V2 §1.6).
+   * Shown only when the sale has ≥1 consignor AND at least one paid item
+   * is attributed to a consignor. Caps at 4 rows; links to full Payouts
+   * page when there are more.
+   */
+  renderConsignorRevenue(transactions) {
+    const card = this.elements.consignorRevenue;
+    const list = this.elements.consignorRevenueList;
+    const more = this.elements.consignorRevenueMore;
+    if (!card || !list) return;
+
+    const sale = Storage.getSale();
+    const consignors = sale ? (sale.consignors || []) : [];
+    if (consignors.length === 0) {
+      card.hidden = true;
+      return;
+    }
+
+    // Group paid-item revenue by consignor
+    const paidTxns = transactions.filter(t => t.status === 'paid');
+    const totals = {}; // { id: { name, color, total, count } }
+    let totalPaidRevenue = 0;
+
+    paidTxns.forEach(txn => {
+      (txn.items || []).forEach(item => {
+        if (!item.consignorId) return;
+        const c = consignors.find(x => x.id === item.consignorId);
+        if (!c) return;
+        if (!totals[c.id]) totals[c.id] = { name: c.name, color: c.color, total: 0, count: 0 };
+        totals[c.id].total += item.finalPrice || 0;
+        totals[c.id].count += item.quantity || 1;
+        totalPaidRevenue += item.finalPrice || 0;
+      });
+    });
+
+    const rows = Object.values(totals).sort((a, b) => b.total - a.total);
+    if (rows.length === 0) {
+      card.hidden = true;
+      return;
+    }
+
+    const CAP = 4;
+    const visible = rows.slice(0, CAP);
+    const hiddenCount = rows.length - visible.length;
+
+    list.innerHTML = visible.map(r => {
+      const pct = totalPaidRevenue > 0 ? Math.round((r.total / totalPaidRevenue) * 100) : 0;
+      const itemsLabel = `${r.count} item${r.count !== 1 ? 's' : ''}`;
+      return `
+        <li class="consignor-revenue__row">
+          <span class="consignor-revenue__dot" style="background: ${r.color}"></span>
+          <span class="consignor-revenue__name">${Utils.escapeHtml(r.name)}</span>
+          <span class="consignor-revenue__meta">${itemsLabel} · ${pct}%</span>
+          <span class="consignor-revenue__amount">${Utils.formatCurrency(r.total)}</span>
+        </li>`;
+    }).join('');
+
+    if (more) {
+      if (hiddenCount > 0) {
+        more.textContent = `View all (${rows.length})`;
+        more.hidden = false;
+      } else {
+        more.hidden = true;
+      }
+    }
+
+    card.hidden = false;
   },
 
   /**

@@ -3224,6 +3224,107 @@ body {
   letter-spacing: 0.5px; /* intentional: typographic detail */
 }
 
+/* === Revenue by Consignor card (V2 §1.6) === */
+.consignor-revenue {
+  margin: 0 var(--space-lg) var(--space-lg);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.consignor-revenue[hidden] {
+  display: none;
+}
+
+.consignor-revenue__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.consignor-revenue__title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.consignor-revenue__more {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+}
+
+.consignor-revenue__more:active {
+  opacity: 0.5;
+}
+
+.consignor-revenue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.consignor-revenue__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.consignor-revenue__row:last-child {
+  border-bottom: none;
+}
+
+.consignor-revenue__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.consignor-revenue__name {
+  flex: 0 1 auto;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.consignor-revenue__meta {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.consignor-revenue__amount {
+  font-family: var(--font-family-number);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
 /* Dashboard Filter & Sort Controls */
 .dashboard-controls {
   display: flex;

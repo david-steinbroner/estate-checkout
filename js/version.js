@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v144';
+const APP_VERSION = 'v145';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v145',
+    date: '2026-04-24',
+    changes: [
+      'New "Revenue by consignor" card on the Dashboard — shows each consignor\'s total, item count, and share of revenue at a glance',
+      'Only appears when the sale has consignors and at least some paid revenue is attributed to them',
+      'Top 4 consignors shown. If there are more, tap "View all" to open the full Consignor Payouts page'
+    ]
+  },
   {
     version: 'v144',
     date: '2026-04-24',
