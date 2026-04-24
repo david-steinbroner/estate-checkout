@@ -2157,6 +2157,7 @@ body {
 .setup-form {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden; /* defensive guardrail against any rogue overflow */
   padding: var(--space-lg);
 }
 
@@ -2236,6 +2237,7 @@ body {
 
 .setup-section__input {
   width: 100%;
+  min-width: 0; /* allow flex/grid children to shrink below intrinsic min-width */
   height: var(--height-input);
   padding: 0 var(--space-lg);
   font-size: var(--font-size-base);
@@ -2243,6 +2245,21 @@ body {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   box-sizing: border-box;
+  /* iOS Safari date inputs have a shadow-DOM placeholder ("mm/dd/yyyy")
+     with its own intrinsic min-width that can blow past width:100%.
+     Opting out of native appearance forces the input to honor our width. */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: var(--font-family);
+  color: var(--color-text);
+}
+
+/* Date inputs need extra-explicit handling for iOS — they're the most
+   likely to have a native shadow-DOM that ignores width constraints. */
+.setup-section__input[type="date"] {
+  display: block;
+  -webkit-min-logical-width: 0;
 }
 
 .setup-section__input:focus {

@@ -4,9 +4,16 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v147';
+const APP_VERSION = 'v148';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v148',
+    date: '2026-04-24',
+    changes: [
+      'Fixed for real: date inputs on the New Sale page no longer overflow off the right edge. Root cause was iOS Safari rendering native date inputs wider than their CSS width because of a shadow-DOM placeholder. Forced the input to opt out of native styling.'
+    ]
+  },
   {
     version: 'v147',
     date: '2026-04-24',
