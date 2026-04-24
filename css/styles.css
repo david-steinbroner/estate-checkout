@@ -3523,68 +3523,51 @@ body {
 }
 
 /* Dashboard Detail Actions */
+/* === Dashboard Detail Actions (V2 §1.4.B text link list) === */
 .dashboard-detail__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
+  flex-direction: column;
   padding-top: var(--space-md);
-  margin-top: var(--space-sm);
-  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-md);
+  border-top: 1px solid var(--color-divider);
 }
 
-.dashboard-detail__btn {
-  flex: 1;
-  min-width: 90px; /* intentional: button minimum width */
-  height: var(--height-button);
+.dashboard-detail__action {
+  display: block;
+  width: 100%;
+  background: none;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  text-align: left;
+  padding: var(--space-md) 0;
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid var(--color-divider);
+  transition: opacity var(--duration-fast, 150ms) ease;
 }
 
-.dashboard-detail__btn--toggle {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
+.dashboard-detail__action:last-child {
+  border-bottom: none;
 }
 
-.dashboard-detail__btn--toggle:active {
-  background: var(--color-success-dark);
+.dashboard-detail__action:active {
+  opacity: 0.5;
 }
 
-.dashboard-detail__btn--reopen {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.dashboard-detail__btn--reopen:active {
-  background: var(--color-bg-hover);
-}
-
-.dashboard-detail__btn--reopen:disabled {
-  opacity: 0.4;
+.dashboard-detail__action:disabled {
+  opacity: 0.35;
   pointer-events: none;
 }
 
-.dashboard-detail__btn--collect {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
+.dashboard-detail__action--primary {
+  color: var(--color-success);
 }
 
-.dashboard-detail__btn--collect:active {
-  background: var(--color-primary-dark);
-}
-
-.dashboard-detail__btn--cancel {
-  background: var(--color-surface);
+.dashboard-detail__action--danger {
   color: var(--color-danger);
-  border: 1px solid var(--color-danger);
-}
-
-.dashboard-detail__btn--cancel:active {
-  background: var(--color-danger-light);
 }
 
 /* Dashboard Empty State */

@@ -417,43 +417,25 @@ const Dashboard = {
     if (status === 'open') {
       actionsHtml = `
         <div class="dashboard-detail__actions">
-          <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="continue-editing" data-id="${txn.id}">
-            Edit Order
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="generate-open" data-id="${txn.id}">
-            Create Invoice
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
-            Cancel
-          </button>
+          <button class="dashboard-detail__action" data-action="continue-editing" data-id="${txn.id}">Edit order</button>
+          <button class="dashboard-detail__action" data-action="generate-open" data-id="${txn.id}">Create invoice</button>
+          <button class="dashboard-detail__action dashboard-detail__action--danger" data-action="cancel-invoice" data-id="${txn.id}">Cancel order</button>
         </div>
       `;
     } else if (status === 'unpaid') {
       actionsHtml = `
         <div class="dashboard-detail__actions">
-          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
-            Mark as Paid
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--reopen" data-action="reopen" data-id="${txn.id}">
-            Edit Invoice
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-            See Invoice
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--cancel" data-action="cancel-invoice" data-id="${txn.id}">
-            Cancel
-          </button>
+          <button class="dashboard-detail__action dashboard-detail__action--primary" data-action="toggle-paid" data-id="${txn.id}">Mark as paid</button>
+          <button class="dashboard-detail__action" data-action="reopen" data-id="${txn.id}">Edit invoice</button>
+          <button class="dashboard-detail__action" data-action="collect" data-id="${txn.id}">See invoice</button>
+          <button class="dashboard-detail__action dashboard-detail__action--danger" data-action="cancel-invoice" data-id="${txn.id}">Cancel invoice</button>
         </div>
       `;
     } else if (status === 'paid') {
       actionsHtml = `
         <div class="dashboard-detail__actions">
-          <button class="dashboard-detail__btn dashboard-detail__btn--toggle" data-action="toggle-paid" data-id="${txn.id}">
-            Mark as Unpaid
-          </button>
-          <button class="dashboard-detail__btn dashboard-detail__btn--collect" data-action="collect" data-id="${txn.id}">
-            See Invoice
-          </button>
+          <button class="dashboard-detail__action" data-action="toggle-paid" data-id="${txn.id}">Mark as unpaid</button>
+          <button class="dashboard-detail__action" data-action="collect" data-id="${txn.id}">See invoice</button>
         </div>
       `;
     }

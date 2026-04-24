@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v141';
+const APP_VERSION = 'v142';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v142',
+    date: '2026-04-24',
+    changes: [
+      'Dashboard: when you tap an invoice to expand it, actions now appear as a clean stacked list of text links (Apple Wallet style) instead of a row of squished buttons',
+      'Destructive actions ("Cancel invoice", "Cancel order") clearly shown in red',
+      '"Mark as paid" shown in green at the top of the list',
+      'Confirmation sheets ("Clear all items?", "End Sale Permanently?") now use a solid red button for the destructive action — clearer warning than the old outlined style'
+    ]
+  },
   {
     version: 'v141',
     date: '2026-04-24',
