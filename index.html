@@ -281,10 +281,12 @@
 
     <!-- Filter & Sort Controls -->
     <div class="dashboard-controls">
+      <div class="dashboard-controls__top">
+        <button class="dashboard-sort" id="dashboard-sort" type="button">Newest First ↓</button>
+      </div>
       <div class="dashboard-filters" id="dashboard-filters">
         <!-- Filter pills rendered by JS -->
       </div>
-      <button class="dashboard-sort" id="dashboard-sort" type="button">Newest First ↓</button>
     </div>
 
     <!-- Transaction List -->
@@ -566,9 +568,11 @@
           <span id="ticket-discount-new-total">$0.00</span>
         </div>
       </div>
-      <button class="add-item__confirm" id="ticket-discount-apply">Apply Discount</button>
-      <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
-      <button class="add-item__cancel" id="ticket-discount-cancel">Cancel</button>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="ticket-discount-apply">Apply Discount</button>
+        <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
+        <button class="sheet__btn sheet__btn--secondary" id="ticket-discount-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -620,9 +624,11 @@
       <label class="consignor-form__label">Notes <span class="consignor-form__optional">(optional)</span></label>
       <input type="text" class="consignor-form__input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
 
-      <button class="sheet__btn sheet__btn--confirm consignor-form__save" id="consignor-save">Save</button>
-      <button class="sheet__btn sheet__btn--danger consignor-form__delete" id="consignor-delete" hidden>Delete Consignor</button>
-      <button class="sheet__btn sheet__btn--secondary" id="consignor-cancel">Cancel</button>
+      <div class="sheet__buttons">
+        <button class="sheet__btn sheet__btn--confirm" id="consignor-save">Save</button>
+        <button class="sheet__btn sheet__btn--danger" id="consignor-delete" hidden>Delete Consignor</button>
+        <button class="sheet__btn sheet__btn--secondary" id="consignor-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 

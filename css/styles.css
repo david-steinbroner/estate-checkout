@@ -2092,9 +2092,8 @@ body {
   margin-bottom: 0;
 }
 
-.setup-section--half .setup-section__input {
-  max-width: 90%; /* intentional: prevent date inputs from touching in 50% split */
-}
+/* The max-width:90% hack is no longer needed — box-sizing on the input
+   constrains it to its 50% half. The flex gap handles separation. */
 
 .setup-section__header {
   display: block;
@@ -2162,8 +2161,9 @@ body {
   padding: 0 var(--space-lg);
   font-size: var(--font-size-base);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
+  box-sizing: border-box;
 }
 
 .setup-section__input:focus {
@@ -3328,20 +3328,31 @@ body {
 /* Dashboard Filter & Sort Controls */
 .dashboard-controls {
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
   flex-shrink: 0;
+}
+
+.dashboard-controls__top {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .dashboard-filters {
   display: flex;
-  gap: var(--space-md);
-  flex: 1;
+  gap: var(--space-sm);
   min-width: 0;
   overflow-x: auto;
+  margin: 0 calc(-1 * var(--space-lg));
+  padding: 0 var(--space-lg);
+  scrollbar-width: none;
+}
+
+.dashboard-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .dashboard-filter {

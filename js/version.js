@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v145';
+const APP_VERSION = 'v146';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v146',
+    date: '2026-04-24',
+    changes: [
+      'Fixed: end date picker on the New Sale screen no longer pushes off the right edge',
+      'Fixed: text inputs on the New Sale screen no longer overflow their column (root cause: missing box-sizing)',
+      'Fixed: Save / Delete / Cancel buttons on the Add Consignor sheet are no longer stacked on top of each other',
+      'Fixed: Apply / Remove / Cancel buttons on the Invoice Discount sheet now match the rest of the app\'s button style',
+      'Dashboard: sort toggle ("Newest First ↓") moved to its own row — filter pills now get the full width to display without being cut off'
+    ]
+  },
   {
     version: 'v145',
     date: '2026-04-24',
