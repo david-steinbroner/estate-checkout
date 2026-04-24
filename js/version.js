@@ -4,9 +4,16 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v140';
+const APP_VERSION = 'v141';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v141',
+    date: '2026-04-24',
+    changes: [
+      'Fixed: QR code was bleeding through onto the checkout screen (screen-hiding rule got overridden in v140)'
+    ]
+  },
   {
     version: 'v140',
     date: '2026-04-24',

@@ -2711,8 +2711,6 @@ body {
 /* === QR Handoff Screen (V2 §1.4.E Confirmation archetype) === */
 .qr-screen {
   background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
 }
 
 .qr-hero {
