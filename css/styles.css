@@ -1870,7 +1870,7 @@ body {
 
 /* Setup Section System */
 .setup-section {
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-2xl);
 }
 
 .setup-section--half {
@@ -1890,14 +1890,14 @@ body {
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .setup-section__header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .setup-section__header-row .setup-section__header {
@@ -1928,13 +1928,13 @@ body {
 .setup-section__checkbox {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  font-size: var(--font-size-sm);
+  gap: var(--space-md);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .setup-section__checkbox input[type="checkbox"] {
@@ -1967,7 +1967,7 @@ body {
   display: flex;
   align-items: flex-start;
   gap: var(--space-xl);
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-2xl);
 }
 
 .setup-section__error {

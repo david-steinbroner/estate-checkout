@@ -4,9 +4,17 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v134';
+const APP_VERSION = 'v135';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v135',
+    date: '2026-04-24',
+    changes: [
+      'New Sale setup page: more breathing room between section headers, inputs, and checkboxes',
+      'Checkbox labels are easier to read (bumped up to body size)'
+    ]
+  },
   {
     version: 'v134',
     date: '2026-04-24',
