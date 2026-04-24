@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v137';
+const APP_VERSION = 'v138';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v138',
+    date: '2026-04-24',
+    changes: [
+      'Order detail sheet (opens when you tap the order summary) redesigned to match Apple Wallet',
+      'Big order total shown at the top of the sheet, with item count just below',
+      'Small X close button in the top-right instead of a bottom "Done" button',
+      '"Clear all items" now lives in the sheet itself as a red link at the bottom'
+    ]
+  },
   {
     version: 'v137',
     date: '2026-04-24',

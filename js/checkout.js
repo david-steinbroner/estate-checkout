@@ -90,6 +90,10 @@ const Checkout = {
       itemSheetTitle: document.getElementById('item-sheet-title'),
       itemSheetSubtitle: document.getElementById('item-sheet-subtitle'),
       itemSheetDone: document.getElementById('item-sheet-done'),
+      itemSheetClose: document.getElementById('item-sheet-close'),
+      itemSheetTotal: document.getElementById('item-sheet-total'),
+      itemSheetActions: document.getElementById('item-sheet-actions'),
+      itemSheetClear: document.getElementById('item-sheet-clear'),
       runningTotal: document.getElementById('running-total'),
       runningTotalBar: document.getElementById('running-total-bar'),
       addItemButton: document.getElementById('add-item-button'),
@@ -270,6 +274,18 @@ const Checkout = {
     if (this.elements.itemSheetDone) {
       this.elements.itemSheetDone.addEventListener('click', () => {
         this.closeItemSheet();
+      });
+    }
+
+    if (this.elements.itemSheetClose) {
+      this.elements.itemSheetClose.addEventListener('click', () => {
+        this.closeItemSheet();
+      });
+    }
+
+    if (this.elements.itemSheetClear) {
+      this.elements.itemSheetClear.addEventListener('click', () => {
+        this.showClearModal();
       });
     }
 
@@ -832,7 +848,18 @@ const Checkout = {
     const subtitle = totalQty > lineCount
       ? `${lineCount} line${lineCount !== 1 ? 's' : ''} (${totalQty} items)`
       : `${lineCount} item${lineCount !== 1 ? 's' : ''}`;
-    this.elements.itemSheetSubtitle.textContent = subtitle;
+    this.elements.itemSheetSubtitle.textContent = lineCount === 0 ? '' : subtitle;
+
+    // Hero total
+    if (this.elements.itemSheetTotal) {
+      const total = this.items.reduce((sum, i) => sum + (i.finalPrice || 0), 0);
+      this.elements.itemSheetTotal.textContent = Utils.formatCurrency(total);
+    }
+
+    // Show Clear All link only when there are items
+    if (this.elements.itemSheetActions) {
+      this.elements.itemSheetActions.hidden = lineCount === 0;
+    }
 
     if (this.items.length === 0) {
       this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';

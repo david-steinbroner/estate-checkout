@@ -638,14 +638,20 @@
     </div>
   </div>
 
-  <!-- Item List Sheet (full list with remove buttons) -->
+  <!-- Item List Sheet — V2 Wallet Detail archetype -->
   <div class="overlay" id="item-sheet-backdrop">
-    <div class="sheet" id="item-sheet">
+    <div class="sheet sheet--detail" id="item-sheet">
+      <button class="sheet__close" id="item-sheet-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
       <p class="sheet__title sheet__title--editable" id="item-sheet-title">All Items</p>
-      <p class="sheet__subtitle" id="item-sheet-subtitle"></p>
+      <div class="sheet__hero">
+        <span class="sheet__hero-amount" id="item-sheet-total">$0.00</span>
+        <span class="sheet__hero-meta" id="item-sheet-subtitle"></span>
+      </div>
       <ul class="sheet__item-list" id="item-sheet-list"></ul>
-      <div class="sheet__footer">
-        <button class="sheet__btn sheet__btn--primary" id="item-sheet-done">Done</button>
+      <div class="sheet__actions" id="item-sheet-actions" hidden>
+        <button class="sheet__action-link sheet__action-link--danger" id="item-sheet-clear" type="button">Clear all items</button>
       </div>
     </div>
   </div>
