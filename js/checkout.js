@@ -674,7 +674,17 @@ const Checkout = {
    */
   renderItemList() {
     if (this.items.length === 0) {
-      this.elements.itemList.innerHTML = '<li class="item-list__empty">No items yet</li>';
+      this.elements.itemList.innerHTML = `
+        <li class="item-list__empty">
+          <span class="item-list__empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="10" y="8" width="28" height="34" rx="3"/>
+              <path d="M16 18h16M16 26h16M16 34h10"/>
+            </svg>
+          </span>
+          <span class="item-list__empty-heading">No items yet</span>
+          <span class="item-list__empty-helper">Tap <strong>Add Item</strong> to start this order.</span>
+        </li>`;
       return;
     }
 

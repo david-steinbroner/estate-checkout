@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v136';
+const APP_VERSION = 'v137';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v137',
+    date: '2026-04-24',
+    changes: [
+      'Running total is now a big, centered hero number on the checkout screen (Apple Wallet / Venmo style) — no more small text on a black bar',
+      'Order name and item count shown just above the total as a subtle secondary label',
+      'Better empty state on the order screen: icon + clearer heading + helper text telling you what to do'
+    ]
+  },
   {
     version: 'v136',
     date: '2026-04-24',

@@ -297,47 +297,61 @@ body {
   opacity: 0.6;
 }
 
-/* === Running Total === */
+/* === Running Total (V2: Hero Number per §1.4.B Detail archetype) === */
 .running-total {
-  height: var(--height-total-bar);
-  background: var(--color-text);
-  color: var(--color-text-on-dark);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-xl);
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-xl) var(--space-lg);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  border-bottom: 1px solid var(--color-divider);
+  transition: background var(--duration-fast, 150ms) ease;
+}
+
+.running-total:active {
+  background: var(--color-bg-hover);
 }
 
 .running-total__info {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
+  max-width: 100%;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
 .running-total__edit-hint {
-  color: rgba(255, 255, 255, 0.7);
-  margin-left: var(--space-sm);
-  display: inline-block;
-  vertical-align: -2px;
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
 }
 
 .running-total__edit-hint svg {
-  width: 16px;
-  height: 16px;
-  display: inline-block;
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .running-total__amount {
-  font-size: var(--font-size-xl);
+  font-family: var(--font-family-number);
+  font-size: var(--font-size-price);
   font-weight: var(--font-weight-bold);
-  flex-shrink: 0;
-  margin-left: var(--space-md);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* === Item List (inline preview — shows last 2-3 items) === */
@@ -358,10 +372,46 @@ body {
 }
 
 .item-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
   text-align: center;
   color: var(--color-text-secondary);
-  padding: var(--space-lg);
+  padding: var(--space-3xl) var(--space-xl);
+  min-height: 160px;
   font-size: var(--font-size-base);
+  list-style: none;
+}
+
+.item-list__empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-text-tertiary);
+  display: block;
+}
+
+.item-list__empty-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  stroke-width: 1.5;
+}
+
+.item-list__empty-heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
+}
+
+.item-list__empty-helper {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-default);
+  max-width: 260px;
 }
 
 .item-row {
