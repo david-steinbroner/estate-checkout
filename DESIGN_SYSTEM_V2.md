@@ -122,20 +122,24 @@ Estate Checkout has 8 screen archetypes. Every screen in the app must fit one.
 - **NO bottom-anchored button** on Detail screens — actions live in the link list
 
 ### C. Entry Screen
-*Examples: Checkout (item entry)*
+*Examples: Add Item, Edit Item*
 
-- **Top:** running total as Hero Number, huge, centered
-- **Below hero:** item description Text Input (like Venmo "What's this for?")
-- **Below input:** Numpad (centered, iOS-native styling)
+- **Top bar:** back arrow (left) + screen title (center, body semibold, e.g. "Add Item" or "Edit Item")
+- **Hero:** the **value being entered** as a Hero Number — for item entry that's the **current item's price** (NOT the order's running total). The hero updates live as the user taps the numpad. Centered, 56px, SF Pro Rounded bold, tabular-nums.
+- **Below hero:** item description Text Input (like Venmo "What's this for?"). Mic button (when voice input is enabled) lives as an icon inside the input on the right edge — iOS Messages dictation pattern, not a side-by-side button that competes for horizontal space.
+- **Below input:** Quantity row (label + − value + buttons), only when qty > 1 is meaningful for this entry
+- **Below qty:** Numpad (centered, iOS-native styling)
 - **Below numpad:** Inline Chip Selector for consignor (ONLY if sale has consignors)
-- **Bottom:** Primary Button "Add Item" (filled green, full-width)
+- **Bottom (sticky):** Primary Button (filled green, full-width). Label changes by mode: "Add Item" / "Save Changes".
+
+**Implementation note:** Entry screens MAY be presented as full-viewport overlays rather than full screen-push navigations, to keep the parent context (running total, item list) one tap away. When presented as a full-viewport overlay, the overlay must cover the entire viewport (height: 100%/100dvh, not the 80–85vh of a bottom sheet) so action buttons never fall below the fold.
 
 ### D. Setup Wizard Screen
 *Examples: Sale setup, new sale flow*
 
 - **Top:** back arrow (left), optional step indicator (center), close X (right)
 - **Screen title:** big bold
-- **Form:** fields stacked, labels above inputs
+- **Form:** **fields stack vertically, full width each, labels above inputs.** Side-by-side / half-row layouts are NOT permitted on mobile viewports — they cause overflow with native iOS controls (date pickers especially) and break the consistent left-edge alignment. Two related fields (e.g. start date + end date) get stacked rows, not columns.
 - **Pickers:** open in Bottom Sheets (dates, consignor lists, discount schedules)
 - **Bottom:** Primary Button "Continue"
 
@@ -547,6 +551,31 @@ All components live in `css/styles.css`. All classes prefixed `.ec-`.
 1. Check §1.5 interaction rules
 2. If unclear, default to native iOS behavior
 3. Never invent novel interactions for core flows
+
+## §2.3a Inter-element spacing
+
+The 7-tier spacing scale (§2.1) defines token *values*. This section defines *which tier to use* for the gaps between components within a screen or sheet — the rules that prevent components from visually crashing into each other.
+
+### Within a sheet (Bottom Sheet, §1.4.H)
+
+- Title → first content element: `--space-md` (12px) below the title
+- Between content sections (input ↔ input, input ↔ row, text block ↔ row): `--space-md` (12px) minimum
+- Last content element → button group: `--space-lg` (16px). This is enforced via a default `margin-top: var(--space-lg)` on `.sheet__buttons`.
+- Inside the button group itself: gap `--space-md` (12px) between buttons
+
+### Within a screen (List, Detail, Entry, Setup, Confirmation)
+
+- Hero element → first content element: `--space-xl` (20px)
+- Between major sections (input block ↔ numpad, numpad ↔ chip selector, chip ↔ primary action): `--space-lg` (16px) minimum, `--space-xl` (20px) preferred when vertical room permits
+- Between Setup form sections (Sale Name → Dates → Schedule → Consignors): `--space-2xl` (28px). Already enforced by `.setup-section { margin-bottom: var(--space-2xl) }`.
+
+### Inline chip selectors (`.ec-chip-selector`)
+
+A chip selector that follows another major component (numpad, input block, picker) MUST have `margin-top: var(--space-lg)` minimum. The chip's `margin-bottom` (already set) handles separation from the next element.
+
+### Why these are explicit
+
+Without these rules, components defined in §2.2 with no inherent margin can end up touching each other when composed into a screen. Each component should be self-contained but spaced via these rules. Violations show up as visual crashes (chip touching numpad, button touching input) — usually a sign the rule is being skipped, not that the rule is wrong.
 
 ## §2.4 Quality gates
 

@@ -490,11 +490,8 @@ const Checkout = {
     // Reset title and button text back to Add mode
     const confirmBtn = document.getElementById('add-item-confirm');
     if (confirmBtn) confirmBtn.textContent = 'Add Item';
-    const sheetEl = document.querySelector('.add-item-sheet');
-    if (sheetEl) {
-      const titleEl = sheetEl.querySelector('.add-item__title');
-      if (titleEl) titleEl.textContent = 'Add Item';
-    }
+    const titleEl = document.querySelector('#add-item-sheet .entry-screen__title');
+    if (titleEl) titleEl.textContent = 'Add Item';
   },
 
   /**
@@ -525,6 +522,8 @@ const Checkout = {
     // Update title and button text for edit mode
     const confirmBtn = document.getElementById('add-item-confirm');
     if (confirmBtn) confirmBtn.textContent = 'Save Changes';
+    const titleEl = document.querySelector('#add-item-sheet .entry-screen__title');
+    if (titleEl) titleEl.textContent = 'Edit Item';
 
     if (this.elements.addItemModal) this.elements.addItemModal.classList.add('visible');
 

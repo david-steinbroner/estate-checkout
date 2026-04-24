@@ -105,34 +105,34 @@
         >
       </div>
 
-      <!-- Start Date / End Date (side by side) -->
-      <div class="setup-section-row">
-        <div class="setup-section setup-section--half">
-          <span class="setup-section__header">Start Date</span>
-          <label class="setup-section__checkbox">
-            <input type="checkbox" id="setup-today-checkbox" checked>
-            Starts today
-          </label>
-          <input
-            type="date"
-            id="setup-start-date"
-            class="setup-section__input"
-          >
-          <p class="setup-section__error" id="start-date-error" hidden></p>
-        </div>
-        <div class="setup-section setup-section--half">
-          <span class="setup-section__header">End Date</span>
-          <label class="setup-section__checkbox">
-            <input type="checkbox" id="setup-tbd-checkbox">
-            TBD
-          </label>
-          <input
-            type="date"
-            id="setup-end-date"
-            class="setup-section__input"
-          >
-          <p class="setup-section__error" id="end-date-error" hidden></p>
-        </div>
+      <!-- Start Date — stacked vertically per V2 §1.4.D -->
+      <div class="setup-section">
+        <span class="setup-section__header">Start Date</span>
+        <label class="setup-section__checkbox">
+          <input type="checkbox" id="setup-today-checkbox" checked>
+          Starts today
+        </label>
+        <input
+          type="date"
+          id="setup-start-date"
+          class="setup-section__input"
+        >
+        <p class="setup-section__error" id="start-date-error" hidden></p>
+      </div>
+
+      <!-- End Date -->
+      <div class="setup-section">
+        <span class="setup-section__header">End Date</span>
+        <label class="setup-section__checkbox">
+          <input type="checkbox" id="setup-tbd-checkbox">
+          TBD
+        </label>
+        <input
+          type="date"
+          id="setup-end-date"
+          class="setup-section__input"
+        >
+        <p class="setup-section__error" id="end-date-error" hidden></p>
       </div>
       <!-- Schedule -->
       <div class="setup-section">
@@ -354,53 +354,77 @@
   <div class="flash flash--success" id="flash-success">Added!</div>
   <div class="flash flash--error" id="flash-error">Error</div>
 
-  <!-- Add Item Sheet -->
-  <div class="overlay" id="add-item-modal">
-    <div class="sheet add-item-sheet">
-      <div class="add-item__top">
-        <div class="add-item__fields">
-          <input type="text" class="add-item__desc-input" id="add-item-desc"
-            placeholder="Item description" autocomplete="off" maxlength="60">
-          <p class="sheet__field-error" id="add-item-desc-error" hidden></p>
-          <div class="add-item__price-display" id="add-item-price">$0.00</div>
-          <p class="sheet__field-error" id="add-item-price-error" hidden></p>
+  <!-- Add Item Entry — V2 §1.4.C full-viewport Entry archetype -->
+  <div class="overlay overlay--fullscreen" id="add-item-modal">
+    <div class="entry-screen" id="add-item-sheet">
+      <!-- Top bar: back arrow + title -->
+      <div class="entry-screen__topbar">
+        <button class="entry-screen__back" id="add-item-cancel" type="button" aria-label="Cancel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <span class="entry-screen__title">Add Item</span>
+        <span class="entry-screen__topbar-spacer" aria-hidden="true"></span>
+      </div>
+
+      <!-- Body (scrollable) -->
+      <div class="entry-screen__body">
+        <!-- Hero: current item's price (updates live from numpad) -->
+        <div class="entry-screen__hero" id="add-item-price">$0.00</div>
+        <p class="entry-screen__error" id="add-item-price-error" hidden></p>
+
+        <!-- Description input with inline mic -->
+        <div class="entry-screen__input-wrap">
+          <input type="text" class="entry-screen__input" id="add-item-desc"
+            placeholder="What's this for?" autocomplete="off" maxlength="60">
+          <button class="entry-screen__mic" id="add-item-mic" type="button" aria-label="Hold to speak price and description">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <path d="M12 19v3"/>
+            </svg>
+          </button>
         </div>
-        <button class="add-item__mic" id="add-item-mic" aria-label="Speak price and description">
-          <span class="add-item__mic-icon">🎤</span>
-          <span class="add-item__mic-label">Hold to Speak</span>
+        <p class="entry-screen__error" id="add-item-desc-error" hidden></p>
+
+        <!-- Qty row -->
+        <div class="entry-screen__qty">
+          <span class="entry-screen__qty-label">Qty</span>
+          <button class="entry-screen__qty-btn" id="add-item-qty-minus" type="button" aria-label="Decrease quantity">&minus;</button>
+          <span class="entry-screen__qty-value" id="add-item-qty">1</span>
+          <button class="entry-screen__qty-btn" id="add-item-qty-plus" type="button" aria-label="Increase quantity">+</button>
+        </div>
+
+        <!-- Numpad -->
+        <div class="numpad" id="numpad">
+          <button class="numpad__button" data-value="1">1</button>
+          <button class="numpad__button" data-value="2">2</button>
+          <button class="numpad__button" data-value="3">3</button>
+          <button class="numpad__button" data-value="4">4</button>
+          <button class="numpad__button" data-value="5">5</button>
+          <button class="numpad__button" data-value="6">6</button>
+          <button class="numpad__button" data-value="7">7</button>
+          <button class="numpad__button" data-value="8">8</button>
+          <button class="numpad__button" data-value="9">9</button>
+          <button class="numpad__button" data-value=".">.</button>
+          <button class="numpad__button" data-value="0">0</button>
+          <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
+        </div>
+
+        <!-- Consignor chip (V2 §1.6) -->
+        <button class="consignor-chip" id="add-item-consignor-btn" type="button" hidden>
+          <span class="consignor-chip__dot" id="add-item-consignor-dot"></span>
+          <span class="consignor-chip__label">
+            <span class="consignor-chip__prefix">Consigned by</span>
+            <span class="consignor-chip__name" id="add-item-consignor-name">Select consignor</span>
+          </span>
+          <svg class="consignor-chip__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
         </button>
       </div>
-      <div class="add-item__qty-row">
-        <span class="add-item__qty-label">Qty:</span>
-        <button class="add-item__qty-btn" id="add-item-qty-minus" aria-label="Decrease quantity">&minus;</button>
-        <span class="add-item__qty-value" id="add-item-qty">1</span>
-        <button class="add-item__qty-btn" id="add-item-qty-plus" aria-label="Increase quantity">+</button>
+
+      <!-- Sticky footer with primary action -->
+      <div class="entry-screen__footer">
+        <button class="entry-screen__confirm" id="add-item-confirm">Add Item</button>
       </div>
-      <div class="numpad" id="numpad">
-        <button class="numpad__button" data-value="1">1</button>
-        <button class="numpad__button" data-value="2">2</button>
-        <button class="numpad__button" data-value="3">3</button>
-        <button class="numpad__button" data-value="4">4</button>
-        <button class="numpad__button" data-value="5">5</button>
-        <button class="numpad__button" data-value="6">6</button>
-        <button class="numpad__button" data-value="7">7</button>
-        <button class="numpad__button" data-value="8">8</button>
-        <button class="numpad__button" data-value="9">9</button>
-        <button class="numpad__button" data-value=".">.</button>
-        <button class="numpad__button" data-value="0">0</button>
-        <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
-      </div>
-      <!-- Consignor chip (V2 §1.6: above Add Item, prominent chip selector) -->
-      <button class="consignor-chip" id="add-item-consignor-btn" type="button" hidden>
-        <span class="consignor-chip__dot" id="add-item-consignor-dot"></span>
-        <span class="consignor-chip__label">
-          <span class="consignor-chip__prefix">Consigned by</span>
-          <span class="consignor-chip__name" id="add-item-consignor-name">Select consignor</span>
-        </span>
-        <svg class="consignor-chip__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
-      </button>
-      <button class="add-item__confirm" id="add-item-confirm">Add Item</button>
-      <button class="add-item__cancel" id="add-item-cancel">Cancel</button>
     </div>
   </div>
 

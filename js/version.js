@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v146';
+const APP_VERSION = 'v147';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v147',
+    date: '2026-04-24',
+    changes: [
+      'Add Item screen rebuilt as a full-screen entry experience (not a small sheet) — Cancel button never falls below the fold anymore',
+      'Add Item: big price at the top, description input with mic button inside, then qty + numpad + consignor chip; the green "Add Item" button stays pinned at the bottom',
+      'Cancel is now a back arrow at the top-left, "Add Item" / "Edit Item" title in the middle',
+      'New Sale: Start Date and End Date are now stacked (full width each) instead of cramped side-by-side',
+      'Spacing rules tightened across all sheets — consignor chip no longer touches the numpad, sheet buttons no longer crash into the content above'
+    ]
+  },
   {
     version: 'v146',
     date: '2026-04-24',

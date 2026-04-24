@@ -721,154 +721,194 @@ body {
 }
 
 /* === Add Item Sheet === */
-.add-item-sheet {
-  padding: var(--space-md);
+/* === Add Item / Edit Item Entry Screen (V2 §1.4.C, full-viewport overlay) === */
+
+/* Fullscreen overlay variant — covers entire viewport, no bottom-sheet feel */
+.overlay--fullscreen {
+  align-items: stretch;
+  justify-content: stretch;
 }
 
-.add-item__top {
-  display: flex;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+.overlay--fullscreen > .entry-screen {
+  width: 100%;
+  height: 100%;
 }
 
-.add-item__fields {
-  flex: 1;
+.entry-screen {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
+  background: var(--color-surface);
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  animation: sheet-slide-up 0.22s ease-out;
 }
 
-.add-item__desc-input {
-  height: var(--height-button);
-  padding: 0 var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-base);
-  background: var(--color-bg);
-  color: var(--color-text);
-  outline: none;
-}
-
-.add-item__desc-input:focus {
-  border-color: var(--color-border-focus);
-}
-
-.add-item__price-display {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  text-align: left;
-  padding: 0 var(--space-md);
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
-  height: var(--height-button);
+/* Top bar: back arrow + title */
+.entry-screen__topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--color-divider);
+  flex-shrink: 0;
 }
 
-.add-item__mic {
-  width: 96px;
-  align-self: stretch;
-  border: 2px solid var(--color-primary);
+.entry-screen__back {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+  transition: background var(--duration-fast, 150ms) ease;
+}
+
+.entry-screen__back:active {
+  background: var(--color-bg-active);
+}
+
+.entry-screen__back svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.entry-screen__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.entry-screen__topbar-spacer {
+  width: 36px;
+  height: 36px;
+}
+
+/* Body — scrollable when content overflows; primary action stays pinned via footer */
+.entry-screen__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-xl) var(--space-lg) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero: the price being entered (V2 §1.4.C) */
+.entry-screen__hero {
+  font-family: var(--font-family-number);
+  font-size: var(--font-size-price);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  text-align: center;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--space-xl);
+}
+
+.entry-screen__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin: calc(-1 * var(--space-md)) 0 var(--space-md);
+  text-align: center;
+}
+
+/* Description input with inline mic icon (V2 §1.4.C — Messages dictation pattern) */
+.entry-screen__input-wrap {
+  position: relative;
+  margin-bottom: var(--space-lg);
+}
+
+.entry-screen__input {
+  width: 100%;
+  height: var(--height-input);
+  padding: 0 56px 0 var(--space-lg);
+  border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast, 150ms) ease;
+}
+
+.entry-screen__input:focus {
+  border-color: var(--color-primary);
   background: var(--color-surface);
+}
+
+.entry-screen__mic {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
   touch-action: manipulation;
-  color: var(--color-primary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
+  padding: 0;
+  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
 }
 
-.add-item__mic:active {
-  background: var(--color-primary-light);
-  transform: scale(0.96);
+.entry-screen__mic:active {
+  transform: translateY(-50%) scale(0.92);
 }
 
-.add-item__mic.listening {
-  background: var(--color-danger-light);
-  border-color: var(--color-danger);
-  color: var(--color-danger);
+.entry-screen__mic.listening {
+  background: var(--color-danger);
   animation: mic-pulse 1s ease-in-out infinite;
+}
+
+.entry-screen__mic svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 @keyframes mic-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  50% { opacity: 0.6; }
 }
 
-.add-item__mic-icon {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.add-item__mic-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.add-item__confirm {
-  width: 100%;
-  height: var(--height-button);
-  margin-top: var(--space-sm);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.add-item__confirm:active {
-  background: var(--color-success-dark);
-}
-
-.add-item__cancel {
-  width: 100%;
-  height: var(--height-button);
-  margin-top: var(--space-sm);
-  background: transparent;
-  color: var(--color-danger);
-  border: 2px solid var(--color-danger);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.add-item__cancel:active {
-  background: var(--color-danger-light);
-}
-
-/* === Quantity Stepper === */
-.add-item__qty-row {
+/* Qty row */
+.entry-screen__qty {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
-.add-item__qty-label {
+.entry-screen__qty-label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
+  letter-spacing: -0.01em;
 }
 
-.add-item__qty-btn {
-  width: 44px;
-  height: 44px;
+.entry-screen__qty-btn {
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--color-border);
   border-radius: 50%;
   background: var(--color-surface);
@@ -882,20 +922,57 @@ body {
   justify-content: center;
 }
 
-.add-item__qty-btn:active {
+.entry-screen__qty-btn:active {
   background: var(--color-bg-hover);
 }
 
-.add-item__qty-btn:disabled {
+.entry-screen__qty-btn:disabled {
   opacity: 0.3;
   cursor: default;
 }
 
-.add-item__qty-value {
+.entry-screen__qty-value {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   min-width: 28px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sticky footer: primary action — never falls below the fold */
+.entry-screen__footer {
+  flex-shrink: 0;
+  padding: var(--space-md) var(--space-lg);
+  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-divider);
+}
+
+.entry-screen__confirm {
+  width: 100%;
+  height: 56px;
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
+}
+
+.entry-screen__confirm:active {
+  background: var(--color-success-dark);
+  transform: scale(0.98);
+}
+
+.entry-screen__confirm:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* === Number Pad === */
@@ -1155,7 +1232,8 @@ body {
   color: var(--color-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  margin-bottom: var(--space-md);
+  margin-top: var(--space-lg);    /* V2 §2.3a: gap from preceding component (e.g. numpad) */
+  margin-bottom: var(--space-md); /* gap to the primary action */
   min-height: 52px;
   text-align: left;
   transition: background var(--duration-fast, 150ms) ease;
@@ -1955,7 +2033,8 @@ body {
 .sheet__buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
+  margin-top: var(--space-lg); /* V2 §2.3a: gap from preceding content */
 }
 
 .sheet__btn {
