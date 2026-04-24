@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v149';
+const APP_VERSION = 'v150';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v150',
+    date: '2026-04-24',
+    changes: [
+      'Inputs now have a subtle 1px border at rest — fixes the "feels weird, like static text" look on pre-populated fields like the date pickers',
+      'Date inputs (Start Date, End Date) now show the date centered horizontally instead of pushed to the left edge',
+      'Date inputs use a slightly heavier font weight so the date reads more clearly'
+    ]
+  },
   {
     version: 'v149',
     date: '2026-04-24',

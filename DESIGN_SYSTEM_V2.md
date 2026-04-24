@@ -405,7 +405,7 @@ All components live in `css/styles.css`. All classes prefixed `.ec-`.
 Reference: Apple Wallet "Card Details", Venmo "What's this for?", Facebook Marketplace listing form. The dominant post-iOS-15 pattern is **tinted background, no border at rest** — a clean, low-chrome look. White-with-border is the older Settings-app pattern and feels heavier.
 
 - Background: `--color-surface-tinted` (light gray; iOS `secondarySystemBackground`)
-- Border: **none at rest**
+- Border: **1px solid `--color-divider`** at rest (very faint, primarily for affordance — without it, pre-populated inputs like date pickers read as static text instead of tappable fields)
 - On focus: background flips to `--color-surface` (white), border becomes 1px solid `--color-primary`
 - Height: `--height-interactive` (48px)
 - Radius: `--radius-md` (10px)
