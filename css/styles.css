@@ -3521,12 +3521,39 @@ body {
   margin-right: var(--space-sm);
 }
 
-/* Dashboard Detail Consignor */
+/* Dashboard Detail Consignor (V2 §1.6 — tappable for retroactive assignment) */
 .dashboard-detail__consignor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: var(--font-size-xs, 11px);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   margin-left: var(--space-xs);
   white-space: nowrap;
+  padding: 2px 8px;
+  background: var(--color-surface-tinted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.01em;
+  transition: background var(--duration-fast, 150ms) ease;
+}
+
+button.dashboard-detail__consignor:active {
+  background: var(--color-bg-active);
+}
+
+.dashboard-detail__consignor--empty {
+  color: var(--color-primary);
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--color-border);
+}
+
+button.dashboard-detail__consignor--empty:active {
+  background: var(--color-primary-tint);
 }
 
 .dashboard-detail__consignor-dot {
@@ -3534,8 +3561,13 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 3px;
   vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.dashboard-detail__consignor-dot--empty {
+  background: transparent;
+  border: 1px dashed var(--color-primary);
 }
 
 .dashboard-detail__consignor-summary {

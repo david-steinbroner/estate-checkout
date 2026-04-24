@@ -275,6 +275,40 @@ const Dashboard = {
         this.toggleTransaction(row.dataset.id);
       });
     });
+
+    // Bind retroactive consignor edit buttons on detail items
+    this.elements.transactionList.querySelectorAll('[data-consignor-edit]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const txnId = btn.closest('.dashboard-txn').dataset.id;
+        const itemId = btn.dataset.consignorEdit;
+        this.editItemConsignor(txnId, itemId);
+      });
+    });
+  },
+
+  /**
+   * Open the consignor picker to assign/change a consignor on an item
+   * within a transaction — works on paid, unpaid, and open statuses
+   * (V2 §1.6: consignor is a reporting field, editable post-payment)
+   */
+  editItemConsignor(txnId, itemId) {
+    const transactions = Storage.getTransactions();
+    const txn = transactions.find(t => t.id === txnId);
+    if (!txn || txn.status === 'void') return;
+    const item = (txn.items || []).find(i => i.id === itemId);
+    if (!item) return;
+
+    Checkout.openConsignorPicker(item.consignorId || null, (newId) => {
+      const updatedItems = txn.items.map(i =>
+        i.id === itemId ? { ...i, consignorId: newId || null } : i
+      );
+      Storage.updateTransaction(txnId, { items: updatedItems });
+      // Preserve the expanded state by re-rendering
+      const wasExpanded = this.expandedTransactionId === txnId;
+      this.render();
+      if (wasExpanded) this.toggleTransaction(txnId);
+    });
   },
 
   /**
@@ -357,12 +391,18 @@ const Dashboard = {
         desc += ` x${qty} @${Utils.formatCurrency(unitPrice)}`;
       }
 
-      // Consignor tag
+      // Consignor tag — tappable to reassign (even on paid invoices per V2 §1.6).
+      // Voided transactions are read-only.
+      const isVoid = (txn.status || 'unpaid') === 'void';
+      const editable = !isVoid && consignors.length > 0;
       let consignorTag = '';
       if (item.consignorId) {
         const c = consignors.find(x => x.id === item.consignorId);
         if (c) {
-          consignorTag = ` <span class="dashboard-detail__consignor"><span class="dashboard-detail__consignor-dot" style="background: ${c.color}"></span>${Utils.escapeHtml(c.name)}</span>`;
+          const tagInner = `<span class="dashboard-detail__consignor-dot" style="background: ${c.color}"></span>${Utils.escapeHtml(c.name)}`;
+          consignorTag = editable
+            ? ` <button class="dashboard-detail__consignor" data-consignor-edit="${item.id}" type="button" aria-label="Change consignor">${tagInner}</button>`
+            : ` <span class="dashboard-detail__consignor">${tagInner}</span>`;
           // Accumulate totals
           if (!consignorTotals[c.id]) {
             consignorTotals[c.id] = { name: c.name, color: c.color, count: 0, total: 0 };
@@ -370,6 +410,8 @@ const Dashboard = {
           consignorTotals[c.id].count += qty;
           consignorTotals[c.id].total += item.finalPrice;
         }
+      } else if (editable) {
+        consignorTag = ` <button class="dashboard-detail__consignor dashboard-detail__consignor--empty" data-consignor-edit="${item.id}" type="button" aria-label="Assign consignor"><span class="dashboard-detail__consignor-dot dashboard-detail__consignor-dot--empty"></span>Assign</button>`;
       }
 
       const hasHaggle = item.haggleType && item.haggleValue;

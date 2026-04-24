@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v143';
+const APP_VERSION = 'v144';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v144',
+    date: '2026-04-24',
+    changes: [
+      'You can now change (or add) an item\'s consignor even after the invoice has been paid — tap the consignor tag on any item in the dashboard to reassign',
+      'Items without a consignor show a dashed "Assign" chip — tap to pick one',
+      'Works on paid, unpaid, and open orders. Cancelled (voided) transactions stay read-only'
+    ]
+  },
   {
     version: 'v143',
     date: '2026-04-24',
