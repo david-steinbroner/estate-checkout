@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v135';
+const APP_VERSION = 'v136';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v136',
+    date: '2026-04-24',
+    changes: [
+      'Checkout footer redesigned — two full-width buttons instead of three squished ones',
+      '"Add Item" is now the primary green button on the right, "Create Invoice" is the secondary blue button on the left',
+      '"Create Invoice" stays dimmed until you have at least one item in the order',
+      '"Clear all" moved out of the footer — it now shows up as a small red link above the buttons, only when there are items to clear'
+    ]
+  },
   {
     version: 'v135',
     date: '2026-04-24',

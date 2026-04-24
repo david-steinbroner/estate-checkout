@@ -95,6 +95,7 @@ const Checkout = {
       addItemButton: document.getElementById('add-item-button'),
       doneButton: document.getElementById('done-button'),
       clearButton: document.getElementById('clear-button'),
+      orderActions: document.getElementById('order-actions'),
       clearModal: document.getElementById('clear-modal'),
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
@@ -750,6 +751,9 @@ const Checkout = {
   updateDoneButton() {
     this.elements.doneButton.disabled = this.items.length === 0;
     this.updateDoneButtonText();
+    if (this.elements.orderActions) {
+      this.elements.orderActions.hidden = this.items.length === 0;
+    }
   },
 
   /**

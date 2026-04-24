@@ -41,11 +41,15 @@
       </ul>
     </div>
 
+    <!-- Order Actions (secondary destructive link — hidden when cart empty) -->
+    <div class="order-actions" id="order-actions" hidden>
+      <button class="order-actions__clear" id="clear-button" type="button">Clear all</button>
+    </div>
+
     <!-- Action Bar (bottom) -->
     <div class="action-bar">
-      <button class="action-bar__button action-bar__button--clear" id="clear-button">Clear All</button>
-      <button class="action-bar__button action-bar__button--add" id="add-item-button">Add Item</button>
-      <button class="action-bar__button action-bar__button--done" id="done-button" disabled>Create Invoice</button>
+      <button class="action-bar__button action-bar__button--secondary" id="done-button" disabled>Create Invoice</button>
+      <button class="action-bar__button action-bar__button--primary" id="add-item-button">Add Item</button>
     </div>
   </div>
 

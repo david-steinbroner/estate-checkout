@@ -880,11 +880,42 @@ body {
 }
 
 /* === Action Bar === */
+/* === Order Actions (destructive link row, shown only when items exist) === */
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-divider);
+  flex-shrink: 0;
+}
+
+.order-actions[hidden] {
+  display: none;
+}
+
+.order-actions__clear {
+  background: none;
+  border: none;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-danger);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.01em;
+}
+
+.order-actions__clear:active {
+  opacity: 0.5;
+}
+
+/* === Action Bar (Venmo paired Request/Pay archetype) === */
 .action-bar {
   display: flex;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-lg);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -895,47 +926,42 @@ body {
 
 .action-bar__button {
   flex: 1;
-  height: var(--height-button);
+  height: 56px;
   border: none;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+  transition: opacity var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
 }
 
-.action-bar__button--done {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
+.action-bar__button:active {
+  transform: scale(0.97);
 }
 
-.action-bar__button--done:active {
-  background: var(--color-primary-dark);
-}
-
-.action-bar__button--done:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.action-bar__button--clear {
-  background: transparent;
-  color: var(--color-danger);
-  border: 1px solid var(--color-danger);
-}
-
-.action-bar__button--clear:active {
-  background: var(--color-danger-light);
-}
-
-.action-bar__button--add {
+.action-bar__button--primary {
   background: var(--color-success);
   color: var(--color-text-on-success);
-  flex: 2;
 }
 
-.action-bar__button--add:active {
+.action-bar__button--primary:active {
   background: var(--color-success-dark);
+}
+
+.action-bar__button--secondary {
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.action-bar__button--secondary:active {
+  background: rgba(0, 122, 255, 0.25);
+}
+
+.action-bar__button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* === Stacking Price Display (haggle) === */
