@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v138';
+const APP_VERSION = 'v139';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v139',
+    date: '2026-04-24',
+    changes: [
+      'Dashboard transaction list redesigned — rows are now taller and cleaner (Apple Wallet activity style)',
+      'Each row shows the order name on top, the day/time/item count on a second line, and the amount in bold on the right',
+      'Status pill sits next to the subtitle instead of competing with the amount — much easier to scan'
+    ]
+  },
   {
     version: 'v138',
     date: '2026-04-24',

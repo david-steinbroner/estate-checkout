@@ -296,17 +296,19 @@ const Dashboard = {
     if (status === 'void') extraClass = ' dashboard-txn--void';
     else if (status === 'open') extraClass = ' dashboard-txn--open';
 
+    const itemsLabel = `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
+
     return `
       <li class="dashboard-txn${extraClass}" data-id="${txn.id}">
         <div class="dashboard-txn__summary">
-          <div class="dashboard-txn__header">
-            <span class="dashboard-txn__customer">${orderLabel} — Day ${txn.saleDay || 1} · ${time}</span>
-            ${statusBadge}
-            <span class="dashboard-txn__total">${total}</span>
+          <div class="dashboard-txn__body">
+            <span class="dashboard-txn__title">${orderLabel}</span>
+            <div class="dashboard-txn__subtitle">
+              <span class="dashboard-txn__meta">Day ${txn.saleDay || 1} · ${time} · ${itemsLabel}</span>
+              ${statusBadge}
+            </div>
           </div>
-          <div class="dashboard-txn__meta">
-            <span class="dashboard-txn__items">${itemCount} item${itemCount !== 1 ? 's' : ''}</span>
-          </div>
+          <span class="dashboard-txn__amount">${total}</span>
         </div>
         <div class="dashboard-txn__detail" hidden>
           ${(() => { try { return this.renderTransactionDetail(txn); } catch (e) { console.error('Failed to render transaction detail:', txn.id, e); return ''; } })()}

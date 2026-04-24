@@ -3265,34 +3265,71 @@ body {
 }
 
 .dashboard-txn {
-  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast, 150ms) ease;
 }
 
-.dashboard-txn:last-child {
+.dashboard-txn:last-child .dashboard-txn__summary {
   border-bottom: none;
 }
 
+.dashboard-txn:active {
+  background: var(--color-bg-hover);
+}
+
 .dashboard-txn__summary {
-  padding: var(--space-md);
-}
-
-.dashboard-txn__header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-xs);
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-lg);
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.dashboard-txn__customer {
+.dashboard-txn__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dashboard-txn__title {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.dashboard-txn__total {
-  font-size: var(--font-size-base);
+.dashboard-txn__subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.dashboard-txn__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.dashboard-txn__amount {
+  font-family: var(--font-family-number);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: var(--color-success);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .dashboard-txn__status {
@@ -3301,11 +3338,10 @@ body {
   gap: 4px;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  padding: 3px var(--space-md);
+  padding: 2px var(--space-sm);
   border-radius: var(--radius-pill);
-  margin-left: auto;
-  margin-right: var(--space-sm);
   letter-spacing: 0.01em;
+  flex-shrink: 0;
 }
 
 .dashboard-txn__status::before {
@@ -3362,11 +3398,11 @@ body {
   opacity: 0.6;
 }
 
-.dashboard-txn--void .dashboard-txn__customer {
+.dashboard-txn--void .dashboard-txn__title {
   text-decoration: line-through;
 }
 
-.dashboard-txn--void .dashboard-txn__total {
+.dashboard-txn--void .dashboard-txn__amount {
   color: var(--color-text-secondary);
   text-decoration: line-through;
 }
