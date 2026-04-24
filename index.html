@@ -53,30 +53,34 @@
     </div>
   </div>
 
-  <!-- QR Handoff Screen (placeholder) -->
+  <!-- QR Handoff Screen — V2 §1.4.E Confirmation archetype -->
   <div id="screen-qr" class="screen qr-screen">
-    <!-- QR Code Display -->
-    <div class="qr-code-container">
+    <!-- Hero: QR code -->
+    <div class="qr-hero">
       <div id="qr-code" class="qr-code"></div>
     </div>
-    <p class="qr-helper-text" id="qr-helper-text">Scan to handoff Invoice</p>
 
-    <!-- Transaction Summary -->
+    <!-- Instruction (explicit copy per V2) -->
+    <p class="qr-instruction" id="qr-helper-text">Hand this phone to your payment worker</p>
+
+    <!-- Context summary -->
     <div class="qr-summary">
-      <ul id="qr-items" class="qr-items"></ul>
       <div class="qr-total">
-        <span class="qr-total__label">Total:</span>
+        <span class="qr-total__label">Total</span>
         <span id="qr-total" class="qr-total__amount">$0.00</span>
       </div>
+      <ul id="qr-items" class="qr-items"></ul>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Actions -->
     <div class="qr-actions">
-      <div class="qr-actions__grid">
-        <button type="button" class="qr-action qr-action--secondary" id="qr-edit">Edit Invoice</button>
-        <button type="button" class="qr-action qr-action--secondary" id="qr-discount">Adjust Price</button>
-        <button type="button" class="qr-action qr-action--paid" id="qr-mark-paid">Mark Paid</button>
-        <button type="button" class="qr-action qr-action--new" id="qr-new">New Order</button>
+      <button type="button" class="qr-action-primary" id="qr-mark-paid">Mark paid without scanning</button>
+      <div class="qr-action-row">
+        <button type="button" class="qr-action-link" id="qr-edit">Edit invoice</button>
+        <span class="qr-action-sep" aria-hidden="true">·</span>
+        <button type="button" class="qr-action-link" id="qr-discount">Adjust price</button>
+        <span class="qr-action-sep" aria-hidden="true">·</span>
+        <button type="button" class="qr-action-link" id="qr-new">New order</button>
       </div>
     </div>
   </div>

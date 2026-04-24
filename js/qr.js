@@ -137,7 +137,7 @@ const QR = {
     // Update QR helper text
     const helperEl = document.getElementById('qr-helper-text');
     if (helperEl) {
-      helperEl.textContent = 'Scan to handoff Invoice';
+      helperEl.textContent = 'Hand this phone to your payment worker';
     }
 
     // Render item summary and total first (these should always work)
@@ -180,8 +180,8 @@ const QR = {
     // Generate new QR code
     new QRCode(this.elements.qrCode, {
       text: data,
-      width: 200,
-      height: 200,
+      width: 240,
+      height: 240,
       colorDark: '#000000',
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M

@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v139';
+const APP_VERSION = 'v140';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v140',
+    date: '2026-04-24',
+    changes: [
+      'QR handoff screen redesigned — QR code is bigger and centered, with clearer instruction: "Hand this phone to your payment worker"',
+      'Total shown in a clean row with big bold amount, items list is secondary (small gray text)',
+      'Four cramped buttons replaced by one tappable "Mark paid without scanning" link on top, and small secondary links below: Edit invoice · Adjust price · New order'
+    ]
+  },
   {
     version: 'v139',
     date: '2026-04-24',
