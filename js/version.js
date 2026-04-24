@@ -4,9 +4,16 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v150';
+const APP_VERSION = 'v151';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v151',
+    date: '2026-04-24',
+    changes: [
+      'Fixed: tapping an item from the Order Detail sheet now properly opens the Edit Item screen on top, instead of showing it behind the Order Detail sheet greyed out'
+    ]
+  },
   {
     version: 'v150',
     date: '2026-04-24',

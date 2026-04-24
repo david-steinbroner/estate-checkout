@@ -501,6 +501,11 @@ const Checkout = {
     const item = this.items[index];
     if (!item) return;
 
+    // If the order-detail item sheet is open (user is editing from the
+    // order review view), close it first so the full-screen Add Item
+    // overlay is the top layer and not stacked behind.
+    this.closeItemSheet();
+
     this.editingItemIndex = index;
 
     // Pre-populate fields
