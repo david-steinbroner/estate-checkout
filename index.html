@@ -96,74 +96,90 @@
       <!-- Sale Name -->
       <div class="setup-section">
         <span class="setup-section__header">Sale Name</span>
-        <input
-          type="text"
-          id="setup-sale-name"
-          class="setup-section__input"
-          placeholder="e.g., Johnson Estate - Oak Hill"
-          autocomplete="off"
-        >
+        <div class="setup-card">
+          <div class="setup-card__row setup-card__row--input">
+            <input
+              type="text"
+              id="setup-sale-name"
+              class="setup-section__input"
+              placeholder="e.g., Johnson Estate - Oak Hill"
+              autocomplete="off"
+            >
+          </div>
+        </div>
       </div>
 
-      <!-- Start Date — stacked vertically per V2 §1.4.D -->
+      <!-- Start Date -->
       <div class="setup-section">
         <span class="setup-section__header">Start Date</span>
-        <label class="setup-section__checkbox">
-          <input type="checkbox" id="setup-today-checkbox" checked>
-          Starts today
-        </label>
-        <input
-          type="date"
-          id="setup-start-date"
-          class="setup-section__input"
-        >
+        <div class="setup-card">
+          <label class="setup-card__row setup-card__row--toggle">
+            <span class="setup-card__label">Starts today</span>
+            <input type="checkbox" id="setup-today-checkbox" checked>
+          </label>
+          <div class="setup-card__row setup-card__row--input">
+            <input
+              type="date"
+              id="setup-start-date"
+              class="setup-section__input"
+            >
+          </div>
+        </div>
         <p class="setup-section__error" id="start-date-error" hidden></p>
       </div>
 
       <!-- End Date -->
       <div class="setup-section">
         <span class="setup-section__header">End Date</span>
-        <label class="setup-section__checkbox">
-          <input type="checkbox" id="setup-tbd-checkbox">
-          TBD
-        </label>
-        <input
-          type="date"
-          id="setup-end-date"
-          class="setup-section__input"
-        >
+        <div class="setup-card">
+          <label class="setup-card__row setup-card__row--toggle">
+            <span class="setup-card__label">TBD</span>
+            <input type="checkbox" id="setup-tbd-checkbox">
+          </label>
+          <div class="setup-card__row setup-card__row--input">
+            <input
+              type="date"
+              id="setup-end-date"
+              class="setup-section__input"
+            >
+          </div>
+        </div>
         <p class="setup-section__error" id="end-date-error" hidden></p>
       </div>
+
       <!-- Schedule -->
       <div class="setup-section">
-        <div class="setup-section__header-row">
-          <span class="setup-section__header">Schedule</span>
-          <span class="setup-section__action-wrap" id="add-day-button">+ Add
+        <span class="setup-section__header">Schedule</span>
+        <div class="setup-card">
+          <div class="discount-list" id="discount-list">
+            <!-- Discount rows added by JS -->
+          </div>
+          <span class="setup-card__row setup-card__row--action" id="add-day-button">
+            <span class="setup-card__action-label">+ Add Day</span>
             <input type="date" id="setup-day-date-picker" class="setup-hidden-input">
           </span>
-        </div>
-        <div class="discount-list" id="discount-list">
-          <!-- Discount rows added by JS -->
         </div>
         <p class="setup-section__error" id="schedule-error" hidden></p>
       </div>
 
       <!-- Consignors -->
       <div class="setup-section">
-        <div class="setup-section__header-row">
-          <span class="setup-section__header">Consignors</span>
-          <button type="button" class="setup-section__action" id="setup-add-consignor">+ Add</button>
+        <span class="setup-section__header">Consignors</span>
+        <div class="setup-card">
+          <div id="setup-consignor-list"></div>
+          <button type="button" class="setup-card__row setup-card__row--action" id="setup-add-consignor">
+            <span class="setup-card__action-label">+ Add Consignor</span>
+          </button>
         </div>
-        <div id="setup-consignor-list"></div>
       </div>
     </div>
 
-    <!-- Start Sale Button -->
+    <!-- Start Sale Footer (V2 §1.4.C paired action pattern) -->
     <div class="setup-actions">
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
       <div class="setup-actions__row">
-        <button type="button" class="start-sale-button" id="start-sale-button">Start Sale</button>
-        <button type="button" class="join-sale-button" id="join-sale-button">Join Sale</button>
+        <button type="button" class="action-bar__button action-bar__button--secondary" id="join-sale-button">Join Sale</button>
+        <button type="button" class="action-bar__button action-bar__button--primary" id="start-sale-button">Start Sale</button>
       </div>
     </div>
   </div>

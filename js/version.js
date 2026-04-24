@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v152';
+const APP_VERSION = 'v153';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v153',
+    date: '2026-04-24',
+    changes: [
+      'New Sale screen redesigned — every section (Sale Name, Start Date, End Date, Schedule, Consignors) now sits in its own white iOS-style grouped list card on a tinted background',
+      'Form inputs, checkboxes, and "+ Add" buttons are now rows inside their cards instead of free-floating elements',
+      '"Start Sale" / "Join Sale" footer now uses the paired-button pattern (green primary + blue tinted secondary) — same as the checkout footer',
+      'Every bottom sheet now has a small iOS pull-handle indicator at the top (signals you can swipe down to dismiss)'
+    ]
+  },
   {
     version: 'v152',
     date: '2026-04-24',
