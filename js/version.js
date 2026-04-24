@@ -4,9 +4,17 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v133';
+const APP_VERSION = 'v134';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v134',
+    date: '2026-04-24',
+    changes: [
+      'More breathing room between elements — spacing bumped to match the bigger text from v133',
+      'Screens should feel less crowded on phone'
+    ]
+  },
   {
     version: 'v133',
     date: '2026-04-23',

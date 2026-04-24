@@ -9,7 +9,7 @@
  *  - Offline fallback: any HTML request that fails returns cached /index.html.
  */
 
-const CACHE_NAME = 'estate-checkout-v133';
+const CACHE_NAME = 'estate-checkout-v134';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

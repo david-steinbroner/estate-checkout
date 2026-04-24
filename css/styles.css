@@ -82,14 +82,14 @@
   --color-scan-border: rgba(255, 255, 255, 0.6);
   --color-spinner-track: rgba(255, 255, 255, 0.3);
 
-  /* === Spacing (unchanged in step 1; structural migration shifts these later) === */
-  --space-xs: 2px;
-  --space-sm: 4px;
-  --space-md: 8px;
-  --space-lg: 12px;
-  --space-xl: 16px;
-  --space-2xl: 24px;
-  --space-3xl: 32px;
+  /* === Spacing (V2 scale — more generous gaps to match upsized type) === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 28px;
+  --space-3xl: 40px;
 
   /* === Typography: Font Family (V2 adds SF Pro variants + rounded for numbers) === */
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
