@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v153';
+const APP_VERSION = 'v154';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v154',
+    date: '2026-04-24',
+    changes: [
+      'Paused screen redesigned — "Resume Sale" is now a clear primary green button at the bottom; "View Dashboard" and "End Sale Permanently" became simple text links so they don\'t compete for attention',
+      'Customer-facing ticket page (the digital receipt customers see when they scan the QR) fully redesigned to match the rest of the app — Apple Wallet style cards with hero total, items list, and QR for the payment worker',
+      'Date displayed centered, big bold total, tabular numerals — feels like a real Wallet pass'
+    ]
+  },
   {
     version: 'v153',
     date: '2026-04-24',

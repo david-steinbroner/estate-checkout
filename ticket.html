@@ -3,61 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Your Invoice — Estate Checkout</title>
   <style>
+    /* V2 design tokens — inlined since ticket.html doesn't share styles.css */
+    :root {
+      --color-bg: #F2F2F7;
+      --color-surface: #FFFFFF;
+      --color-surface-tinted: #F2F2F7;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #8E8E93;
+      --color-text-tertiary: #C7C7CC;
+      --color-divider: #E5E5EA;
+      --color-success: #34C759;
+      --color-danger: #FF3B30;
+      --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 20px;
+      --space-2xl: 28px;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-      color: #1a1a1a;
+      font-family: var(--font-family);
+      background: var(--color-bg);
+      color: var(--color-text);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px;
+      padding: var(--space-lg);
+      letter-spacing: -0.01em;
     }
 
     .ticket {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 400px;
-      padding: 24px;
-      margin-top: 8px;
+      max-width: 420px;
+      margin-top: var(--space-sm);
     }
 
-    .ticket__header {
+    /* Header card — order name + sale info */
+    .ticket__header-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl) var(--space-lg);
       text-align: center;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: var(--space-md);
     }
 
     .ticket__order-name {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 700;
-      margin-bottom: 4px;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: var(--space-xs);
     }
 
     .ticket__sale-info {
       font-size: 13px;
-      color: #666666;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    /* Hero amount card */
+    .ticket__hero-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl) var(--space-lg);
+      text-align: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .ticket__hero-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-sm);
+    }
+
+    .ticket__hero-amount {
+      font-family: var(--font-family-number);
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ticket__discount-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--color-divider);
+    }
+
+    .ticket__discount-label {
+      letter-spacing: 0.01em;
+    }
+
+    .ticket__discount-original {
+      text-decoration: line-through;
+      color: var(--color-text-tertiary);
+    }
+
+    /* Items card */
+    .ticket__items-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: var(--space-md);
+    }
+
+    .ticket__items-card-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: var(--space-md) var(--space-lg) var(--space-sm);
     }
 
     .ticket__items {
       list-style: none;
-      margin-bottom: 12px;
     }
 
     .ticket__item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 14px;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--color-divider);
+      min-height: 48px;
     }
 
     .ticket__item:last-child {
@@ -66,86 +158,98 @@
 
     .ticket__item-desc {
       flex: 1;
+      font-size: 17px;
+      color: var(--color-text);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      margin-right: 8px;
     }
 
     .ticket__item-price {
+      font-family: var(--font-family-number);
+      font-size: 17px;
       font-weight: 600;
+      color: var(--color-text);
       white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
 
     .ticket__item-original {
       text-decoration: line-through;
-      color: #999999;
+      color: var(--color-text-tertiary);
       font-weight: 400;
-      margin-right: 6px;
+      margin-right: var(--space-xs);
     }
 
-    .ticket__total {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-top: 2px solid #1a1a1a;
-      margin-top: 4px;
+    /* QR card — for payment worker to scan from customer's phone */
+    .ticket__qr-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      text-align: center;
+      margin-bottom: var(--space-md);
     }
 
-    .ticket__total-label {
-      font-size: 16px;
-      font-weight: 700;
+    .ticket__qr-instruction {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: var(--space-lg);
+      letter-spacing: -0.01em;
+      line-height: 1.3;
     }
 
-    .ticket__total-amount {
-      font-size: 22px;
-      font-weight: 700;
+    .ticket__qr-code {
+      display: inline-block;
+      padding: var(--space-md);
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
     }
 
     .ticket__timestamp {
       text-align: center;
       font-size: 12px;
-      color: #999999;
-      margin-top: 12px;
-    }
-
-    .ticket__qr {
-      display: flex;
-      justify-content: center;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e5e5e5;
-    }
-
-    .ticket__qr-code {
-      padding: 8px;
-      background: #ffffff;
-      border-radius: 6px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-md);
+      letter-spacing: 0.01em;
     }
 
     .ticket__footer {
       text-align: center;
       font-size: 11px;
-      color: #bbbbbb;
-      margin-top: 20px;
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-xl);
+      letter-spacing: 0.02em;
     }
 
+    /* Error state */
     .ticket__error {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
       text-align: center;
-      padding: 32px 16px;
+      padding: var(--space-2xl) var(--space-lg);
+    }
+
+    .ticket__error-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--space-md);
+      color: var(--color-text-tertiary);
     }
 
     .ticket__error-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: var(--space-xs);
+      letter-spacing: -0.01em;
     }
 
     .ticket__error-msg {
-      font-size: 14px;
-      color: #666666;
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -186,6 +290,10 @@
       function renderError(msg) {
         ticketEl.innerHTML = `
           <div class="ticket__error">
+            <svg class="ticket__error-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="24" cy="24" r="20"/>
+              <path d="M24 14v12M24 32v.01"/>
+            </svg>
             <div class="ticket__error-title">Invoice Not Found</div>
             <div class="ticket__error-msg">${escapeHtml(msg || 'This link may be invalid or expired.')}</div>
           </div>
@@ -212,14 +320,12 @@
           return;
         }
 
-        // Build header
         const orderName = data.orderName || ('Invoice #' + (data.customerNumber || '?'));
         const saleName = data.sale || 'Estate Sale';
         const dayLabel = data.day ? `Day ${data.day}` : '';
         const discountLabel = data.discount > 0 ? `${data.discount}% off` : '';
         const saleInfo = [saleName, dayLabel, discountLabel].filter(Boolean).join(' · ');
 
-        // Build items
         const itemsHtml = data.items.map(item => {
           const desc = item.desc || 'Item';
           const hasHaggle = item.haggle && item.haggle.value;
@@ -248,48 +354,50 @@
 
         const timeStr = formatTime(data.ts);
 
-        // Invoice discount line
-        let ticketDiscountHtml = '';
+        let discountLineHtml = '';
         if (data.ticketDiscount && data.ticketDiscount.value) {
           const subtotal = data.subtotal || data.total;
           const tdLabel = data.ticketDiscount.type === 'percent'
             ? `${data.ticketDiscount.value}% off`
             : `${formatCurrency(data.ticketDiscount.value)} off`;
-          ticketDiscountHtml = `
-            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#666">
-              <span>Subtotal</span>
-              <span style="text-decoration:line-through">${formatCurrency(subtotal)}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:2px 0 8px;font-size:13px;color:#666">
-              <span>Invoice discount</span>
-              <span>${tdLabel}</span>
+          discountLineHtml = `
+            <div class="ticket__discount-line">
+              <span class="ticket__discount-label">${escapeHtml(tdLabel)}</span>
+              <span class="ticket__discount-original">${formatCurrency(subtotal)}</span>
             </div>
           `;
         }
 
         ticketEl.innerHTML = `
-          <div class="ticket__header">
+          <div class="ticket__header-card">
             <div class="ticket__order-name">${escapeHtml(orderName)}</div>
             <div class="ticket__sale-info">${escapeHtml(saleInfo)}</div>
           </div>
-          <ul class="ticket__items">${itemsHtml}</ul>
-          ${ticketDiscountHtml}
-          <div class="ticket__total">
-            <span class="ticket__total-label">Total</span>
-            <span class="ticket__total-amount">${formatCurrency(data.total)}</span>
+
+          <div class="ticket__hero-card">
+            <div class="ticket__hero-label">Total</div>
+            <div class="ticket__hero-amount">${formatCurrency(data.total)}</div>
+            ${discountLineHtml}
           </div>
-          ${timeStr ? `<div class="ticket__timestamp">${escapeHtml(timeStr)}</div>` : ''}
-          <div class="ticket__qr">
+
+          <div class="ticket__items-card">
+            <div class="ticket__items-card-label">Items</div>
+            <ul class="ticket__items">${itemsHtml}</ul>
+          </div>
+
+          <div class="ticket__qr-card">
+            <div class="ticket__qr-instruction">Show this code at the payment table</div>
             <div class="ticket__qr-code" id="ticket-qr"></div>
           </div>
+
+          ${timeStr ? `<div class="ticket__timestamp">${escapeHtml(timeStr)}</div>` : ''}
         `;
 
-        // Render self-referential QR code (so payment worker can scan the customer's phone)
         if (typeof QRCode !== 'undefined') {
           new QRCode(document.getElementById('ticket-qr'), {
             text: window.location.href,
-            width: 240,
-            height: 240,
+            width: 220,
+            height: 220,
             colorDark: '#000000',
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.L

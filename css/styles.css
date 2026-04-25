@@ -3146,56 +3146,67 @@ body {
   font-weight: var(--font-weight-medium);
 }
 
+/* Paused actions — primary CTA + secondary text links per V2 */
 .paused-actions {
-  padding: var(--space-sm) var(--space-lg);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-md) var(--space-lg);
+  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
   margin-top: auto;
 }
 
-.paused-action {
+.paused-action--resume {
   width: 100%;
-  height: var(--height-button);
+  height: 56px;
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+  border: none;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border: none;
-}
-
-.paused-action--resume {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
+  letter-spacing: -0.01em;
+  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
 }
 
 .paused-action--resume:active {
   background: var(--color-success-dark);
+  transform: scale(0.98);
 }
 
 .paused-action--dashboard {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  width: 100%;
+  background: none;
+  border: none;
+  padding: var(--space-md) 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
 }
 
 .paused-action--dashboard:active {
-  background: var(--color-bg-hover);
+  opacity: 0.5;
 }
 
 .paused-action--end {
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  height: auto;
+  width: 100%;
+  background: none;
+  border: none;
   padding: var(--space-md) 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-danger);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .paused-action--end:active {
-  color: var(--color-danger);
+  opacity: 0.5;
 }
 
 /* Sheet option layout (for End Day / End Sale sheet) */
