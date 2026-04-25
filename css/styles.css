@@ -2927,7 +2927,7 @@ body {
   flex: 1;
 }
 
-/* === Consignor Payouts Screen === */
+/* === Consignor Payouts Screen (V2 §1.4.A List + §1.4.B Detail hybrid) === */
 .payouts-screen {
   background: var(--color-bg);
   flex-direction: column;
@@ -2940,137 +2940,226 @@ body {
   padding-top: calc(var(--height-header) + var(--space-lg));
 }
 
+.payouts__topbar {
+  margin-bottom: var(--space-lg);
+}
+
 .payouts__title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  margin: 0 0 var(--space-lg);
-}
-
-.payouts__totals {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
-  margin-bottom: var(--space-sm);
-}
-
-.payouts__total-line {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--font-size-base);
-  padding: var(--space-xs) 0;
-  color: var(--color-text-secondary);
-}
-
-.payouts__total-line--highlight {
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-lg);
   color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-xs);
 }
 
-.payouts__total-value {
-  font-weight: var(--font-weight-bold);
-}
-
-.payouts__note {
+.payouts__subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin: 0 0 var(--space-xl);
+  margin: 0;
+  letter-spacing: 0.01em;
 }
 
-.payouts__section {
+/* Card — V2 grouped list card pattern */
+.payouts__card {
   background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   margin-bottom: var(--space-md);
 }
 
-.payouts__section-header {
+.payouts__card-header {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xs);
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
+  min-height: 48px;
 }
 
 .payouts__dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
+.payouts__dot--empty {
+  background: transparent;
+  border: 1px dashed var(--color-border);
+}
+
 .payouts__name {
-  font-size: var(--font-size-lg);
+  flex: 1;
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .payouts__arrangement {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-md);
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
 }
 
 .payouts__warning {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-danger);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-sm);
+  background: var(--color-status-voided-bg);
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.payouts__stats {
-  margin-bottom: var(--space-sm);
-}
-
-.payouts__stat-line {
+/* Card row — label left, value right */
+.payouts__row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
+  min-height: 48px;
+}
+
+.payouts__card .payouts__row:last-child {
+  border-bottom: none;
+}
+
+.payouts__row-label {
   font-size: var(--font-size-base);
-  padding: 3px 0;
-  color: var(--color-text-secondary);
-}
-
-.payouts__stat-line--payout {
   color: var(--color-text);
-  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
 }
 
-.payouts__stat-line--operator {
-  color: var(--color-success);
-  font-weight: var(--font-weight-semibold);
-}
-
-.payouts__view-items {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+.payouts__row-label--link {
   color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.payouts__row-value {
+  font-family: var(--font-family-number);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.payouts__row-value--bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.payouts__row-value--success {
+  color: var(--color-success);
+}
+
+.payouts__row--highlight {
+  background: var(--color-surface-tinted);
+}
+
+.payouts__row--payout .payouts__row-label {
+  color: var(--color-text);
+}
+
+/* Toggle row (View / Hide N items) */
+.payouts__row--toggle {
   background: none;
   border: none;
+  width: 100%;
   cursor: pointer;
-  padding: var(--space-sm) 0;
   -webkit-tap-highlight-color: transparent;
+  text-align: left;
+  font-family: inherit;
+  transition: background var(--duration-fast, 150ms) ease;
 }
 
-.payouts__items {
+.payouts__row--toggle:active {
+  background: var(--color-bg-hover);
+}
+
+.payouts__chevron {
+  width: 12px;
+  height: 8px;
+  color: var(--color-text-tertiary);
+  transition: transform var(--duration-fast, 150ms) ease;
+}
+
+.payouts__chevron--up {
+  transform: rotate(180deg);
+}
+
+/* Expanded items list */
+.payouts__items-list {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: none;
+  background: var(--color-surface-tinted);
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.payouts__items--visible {
+.payouts__items-list--visible {
   display: block;
 }
 
 .payouts__item-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-lg) + 24px);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  padding: 3px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
+  min-height: 36px;
 }
 
 .payouts__item-row:last-child {
   border-bottom: none;
+}
+
+.payouts__item-desc {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payouts__item-price {
+  font-family: var(--font-family-number);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.payouts__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+}
+
+.payouts__empty-heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.payouts__empty-helper {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 280px;
+  line-height: var(--line-height-default);
 }
 
 /* === Sale Paused Screen === */

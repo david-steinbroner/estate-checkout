@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v154';
+const APP_VERSION = 'v155';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v155',
+    date: '2026-04-24',
+    changes: [
+      'Consignor Payouts page rebuilt to match the rest of the app — Apple Wallet style grouped list cards, big Wallet-style page title, and per-consignor breakdown cards with proper rows',
+      'Each consignor card now shows: name + payout arrangement at top, then stat rows (Items sold, Revenue, Consignor gets in bold, You keep in green bold)',
+      '"View N items" tap-to-expand toggle now reads as a proper iOS row with an animating chevron; expanded item list sits in a tinted sub-section indented from the consignor dot',
+      'Empty state: clean heading + helper text when no paid invoices exist yet'
+    ]
+  },
   {
     version: 'v154',
     date: '2026-04-24',

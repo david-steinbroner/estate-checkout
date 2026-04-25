@@ -68,97 +68,131 @@ const Payouts = {
       }
     });
 
-    // Build HTML
-    let html = `<h2 class="payouts__title">Consignor Payouts</h2>`;
-    html += `<div class="payouts__totals">
-      <div class="payouts__total-line">
-        <span>Sale Total</span>
-        <span class="payouts__total-value">${Utils.formatCurrency(saleTotal)}</span>
+    const renderItemsList = (items) => items.map(item => {
+      const qty = item.quantity || 1;
+      let desc = item.description || 'Item';
+      if (qty > 1) desc += ` × ${qty}`;
+      return `<li class="payouts__item-row">
+        <span class="payouts__item-desc">${Utils.escapeHtml(desc)}</span>
+        <span class="payouts__item-price">${Utils.formatCurrency(item.finalPrice)}</span>
+      </li>`;
+    }).join('');
+
+    const chevronSvg = (expanded) => `<svg class="payouts__chevron${expanded ? ' payouts__chevron--up' : ''}" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>`;
+
+    // Top: title + subtitle
+    let html = `<div class="payouts__topbar">
+      <h1 class="payouts__title">Consignor Payouts</h1>
+      <p class="payouts__subtitle">Based on paid invoices only</p>
+    </div>`;
+
+    // Totals card (Sale Total / Your Cut)
+    html += `<div class="payouts__card">
+      <div class="payouts__row">
+        <span class="payouts__row-label">Sale Total</span>
+        <span class="payouts__row-value">${Utils.formatCurrency(saleTotal)}</span>
       </div>
-      <div class="payouts__total-line payouts__total-line--highlight">
-        <span>Your Cut</span>
-        <span class="payouts__total-value">${Utils.formatCurrency(operatorTotal)}</span>
+      <div class="payouts__row payouts__row--highlight">
+        <span class="payouts__row-label">Your Cut</span>
+        <span class="payouts__row-value payouts__row-value--success">${Utils.formatCurrency(operatorTotal)}</span>
       </div>
     </div>`;
-    html += `<p class="payouts__note">Based on paid invoices only</p>`;
 
-    // Each consignor section
+    // Per-consignor cards
     consignors.forEach(c => {
       const g = grouped[c.id] || { items: [], revenue: 0, count: 0 };
-      let consignorGets, operatorKeeps, arrangementLabel, warning = '';
+      let consignorGets, operatorKeeps, arrangementLabel, warningHtml = '';
 
       if (c.payoutType === 'percentage') {
         consignorGets = g.revenue * (c.payoutValue / 100);
         operatorKeeps = g.revenue - consignorGets;
-        arrangementLabel = `Payout: ${c.payoutValue}%`;
+        arrangementLabel = `${c.payoutValue}% payout`;
       } else {
         const fee = g.count * c.payoutValue;
         operatorKeeps = Math.min(fee, g.revenue);
         consignorGets = g.revenue - operatorKeeps;
-        arrangementLabel = `Payout: $${c.payoutValue} flat fee/item`;
+        arrangementLabel = `$${c.payoutValue} flat fee/item`;
         if (fee > g.revenue && g.revenue > 0) {
-          warning = `<div class="payouts__warning">Operator fee ($${fee.toFixed(2)}) exceeds revenue</div>`;
+          warningHtml = `<div class="payouts__warning">Operator fee ($${fee.toFixed(2)}) exceeds revenue</div>`;
         }
       }
 
-      const expandedClass = this._expanded[c.id] ? ' payouts__items--visible' : '';
-      const chevron = this._expanded[c.id] ? '▲' : '▼';
+      const expanded = !!this._expanded[c.id];
+      const itemsHtml = renderItemsList(g.items);
+      const itemCountLabel = `${g.count} item${g.count !== 1 ? 's' : ''}`;
 
-      const itemsHtml = g.items.map(item => {
-        const qty = item.quantity || 1;
-        let desc = item.description || 'Item';
-        if (qty > 1) desc += ` x${qty}`;
-        return `<li class="payouts__item-row">
-          <span>${Utils.escapeHtml(desc)}</span>
-          <span>${Utils.formatCurrency(item.finalPrice)}</span>
-        </li>`;
-      }).join('');
-
-      html += `<div class="payouts__section">
-        <div class="payouts__section-header">
+      html += `<div class="payouts__card">
+        <div class="payouts__card-header">
           <span class="payouts__dot" style="background: ${c.color}"></span>
           <span class="payouts__name">${Utils.escapeHtml(c.name)}</span>
+          <span class="payouts__arrangement">${arrangementLabel}</span>
         </div>
-        <div class="payouts__arrangement">${arrangementLabel}</div>
-        ${warning}
-        <div class="payouts__stats">
-          <div class="payouts__stat-line"><span>Items sold</span><span>${g.count}</span></div>
-          <div class="payouts__stat-line"><span>Revenue</span><span>${Utils.formatCurrency(g.revenue)}</span></div>
-          <div class="payouts__stat-line payouts__stat-line--payout"><span>${Utils.escapeHtml(c.name)} gets</span><span>${Utils.formatCurrency(consignorGets)}</span></div>
-          <div class="payouts__stat-line payouts__stat-line--operator"><span>You keep</span><span>${Utils.formatCurrency(operatorKeeps)}</span></div>
+        ${warningHtml}
+        <div class="payouts__row">
+          <span class="payouts__row-label">Items sold</span>
+          <span class="payouts__row-value">${g.count}</span>
         </div>
-        ${g.items.length > 0 ? `<button class="payouts__view-items" data-toggle-consignor="${c.id}">View Items ${chevron}</button>
-        <ul class="payouts__items${expandedClass}">${itemsHtml}</ul>` : ''}
+        <div class="payouts__row">
+          <span class="payouts__row-label">Revenue</span>
+          <span class="payouts__row-value">${Utils.formatCurrency(g.revenue)}</span>
+        </div>
+        <div class="payouts__row payouts__row--payout">
+          <span class="payouts__row-label">${Utils.escapeHtml(c.name)} gets</span>
+          <span class="payouts__row-value payouts__row-value--bold">${Utils.formatCurrency(consignorGets)}</span>
+        </div>
+        <div class="payouts__row payouts__row--operator">
+          <span class="payouts__row-label">You keep</span>
+          <span class="payouts__row-value payouts__row-value--bold payouts__row-value--success">${Utils.formatCurrency(operatorKeeps)}</span>
+        </div>
+        ${g.items.length > 0 ? `
+          <button class="payouts__row payouts__row--toggle" data-toggle-consignor="${c.id}" type="button">
+            <span class="payouts__row-label payouts__row-label--link">${expanded ? 'Hide' : 'View'} ${itemCountLabel}</span>
+            ${chevronSvg(expanded)}
+          </button>
+          <ul class="payouts__items-list${expanded ? ' payouts__items-list--visible' : ''}">${itemsHtml}</ul>
+        ` : ''}
       </div>`;
     });
 
     // Untagged section
-    if (untagged.count > 0 || allItems.length === 0) {
-      const uExpandedClass = this._expanded['_untagged'] ? ' payouts__items--visible' : '';
-      const uChevron = this._expanded['_untagged'] ? '▲' : '▼';
+    if (untagged.count > 0) {
+      const expanded = !!this._expanded['_untagged'];
+      const uItemsHtml = renderItemsList(untagged.items);
+      const uItemCountLabel = `${untagged.count} item${untagged.count !== 1 ? 's' : ''}`;
 
-      const uItemsHtml = untagged.items.map(item => {
-        const qty = item.quantity || 1;
-        let desc = item.description || 'Item';
-        if (qty > 1) desc += ` x${qty}`;
-        return `<li class="payouts__item-row">
-          <span>${Utils.escapeHtml(desc)}</span>
-          <span>${Utils.formatCurrency(item.finalPrice)}</span>
-        </li>`;
-      }).join('');
+      html += `<div class="payouts__card">
+        <div class="payouts__card-header">
+          <span class="payouts__dot payouts__dot--empty"></span>
+          <span class="payouts__name">Untagged items</span>
+          <span class="payouts__arrangement">No consignor</span>
+        </div>
+        <div class="payouts__row">
+          <span class="payouts__row-label">Items sold</span>
+          <span class="payouts__row-value">${untagged.count}</span>
+        </div>
+        <div class="payouts__row">
+          <span class="payouts__row-label">Revenue</span>
+          <span class="payouts__row-value">${Utils.formatCurrency(untagged.revenue)}</span>
+        </div>
+        <div class="payouts__row payouts__row--operator">
+          <span class="payouts__row-label">All yours</span>
+          <span class="payouts__row-value payouts__row-value--bold payouts__row-value--success">${Utils.formatCurrency(untagged.revenue)}</span>
+        </div>
+        ${untagged.items.length > 0 ? `
+          <button class="payouts__row payouts__row--toggle" data-toggle-consignor="_untagged" type="button">
+            <span class="payouts__row-label payouts__row-label--link">${expanded ? 'Hide' : 'View'} ${uItemCountLabel}</span>
+            ${chevronSvg(expanded)}
+          </button>
+          <ul class="payouts__items-list${expanded ? ' payouts__items-list--visible' : ''}">${uItemsHtml}</ul>
+        ` : ''}
+      </div>`;
+    }
 
-      html += `<div class="payouts__section payouts__section--untagged">
-        <div class="payouts__section-header">
-          <span class="payouts__name">Untagged Items</span>
-        </div>
-        <div class="payouts__arrangement">Items with no consignor</div>
-        <div class="payouts__stats">
-          <div class="payouts__stat-line"><span>Items sold</span><span>${untagged.count}</span></div>
-          <div class="payouts__stat-line"><span>Revenue</span><span>${Utils.formatCurrency(untagged.revenue)}</span></div>
-          <div class="payouts__stat-line payouts__stat-line--operator"><span>All yours</span><span>${Utils.formatCurrency(untagged.revenue)}</span></div>
-        </div>
-        ${untagged.items.length > 0 ? `<button class="payouts__view-items" data-toggle-consignor="_untagged">View Items ${uChevron}</button>
-        <ul class="payouts__items${uExpandedClass}">${uItemsHtml}</ul>` : ''}
+    // Empty state — no paid items at all
+    if (allItems.length === 0) {
+      html += `<div class="payouts__empty">
+        <span class="payouts__empty-heading">No paid invoices yet</span>
+        <span class="payouts__empty-helper">Payouts will appear here as orders are paid.</span>
       </div>`;
     }
 
