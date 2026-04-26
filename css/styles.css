@@ -3769,11 +3769,10 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  margin: var(--space-lg) var(--space-lg) 0;
+  margin: var(--space-md) var(--space-lg) 0;
   padding: var(--space-md) var(--space-lg);
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-divider);
 }
 
 .dashboard-ended-banner[hidden] {
@@ -3823,18 +3822,16 @@ body {
 .dashboard-stats {
   display: flex;
   gap: var(--space-md);
-  padding: var(--space-md);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-md) var(--space-lg);
   flex-shrink: 0;
 }
 
 .dashboard-stat {
   flex: 1;
   text-align: center;
-  padding: var(--space-md);
-  background: var(--color-bg);
-  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-sm);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
 }
 
 .dashboard-stat__value {

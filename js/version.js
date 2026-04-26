@@ -4,9 +4,17 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v159';
+const APP_VERSION = 'v160';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v160',
+    date: '2026-04-26',
+    changes: [
+      'Dashboard layout cleanup: the Invoices / Revenue / Avg Invoice stat tiles now sit as floating white cards on the tinted page background — same paradigm as the Sale Ended banner above them, instead of an inverted "white strip with gray boxes" look',
+      'Banner spacing aligned with the stats and consignor revenue card so all three sections match'
+    ]
+  },
   {
     version: 'v159',
     date: '2026-04-26',
