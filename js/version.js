@@ -4,9 +4,16 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v164';
+const APP_VERSION = 'v165';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v165',
+    date: '2026-04-26',
+    changes: [
+      'Fixed: sheets (Add Consignor, Adjust Price, etc.) were getting cut off at the bottom by the Safari URL bar. The sheets now correctly size against the visible viewport (dvh) instead of the full window (vh).'
+    ]
+  },
   {
     version: 'v164',
     date: '2026-04-26',

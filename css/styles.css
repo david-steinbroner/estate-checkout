@@ -592,7 +592,7 @@ body {
 
 .sheet__item-list {
   list-style: none;
-  max-height: 60vh;
+  max-height: 60dvh;
   overflow-y: auto;
   margin: 0;
   padding: 0;
@@ -1951,7 +1951,10 @@ body {
   padding: var(--space-2xl);
   padding-top: calc(var(--space-md) + 5px + var(--space-md) + var(--space-md)); /* room for handle */
   padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
-  max-height: 80vh;
+  /* dvh (dynamic viewport height) accounts for the iOS Safari URL bar.
+     vh measures the full window even when chrome is visible — so a 80vh
+     sheet would extend below the visible area on Safari. dvh adjusts. */
+  max-height: 80dvh;
   overflow-y: auto;
   text-align: center;
   animation: sheet-slide-up 0.2s ease-out;
@@ -2234,7 +2237,7 @@ body {
 
 /* === Version History sheet === */
 .version-history {
-  max-height: 60vh;
+  max-height: 60dvh;
   overflow-y: auto;
   margin-bottom: var(--space-lg);
   padding-right: var(--space-xs);
