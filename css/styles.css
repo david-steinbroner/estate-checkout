@@ -272,20 +272,6 @@ body {
   background: var(--color-surface-tinted);
 }
 
-/* === Per-screen meta line (v161: replaces header context) === */
-.screen-meta {
-  flex-shrink: 0;
-  padding: var(--space-md) var(--space-lg) 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  letter-spacing: 0.01em;
-  text-align: center;
-}
-
-.screen-meta:empty {
-  display: none;
-}
-
 /* === Dashboard Large Title (v161: Apple Mail / iOS Settings pattern) === */
 .dashboard-title-block {
   padding: var(--space-md) var(--space-lg) 0;
@@ -343,7 +329,10 @@ body {
   display: none;
 }
 
-/* === Running Total (V2: Hero Number per §1.4.B Detail archetype) === */
+/* === Running Total (V2 v162: Wallet Balance Detail hero zone)
+ * Single zone holds context + hero amount + sub-info, all centered.
+ * Replaces the v161 split layout (separate screen-meta line above the card).
+ */
 .running-total {
   background: var(--color-surface-tinted);
   color: var(--color-text);
@@ -353,7 +342,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  padding: var(--space-xl) var(--space-lg);
+  padding: var(--space-lg) var(--space-lg);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   border-bottom: 1px solid var(--color-divider);
@@ -362,6 +351,19 @@ body {
 
 .running-total:active {
   background: var(--color-bg-hover);
+}
+
+/* Top context line — small secondary text above the hero amount */
+.running-total__context {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.running-total__context:empty {
+  display: none;
 }
 
 .running-total__info {

@@ -26,13 +26,13 @@
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Per-screen meta line (V2 v161: replaces the busy global header) -->
-    <div class="screen-meta" id="checkout-meta"></div>
-
-    <!-- Running Total -->
+    <!-- Hero zone (V2 v162 — Wallet Balance Detail pattern):
+         context line on top, hero amount middle, order/items info bottom.
+         All per-screen identity lives here, not in the chrome. -->
     <div class="running-total" id="running-total-bar">
-      <span class="running-total__info" id="running-total-info"></span>
+      <span class="running-total__context" id="running-total-context"></span>
       <span class="running-total__amount" id="running-total">$0.00</span>
+      <span class="running-total__info" id="running-total-info"></span>
     </div>
 
     <!-- Item List (inline preview — shows last 2-3 items) -->

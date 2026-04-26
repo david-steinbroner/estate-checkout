@@ -4,9 +4,16 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v161';
+const APP_VERSION = 'v162';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v162',
+    date: '2026-04-26',
+    changes: [
+      'Checkout screen tightened: the "Day 1" context line now lives inside the hero card with the running total instead of sitting on its own row above. Same information, less wasted vertical space (Apple Wallet Balance Detail pattern).'
+    ]
+  },
   {
     version: 'v161',
     date: '2026-04-26',
