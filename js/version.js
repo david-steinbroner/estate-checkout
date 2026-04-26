@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v155';
+const APP_VERSION = 'v156';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v156',
+    date: '2026-04-26',
+    changes: [
+      'New: cloud sync. When two workers join the same sale, they now see each other\'s invoices live in the dashboard',
+      'New sales automatically save to the cloud; joining a sale via QR pulls the latest config from the cloud',
+      'Marking an invoice paid (or unpaid) now syncs to all joined devices within seconds',
+      'Existing sales started before this update stay local-only — no migration needed'
+    ]
+  },
   {
     version: 'v155',
     date: '2026-04-24',

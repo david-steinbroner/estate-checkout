@@ -1239,6 +1239,12 @@ const Checkout = {
     this.editingInvoiceDirty = false;
     this.updateDoneButtonText();
 
+    // Push to backend if this sale is synced (fire-and-forget — local is canonical for the UI)
+    if (typeof Sync !== 'undefined' && Sync.isSynced(this.sale)) {
+      Sync.createInvoice(this.sale.id, this.sale.shareCode, Sync.localInvoiceToServer(transaction))
+        .catch(err => console.warn('[sync] createInvoice failed:', err.message));
+    }
+
     // DON'T clear cart here - let BACK return to items for review
     // Cart is cleared only by NEW CUSTOMER
 

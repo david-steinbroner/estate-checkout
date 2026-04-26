@@ -8,5 +8,5 @@ compatibility_date = "2024-12-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "estate-checkout"
-database_id = "REPLACE_WITH_D1_UUID"
+database_id = "6632eb68-7e74-44b0-b6e0-ef9d96021696"
 migrations_dir = "migrations"

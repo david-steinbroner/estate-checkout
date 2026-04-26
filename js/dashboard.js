@@ -630,6 +630,15 @@ const Dashboard = {
       paidAt: paidAt
     });
 
+    // Push to backend
+    const sale = Storage.getSale();
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchInvoice(sale.id, sale.shareCode, txnId, {
+        status: newStatus,
+        paidAt: paidAt
+      }).catch(err => console.warn('[sync] toggle-paid failed:', err.message));
+    }
+
     // Re-render to update UI
     this.render();
   },

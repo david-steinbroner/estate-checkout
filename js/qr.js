@@ -66,10 +66,20 @@ const QR = {
         if (!txn) return;
 
         // Update transaction status to paid
+        const paidAt = Utils.getTimestamp();
         Storage.updateTransaction(txn.id, {
           status: 'paid',
-          paidAt: Utils.getTimestamp()
+          paidAt: paidAt
         });
+
+        // Push to backend
+        const sale = Storage.getSale();
+        if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+          Sync.patchInvoice(sale.id, sale.shareCode, txn.id, {
+            status: 'paid',
+            paidAt: paidAt
+          }).catch(err => console.warn('[sync] mark-paid failed:', err.message));
+        }
 
         // Clear checkout state
         Checkout.clearAll();

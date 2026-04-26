@@ -576,11 +576,17 @@ const SaleSetup = {
   },
 
   /**
-   * Create a new sale and save to storage
+   * Create a new sale and save to storage.
+   *
+   * If config carries `_synced: true` and an `id`/`shareCode`, the caller
+   * (e.g. confirmJoinSale) has already validated the remote sale — we just
+   * mirror it locally. Otherwise we attempt a backend create and adopt the
+   * server-assigned id + shareCode. If the network call fails, the sale is
+   * saved local-only (legacy mode).
    */
   createSale(config) {
     const sale = {
-      id: Utils.generateId(),
+      id: config.id || Utils.generateId(),
       name: config.name,
       startDate: config.startDate,
       endDate: config.endDate || null,
@@ -592,10 +598,37 @@ const SaleSetup = {
       maxDiscountPercent: config.maxDiscountPercent || null,
       shareCode: config.shareCode || null,
       isShared: config.isShared || false,
-      sharedAt: config.sharedAt || null
+      sharedAt: config.sharedAt || null,
+      _synced: !!config._synced
     };
 
     Storage.saveSale(sale);
+
+    // If not already synced (i.e. this is a brand-new sale, not a join), push
+    // to the backend. We do this fire-and-forget; on success we adopt the
+    // server-assigned id + shareCode and re-save.
+    if (!sale._synced && typeof Sync !== 'undefined') {
+      Sync.createSale({
+        name: sale.name,
+        startDate: sale.startDate,
+        endDate: sale.endDate,
+        discounts: sale.discounts,
+        consignors: sale.consignors,
+        maxDiscountPercent: sale.maxDiscountPercent,
+        status: sale.status
+      }).then(remote => {
+        // Adopt server id + share code, mark as synced
+        const current = Storage.getSale();
+        if (!current) return;
+        current.id = remote.id;
+        current.shareCode = remote.shareCode;
+        current._synced = true;
+        Storage.saveSale(current);
+      }).catch(err => {
+        console.warn('[sync] createSale failed — sale saved local-only:', err.message);
+      });
+    }
+
     return sale;
   },
 

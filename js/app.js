@@ -14,6 +14,7 @@ const App = {
    */
   init() {
     this.registerServiceWorker();
+    if (typeof Sync !== 'undefined') Sync.init();
     this.cacheHeaderElements();
     this.bindHeaderEvents();
     this._bindPayoutTypePicker();
@@ -1009,6 +1010,11 @@ const App = {
     if (this.currentScreen === 'scan') {
       try { Scan.stop(); } catch (e) { /* safe — scanner may not have started */ }
     }
+    // Stop background sync polling when leaving any screen that polls
+    if (this._stopSyncPoll) {
+      this._stopSyncPoll();
+      this._stopSyncPoll = null;
+    }
 
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
@@ -1040,6 +1046,13 @@ const App = {
       } else if (screenName === 'dashboard') {
         Dashboard.resetFilters();
         Dashboard.render(data);
+        // Start sync polling — pulls invoices made by other workers in real-time
+        const sale = Storage.getSale();
+        if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+          this._stopSyncPoll = Sync.startPolling(sale, 3000, () => {
+            Dashboard.render();
+          });
+        }
       } else if (screenName === 'payouts') {
         Payouts.render();
       } else if (screenName === 'paused') {
@@ -1287,9 +1300,12 @@ const App = {
   },
 
   /**
-   * Confirm joining the sale
+   * Confirm joining the sale.
+   * Fetches the full sale config from the backend by share code (the URL only
+   * carries the share code); falls back to the legacy in-URL data on network
+   * failure or for legacy invite links.
    */
-  confirmJoinSale() {
+  async confirmJoinSale() {
     const data = this.pendingJoinData;
     if (!data) return;
 
@@ -1301,16 +1317,43 @@ const App = {
       SaleSetup.endSale();
     }
 
-    // Create new sale from shared config
-    SaleSetup.createSale({
-      name: data.name,
-      startDate: data.startDate,
-      discounts: data.discounts,
-      shareCode: data.shareCode || null,
-      isShared: true,
-      sharedAt: Utils.getTimestamp(),
-      maxDiscountPercent: data.maxDiscountPercent || null
-    });
+    // Try to pull the canonical sale config from the backend if we have a share code.
+    let saleConfig = null;
+    if (data.shareCode && typeof Sync !== 'undefined') {
+      try {
+        saleConfig = await Sync.fetchSaleByCode(data.shareCode);
+      } catch (err) {
+        console.warn('[sync] fetchSaleByCode failed, falling back to URL data:', err.message);
+      }
+    }
+
+    if (saleConfig) {
+      // Server-backed: use the canonical config and mark the local sale as synced
+      SaleSetup.createSale({
+        id: saleConfig.id,
+        name: saleConfig.name,
+        startDate: saleConfig.startDate,
+        endDate: saleConfig.endDate,
+        discounts: saleConfig.discounts || [],
+        consignors: saleConfig.consignors || [],
+        maxDiscountPercent: saleConfig.maxDiscountPercent,
+        shareCode: saleConfig.shareCode,
+        isShared: true,
+        sharedAt: Utils.getTimestamp(),
+        _synced: true
+      });
+    } else {
+      // Fallback: legacy in-URL config (pre-v156 invite links)
+      SaleSetup.createSale({
+        name: data.name,
+        startDate: data.startDate,
+        discounts: data.discounts,
+        shareCode: data.shareCode || null,
+        isShared: true,
+        sharedAt: Utils.getTimestamp(),
+        maxDiscountPercent: data.maxDiscountPercent || null
+      });
+    }
 
     this.pendingJoinData = null;
     this.cleanJoinUrl();
