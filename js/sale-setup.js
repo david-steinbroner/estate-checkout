@@ -682,6 +682,10 @@ const SaleSetup = {
     sale.pausedAt = Utils.getTimestamp();
     Storage.saveSale(sale);
     Storage.clearCart();
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchSale(sale.id, sale.shareCode, { status: 'paused' })
+        .catch(err => console.warn('[sync] pauseSale failed:', err.message));
+    }
   },
 
   resumeSale() {
@@ -690,6 +694,10 @@ const SaleSetup = {
     sale.status = 'active';
     sale.pausedAt = null;
     Storage.saveSale(sale);
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchSale(sale.id, sale.shareCode, { status: 'active' })
+        .catch(err => console.warn('[sync] resumeSale failed:', err.message));
+    }
   },
 
   endSale() {
@@ -697,6 +705,12 @@ const SaleSetup = {
     if (sale) {
       sale.status = 'ended';
       Storage.saveSale(sale);
+      if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+        Sync.patchSale(sale.id, sale.shareCode, {
+          status: 'ended',
+          endedAt: Utils.getTimestamp()
+        }).catch(err => console.warn('[sync] endSale failed:', err.message));
+      }
     }
     Storage.clearCart();
     Storage.clearCustomerCounter();

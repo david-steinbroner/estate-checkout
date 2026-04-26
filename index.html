@@ -540,13 +540,15 @@
     </div>
   </div>
 
-  <!-- End Sale Confirmation Sheet -->
+  <!-- End Sale Confirmation Sheet — type-the-name to confirm (v158) -->
   <div class="overlay" id="end-sale-confirm-modal">
     <div class="sheet">
       <p class="sheet__title sheet__title--small">End Sale Permanently?</p>
-      <p class="sheet__text">All transaction data stays on your dashboard, but the sale cannot be resumed.</p>
+      <p class="sheet__text">This affects all joined devices. The sale cannot be reopened. Past invoices stay on the dashboard.</p>
+      <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-md);">Type <strong id="end-sale-confirm-name" style="color:var(--color-text)"></strong> to confirm.</p>
+      <input type="text" class="consignor-form__input" id="end-sale-confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);text-align:center;">
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm">End Sale</button>
+        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm" disabled>End Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>

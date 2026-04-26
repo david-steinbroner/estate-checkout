@@ -251,8 +251,15 @@ async function listInvoices(request, env, params) {
   query += ' ORDER BY updated_at DESC';
 
   const result = await env.DB.prepare(query).bind(...values).all();
+
+  // Re-fetch the sale fresh so its current status/consignors/discounts ride
+  // along with each poll. Cheap (one indexed lookup) and lets clients react
+  // to pauses, resumes, and ends without a separate endpoint.
+  const sale = await getSaleById(env, params.saleId);
+
   return json({
     invoices: (result.results || []).map(rowToInvoice),
+    sale: rowToSale(sale),
     syncedAt: nowIso()
   });
 }

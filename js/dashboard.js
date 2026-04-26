@@ -754,11 +754,22 @@ const Dashboard = {
   confirmCancelInvoice() {
     if (!this._pendingCancelId) return;
 
+    const voidedAt = Utils.getTimestamp();
     Storage.updateTransaction(this._pendingCancelId, {
       status: 'void',
-      voidedAt: Utils.getTimestamp(),
+      voidedAt: voidedAt,
       voidReason: 'Cancelled'
     });
+
+    // Push to backend
+    const sale = Storage.getSale();
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchInvoice(sale.id, sale.shareCode, this._pendingCancelId, {
+        status: 'void',
+        voidedAt: voidedAt,
+        voidReason: 'Cancelled'
+      }).catch(err => console.warn('[sync] cancelInvoice failed:', err.message));
+    }
 
     // If cancelling the current draft, clear draft tracking
     if (Checkout.draftTransactionId === this._pendingCancelId) {

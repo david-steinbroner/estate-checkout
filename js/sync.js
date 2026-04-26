@@ -153,37 +153,73 @@ const Sync = {
 
   /**
    * Pull any invoices updated on the backend since our last successful sync,
-   * and merge them into local Storage. Safe to call repeatedly.
-   * Returns the count of invoices pulled.
+   * AND the sale's current state (status/consignors/discounts may have
+   * changed on another device). Returns the result object so callers can
+   * react to status changes:
+   *   { count, saleStatusChanged, sale }
    */
   async pullInvoices(sale) {
-    if (!this.isSynced(sale)) return 0;
+    if (!this.isSynced(sale)) return { count: 0, saleStatusChanged: false, sale: null };
     const lastSync = this._lastSyncBySale[sale.id] || null;
     let result;
     try {
       result = await this.listInvoicesSince(sale.id, sale.shareCode, lastSync);
     } catch (err) {
       console.warn('[sync] pullInvoices failed:', err.message);
-      return 0;
+      return { count: 0, saleStatusChanged: false, sale: null };
     }
 
+    // Merge invoices
     const incoming = (result.invoices || []).map(srv => this.serverInvoiceToLocal(srv));
     if (incoming.length > 0) {
       const all = Storage.getTransactions();
       const byId = new Map(all.map(t => [t.id, t]));
       incoming.forEach(srv => byId.set(srv.id, srv));
-      const merged = Array.from(byId.values());
-      // Persist via direct localStorage set (Storage doesn't expose a bulk-set API)
-      localStorage.setItem(Storage.KEYS.TRANSACTIONS, JSON.stringify(merged));
+      localStorage.setItem(Storage.KEYS.TRANSACTIONS, JSON.stringify(Array.from(byId.values())));
+    }
+
+    // Detect sale state changes — apply remote state to local, return whether
+    // the status differs from what we had before.
+    let saleStatusChanged = false;
+    let mergedSale = null;
+    if (result.sale) {
+      const local = Storage.getSale();
+      if (local && local.id === result.sale.id) {
+        const prevStatus = local.status;
+        // Apply remote state but keep local _synced flag and createdAt
+        mergedSale = {
+          ...local,
+          name: result.sale.name,
+          startDate: result.sale.startDate,
+          endDate: result.sale.endDate,
+          discounts: result.sale.discounts,
+          consignors: result.sale.consignors,
+          maxDiscountPercent: result.sale.maxDiscountPercent,
+          status: result.sale.status,
+          endedAt: result.sale.endedAt,
+          shareCode: result.sale.shareCode
+        };
+        Storage.saveSale(mergedSale);
+        saleStatusChanged = prevStatus !== result.sale.status;
+      }
     }
 
     this._lastSyncBySale[sale.id] = result.syncedAt || new Date().toISOString();
-    return incoming.length;
+    return {
+      count: incoming.length,
+      saleStatusChanged,
+      sale: mergedSale,
+      newStatus: mergedSale ? mergedSale.status : null
+    };
   },
 
   /**
    * Start polling for the given sale. Returns a stop function.
    * Polling pauses while the page/tab is hidden (visibilitychange listener).
+   *
+   * onPull(result) is called after every successful poll with:
+   *   { count, saleStatusChanged, sale, newStatus }
+   * so the caller can re-render and react to remote status changes.
    */
   startPolling(sale, intervalMs = 3000, onPull = null) {
     if (!this.isSynced(sale)) return () => {};
@@ -193,8 +229,8 @@ const Sync = {
 
     const tick = async () => {
       if (stopped || document.visibilityState !== 'visible') return;
-      const count = await this.pullInvoices(sale);
-      if (count > 0 && typeof onPull === 'function') onPull(count);
+      const result = await this.pullInvoices(sale);
+      if (typeof onPull === 'function') onPull(result);
     };
 
     const start = () => {

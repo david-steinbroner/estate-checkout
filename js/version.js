@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v157';
+const APP_VERSION = 'v158';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v158',
+    date: '2026-04-26',
+    changes: [
+      'Sync is now complete: voiding/cancelling an invoice, editing an invoice, and adding/editing/deleting a consignor all sync to joined devices in real time',
+      'End Day, Resume, and End Sale Permanently now sync — when one worker ends the day, everyone\'s device flips to the Paused screen; anyone can tap Resume to continue',
+      'When a sale is ended on another device, you see a clear "Sale was ended elsewhere" alert and get kicked to the setup screen (no more orphaned screens)',
+      'End Sale Permanently now requires you to type the sale name to confirm — prevents accidental taps from helpers',
+      'The customer ticket page now uses a tiny pointer QR (just the invoice ID) and fetches live data from the cloud — your customers see a real-time receipt that updates if you mark it paid'
+    ]
+  },
   {
     version: 'v157',
     date: '2026-04-26',

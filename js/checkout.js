@@ -808,12 +808,22 @@ const Checkout = {
   checkEditDirty() {
     if (this.editingInvoiceId && !this.editingInvoiceDirty) {
       this.editingInvoiceDirty = true;
+      const voidedAt = Utils.getTimestamp();
+      const editingId = this.editingInvoiceId;
       // Void the original invoice now
-      Storage.updateTransaction(this.editingInvoiceId, {
+      Storage.updateTransaction(editingId, {
         status: 'void',
-        voidedAt: Utils.getTimestamp(),
+        voidedAt: voidedAt,
         voidReason: 'Edited'
       });
+      // Sync the void
+      if (typeof Sync !== 'undefined' && Sync.isSynced(this.sale)) {
+        Sync.patchInvoice(this.sale.id, this.sale.shareCode, editingId, {
+          status: 'void',
+          voidedAt: voidedAt,
+          voidReason: 'Edited'
+        }).catch(err => console.warn('[sync] edit-void failed:', err.message));
+      }
       this.editingInvoiceId = null;
       this.transactionSaved = false;
       this.lastTransaction = null;

@@ -300,25 +300,72 @@
         `;
       }
 
-      try {
-        const params = new URLSearchParams(window.location.search);
-        let encoded = params.get('d');
+      const API_BASE = 'https://estate-checkout-api.davidsteinbroner.workers.dev';
 
-        if (!encoded) {
+      async function loadFromPointer(invoiceId) {
+        const response = await fetch(API_BASE + '/invoices/' + encodeURIComponent(invoiceId));
+        if (!response.ok) throw new Error('Invoice not found (' + response.status + ')');
+        const result = await response.json();
+        const inv = result.invoice;
+        const sale = result.sale || {};
+        // Map server invoice → flat data shape this page expects
+        return {
+          orderName: inv.orderName,
+          customerNumber: inv.customerNumber,
+          sale: sale.name,
+          day: inv.saleDay,
+          discount: 0, // sale-level discount; not needed when items already reflect prices
+          items: (inv.items || []).map(it => ({
+            desc: it.description,
+            orig: it.originalPrice,
+            day: it.dayDiscountedPrice,
+            final: it.finalPrice,
+            haggle: it.haggleType ? { value: it.haggleValue } : null
+          })),
+          subtotal: inv.subtotal,
+          total: inv.total,
+          ticketDiscount: inv.ticketDiscount,
+          ts: inv.createdAt,
+          status: inv.status
+        };
+      }
+
+      function loadFromPayload(encoded) {
+        encoded = encoded.replace(/-/g, '+').replace(/_/g, '/');
+        while (encoded.length % 4) encoded += '=';
+        const jsonStr = decodeURIComponent(escape(atob(encoded)));
+        return JSON.parse(jsonStr);
+      }
+
+      async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const invoiceId = params.get('id');
+        const encoded = params.get('d');
+
+        if (!invoiceId && !encoded) {
           renderError('No invoice data in this link.');
           return;
         }
 
-        // Restore standard base64 from URL-safe format
-        encoded = encoded.replace(/-/g, '+').replace(/_/g, '/');
-        while (encoded.length % 4) encoded += '=';
-        const jsonStr = decodeURIComponent(escape(atob(encoded)));
-        const data = JSON.parse(jsonStr);
+        let data;
+        try {
+          data = invoiceId ? await loadFromPointer(invoiceId) : loadFromPayload(encoded);
+        } catch (err) {
+          console.error('Load failed:', err);
+          renderError(err.message || 'Could not load this invoice.');
+          return;
+        }
 
         if (!data.items || typeof data.total !== 'number') {
           renderError('This invoice data is incomplete.');
           return;
         }
+
+        renderTicket(data);
+      }
+
+      function renderTicket(data) {
+        try {
 
         const orderName = data.orderName || ('Invoice #' + (data.customerNumber || '?'));
         const saleName = data.sale || 'Estate Sale';
@@ -403,10 +450,13 @@
             correctLevel: QRCode.CorrectLevel.L
           });
         }
-      } catch (e) {
-        console.error('Invoice parse error:', e);
-        renderError('Could not read invoice data.');
+        } catch (e) {
+          console.error('Render error:', e);
+          renderError('Could not display this invoice.');
+        }
       }
+
+      init();
     })();
   </script>
 </body>

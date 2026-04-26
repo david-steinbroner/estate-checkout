@@ -18,6 +18,7 @@ const App = {
     this.cacheHeaderElements();
     this.bindHeaderEvents();
     this._bindPayoutTypePicker();
+    this._bindEndSaleConfirmInput();
     this.initModules();
     this.route();
 
@@ -768,6 +769,13 @@ const App = {
       }
     }
 
+    // Sync consignor list to backend if applicable
+    if (sale && typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      const fresh = Storage.getSale();
+      Sync.patchSale(fresh.id, fresh.shareCode, { consignors: fresh.consignors || [] })
+        .catch(err => console.warn('[sync] saveConsignor failed:', err.message));
+    }
+
     document.getElementById('consignor-modal').classList.remove('visible');
     if (sale) this.renderEditSale(sale);
     if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
@@ -779,6 +787,12 @@ const App = {
     const sale = Storage.getSale();
     if (sale) {
       Storage.deleteConsignor(this._consignorEditId);
+      // Sync the new consignor list
+      if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+        const fresh = Storage.getSale();
+        Sync.patchSale(fresh.id, fresh.shareCode, { consignors: fresh.consignors || [] })
+          .catch(err => console.warn('[sync] deleteConsignor failed:', err.message));
+      }
     } else {
       SaleSetup.pendingConsignors = SaleSetup.pendingConsignors.filter(c => c.id !== this._consignorEditId);
     }
@@ -858,8 +872,57 @@ const App = {
    * Show end sale confirmation dialog
    */
   showEndSaleConfirm() {
-    if (this.headerElements.endSaleConfirmModal) {
-      this.headerElements.endSaleConfirmModal.classList.add('visible');
+    if (!this.headerElements.endSaleConfirmModal) return;
+    const sale = Storage.getSale();
+    const saleName = sale ? sale.name : '';
+    const input = document.getElementById('end-sale-confirm-input');
+    const confirmBtn = document.getElementById('end-sale-confirm');
+    const nameLabel = document.getElementById('end-sale-confirm-name');
+    if (nameLabel) nameLabel.textContent = saleName;
+    if (input) {
+      input.value = '';
+      input.placeholder = saleName;
+    }
+    if (confirmBtn) confirmBtn.disabled = true;
+    this.headerElements.endSaleConfirmModal.classList.add('visible');
+    setTimeout(() => { if (input) input.focus(); }, 100);
+  },
+
+  /**
+   * Wire the type-name-to-confirm input on the End Sale modal.
+   * Called once on init.
+   */
+  _bindEndSaleConfirmInput() {
+    if (this._endSaleConfirmInputBound) return;
+    this._endSaleConfirmInputBound = true;
+    const input = document.getElementById('end-sale-confirm-input');
+    const confirmBtn = document.getElementById('end-sale-confirm');
+    if (!input || !confirmBtn) return;
+    input.addEventListener('input', () => {
+      const sale = Storage.getSale();
+      const saleName = sale ? sale.name : '';
+      confirmBtn.disabled = input.value.trim() !== saleName.trim();
+    });
+  },
+
+  /**
+   * Handle a remote sale-status change detected via polling.
+   * paused → kick to paused screen (anyone can resume from there)
+   * active → if we were on paused, return to checkout
+   * ended  → go to setup with an alert
+   */
+  _handleRemoteSaleStatusChange(newStatus) {
+    console.log('[sync] remote sale status changed →', newStatus);
+    if (newStatus === 'paused') {
+      this.showScreen('paused');
+    } else if (newStatus === 'active') {
+      // Someone resumed; if we were on the paused screen, go back to checkout.
+      if (this.currentScreen === 'paused') {
+        this.showScreen('checkout');
+      }
+    } else if (newStatus === 'ended') {
+      alert('This sale was ended on another device. The sale is now closed; you can still view past data from the dashboard.');
+      this.showScreen('setup');
     }
   },
 
@@ -1035,6 +1098,13 @@ const App = {
       if (screenName === 'checkout') {
         Checkout.loadSale();
         Checkout.render();
+        // Poll for sale-state changes from other devices (end day, end sale)
+        const sale = Storage.getSale();
+        if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+          this._stopSyncPoll = Sync.startPolling(sale, 3000, (result) => {
+            if (result.saleStatusChanged) this._handleRemoteSaleStatusChange(result.newStatus);
+          });
+        }
       } else if (screenName === 'setup') {
         SaleSetup.resetForm();
       } else if (screenName === 'qr') {
@@ -1046,11 +1116,12 @@ const App = {
       } else if (screenName === 'dashboard') {
         Dashboard.resetFilters();
         Dashboard.render(data);
-        // Start sync polling — pulls invoices made by other workers in real-time
+        // Start sync polling — pulls invoices + sale status from other devices
         const sale = Storage.getSale();
         if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
-          this._stopSyncPoll = Sync.startPolling(sale, 3000, () => {
-            Dashboard.render();
+          this._stopSyncPoll = Sync.startPolling(sale, 3000, (result) => {
+            if (result.count > 0) Dashboard.render();
+            if (result.saleStatusChanged) this._handleRemoteSaleStatusChange(result.newStatus);
           });
         }
       } else if (screenName === 'payouts') {

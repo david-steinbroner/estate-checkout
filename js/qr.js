@@ -128,6 +128,16 @@ const QR = {
   },
 
   /**
+   * Build a pointer URL for a synced invoice — just the invoice id.
+   * The ticket page will fetch the full invoice from the backend.
+   * Yields a tiny QR that scans reliably and shows live data (status
+   * updates if the invoice is marked paid after the customer scans).
+   */
+  generatePointerUrl(transaction) {
+    return window.location.origin + '/ticket.html?id=' + encodeURIComponent(transaction.id);
+  },
+
+  /**
    * Render the QR handoff screen
    */
   render(transaction) {
@@ -165,9 +175,14 @@ const QR = {
       this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
     }
 
-    // Generate and render QR code (may fail on very large transactions)
+    // Generate and render QR code.
+    // For synced sales, encode a pointer URL (tiny, always live). For
+    // local-only sales (legacy / offline), fall back to the base64 payload.
     try {
-      const qrData = this.generateData(transaction, sale);
+      const isSynced = typeof Sync !== 'undefined' && Sync.isSynced(sale);
+      const qrData = isSynced
+        ? this.generatePointerUrl(transaction)
+        : this.generateData(transaction, sale);
       this.renderQRCode(qrData);
     } catch (error) {
       console.error('QR code generation failed:', error);
