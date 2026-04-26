@@ -13,23 +13,21 @@
 </head>
 <body>
 
-  <!-- Shared Header (visible during active sale, hidden during setup).
-       v161: minimal — global chrome only. Each screen owns its own
-       identity + state context in its content area (per V2 §1.4 archetypes). -->
-  <header class="header" id="sale-header" hidden>
-    <div class="header__spacer"></div>
-    <div class="header__right">
-      <span class="header__shared-badge" id="shared-badge" hidden>SHARED</span>
-      <button class="header__menu-btn" id="nav-menu" aria-label="Menu">☰</button>
-    </div>
-  </header>
+  <!-- v163: global header removed. Each screen embeds its own menu button
+       in its hero/title block (Wallet pattern — controls live with the card
+       they relate to). See .screen-menu-btn in styles.css. -->
+
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
-    <!-- Hero zone (V2 v162 — Wallet Balance Detail pattern):
+    <!-- Hero zone (V2 v162 — Wallet Balance Detail pattern; v163 embeds menu):
          context line on top, hero amount middle, order/items info bottom.
-         All per-screen identity lives here, not in the chrome. -->
+         Menu button + SHARED chip embedded top-right of the card. -->
     <div class="running-total" id="running-total-bar">
+      <div class="screen-menu-row">
+        <span class="screen-shared-badge" id="shared-badge-checkout" hidden>SHARED</span>
+        <button class="screen-menu-btn" id="nav-menu" type="button" aria-label="Menu">☰</button>
+      </div>
       <span class="running-total__context" id="running-total-context"></span>
       <span class="running-total__amount" id="running-total">$0.00</span>
       <span class="running-total__info" id="running-total-info"></span>
@@ -275,8 +273,12 @@
 
   <!-- Dashboard Screen -->
   <div id="screen-dashboard" class="screen dashboard-screen">
-    <!-- Large Title (Apple Mail / iOS Settings pattern, v161) -->
+    <!-- Large Title (Apple Mail / iOS Settings pattern, v161; v163 embeds menu) -->
     <div class="dashboard-title-block">
+      <div class="screen-menu-row">
+        <span class="screen-shared-badge" id="shared-badge-dashboard" hidden>SHARED</span>
+        <button class="screen-menu-btn" id="dashboard-menu-btn" type="button" aria-label="Menu">☰</button>
+      </div>
       <h1 class="dashboard-large-title" id="dashboard-large-title">Sale</h1>
       <p class="dashboard-large-subtitle" id="dashboard-large-subtitle"></p>
     </div>
@@ -344,6 +346,9 @@
 
   <!-- Consignor Payouts Screen -->
   <div id="screen-payouts" class="screen payouts-screen">
+    <div class="screen-menu-row screen-menu-row--floating">
+      <button class="screen-menu-btn" id="payouts-menu-btn" type="button" aria-label="Menu">☰</button>
+    </div>
     <div class="payouts-content" id="payouts-content">
       <!-- Rendered by JS -->
     </div>
@@ -352,6 +357,10 @@
   <!-- Sale Paused Screen -->
   <div id="screen-paused" class="screen paused-screen">
     <div class="paused-header">
+      <div class="screen-menu-row">
+        <span class="screen-shared-badge" id="shared-badge-paused" hidden>SHARED</span>
+        <button class="screen-menu-btn" id="paused-menu-btn" type="button" aria-label="Menu">☰</button>
+      </div>
       <h1 class="paused-header__title" id="paused-sale-name">Sale Paused</h1>
       <p class="paused-header__subtitle" id="paused-day-label">Day 1 Complete</p>
     </div>

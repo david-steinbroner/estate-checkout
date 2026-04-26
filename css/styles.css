@@ -211,33 +211,53 @@ body {
   position: relative;
 }
 
-/* === Header (v161: minimal — global chrome only) ===
- * Per V2 §1.4 archetypes, each screen owns its own identity + state context
- * in its content area. The header is just the menu access point + a SHARED
- * indicator chip for joined sales.
+/* === Per-screen menu row (v163) ===
+ * Replaces the global header bar. Each active-sale screen embeds its own
+ * menu button + optional SHARED chip into its hero/title block. Pattern
+ * mirrors Wallet's card-detail screens — controls live with the card,
+ * not in standalone chrome.
  */
-.header {
-  position: relative;
+.screen-menu-row {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-divider);
-  flex-shrink: 0;
-  padding: 0 var(--space-lg);
+  gap: var(--space-xs);
+  z-index: 2;
 }
 
-.header__spacer {
-  flex: 1;
+/* Floating variant for screens (like Payouts) where the menu doesn't sit
+   inside a contained title block — pinned to the screen viewport corner. */
+.screen-menu-row--floating {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
 }
 
-.header__right {
+.screen-menu-btn {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
 }
 
-.header__shared-badge {
+.screen-menu-btn:active {
+  background: var(--color-surface-tinted);
+  transform: scale(0.95);
+}
+
+.screen-shared-badge {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
@@ -247,34 +267,15 @@ body {
   letter-spacing: 0.04em;
 }
 
-.header__shared-badge[hidden] {
+.screen-shared-badge[hidden] {
   display: none;
-}
-
-.header__menu-btn {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: var(--color-text);
-  background: none;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  border-radius: 50%;
-  transition: background var(--duration-fast, 150ms) ease;
-}
-
-.header__menu-btn:active {
-  background: var(--color-surface-tinted);
 }
 
 /* === Dashboard Large Title (v161: Apple Mail / iOS Settings pattern) === */
 .dashboard-title-block {
+  position: relative;
   padding: var(--space-md) var(--space-lg) 0;
+  padding-right: 56px; /* room for embedded menu button */
   flex-shrink: 0;
 }
 
@@ -334,6 +335,7 @@ body {
  * Replaces the v161 split layout (separate screen-meta line above the card).
  */
 .running-total {
+  position: relative;
   background: var(--color-surface-tinted);
   color: var(--color-text);
   flex-shrink: 0;
@@ -3216,6 +3218,7 @@ body {
 }
 
 .paused-header {
+  position: relative;
   text-align: center;
   padding: var(--space-2xl) var(--space-lg) var(--space-lg);
   background: var(--color-surface);

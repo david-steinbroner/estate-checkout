@@ -32,12 +32,11 @@ const App = {
    */
   cacheHeaderElements() {
     this.headerElements = {
-      header: document.getElementById('sale-header'),
+      // v163: standalone header removed; menu lives in each screen's hero/title
       // v161: sale-name / sale-day / discount-badge removed from header.
       // Identity + state context now live per-screen (dashboard large title,
       // checkout meta line, menu sale block).
-      sharedBadge: document.getElementById('shared-badge'),
-      menuBtn: document.getElementById('nav-menu'),
+      // v163: SHARED chip + menu button moved into each screen's hero/title
       // Header menu sheet
       menuModal: document.getElementById('header-menu-modal'),
       menuDashboard: document.getElementById('menu-dashboard'),
@@ -88,10 +87,25 @@ const App = {
    * Bind shared header event listeners
    */
   bindHeaderEvents() {
-    // Menu button
-    if (this.headerElements.menuBtn) {
-      this.headerElements.menuBtn.addEventListener('click', () => this.openMenu());
-    }
+    // v163: menu button is embedded per-screen. Bind every embedded button to
+    // the same openMenu handler. e.stopPropagation prevents the running-total
+    // card from also firing its tap-to-open-detail behavior when the menu icon
+    // is tapped.
+    const menuButtonIds = [
+      'nav-menu',           // checkout (running-total card)
+      'dashboard-menu-btn', // dashboard (large title block)
+      'paused-menu-btn',    // paused (paused-header)
+      'payouts-menu-btn'    // payouts (floating top-right)
+    ];
+    menuButtonIds.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.openMenu();
+        });
+      }
+    });
 
     // Menu sheet items
     if (this.headerElements.menuDashboard) {
@@ -1218,27 +1232,14 @@ const App = {
   },
 
   /**
-   * Update shared header visibility and active state
+   * v163: no global header to show/hide. Menu lives per-screen. This method
+   * just refreshes the per-screen content (SHARED chips, menu sheet sale
+   * block, dashboard large title) any time the active screen changes.
    */
   updateHeader(screenName) {
     const sale = Storage.getSale();
-
-    // Hide header on setup and paused screens, or when no sale
-    if (screenName === 'setup' || screenName === 'paused' || !sale) {
-      if (this.headerElements.header) {
-        this.headerElements.header.hidden = true;
-      }
-      return;
-    }
-
-    // Show header
-    if (this.headerElements.header) {
-      this.headerElements.header.hidden = false;
-    }
-
-    // Update header content
+    if (!sale) return;
     this.updateHeaderContent(sale);
-
   },
 
   /**
@@ -1255,10 +1256,12 @@ const App = {
     const dayNumber = Utils.getSaleDay(sale.startDate, sale);
     const discount = Utils.getDiscountForDay(sale, dayNumber);
 
-    // SHARED chip in the global header
-    if (this.headerElements.sharedBadge) {
-      this.headerElements.sharedBadge.hidden = !sale.isShared;
-    }
+    // SHARED chips embedded in each screen's hero/title block (v163)
+    const isShared = !!sale.isShared;
+    ['shared-badge-checkout', 'shared-badge-dashboard', 'shared-badge-paused'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.hidden = !isShared;
+    });
 
     // Build the human-readable meta string used in multiple places.
     // Skip "No discount" when zero — confirms the obvious, takes up space.
@@ -1346,9 +1349,8 @@ const App = {
     sale.sharedAt = sale.sharedAt || Utils.getTimestamp();
     Storage.saveSale(sale);
 
-    if (this.headerElements.sharedBadge) {
-      this.headerElements.sharedBadge.hidden = false;
-    }
+    // v163: refresh per-screen SHARED chips
+    this.updateHeaderContent(sale);
 
     // QR encodes a clean URL with just the share code — phone fetches the
     // full sale config from the backend on join.

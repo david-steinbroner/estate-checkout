@@ -4,9 +4,17 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v162';
+const APP_VERSION = 'v163';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v163',
+    date: '2026-04-26',
+    changes: [
+      'Removed the standalone top nav bar — the menu button (☰) now lives in the top-right of each screen\'s hero/title block, and the SHARED chip sits next to it when applicable. Saves a full row of chrome (~76px) and matches the Apple Wallet pattern of "controls live with the card".',
+      'Menu button is now a clean white circular icon button with a subtle shadow, embedded in the running-total card on Checkout, the title block on Dashboard, the header on Paused, and pinned top-right on Payouts.'
+    ]
+  },
   {
     version: 'v162',
     date: '2026-04-26',
