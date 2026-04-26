@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v158';
+const APP_VERSION = 'v159';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v159',
+    date: '2026-04-26',
+    changes: [
+      'Fixed: tapping Resume on one device now correctly takes the other device back to the checkout screen automatically (paused-screen polling was missing)',
+      'Ending a sale no longer wipes the data on the device that ended it — both the originating device and the joined device now land on the dashboard with a clear "Sale ended" banner and a Start New Sale button',
+      'Past sale\'s invoices stay viewable on the dashboard until you tap Start New Sale (so you can review what just happened before moving on)',
+      'Scan Invoice now understands the new pointer QR format — scanning fetches the invoice live from the cloud',
+      'Banner button styling matches the rest of the design system'
+    ]
+  },
   {
     version: 'v158',
     date: '2026-04-26',

@@ -45,7 +45,9 @@ const Dashboard = {
       newCustomerButton: document.getElementById('dashboard-new-customer'),
       consignorRevenue: document.getElementById('consignor-revenue'),
       consignorRevenueList: document.getElementById('consignor-revenue-list'),
-      consignorRevenueMore: document.getElementById('consignor-revenue-more')
+      consignorRevenueMore: document.getElementById('consignor-revenue-more'),
+      endedBanner: document.getElementById('dashboard-ended-banner'),
+      startNewSaleBtn: document.getElementById('dashboard-start-new-sale')
     };
   },
 
@@ -65,6 +67,14 @@ const Dashboard = {
     if (this.elements.consignorRevenueMore) {
       this.elements.consignorRevenueMore.addEventListener('click', () => {
         App.showScreen('payouts');
+      });
+    }
+
+    // "Start New Sale" on the sale-ended banner
+    if (this.elements.startNewSaleBtn) {
+      this.elements.startNewSaleBtn.addEventListener('click', () => {
+        SaleSetup.clearEndedSale();
+        App.showScreen('setup');
       });
     }
 
@@ -146,11 +156,16 @@ const Dashboard = {
     const filtered = this.applyFilter(transactions);
     this.renderTransactionList(filtered, transactions.length);
 
-    // Hide New Invoice button when sale is paused (checkout is locked)
+    // Hide New Invoice button when sale is paused (checkout is locked) or ended
     const sale = Storage.getSale();
-    const isPaused = sale && (sale.status || 'active') === 'paused';
+    const status = sale ? (sale.status || 'active') : 'active';
+    const isPaused = status === 'paused';
+    const isEnded = status === 'ended';
     if (this.elements.newCustomerButton) {
-      this.elements.newCustomerButton.hidden = isPaused;
+      this.elements.newCustomerButton.hidden = isPaused || isEnded;
+    }
+    if (this.elements.endedBanner) {
+      this.elements.endedBanner.hidden = !isEnded;
     }
   },
 

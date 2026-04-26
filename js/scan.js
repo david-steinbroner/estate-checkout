@@ -182,50 +182,79 @@ const Scan = {
   /**
    * Handle successful QR code scan
    */
-  handleScan(rawData) {
+  async handleScan(rawData) {
     // Stop scanning immediately
     this.stop();
 
-    try {
-      let data;
-
-      // Dual-format detection: URL format (new) vs raw JSON (legacy)
-      if (rawData.startsWith('http')) {
-        const url = new URL(rawData);
-        let encoded = url.searchParams.get('d');
-        if (!encoded) throw new Error('Missing d parameter');
-        // Restore standard base64 from URL-safe format
-        encoded = encoded.replace(/-/g, '+').replace(/_/g, '/');
-        while (encoded.length % 4) encoded += '=';
-        const jsonStr = decodeURIComponent(escape(atob(encoded)));
-        data = JSON.parse(jsonStr);
-      } else {
-        data = JSON.parse(rawData);
-      }
-
-      // Validate expected structure
-      if (!data.items || typeof data.total !== 'number') {
-        this.elements.status.textContent = 'Invalid QR code';
-        this.restartTimeout = setTimeout(() => {
-          const scanScreen = document.getElementById('screen-scan');
-          if (scanScreen && scanScreen.classList.contains('active')) {
-            this.start();
-          }
-        }, 1500);
-        return;
-      }
-
-      // Navigate to payment screen with scanned data
-      App.showScreen('payment', data);
-    } catch (error) {
-      console.error('Invalid QR data:', error);
-      this.elements.status.textContent = 'Could not read QR code';
+    const restartAfter = (msg, delay = 1500) => {
+      this.elements.status.textContent = msg;
       this.restartTimeout = setTimeout(() => {
         const scanScreen = document.getElementById('screen-scan');
         if (scanScreen && scanScreen.classList.contains('active')) {
           this.start();
         }
-      }, 1500);
+      }, delay);
+    };
+
+    try {
+      let data;
+
+      if (rawData.startsWith('http')) {
+        const url = new URL(rawData);
+        const pointerId = url.searchParams.get('id');
+        const legacyEncoded = url.searchParams.get('d');
+
+        if (pointerId) {
+          // v158+ pointer QR — fetch live invoice from the backend
+          if (typeof Sync === 'undefined') {
+            restartAfter('Cloud sync not available');
+            return;
+          }
+          this.elements.status.textContent = 'Loading invoice…';
+          let result;
+          try {
+            result = await Sync.fetchInvoice(pointerId);
+          } catch (err) {
+            console.error('[scan] fetchInvoice failed:', err.message);
+            restartAfter('Couldn\'t reach the cloud');
+            return;
+          }
+          // Map backend invoice → the shape the payment screen expects
+          const inv = result.invoice;
+          data = {
+            id: inv.id,
+            customerNumber: inv.customerNumber,
+            orderName: inv.orderName,
+            items: inv.items,
+            subtotal: inv.subtotal,
+            total: inv.total,
+            ticketDiscount: inv.ticketDiscount,
+            saleDay: inv.saleDay,
+            status: inv.status,
+            timestamp: inv.createdAt
+          };
+        } else if (legacyEncoded) {
+          // Legacy base64 payload format
+          let encoded = legacyEncoded.replace(/-/g, '+').replace(/_/g, '/');
+          while (encoded.length % 4) encoded += '=';
+          const jsonStr = decodeURIComponent(escape(atob(encoded)));
+          data = JSON.parse(jsonStr);
+        } else {
+          throw new Error('URL has neither id nor d parameter');
+        }
+      } else {
+        data = JSON.parse(rawData);
+      }
+
+      if (!data.items || typeof data.total !== 'number') {
+        restartAfter('Invalid QR code');
+        return;
+      }
+
+      App.showScreen('payment', data);
+    } catch (error) {
+      console.error('Invalid QR data:', error);
+      restartAfter('Could not read QR code');
     }
   },
 

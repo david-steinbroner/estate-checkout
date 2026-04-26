@@ -270,6 +270,15 @@
 
   <!-- Dashboard Screen -->
   <div id="screen-dashboard" class="screen dashboard-screen">
+    <!-- Sale-ended banner (visible only when sale.status === 'ended') -->
+    <div class="dashboard-ended-banner" id="dashboard-ended-banner" hidden>
+      <div class="dashboard-ended-banner__content">
+        <span class="dashboard-ended-banner__title">Sale ended</span>
+        <span class="dashboard-ended-banner__hint">Review past invoices below, or start fresh.</span>
+      </div>
+      <button class="dashboard-ended-banner__cta" id="dashboard-start-new-sale" type="button">Start New Sale</button>
+    </div>
+
     <!-- Summary Stats -->
     <div class="dashboard-stats">
       <div class="dashboard-stat">

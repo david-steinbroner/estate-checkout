@@ -921,8 +921,11 @@ const App = {
         this.showScreen('checkout');
       }
     } else if (newStatus === 'ended') {
-      alert('This sale was ended on another device. The sale is now closed; you can still view past data from the dashboard.');
-      this.showScreen('setup');
+      // Drop the active cart but keep the sale + transactions for review
+      Storage.clearCart();
+      Storage.clearCustomerCounter();
+      alert('This sale was ended on another device. You can still review past invoices on the dashboard.');
+      this.showScreen('dashboard');
     }
   },
 
@@ -1059,8 +1062,10 @@ const App = {
       this.showScreen('paused');
     } else if (status === 'active') {
       this.showScreen('checkout');
+    } else if (status === 'ended') {
+      // Sale ended — review past invoices on dashboard; banner offers Start New Sale
+      this.showScreen('dashboard');
     } else {
-      // ended or unknown → setup
       this.showScreen('setup');
     }
   },
@@ -1128,6 +1133,13 @@ const App = {
         Payouts.render();
       } else if (screenName === 'paused') {
         this.renderPausedScreen();
+        // Poll on paused too — when another worker resumes, this device should follow
+        const sale = Storage.getSale();
+        if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+          this._stopSyncPoll = Sync.startPolling(sale, 3000, (result) => {
+            if (result.saleStatusChanged) this._handleRemoteSaleStatusChange(result.newStatus);
+          });
+        }
       }
 
     }
@@ -1549,6 +1561,8 @@ const App = {
       this.showScreen('paused');
     } else if (status === 'active') {
       this.showScreen('checkout');
+    } else if (status === 'ended') {
+      this.showScreen('dashboard');
     } else {
       this.showScreen('setup');
     }

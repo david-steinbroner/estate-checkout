@@ -700,20 +700,33 @@ const SaleSetup = {
     }
   },
 
+  /**
+   * Mark the current sale as ended. v159: we no longer clear the sale or
+   * its transactions from local storage — keeping them lets the operator
+   * review past invoices from the dashboard. Cart and customer counter
+   * are still cleared (those are session state, not historical).
+   *
+   * The user starts a fresh sale via "Start New Sale" on the dashboard,
+   * which calls clearEndedSale() to actually drop the old record.
+   */
   endSale() {
     const sale = Storage.getSale();
-    if (sale) {
-      sale.status = 'ended';
-      Storage.saveSale(sale);
-      if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
-        Sync.patchSale(sale.id, sale.shareCode, {
-          status: 'ended',
-          endedAt: Utils.getTimestamp()
-        }).catch(err => console.warn('[sync] endSale failed:', err.message));
-      }
+    if (!sale) return;
+    sale.status = 'ended';
+    sale.endedAt = Utils.getTimestamp();
+    Storage.saveSale(sale);
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchSale(sale.id, sale.shareCode, {
+        status: 'ended',
+        endedAt: sale.endedAt
+      }).catch(err => console.warn('[sync] endSale failed:', err.message));
     }
     Storage.clearCart();
     Storage.clearCustomerCounter();
+  },
+
+  /** Drop the ended sale from local storage so the user can start a fresh one. */
+  clearEndedSale() {
     Storage.clearSale();
   },
 

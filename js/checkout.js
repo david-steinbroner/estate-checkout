@@ -1160,11 +1160,14 @@ const Checkout = {
     this.updatePriceDisplay();
     this.render();
 
-    // Clear storage
+    // Mark sale as ended in storage (does NOT clear sale or transactions —
+    // user can review past invoices on dashboard). Clears cart + counter only.
     SaleSetup.endSale();
 
-    // Navigate to setup
-    App.showScreen('setup');
+    // v159: navigate to dashboard (not setup) so the operator can immediately
+    // review the just-ended sale's invoices. Dashboard shows a "Sale ended"
+    // banner + "Start New Sale" button when sale.status === 'ended'.
+    App.showScreen('dashboard');
 
     this._endingSale = false;
   },
