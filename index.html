@@ -13,21 +13,22 @@
 </head>
 <body>
 
-  <!-- Shared Header (visible during active sale, hidden during setup) -->
+  <!-- Shared Header (visible during active sale, hidden during setup).
+       v161: minimal — global chrome only. Each screen owns its own
+       identity + state context in its content area (per V2 §1.4 archetypes). -->
   <header class="header" id="sale-header" hidden>
-    <div class="header__context">
-      <span class="header__name" id="sale-name">Estate Sale</span>
-      <span class="header__dot">·</span>
-      <span class="header__day" id="sale-day">Day 1</span>
-      <span class="header__dot">·</span>
-      <span class="header__discount header__discount--none" id="discount-badge">No discount</span>
-      <span class="header__shared-badge" id="shared-badge" hidden>Shared</span>
+    <div class="header__spacer"></div>
+    <div class="header__right">
+      <span class="header__shared-badge" id="shared-badge" hidden>SHARED</span>
+      <button class="header__menu-btn" id="nav-menu" aria-label="Menu">☰</button>
     </div>
-    <button class="header__menu-btn" id="nav-menu" aria-label="Menu">☰</button>
   </header>
 
   <!-- Checkout Pad Screen -->
   <div id="screen-checkout" class="screen checkout-pad">
+    <!-- Per-screen meta line (V2 v161: replaces the busy global header) -->
+    <div class="screen-meta" id="checkout-meta"></div>
+
     <!-- Running Total -->
     <div class="running-total" id="running-total-bar">
       <span class="running-total__info" id="running-total-info"></span>
@@ -55,13 +56,17 @@
 
   <!-- QR Handoff Screen — V2 §1.4.E Confirmation archetype -->
   <div id="screen-qr" class="screen qr-screen">
+    <!-- Order title (v161 — Option A: order # is what people will reference) -->
+    <h1 class="qr-title" id="qr-order-title">Order #1</h1>
+
     <!-- Hero: QR code -->
     <div class="qr-hero">
       <div id="qr-code" class="qr-code"></div>
     </div>
 
-    <!-- Instruction (explicit copy per V2) -->
-    <p class="qr-instruction" id="qr-helper-text">Hand this phone to your payment worker</p>
+    <!-- Instruction (v161: customer-only — workers use dashboard instead) -->
+    <p class="qr-instruction" id="qr-helper-text">Customer scans to keep their ticket</p>
+    <p class="qr-subinstruction">Any worker can mark it paid from the dashboard.</p>
 
     <!-- Context summary -->
     <div class="qr-summary">
@@ -74,7 +79,7 @@
 
     <!-- Actions -->
     <div class="qr-actions">
-      <button type="button" class="qr-action-primary" id="qr-mark-paid">Mark paid without scanning</button>
+      <button type="button" class="qr-action-primary" id="qr-mark-paid">Mark paid now</button>
       <div class="qr-action-row">
         <button type="button" class="qr-action-link" id="qr-edit">Edit invoice</button>
         <span class="qr-action-sep" aria-hidden="true">·</span>
@@ -270,6 +275,12 @@
 
   <!-- Dashboard Screen -->
   <div id="screen-dashboard" class="screen dashboard-screen">
+    <!-- Large Title (Apple Mail / iOS Settings pattern, v161) -->
+    <div class="dashboard-title-block">
+      <h1 class="dashboard-large-title" id="dashboard-large-title">Sale</h1>
+      <p class="dashboard-large-subtitle" id="dashboard-large-subtitle"></p>
+    </div>
+
     <!-- Sale-ended banner (visible only when sale.status === 'ended') -->
     <div class="dashboard-ended-banner" id="dashboard-ended-banner" hidden>
       <div class="dashboard-ended-banner__content">
@@ -469,6 +480,13 @@
   <!-- Header Menu Sheet — V2 §1.4.G Grouped List Card pattern -->
   <div class="overlay" id="header-menu-modal">
     <div class="sheet sheet--menu">
+      <!-- Sale identity block — visible at top of menu (v161: replaces what was
+           in the global header so users can confirm "what sale am I in?") -->
+      <div class="ec-menu-saleblock" id="menu-sale-block">
+        <span class="ec-menu-saleblock__name" id="menu-sale-name">Sale</span>
+        <span class="ec-menu-saleblock__meta" id="menu-sale-meta"></span>
+      </div>
+
       <!-- Navigation card -->
       <ul class="ec-menu-list">
         <li class="ec-menu-item" id="menu-dashboard" tabindex="0" role="button">

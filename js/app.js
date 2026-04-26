@@ -33,9 +33,9 @@ const App = {
   cacheHeaderElements() {
     this.headerElements = {
       header: document.getElementById('sale-header'),
-      saleName: document.getElementById('sale-name'),
-      saleDay: document.getElementById('sale-day'),
-      discountBadge: document.getElementById('discount-badge'),
+      // v161: sale-name / sale-day / discount-badge removed from header.
+      // Identity + state context now live per-screen (dashboard large title,
+      // checkout meta line, menu sale block).
       sharedBadge: document.getElementById('shared-badge'),
       menuBtn: document.getElementById('nav-menu'),
       // Header menu sheet
@@ -1242,7 +1242,11 @@ const App = {
   },
 
   /**
-   * Update header content with sale info
+   * v161: header is now minimal — only the SHARED chip is dynamic.
+   * Per-screen identity + state context lives in each screen's content.
+   * The menu sheet's saleblock and the dashboard large title use the same
+   * data; both refresh from updateHeader so any sale-state change updates
+   * everywhere at once.
    */
   updateHeaderContent(sale) {
     if (!sale) return;
@@ -1251,30 +1255,36 @@ const App = {
     const dayNumber = Utils.getSaleDay(sale.startDate, sale);
     const discount = Utils.getDiscountForDay(sale, dayNumber);
 
-    if (this.headerElements.saleName) {
-      this.headerElements.saleName.textContent = sale.name;
-    }
-    if (this.headerElements.saleDay) {
-      if (status === 'paused') {
-        this.headerElements.saleDay.textContent = `Day ${dayNumber} — Paused`;
-      } else {
-        this.headerElements.saleDay.textContent = `Day ${dayNumber}`;
-      }
-    }
-    if (this.headerElements.discountBadge) {
-      if (discount > 0) {
-        this.headerElements.discountBadge.textContent = `${discount}% off`;
-        this.headerElements.discountBadge.classList.remove('header__discount--none');
-      } else {
-        this.headerElements.discountBadge.textContent = 'No discount';
-        this.headerElements.discountBadge.classList.add('header__discount--none');
-      }
-    }
-
-    // Shared badge
+    // SHARED chip in the global header
     if (this.headerElements.sharedBadge) {
       this.headerElements.sharedBadge.hidden = !sale.isShared;
     }
+
+    // Build the human-readable meta string used in multiple places.
+    // Skip "No discount" when zero — confirms the obvious, takes up space.
+    const metaParts = [];
+    if (status === 'paused') {
+      metaParts.push(`Day ${dayNumber} — Paused`);
+    } else if (status === 'ended') {
+      metaParts.push(`Day ${dayNumber}`);
+    } else {
+      metaParts.push(`Day ${dayNumber}`);
+    }
+    if (discount > 0) metaParts.push(`${discount}% off`);
+    if (sale.isShared) metaParts.push('SHARED');
+    const metaText = metaParts.join(' · ');
+
+    // Menu sheet sale block
+    const menuSaleName = document.getElementById('menu-sale-name');
+    const menuSaleMeta = document.getElementById('menu-sale-meta');
+    if (menuSaleName) menuSaleName.textContent = sale.name || 'Sale';
+    if (menuSaleMeta) menuSaleMeta.textContent = metaText;
+
+    // Dashboard large title block
+    const dashTitle = document.getElementById('dashboard-large-title');
+    const dashSubtitle = document.getElementById('dashboard-large-subtitle');
+    if (dashTitle) dashTitle.textContent = sale.name || 'Sale';
+    if (dashSubtitle) dashSubtitle.textContent = metaText;
   },
 
 

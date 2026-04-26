@@ -154,10 +154,19 @@ const QR = {
     this.transaction = transaction;
     const sale = Storage.getSale();
 
-    // Update QR helper text
+    // v161: Order # title (canonical identifier — customer + worker reference it)
+    const titleEl = document.getElementById('qr-order-title');
+    if (titleEl) {
+      const num = transaction.customerNumber || '?';
+      titleEl.textContent = transaction.orderName
+        ? transaction.orderName
+        : `Order #${num}`;
+    }
+
+    // v161: customer-focused instruction (workers use dashboard, not scanning)
     const helperEl = document.getElementById('qr-helper-text');
     if (helperEl) {
-      helperEl.textContent = 'Hand this phone to your payment worker';
+      helperEl.textContent = 'Customer scans to keep their ticket';
     }
 
     // Render item summary and total first (these should always work)

@@ -773,6 +773,28 @@ const Checkout = {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
     const total = Utils.applyTicketDiscount(subtotal, this.ticketDiscount);
     this.elements.runningTotal.textContent = Utils.formatCurrency(total);
+    this._renderCheckoutMeta();
+  },
+
+  /**
+   * Render the per-screen meta line above the running total (v161).
+   * Format: "Day 1 · No discount-omitted-when-zero · 2 items"
+   */
+  _renderCheckoutMeta() {
+    const meta = document.getElementById('checkout-meta');
+    if (!meta) return;
+    const sale = this.sale || Storage.getSale();
+    if (!sale) {
+      meta.textContent = '';
+      return;
+    }
+    const dayNumber = Utils.getSaleDay(sale.startDate, sale);
+    const discount = Utils.getDiscountForDay(sale, dayNumber);
+    const parts = [`Day ${dayNumber}`];
+    if (discount > 0) parts.push(`${discount}% off`);
+    const itemCount = this.items.length;
+    if (itemCount > 0) parts.push(`${itemCount} item${itemCount !== 1 ? 's' : ''}`);
+    meta.textContent = parts.join(' · ');
   },
 
   /**

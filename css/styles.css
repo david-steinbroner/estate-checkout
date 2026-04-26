@@ -211,91 +211,136 @@ body {
   position: relative;
 }
 
-/* === Header (context strip + button bar) === */
+/* === Header (v161: minimal — global chrome only) ===
+ * Per V2 §1.4 archetypes, each screen owns its own identity + state context
+ * in its content area. The header is just the menu access point + a SHARED
+ * indicator chip for joined sales.
+ */
 .header {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
   flex-shrink: 0;
+  padding: 0 var(--space-lg);
 }
 
-/* Context strip - sale info (true-centered across full header width) */
-.header__context {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--height-header-context);
+.header__spacer {
+  flex: 1;
+}
+
+.header__right {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-sm);
-  padding: 0  56px;
-  pointer-events: none;
-}
-
-.header__name {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-}
-
-.header__dot {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-base);
-}
-
-.header__day {
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-.header__discount {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-success);
-  white-space: nowrap;
-}
-
-.header__discount--none {
-  color: var(--color-text-secondary);
 }
 
 .header__shared-badge {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
-  background: var(--color-primary-light);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  text-transform: uppercase;
+  background: var(--color-primary-tint);
+  padding: 3px var(--space-sm);
+  border-radius: var(--radius-pill);
   letter-spacing: 0.04em;
 }
 
-/* Header menu button */
+.header__shared-badge[hidden] {
+  display: none;
+}
+
 .header__menu-btn {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   color: var(--color-text);
   background: none;
   border: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  border-radius: 50%;
+  transition: background var(--duration-fast, 150ms) ease;
 }
 
 .header__menu-btn:active {
-  opacity: 0.6;
+  background: var(--color-surface-tinted);
+}
+
+/* === Per-screen meta line (v161: replaces header context) === */
+.screen-meta {
+  flex-shrink: 0;
+  padding: var(--space-md) var(--space-lg) 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+.screen-meta:empty {
+  display: none;
+}
+
+/* === Dashboard Large Title (v161: Apple Mail / iOS Settings pattern) === */
+.dashboard-title-block {
+  padding: var(--space-md) var(--space-lg) 0;
+  flex-shrink: 0;
+}
+
+.dashboard-large-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-large-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.dashboard-large-subtitle:empty {
+  display: none;
+}
+
+/* === Menu sheet sale identity block (v161) === */
+.ec-menu-saleblock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-sm) var(--space-lg) var(--space-md);
+}
+
+.ec-menu-saleblock__name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ec-menu-saleblock__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.ec-menu-saleblock__meta:empty {
+  display: none;
 }
 
 /* === Running Total (V2: Hero Number per §1.4.B Detail archetype) === */
@@ -3310,17 +3355,29 @@ body {
   line-height: var(--line-height-normal);
 }
 
-/* === QR Handoff Screen === */
 /* === QR Handoff Screen (V2 §1.4.E Confirmation archetype) === */
 .qr-screen {
   background: var(--color-bg);
+}
+
+/* Order title (v161 — "Order #N" is the customer/worker shared identifier) */
+.qr-title {
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  padding: var(--space-lg) var(--space-lg) 0;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .qr-hero {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  padding: var(--space-lg) var(--space-lg);
   background: var(--color-bg);
   flex-shrink: 0;
 }
@@ -3337,13 +3394,23 @@ body {
   display: block;
 }
 
+.qr-subinstruction {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-xl);
+  margin: 0 0 var(--space-xl) 0;
+  letter-spacing: 0.01em;
+  line-height: var(--line-height-default);
+}
+
 .qr-instruction {
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   padding: 0 var(--space-xl);
-  margin: 0 0 var(--space-xl) 0;
+  margin: 0 0 var(--space-xs) 0;
   letter-spacing: -0.01em;
   line-height: var(--line-height-tight);
 }

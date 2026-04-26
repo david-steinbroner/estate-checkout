@@ -4,9 +4,20 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v160';
+const APP_VERSION = 'v161';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v161',
+    date: '2026-04-26',
+    changes: [
+      'Top header is now minimal — just the menu button (and a SHARED chip when multiple devices are joined). No more cramped "Sale name · Day 1 · No discount" line that was getting truncated.',
+      'Each screen now shows its own context where it makes sense: Checkout has a small "Day 1 · 2 items" line above the running total; Dashboard now has a big iOS-style title with the sale name and day/discount underneath.',
+      '"No discount" is hidden when the discount is zero (less noise)',
+      'Sale name now shows at the top of the menu sheet so you can confirm which sale you\'re in',
+      'QR handoff screen: title is now "Order #N", instruction reads "Customer scans to keep their ticket", and the primary action is "Mark paid now" instead of "Mark paid without scanning" — reflects that workers no longer scan each other\'s QRs (they use the dashboard)'
+    ]
+  },
   {
     version: 'v160',
     date: '2026-04-26',
