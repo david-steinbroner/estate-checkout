@@ -558,19 +558,33 @@ const SaleSetup = {
   /**
    * Start a new sale
    */
-  startSale() {
+  async startSale() {
     if (!this.validateForm()) return;
 
     const name = this.elements.saleNameInput.value.trim();
     const startDate = this._getStartDate();
     const endDate = this._getEndDate();
 
-    const sale = this.createSale({
-      name: name,
-      startDate: startDate,
-      endDate: endDate,
-      discounts: this._buildDiscountsObject()
-    });
+    // Disable the button briefly while the backend assigns a share code
+    const btn = document.getElementById('start-sale-button');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Starting…';
+    }
+
+    try {
+      await this.createSale({
+        name: name,
+        startDate: startDate,
+        endDate: endDate,
+        discounts: this._buildDiscountsObject()
+      });
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Start Sale';
+      }
+    }
 
     App.showScreen('checkout');
   },
@@ -578,13 +592,16 @@ const SaleSetup = {
   /**
    * Create a new sale and save to storage.
    *
+   * Returns a Promise that resolves once the backend has assigned a share
+   * code (or once it's clear the network is down and the sale is local-only).
+   * Awaiting this guarantees that anyone reading sale.shareCode after this
+   * resolves gets the canonical server code, not a stale local fabrication.
+   *
    * If config carries `_synced: true` and an `id`/`shareCode`, the caller
    * (e.g. confirmJoinSale) has already validated the remote sale — we just
-   * mirror it locally. Otherwise we attempt a backend create and adopt the
-   * server-assigned id + shareCode. If the network call fails, the sale is
-   * saved local-only (legacy mode).
+   * mirror it locally and skip the backend round-trip.
    */
-  createSale(config) {
+  async createSale(config) {
     const sale = {
       id: config.id || Utils.generateId(),
       name: config.name,
@@ -604,50 +621,46 @@ const SaleSetup = {
 
     Storage.saveSale(sale);
 
-    // If not already synced (i.e. this is a brand-new sale, not a join), push
-    // to the backend. We do this fire-and-forget; on success we adopt the
-    // server-assigned id + shareCode and re-save.
+    // For brand-new sales (not joins), push to the backend BEFORE returning.
+    // This ensures sale.shareCode is the server-assigned code by the time the
+    // caller proceeds — closing the v156 race where Share Sale could fire
+    // before the backend response arrived.
     if (!sale._synced && typeof Sync !== 'undefined') {
-      Sync.createSale({
-        name: sale.name,
-        startDate: sale.startDate,
-        endDate: sale.endDate,
-        discounts: sale.discounts,
-        consignors: sale.consignors,
-        maxDiscountPercent: sale.maxDiscountPercent,
-        status: sale.status
-      }).then(remote => {
-        // Adopt server id + share code, mark as synced
-        const current = Storage.getSale();
-        if (!current) return;
-        current.id = remote.id;
-        current.shareCode = remote.shareCode;
-        current._synced = true;
-        Storage.saveSale(current);
-      }).catch(err => {
+      try {
+        const remote = await Sync.createSale({
+          name: sale.name,
+          startDate: sale.startDate,
+          endDate: sale.endDate,
+          discounts: sale.discounts,
+          consignors: sale.consignors,
+          maxDiscountPercent: sale.maxDiscountPercent,
+          status: sale.status
+        });
+        sale.id = remote.id;
+        sale.shareCode = remote.shareCode;
+        sale._synced = true;
+        Storage.saveSale(sale);
+        console.log('[sync] sale created on backend:', remote.id, 'code:', remote.shareCode);
+      } catch (err) {
         console.warn('[sync] createSale failed — sale saved local-only:', err.message);
-      });
+        // Local-only fallback. Sharing won't work until network returns;
+        // openShareSaleSheet will surface this state to the user.
+      }
     }
 
     return sale;
   },
 
   /**
-   * Generate a share code for the current sale
+   * Return the server-assigned share code for this sale.
+   * Returns null if the sale was created offline and never synced — caller
+   * (openShareSaleSheet) shows a "couldn't reach the cloud" state in that case.
+   *
+   * Legacy local-fallback code generation has been removed (v157): there's
+   * exactly one source of share codes now, the backend.
    */
-  generateShareCode(sale) {
-    if (sale.shareCode) return sale.shareCode;
-
-    const prefix = (sale.name || '').replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || 'EST';
-    const suffix = String(Math.floor(1000 + Math.random() * 9000));
-    const code = `${prefix}-${suffix}`;
-
-    sale.shareCode = code;
-    sale.isShared = true;
-    sale.sharedAt = sale.sharedAt || Utils.getTimestamp();
-    Storage.saveSale(sale);
-
-    return code;
+  getShareCode(sale) {
+    return sale && sale.shareCode ? sale.shareCode : null;
   },
 
   getShareData(sale) {

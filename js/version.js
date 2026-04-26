@@ -4,9 +4,19 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v156';
+const APP_VERSION = 'v157';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v157',
+    date: '2026-04-26',
+    changes: [
+      'Fixed: cloud sync between joined devices was silently broken because the share code was generated locally before the cloud responded. Now Start Sale waits for the cloud to assign the share code before it returns.',
+      'Removed the legacy local-only share-code fallback — there\'s exactly one source of share codes now (the cloud).',
+      'Share QR now contains just the share code instead of the full sale data — phone fetches the latest config from the cloud on join.',
+      'If you\'re offline when starting a sale, the Share Sale screen now clearly says "Sharing requires internet" instead of generating a fake code.'
+    ]
+  },
   {
     version: 'v156',
     date: '2026-04-26',

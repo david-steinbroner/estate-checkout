@@ -1198,29 +1198,69 @@ const App = {
   // ── Share Sale ──
 
   /**
-   * Open the share sale sheet with QR code and sale code
+   * Open the share sale sheet with QR code and sale code.
+   *
+   * v157: only the server-assigned share code is used. If the sale was
+   * created offline and never synced, we attempt one more sync.createSale
+   * here; if that fails too, we surface "Sharing requires internet" so the
+   * user knows why nothing's appearing.
    */
-  openShareSaleSheet() {
+  async openShareSaleSheet() {
     const sale = Storage.getSale();
     if (!sale) return;
 
-    // Generate share code (persists on first call)
-    const code = SaleSetup.generateShareCode(sale);
+    this.headerElements.shareSaleModal.classList.add('visible');
+
+    let code = SaleSetup.getShareCode(sale);
+
+    // If we don't have a server share code yet (sale was created offline),
+    // try to sync now before giving up.
+    if (!code && typeof Sync !== 'undefined') {
+      this.headerElements.shareSaleCode.textContent = 'Connecting…';
+      try {
+        const remote = await Sync.createSale({
+          name: sale.name,
+          startDate: sale.startDate,
+          endDate: sale.endDate,
+          discounts: sale.discounts,
+          consignors: sale.consignors,
+          maxDiscountPercent: sale.maxDiscountPercent,
+          status: sale.status
+        });
+        sale.id = remote.id;
+        sale.shareCode = remote.shareCode;
+        sale._synced = true;
+        Storage.saveSale(sale);
+        code = remote.shareCode;
+      } catch (err) {
+        console.warn('[sync] openShareSaleSheet retry failed:', err.message);
+        this.headerElements.shareSaleCode.textContent = 'Offline';
+        this.headerElements.shareSaleQr.innerHTML = '<p style="font-size:13px;color:var(--color-text-secondary);text-align:center;padding:var(--space-lg)">Sharing requires internet. Try again once you\'re online.</p>';
+        return;
+      }
+    }
+
+    if (!code) {
+      this.headerElements.shareSaleCode.textContent = 'Offline';
+      this.headerElements.shareSaleQr.innerHTML = '<p style="font-size:13px;color:var(--color-text-secondary);text-align:center;padding:var(--space-lg)">Sharing requires internet. Try again once you\'re online.</p>';
+      return;
+    }
+
     this.headerElements.shareSaleCode.textContent = code;
 
-    // Update shared badge since we just set isShared
+    // Mark this sale as shared
+    sale.isShared = true;
+    sale.sharedAt = sale.sharedAt || Utils.getTimestamp();
+    Storage.saveSale(sale);
+
     if (this.headerElements.sharedBadge) {
       this.headerElements.sharedBadge.hidden = false;
     }
 
-    // Generate QR code with share URL
-    const shareData = SaleSetup.getShareData(sale);
-    const jsonStr = JSON.stringify(shareData);
-    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-    const urlSafe = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const shareUrl = window.location.origin + '/?join=' + urlSafe;
+    // QR encodes a clean URL with just the share code — phone fetches the
+    // full sale config from the backend on join.
+    const shareUrl = window.location.origin + '/?join=' + encodeURIComponent(code);
 
-    // Render QR
     this.headerElements.shareSaleQr.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
       new QRCode(this.headerElements.shareSaleQr, {
@@ -1232,8 +1272,6 @@ const App = {
         correctLevel: QRCode.CorrectLevel.M
       });
     }
-
-    this.headerElements.shareSaleModal.classList.add('visible');
   },
 
   /**
@@ -1246,39 +1284,78 @@ const App = {
   // ── Join Sale ──
 
   /**
-   * Handle a ?join= URL parameter
+   * Handle a ?join= URL parameter.
+   *
+   * Two formats supported:
+   *  - v157+: just the 6-char share code (e.g. ?join=ABC123). Full sale
+   *    config is fetched from the backend in confirmJoinSale.
+   *  - Legacy: base64-encoded JSON with name/startDate/discounts/shareCode.
+   *    Kept for backwards compat with invite links from before v157.
    */
   handleJoinUrl(encoded) {
-    try {
-      // Restore standard base64 from URL-safe format
-      let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-      while (b64.length % 4) b64 += '=';
-      const jsonStr = decodeURIComponent(escape(atob(b64)));
-      const data = JSON.parse(jsonStr);
+    let data;
 
-      if (!data.name || !data.startDate || !data.discounts) {
-        console.error('Invalid join data');
+    // Detect format: short alphanumeric → new style; everything else → legacy base64
+    const isShortCode = /^[A-Z0-9]{4,12}$/.test(encoded);
+
+    if (isShortCode) {
+      data = { shareCode: encoded };
+    } else {
+      try {
+        let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const jsonStr = decodeURIComponent(escape(atob(b64)));
+        data = JSON.parse(jsonStr);
+
+        if (!data.name || !data.startDate || !data.discounts) {
+          console.error('Invalid join data');
+          this.cleanJoinUrl();
+          this.routeWithoutJoin();
+          return;
+        }
+      } catch (err) {
+        console.error('Could not parse join URL:', err.message);
         this.cleanJoinUrl();
         this.routeWithoutJoin();
         return;
       }
+    }
 
-      this.pendingJoinData = data;
+    this.pendingJoinData = data;
 
-      // Show the right screen behind the modal
-      const sale = Storage.getSale();
-      if (sale) {
-        this.showScreen('checkout');
-      } else {
-        this.showScreen('setup');
-      }
+    // Show the right screen behind the modal
+    const sale = Storage.getSale();
+    if (sale) {
+      this.showScreen('checkout');
+    } else {
+      this.showScreen('setup');
+    }
 
-      // Show join confirmation
+    // Show join confirmation. For shortcode-only data, fetch the sale config
+    // first so we can show the user the sale name and day/discount. For legacy
+    // data, the config is already in the URL.
+    if (isShortCode && typeof Sync !== 'undefined') {
+      Sync.fetchSaleByCode(data.shareCode).then(remote => {
+        // Enrich the pendingJoinData so confirmJoinSale doesn't have to refetch
+        this.pendingJoinData = {
+          shareCode: remote.shareCode,
+          name: remote.name,
+          startDate: remote.startDate,
+          endDate: remote.endDate,
+          discounts: remote.discounts,
+          consignors: remote.consignors,
+          maxDiscountPercent: remote.maxDiscountPercent,
+          _remote: remote
+        };
+        this.showJoinConfirmation(this.pendingJoinData, !!sale);
+      }).catch(err => {
+        console.error('[sync] fetchSaleByCode failed:', err.message);
+        this.cleanJoinUrl();
+        this.routeWithoutJoin();
+        alert('Couldn\'t find that sale. The code may be wrong or the sale may have ended.');
+      });
+    } else {
       this.showJoinConfirmation(data, !!sale);
-    } catch (e) {
-      console.error('Failed to parse join data:', e);
-      this.cleanJoinUrl();
-      this.routeWithoutJoin();
     }
   },
 
@@ -1329,7 +1406,7 @@ const App = {
 
     if (saleConfig) {
       // Server-backed: use the canonical config and mark the local sale as synced
-      SaleSetup.createSale({
+      await SaleSetup.createSale({
         id: saleConfig.id,
         name: saleConfig.name,
         startDate: saleConfig.startDate,
@@ -1344,7 +1421,7 @@ const App = {
       });
     } else {
       // Fallback: legacy in-URL config (pre-v156 invite links)
-      SaleSetup.createSale({
+      await SaleSetup.createSale({
         name: data.name,
         startDate: data.startDate,
         discounts: data.discounts,
