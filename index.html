@@ -112,55 +112,18 @@
         </div>
       </div>
 
-      <!-- Start Date -->
+      <!-- Sale Days (v164: replaces separate Start Date + End Date + Schedule).
+           The schedule IS the sale — Day 1 = today, "+ Add Day" appends next
+           consecutive day, tap any day's date to change it inline. -->
       <div class="setup-section">
-        <span class="setup-section__header">Start Date</span>
-        <div class="setup-card">
-          <label class="setup-card__row setup-card__row--toggle">
-            <span class="setup-card__label">Starts today</span>
-            <input type="checkbox" id="setup-today-checkbox" checked>
-          </label>
-          <div class="setup-card__row setup-card__row--input">
-            <input
-              type="date"
-              id="setup-start-date"
-              class="setup-section__input"
-            >
-          </div>
-        </div>
-        <p class="setup-section__error" id="start-date-error" hidden></p>
-      </div>
-
-      <!-- End Date -->
-      <div class="setup-section">
-        <span class="setup-section__header">End Date</span>
-        <div class="setup-card">
-          <label class="setup-card__row setup-card__row--toggle">
-            <span class="setup-card__label">TBD</span>
-            <input type="checkbox" id="setup-tbd-checkbox">
-          </label>
-          <div class="setup-card__row setup-card__row--input">
-            <input
-              type="date"
-              id="setup-end-date"
-              class="setup-section__input"
-            >
-          </div>
-        </div>
-        <p class="setup-section__error" id="end-date-error" hidden></p>
-      </div>
-
-      <!-- Schedule -->
-      <div class="setup-section">
-        <span class="setup-section__header">Schedule</span>
+        <span class="setup-section__header">Sale Days</span>
         <div class="setup-card">
           <div class="discount-list" id="discount-list">
-            <!-- Discount rows added by JS -->
+            <!-- Day rows rendered by JS (renderDiscountList) -->
           </div>
-          <span class="setup-card__row setup-card__row--action" id="add-day-button">
+          <button class="setup-card__row setup-card__row--action" id="add-day-button" type="button">
             <span class="setup-card__action-label">+ Add Day</span>
-            <input type="date" id="setup-day-date-picker" class="setup-hidden-input">
-          </span>
+          </button>
         </div>
         <p class="setup-section__error" id="schedule-error" hidden></p>
       </div>

@@ -29,13 +29,11 @@ const SaleSetup = {
    * Cache DOM element references
    */
   cacheElements() {
+    // v164: Start Date / End Date sections + their inputs/checkboxes are gone.
+    // The schedule (scheduleDays) is the canonical source.
     this.elements = {
       saleNameInput: document.getElementById('setup-sale-name'),
-      startDateInput: document.getElementById('setup-start-date'),
-      todayCheckbox: document.getElementById('setup-today-checkbox'),
-      tbdCheckbox: document.getElementById('setup-tbd-checkbox'),
-      endDateInput: document.getElementById('setup-end-date'),
-      dayDatePicker: document.getElementById('setup-day-date-picker'),
+      addDayButton: document.getElementById('add-day-button'),
       discountList: document.getElementById('discount-list'),
       dashboardButton: document.getElementById('setup-dashboard-button'),
       startSaleButton: document.getElementById('start-sale-button')
@@ -48,9 +46,6 @@ const SaleSetup = {
   _initDefaultState() {
     const today = this._todayString();
     this.scheduleDays = [{ date: today, discount: 0 }];
-    this.elements.startDateInput.value = today;
-    this._updateStartDateState();
-    this._syncEndDate();
     this.renderDiscountList();
     this.validateForm();
   },
@@ -59,24 +54,16 @@ const SaleSetup = {
    * Bind event listeners
    */
   bindEvents() {
-    // "+ Add" date picker — overlay input inside the button, fires on native tap
-    this.elements.dayDatePicker.addEventListener('change', () => {
-      const date = this.elements.dayDatePicker.value;
-      this.elements.dayDatePicker.value = '';
-      if (!date) return;
-      // Duplicate check
-      if (this.scheduleDays.some(d => d.date === date)) {
-        this._showDateError('schedule-error', 'Day already exists. Select a different date.');
-        return;
-      }
-      this.scheduleDays.push({ date, discount: 0 });
+    // "+ Add Day" — appends the next consecutive day with no discount.
+    // User can tap the new day's date inline to change it if they want a gap.
+    this.elements.addDayButton.addEventListener('click', () => {
+      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
+      const lastDate = lastDay ? lastDay.date : this._todayString();
+      const nextDate = this._addOneDay(lastDate);
+      // Skip if duplicate (extremely unlikely with consecutive logic)
+      if (this.scheduleDays.some(d => d.date === nextDate)) return;
+      this.scheduleDays.push({ date: nextDate, discount: 0 });
       this._sortAndRenumber();
-      // If TBD was checked, uncheck it — user explicitly added a day
-      if (this.elements.tbdCheckbox.checked) {
-        this.elements.tbdCheckbox.checked = false;
-      }
-      this._syncEndDate();
-      this._syncStartDate();
       this.renderDiscountList();
       this.validateForm();
     });
@@ -104,64 +91,6 @@ const SaleSetup = {
       App.showScreen('dashboard', 'setup');
     });
 
-    // "Starts today" checkbox
-    this.elements.todayCheckbox.addEventListener('change', () => {
-      const checked = this.elements.todayCheckbox.checked;
-      if (checked) {
-        this._setStartDate(this._todayString());
-      }
-      this._updateStartDateState();
-      this.validateForm();
-    });
-
-    // Start date input change
-    this.elements.startDateInput.addEventListener('change', () => {
-      if (this._syncing) return;
-      const newDate = this.elements.startDateInput.value;
-      if (!newDate) return;
-      const endDate = this._getEndDate();
-      if (endDate && newDate > endDate) {
-        this._showDateError('start-date-error', 'Start date must be before end date.');
-        this.elements.startDateInput.value = this.scheduleDays[0]?.date || this._todayString();
-        return;
-      }
-      this._setStartDate(newDate);
-      this.validateForm();
-    });
-
-    // TBD checkbox
-    this.elements.tbdCheckbox.addEventListener('change', () => {
-      this._syncEndDate();
-      this.validateForm();
-    });
-
-    // End date change — add new last day if after all existing days, otherwise reset
-    this.elements.endDateInput.addEventListener('change', () => {
-      if (this._syncing) return;
-      const date = this.elements.endDateInput.value;
-      if (!date || this.elements.tbdCheckbox.checked) return;
-
-      const startDate = this._getStartDate();
-      if (date < startDate) {
-        this._showDateError('end-date-error', 'End date must be after start date.');
-        this._syncEndDate();
-        return;
-      }
-
-      const lastDay = this.scheduleDays[this.scheduleDays.length - 1];
-      // Only add a new row if date is after all existing days and not a duplicate
-      if (date > lastDay.date && !this.scheduleDays.some(d => d.date === date)) {
-        this.scheduleDays.push({ date, discount: 0 });
-        this._sortAndRenumber();
-        this._syncEndDate();
-        this.renderDiscountList();
-        this.validateForm();
-        return;
-      }
-      // Otherwise silently reset to match the schedule
-      this._syncEndDate();
-    });
-
     // Add consignor button on setup
     const addConsignorBtn = document.getElementById('setup-add-consignor');
     if (addConsignorBtn) {
@@ -170,77 +99,25 @@ const SaleSetup = {
   },
 
   /**
-   * Set the start date — updates Day 1 in schedule
+   * Return the YYYY-MM-DD string for `dateStr` plus one day.
    */
-  _setStartDate(newDate) {
-    this.elements.startDateInput.value = newDate;
-
-    if (this.scheduleDays.length > 0) {
-      // Update the earliest day's date
-      this._sortAndRenumber();
-      this.scheduleDays[0].date = newDate;
-      this._sortAndRenumber();
-      this._syncEndDate();
-      this.renderDiscountList();
-    }
+  _addOneDay(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + 1);
+    const yyyy = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   },
 
   /**
-   * Sync start date field to match Day 1
-   */
-  _syncStartDate() {
-    if (this.scheduleDays.length === 0) return;
-    this._syncing = true;
-    const day1Date = this.scheduleDays[0].date;
-    this.elements.startDateInput.value = day1Date;
-    this._syncing = false;
-
-    // If "Starts today" is checked but Day 1 is not today, uncheck it
-    if (this.elements.todayCheckbox.checked && day1Date !== this._todayString()) {
-      this.elements.todayCheckbox.checked = false;
-      this._updateStartDateState();
-    }
-  },
-
-  /**
-   * Sync end date field to match last schedule day
-   */
-  _syncEndDate() {
-    this._syncing = true;
-    if (this.elements.tbdCheckbox.checked) {
-      this.elements.endDateInput.value = '';
-      this._syncing = false;
-      return;
-    }
-
-    if (this.scheduleDays.length === 0) {
-      this._syncing = false;
-      return;
-    }
-    const lastDate = this.scheduleDays[this.scheduleDays.length - 1].date;
-    this.elements.endDateInput.value = lastDate;
-    this._syncing = false;
-  },
-
-  /**
-   * Sort schedule days chronologically and renumber
+   * v164: _setStartDate / _syncStartDate / _syncEndDate / _updateStartDateState
+   * removed — there are no more separate start/end inputs to keep in sync.
+   * The schedule (scheduleDays) is the single source of truth.
    */
   _sortAndRenumber() {
     this.scheduleDays.sort((a, b) => a.date.localeCompare(b.date));
-  },
-
-  /**
-   * Update start date input readonly state
-   */
-  _updateStartDateState() {
-    const checked = this.elements.todayCheckbox.checked;
-    if (checked) {
-      this.elements.startDateInput.classList.add('setup-section__input--readonly');
-      this.elements.startDateInput.setAttribute('tabindex', '-1');
-    } else {
-      this.elements.startDateInput.classList.remove('setup-section__input--readonly');
-      this.elements.startDateInput.removeAttribute('tabindex');
-    }
   },
 
   /**
@@ -341,8 +218,6 @@ const SaleSetup = {
         }
         this.scheduleDays[idx].date = newDate;
         this._sortAndRenumber();
-        this._syncEndDate();
-        this._syncStartDate();
         this.renderDiscountList();
         this.validateForm();
       });
@@ -417,8 +292,6 @@ const SaleSetup = {
   _deleteDay(index) {
     if (this.scheduleDays.length <= 1) return;
     this.scheduleDays.splice(index, 1);
-    this._syncEndDate();
-    this._syncStartDate();
     this.renderDiscountList();
     this.validateForm();
   },
@@ -462,26 +335,25 @@ const SaleSetup = {
    * Get the effective start date string
    */
   _getStartDate() {
-    if (this.elements.todayCheckbox.checked) return this._todayString();
-    return this.elements.startDateInput.value;
+    return this.scheduleDays.length > 0 ? this.scheduleDays[0].date : this._todayString();
   },
 
   /**
-   * Get effective end date string or null if TBD
+   * Get effective end date string. v164: always derived from the last
+   * schedule day. (TBD removed — sale always has a defined end now.)
    */
   _getEndDate() {
-    if (this.elements.tbdCheckbox.checked) return null;
     if (this.scheduleDays.length === 0) return null;
     return this.scheduleDays[this.scheduleDays.length - 1].date;
   },
 
   /**
-   * Validate the form — enabled as long as start date is valid
+   * Validate the form — enabled when there's at least one day in the schedule
+   * (Day 1 is auto-populated to today, so this is always satisfied unless the
+   * user explicitly deletes everything — which the swipe-to-delete prevents).
    */
   validateForm() {
-    const startOk = this.elements.todayCheckbox.checked || !!this.elements.startDateInput.value;
-    const isValid = startOk && this.scheduleDays.length > 0;
-
+    const isValid = this.scheduleDays.length > 0;
     this.elements.startSaleButton.disabled = !isValid;
     return isValid;
   },
@@ -512,14 +384,12 @@ const SaleSetup = {
     const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
     const consignorNames = consignors.map(c => c.name).join(', ');
 
-    const isToday = this.elements.todayCheckbox.checked;
+    const isToday = startDate === this._todayString();
     const startLabel = isToday
       ? `Today (${this._formatDateLabelFull(startDate)})`
       : this._formatDateLabelFull(startDate);
 
-    const daysLabel = endDate
-      ? `${this.scheduleDays.length} day${this.scheduleDays.length !== 1 ? 's' : ''}`
-      : 'TBD';
+    const daysLabel = `${this.scheduleDays.length} day${this.scheduleDays.length !== 1 ? 's' : ''}`;
 
     // Build schedule rows for each day
     const scheduleRows = this.scheduleDays.map((dayObj, i) => {
@@ -766,8 +636,6 @@ const SaleSetup = {
    */
   resetForm() {
     this.elements.saleNameInput.value = '';
-    this.elements.todayCheckbox.checked = true;
-    this.elements.tbdCheckbox.checked = false;
     this._initDefaultState();
     this.pendingConsignors = [];
     this.renderConsignorList();

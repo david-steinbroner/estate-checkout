@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v163';
+const APP_VERSION = 'v164';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v164',
+    date: '2026-04-26',
+    changes: [
+      'New Sale screen radically simpler: removed the separate "Start Date" and "End Date" sections. The Schedule is now the sale — Day 1 defaults to today, "+ Add Day" appends the next day, tap any day\'s date to change it inline.',
+      'Three sections (Start, End, Schedule) replaced with one: Sale Days. Less to fill out, less to think about.',
+      'Removed "Starts today" and "TBD" checkboxes (no longer needed — Day 1 = today by default, the schedule defines the end).'
+    ]
+  },
   {
     version: 'v163',
     date: '2026-04-26',
