@@ -4,9 +4,18 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v165';
+const APP_VERSION = 'v166';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v166',
+    date: '2026-04-26',
+    changes: [
+      'Menu icon is now pixel-perfect centered everywhere — replaced the ☰ text character (which has font-dependent off-center metrics) with a clean inline SVG hamburger icon.',
+      'New Sale page menu button is now properly positioned in the top-right corner instead of being squished next to the title text.',
+      'Setup screen header restructured to match the rest of the app — same pattern as Dashboard\'s large title with embedded menu button.'
+    ]
+  },
   {
     version: 'v165',
     date: '2026-04-26',

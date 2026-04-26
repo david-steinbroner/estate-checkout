@@ -26,7 +26,7 @@
     <div class="running-total" id="running-total-bar">
       <div class="screen-menu-row">
         <span class="screen-shared-badge" id="shared-badge-checkout" hidden>SHARED</span>
-        <button class="screen-menu-btn" id="nav-menu" type="button" aria-label="Menu">☰</button>
+        <button class="screen-menu-btn" id="nav-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
       <span class="running-total__context" id="running-total-context"></span>
       <span class="running-total__amount" id="running-total">$0.00</span>
@@ -90,9 +90,11 @@
 
   <!-- Sale Setup Screen -->
   <div id="screen-setup" class="screen setup-screen active">
-    <div class="header setup-header-bar">
-      <span class="setup-header-bar__title">New Sale</span>
-      <button class="header__menu-btn" id="setup-menu-btn">☰</button>
+    <div class="setup-header-bar">
+      <div class="screen-menu-row">
+        <button class="screen-menu-btn" id="setup-menu-btn" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+      <h1 class="setup-header-bar__title">New Sale</h1>
     </div>
 
     <div class="setup-form">
@@ -240,7 +242,7 @@
     <div class="dashboard-title-block">
       <div class="screen-menu-row">
         <span class="screen-shared-badge" id="shared-badge-dashboard" hidden>SHARED</span>
-        <button class="screen-menu-btn" id="dashboard-menu-btn" type="button" aria-label="Menu">☰</button>
+        <button class="screen-menu-btn" id="dashboard-menu-btn" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
       <h1 class="dashboard-large-title" id="dashboard-large-title">Sale</h1>
       <p class="dashboard-large-subtitle" id="dashboard-large-subtitle"></p>
@@ -310,7 +312,7 @@
   <!-- Consignor Payouts Screen -->
   <div id="screen-payouts" class="screen payouts-screen">
     <div class="screen-menu-row screen-menu-row--floating">
-      <button class="screen-menu-btn" id="payouts-menu-btn" type="button" aria-label="Menu">☰</button>
+      <button class="screen-menu-btn" id="payouts-menu-btn" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
     <div class="payouts-content" id="payouts-content">
       <!-- Rendered by JS -->
@@ -322,7 +324,7 @@
     <div class="paused-header">
       <div class="screen-menu-row">
         <span class="screen-shared-badge" id="shared-badge-paused" hidden>SHARED</span>
-        <button class="screen-menu-btn" id="paused-menu-btn" type="button" aria-label="Menu">☰</button>
+        <button class="screen-menu-btn" id="paused-menu-btn" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
       <h1 class="paused-header__title" id="paused-sale-name">Sale Paused</h1>
       <p class="paused-header__subtitle" id="paused-day-label">Day 1 Complete</p>
