@@ -2418,6 +2418,13 @@ body {
   margin-top: 0;
 }
 
+/* Edit Consignor mode has 4 sections + Save + Delete buttons; the default
+   80dvh sheet cap can hide Delete behind the fold on shorter phones. Bump
+   to 90dvh so the full content fits without scrolling on most devices. */
+#consignor-modal .sheet {
+  max-height: 90dvh;
+}
+
 .edit-sale__section .ec-section-header {
   margin-bottom: var(--space-sm);
 }

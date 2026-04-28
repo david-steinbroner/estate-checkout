@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v185';
+const APP_VERSION = 'v186';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v186',
+    date: '2026-04-28',
+    changes: [
+      'Add/Edit Consignor sheet: tapping the Payout dropdown (Percentage / Flat Fee) now opens the picker on top of the Consignor sheet — was opening behind it.',
+      'Edit Consignor sheet is now taller so the Delete Consignor button fits without scrolling on most phones.'
+    ]
+  },
   {
     version: 'v185',
     date: '2026-04-28',

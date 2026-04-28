@@ -739,25 +739,6 @@
     </div>
   </div>
 
-  <!-- Payout Type Picker Sheet -->
-  <div class="overlay" id="payout-type-picker-modal">
-    <div class="sheet">
-      <p class="sheet__title">Payout type</p>
-      <ul class="ec-picker-list" id="payout-type-picker-list">
-        <li class="ec-picker-item" data-payout-type="percentage">
-          <span class="ec-picker-item__label">Percentage</span>
-          <span class="ec-picker-item__hint">Consignor gets X% of the sale price</span>
-          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
-        </li>
-        <li class="ec-picker-item" data-payout-type="flat">
-          <span class="ec-picker-item__label">Flat Fee</span>
-          <span class="ec-picker-item__hint">You charge $X per item, consignor gets the rest</span>
-          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
   <!-- Add/Edit Consignor Sheet -->
   <div class="overlay" id="consignor-modal">
     <div class="sheet">
@@ -803,6 +784,27 @@
     <div class="sheet">
       <p class="sheet__title">Color</p>
       <div class="ec-color-picker" id="consignor-color-picker-grid"></div>
+    </div>
+  </div>
+
+  <!-- Payout Type Picker Sheet — opens from the Add/Edit Consignor sheet.
+       Must come AFTER #consignor-modal in DOM so it stacks on top when both
+       are visible (overlays share z-index 100; later wins). -->
+  <div class="overlay" id="payout-type-picker-modal">
+    <div class="sheet">
+      <p class="sheet__title">Payout type</p>
+      <ul class="ec-picker-list" id="payout-type-picker-list">
+        <li class="ec-picker-item" data-payout-type="percentage">
+          <span class="ec-picker-item__label">Percentage</span>
+          <span class="ec-picker-item__hint">Consignor gets X% of the sale price</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+        <li class="ec-picker-item" data-payout-type="flat">
+          <span class="ec-picker-item__label">Flat Fee</span>
+          <span class="ec-picker-item__hint">You charge $X per item, consignor gets the rest</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+      </ul>
     </div>
   </div>
 
