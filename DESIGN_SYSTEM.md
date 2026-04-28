@@ -565,6 +565,7 @@ Each component lists:
 - Bottom-sheet selection rows
 - Each row 48px min, full-width, `--space-lg` horizontal padding
 - Selected: trailing checkmark visible (`.ec-picker-item--selected`)
+- **Multi-select:** the same `--selected` modifier handles multi-select — multiple rows can carry it simultaneously (Export Selector, v190). Use `role="checkbox"` + `aria-checked` on the row, not the single-select `aria-selected`. Disabled rows (e.g., 0-count) get `aria-disabled="true"`. Pair with a "Select All / Deselect All" link in the sheet header (`.export-header` pattern), not as a list row — avoids tri-state ambiguity.
 
 **Color Picker** — 🔴 Pending
 - Target: `.ec-color-picker` / `.ec-color-dot`

@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v189';
+const APP_VERSION = 'v190';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v190',
+    date: '2026-04-28',
+    changes: [
+      'Export Sale Data now opens a picker sheet instead of immediately sharing. Pick which days you want included in the CSV — handy for sharing just today\'s revenue with your consignors at end-of-day.',
+      'Each day in the picker shows its date and how many invoices were on that day. Days with zero invoices are shown but greyed out. Tap "Deselect All" to start clean and pick specific days.',
+      'Sales with only one day skip the picker — straight to share, since there\'s nothing to choose.',
+      'Internal: estate sales now persist their per-day dates correctly. Sales with gap schedules (Day 1 = Apr 28, Day 2 = May 5) used to show wrong dates in some views — now accurate everywhere.'
+    ]
+  },
   {
     version: 'v189',
     date: '2026-04-28',

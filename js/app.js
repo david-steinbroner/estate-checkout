@@ -210,6 +210,27 @@ const App = {
     if (dashboardExport) {
       dashboardExport.addEventListener('click', () => this.exportSaleData('dashboard-export-error'));
     }
+
+    // Export modal — confirm button, toggle-all link, backdrop dismiss
+    const exportModal = document.getElementById('export-modal');
+    const exportConfirm = document.getElementById('export-confirm');
+    const exportToggleAll = document.getElementById('export-toggle-all');
+    if (exportConfirm) {
+      exportConfirm.addEventListener('click', async () => {
+        if (exportConfirm.disabled) return;
+        const daysFilter = Array.from(this._exportSelection || []);
+        this._closeExportSheet();
+        await this._executeExport(daysFilter);
+      });
+    }
+    if (exportToggleAll) {
+      exportToggleAll.addEventListener('click', () => this._toggleExportAll());
+    }
+    if (exportModal) {
+      exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal) this._closeExportSheet();
+      });
+    }
     if (this.headerElements.versionHistoryModal) {
       this.headerElements.versionHistoryModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.versionHistoryModal) this.closeVersionHistory();
@@ -410,14 +431,11 @@ const App = {
   },
 
   /**
-   * Trigger the CSV export flow. Pulls fresh from sync first (closes the
-   * fresh-device gap where local cache could be empty), then generates the
-   * CSV and hands it to the iOS native share sheet via the Web Share API.
-   * Falls back to anchor-download for browsers without file-share support.
-   *
-   * Called from 3 entry points: in-sale menu item, Paused screen link, and
-   * the Sale Ended banner button. The errorElementId arg picks which
-   * inline error element to use for "no transactions" feedback.
+   * Trigger the CSV export flow. v190: validates pre-flight (sale exists,
+   * has transactions), pulls fresh from sync to keep counts accurate, then
+   * either opens the day-picker sheet OR (single-day shortcut) goes straight
+   * to share. The errorElementId arg picks which inline error element to
+   * use for the "no transactions" feedback before the sheet opens.
    */
   async exportSaleData(errorElementId) {
     const sale = Storage.getSale();
@@ -428,9 +446,9 @@ const App = {
       return;
     }
 
-    // Fresh-device gap: if this device is on a synced sale but hasn't visited
-    // a polling screen, the local cache may be empty. Pull once before
-    // exporting. Silent failure on offline — fall through to local cache.
+    // Pull fresh from sync BEFORE the sheet opens so per-day counts are
+    // accurate at decision time. v188 pulled before share; that was too late
+    // when the picker shows counts. Fresh-device gap stays closed.
     if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
       try {
         await Sync.pullInvoices(sale);
@@ -445,19 +463,169 @@ const App = {
       return;
     }
 
-    const csv = Storage.exportSaleCSV();
+    // Single-day shortcut: if there's only one day in the schedule, no
+    // selection is needed — go straight to share with all transactions.
+    const scheduleDays = sale.scheduleDays || [];
+    if (scheduleDays.length <= 1) {
+      await this._executeExport(null);
+      return;
+    }
+
+    this._renderExportSheet(sale, transactions);
+    document.getElementById('export-modal').classList.add('visible');
+  },
+
+  /**
+   * Render the day-picker rows for the current sale.
+   * Picker rows = union of scheduleDays + any orphan saleDay values found
+   * on transactions (defends against dayOverride-baked saleDays that
+   * exceed schedule length). Selection state defaults to "all checked"
+   * (excluding zero-invoice days, which are unselectable).
+   */
+  _renderExportSheet(sale, transactions) {
+    const list = document.getElementById('export-day-list');
+    if (!list) return;
+
+    // Per-day invoice counts. Coerce missing saleDay to 1 to match
+    // Storage.exportSaleCSV's column-write fallback.
+    const countsByDay = {};
+    transactions.forEach(t => {
+      const d = t.saleDay || 1;
+      countsByDay[d] = (countsByDay[d] || 0) + 1;
+    });
+
+    const scheduleDays = sale.scheduleDays || [];
+    const scheduleDayMap = {};
+    scheduleDays.forEach(d => { scheduleDayMap[d.day] = d; });
+
+    // Union of schedule + orphan saleDay values from transactions.
+    const allDayKeys = new Set(scheduleDays.map(d => d.day));
+    Object.keys(countsByDay).forEach(k => allDayKeys.add(parseInt(k, 10)));
+    const dayList = Array.from(allDayKeys).sort((a, b) => a - b);
+
+    // Default selection: every day that has at least one invoice.
+    this._exportSelection = new Set(dayList.filter(d => (countsByDay[d] || 0) > 0));
+
+    list.innerHTML = dayList.map(day => {
+      const count = countsByDay[day] || 0;
+      const dayMeta = scheduleDayMap[day];
+      const dateLabel = dayMeta ? Utils.formatShortDate(dayMeta.date) : '';
+      const label = dateLabel ? `Day ${day} · ${dateLabel}` : `Day ${day}`;
+      const hint = count === 1 ? '1 invoice' : `${count} invoices`;
+      const selected = this._exportSelection.has(day);
+      const disabled = count === 0;
+      const cls = ['ec-picker-item'];
+      if (selected) cls.push('ec-picker-item--selected');
+      return `
+        <li class="${cls.join(' ')}" data-day="${day}" role="checkbox"
+            aria-checked="${selected}" ${disabled ? 'aria-disabled="true"' : ''}>
+          <span class="ec-picker-item__label">${label}</span>
+          <span class="ec-picker-item__hint">${hint}</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.ec-picker-item').forEach(row => {
+      row.addEventListener('click', () => {
+        if (row.getAttribute('aria-disabled') === 'true') return;
+        const day = parseInt(row.dataset.day, 10);
+        this._toggleExportDay(day);
+      });
+    });
+
+    this._updateExportCTA();
+    this._updateExportToggleAllLabel();
+  },
+
+  _toggleExportDay(day) {
+    if (this._exportSelection.has(day)) {
+      this._exportSelection.delete(day);
+    } else {
+      this._exportSelection.add(day);
+    }
+    const row = document.querySelector(`#export-day-list [data-day="${day}"]`);
+    if (row) {
+      const selected = this._exportSelection.has(day);
+      row.classList.toggle('ec-picker-item--selected', selected);
+      row.setAttribute('aria-checked', selected);
+    }
+    this._updateExportCTA();
+    this._updateExportToggleAllLabel();
+  },
+
+  /**
+   * Toggle every selectable (non-disabled) row at once. If any are
+   * unselected, select all. If all are selected, select none.
+   */
+  _toggleExportAll() {
+    const rows = document.querySelectorAll('#export-day-list .ec-picker-item');
+    const selectableDays = [];
+    rows.forEach(row => {
+      if (row.getAttribute('aria-disabled') !== 'true') {
+        selectableDays.push(parseInt(row.dataset.day, 10));
+      }
+    });
+    const allSelected = selectableDays.every(d => this._exportSelection.has(d));
+    if (allSelected) {
+      selectableDays.forEach(d => this._exportSelection.delete(d));
+    } else {
+      selectableDays.forEach(d => this._exportSelection.add(d));
+    }
+    rows.forEach(row => {
+      const day = parseInt(row.dataset.day, 10);
+      const selected = this._exportSelection.has(day);
+      row.classList.toggle('ec-picker-item--selected', selected);
+      row.setAttribute('aria-checked', selected);
+    });
+    this._updateExportCTA();
+    this._updateExportToggleAllLabel();
+  },
+
+  _updateExportToggleAllLabel() {
+    const link = document.getElementById('export-toggle-all');
+    if (!link) return;
+    const rows = document.querySelectorAll('#export-day-list .ec-picker-item:not([aria-disabled="true"])');
+    const allSelected = Array.from(rows).every(r => this._exportSelection.has(parseInt(r.dataset.day, 10)));
+    link.textContent = allSelected ? 'Deselect All' : 'Select All';
+  },
+
+  _updateExportCTA() {
+    const btn = document.getElementById('export-confirm');
+    if (!btn) return;
+    const transactions = Storage.getTransactions();
+    const selectedCount = transactions.filter(t => this._exportSelection.has(t.saleDay || 1)).length;
+    btn.disabled = selectedCount === 0;
+    if (selectedCount === 0) {
+      btn.textContent = 'Export';
+    } else if (selectedCount === 1) {
+      btn.textContent = 'Export 1 Invoice';
+    } else {
+      btn.textContent = `Export ${selectedCount} Invoices`;
+    }
+  },
+
+  _closeExportSheet() {
+    const modal = document.getElementById('export-modal');
+    if (modal) modal.classList.remove('visible');
+  },
+
+  /**
+   * Generate and share the CSV. daysFilter is null (export all) or an
+   * array of selected day numbers. v190: split out from exportSaleData so
+   * the picker confirm and the single-day shortcut can both call it.
+   */
+  async _executeExport(daysFilter) {
+    const csv = Storage.exportSaleCSV(daysFilter);
     const filename = Storage.exportFilename();
     const file = new File([csv], filename, { type: 'text/csv' });
 
-    // Web Share API (iOS 15+) — opens the native share sheet
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: 'Estate Sale Export' });
       } catch (err) {
-        // User dismissed share sheet — silent. Other errors get logged.
         if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
           console.warn('[export] share failed:', err.message);
-          this._showFieldError(errId, 'Export failed. Try again.');
         }
       }
       return;

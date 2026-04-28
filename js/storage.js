@@ -22,10 +22,32 @@ const Storage = {
   /**
    * Get the current sale configuration
    * Returns null if no sale is active
+   *
+   * v190 migration: if the sale predates the scheduleDays field, derive
+   * it from discounts + startDate (consecutive calendar days) and write
+   * back. This means gap schedules created before v190 will be inaccurate
+   * (the source dates were never persisted), but any sale created from
+   * v190 onward gets correct per-day dates.
    */
   getSale() {
     const data = localStorage.getItem(this.KEYS.SALE);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    const sale = JSON.parse(data);
+    if (!sale.scheduleDays && sale.discounts && sale.startDate) {
+      const dayKeys = Object.keys(sale.discounts).map(Number).sort((a, b) => a - b);
+      const [y, m, d] = sale.startDate.split('-').map(Number);
+      const start = new Date(y, m - 1, d);
+      sale.scheduleDays = dayKeys.map(dayNum => {
+        const dt = new Date(start);
+        dt.setDate(dt.getDate() + (dayNum - 1));
+        const yyyy = dt.getFullYear();
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        const dd = String(dt.getDate()).padStart(2, '0');
+        return { day: dayNum, date: `${yyyy}-${mm}-${dd}`, discount: sale.discounts[dayNum] || 0 };
+      });
+      this.saveSale(sale);
+    }
+    return sale;
   },
 
   /**
@@ -289,8 +311,17 @@ const Storage = {
    * to a consignor that no longer exists, treat as no-consignor — empty
    * Consignor cell, 0 in Consignor Cut, full Final Price in Your Cut.
    */
-  exportSaleCSV() {
-    const transactions = this.getTransactions();
+  exportSaleCSV(daysFilter) {
+    let transactions = this.getTransactions();
+    // daysFilter contract:
+    //   null/undefined → export all transactions
+    //   []             → export headers only (no data rows)
+    //   [n, ...]       → export transactions whose saleDay is in the array
+    // Legacy txns with missing saleDay coerce to Day 1 to match the
+    // existing fallback at the column-write site.
+    if (Array.isArray(daysFilter)) {
+      transactions = transactions.filter(t => daysFilter.includes(t.saleDay || 1));
+    }
     const consignors = this.getConsignors();
     const consignorById = {};
     consignors.forEach(c => { consignorById[c.id] = c; });

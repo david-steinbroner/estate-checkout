@@ -3636,6 +3636,27 @@ body {
   width: 100%;
 }
 
+/* === Export selector sheet (v190) — flat title row with a Select All /
+   Deselect All link on the right. Title's normal margin-bottom is moved
+   to the wrapper so the link aligns with the title baseline. */
+.export-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--sheet-content-gap);
+}
+
+.export-header .sheet__title {
+  margin-bottom: 0;
+}
+
+.export-header .ec-link-primary {
+  flex-shrink: 0;
+  padding: 0;
+  font-size: var(--font-size-base);
+}
+
 .dashboard-stats {
   display: flex;
   gap: var(--space-md);

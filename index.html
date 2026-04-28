@@ -803,6 +803,23 @@
     </div>
   </div>
 
+  <!-- Export Selector Sheet (v190) — opens from the in-sale menu, the
+       Paused screen, and the Sale Ended banner. Lets the user pick which
+       days of the current sale to include in the CSV export. Multi-select
+       picker; Select All / Deselect All toggle in the header. -->
+  <div class="overlay" id="export-modal">
+    <div class="sheet">
+      <div class="export-header">
+        <p class="sheet__title">Select Days</p>
+        <button type="button" class="ec-link-primary" id="export-toggle-all">Deselect All</button>
+      </div>
+      <ul class="ec-picker-list" id="export-day-list" role="group" aria-label="Days to export"></ul>
+      <div class="sheet__buttons">
+        <button class="ec-btn ec-btn-primary" id="export-confirm">Export</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Payout Type Picker Sheet — opens from the Add/Edit Consignor sheet.
        Must come AFTER #consignor-modal in DOM so it stacks on top when both
        are visible (overlays share z-index 100; later wins). -->

@@ -159,6 +159,23 @@ const Utils = {
     } catch (e) {
       return '--:--';
     }
+  },
+
+  /**
+   * Format a YYYY-MM-DD date string as a short label like "Apr 28".
+   * Uses the local-time split pattern (not new Date(str)) to avoid the
+   * UTC-offset bug where iOS Safari interprets bare YYYY-MM-DD as midnight UTC.
+   */
+  formatShortDate(yyyymmdd) {
+    if (!yyyymmdd) return '';
+    try {
+      const [y, m, d] = yyyymmdd.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[date.getMonth()]} ${date.getDate()}`;
+    } catch (e) {
+      return yyyymmdd;
+    }
   }
 };
 

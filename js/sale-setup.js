@@ -400,7 +400,9 @@ const SaleSetup = {
   },
 
   /**
-   * Convert scheduleDays to the discounts object format for the sale
+   * Convert scheduleDays to the discounts object format for the sale.
+   * Legacy storage (just `{day: percent}`) — kept alongside scheduleDays
+   * for back-compat during the v190 transition.
    */
   _buildDiscountsObject() {
     const discounts = {};
@@ -408,6 +410,21 @@ const SaleSetup = {
       discounts[i + 1] = d.discount;
     });
     return discounts;
+  },
+
+  /**
+   * Build the canonical scheduleDays array for the sale (v190).
+   * Each entry is `{day: 1-based number, date: YYYY-MM-DD, discount: percent}`.
+   * Persisting this means non-consecutive ("gap") schedules survive — the
+   * old `{day: pct}` shape lost the dates and required deriving them as
+   * startDate + (day-1), which was wrong for any sale with a gap.
+   */
+  _buildScheduleDaysArray() {
+    return this.scheduleDays.map((d, i) => ({
+      day: i + 1,
+      date: d.date,
+      discount: d.discount
+    }));
   },
 
   /**
@@ -488,7 +505,8 @@ const SaleSetup = {
         name: name,
         startDate: startDate,
         endDate: endDate,
-        discounts: this._buildDiscountsObject()
+        discounts: this._buildDiscountsObject(),
+        scheduleDays: this._buildScheduleDaysArray()
       });
     } finally {
       if (btn) {
@@ -519,6 +537,7 @@ const SaleSetup = {
       startDate: config.startDate,
       endDate: config.endDate || null,
       discounts: config.discounts || { 1: 0 },
+      scheduleDays: config.scheduleDays || null,  // v190: filled by Storage.getSale() migration if missing
       consignors: config.consignors || this.pendingConsignors || [],
       createdAt: Utils.getTimestamp(),
       status: 'active',
