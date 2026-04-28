@@ -480,7 +480,7 @@ const App = {
     html += `<div class="edit-sale__section">
       <div class="consignor-section__header">
         <div class="edit-sale__label">Discount Schedule</div>
-        <button class="consignor-list__add" id="edit-sale-add-day">+ Add Day</button>
+        <button class="ec-link-primary" id="edit-sale-add-day">+ Add Day</button>
       </div>`;
     days.forEach(d => {
       const isCompleted = d <= currentDay;
@@ -498,7 +498,7 @@ const App = {
     html += `<div class="edit-sale__section">
       <div class="consignor-section__header">
         <div class="edit-sale__label">Consignors</div>
-        <button class="consignor-list__add" id="edit-sale-add-consignor">+ Add</button>
+        <button class="ec-link-primary" id="edit-sale-add-consignor">+ Add</button>
       </div>`;
     if (consignors.length === 0) {
       html += `<div style="font-size: var(--font-size-sm); color: var(--color-text-secondary); padding: var(--space-sm) 0;">No consignors added</div>`;

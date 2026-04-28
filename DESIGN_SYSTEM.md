@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~5% complete).** This document describes the **target** component system. Current code uses the target names for `.ec-menu-*` and `.ec-picker-*` only; everything else still uses legacy class names. Each component spec in §2.2 lists both. See **§3 Migration Roadmap** for the rollout schedule.
+**Status:** **Migration in progress (~25% complete, v178).** This document describes the **target** component system. As of v178, the buttons + links migration has shipped — `.ec-btn`, `.ec-btn-primary`, `.ec-btn-secondary`, `.ec-btn-destructive`, `.ec-link-primary`, `.ec-link-destructive` are now canonical alongside `.ec-menu-*` and `.ec-picker-*`. Inputs, cards, status pills, and the rest follow in v179–v183. See **§3 Migration Roadmap** for the schedule.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -751,21 +751,30 @@ Before any commit/deploy, verify:
 
 ## §3.1 Migration status
 
-The `.ec-*` component naming convention was introduced as the design target in the V2 redesign (v128, 2026-04-23). As of v177 (2026-04-28), **two component families have fully migrated:** `.ec-menu-*` (hamburger menu rows + sale identity block) and `.ec-picker-*` (bottom-sheet picker button + list). Everything else uses legacy class names.
+The `.ec-*` component naming convention was introduced as the design target in the V2 redesign (v128, 2026-04-23). As of v178 (2026-04-28), **seven component families have fully migrated:**
 
-The drift between this doc and the code is intentional going forward — this doc names the *target*; the code ships toward it one family per version.
+- 🟢 **`.ec-menu-*`** — hamburger menu rows, sale identity block (v152)
+- 🟢 **`.ec-picker-*`** — picker button, picker list, picker item (v149)
+- 🟢 **`.ec-btn`** + `.ec-btn-primary` — green primary CTAs (v178)
+- 🟢 **`.ec-btn-secondary`** — blue-tinted paired secondary (v178)
+- 🟢 **`.ec-btn-destructive`** — red destructive (v178)
+- 🟢 **`.ec-link-primary`** — blue text link (v178)
+- 🟢 **`.ec-link-destructive`** — red text link (v178)
+
+Inputs, cards, status pills, and the rest follow on the schedule below.
 
 ## §3.2 Migration roadmap
 
-| Component family | Target name | Current name(s) | Status | Migrates in |
-|---|---|---|---|---|
-| Filled Primary Button | `.ec-btn-primary` | `.action-bar__button--primary`, `.sheet__btn--confirm`, `.entry-screen__confirm`, `.dashboard-action`, `.payment-action--paid`, `.start-sale-button` | 🔴 Pending | v178 |
-| Tinted Secondary Button | `.ec-btn-secondary` | `.action-bar__button--secondary`, `.sheet__btn--secondary`, `.payment-action--new`, `.join-sale-button` | 🔴 Pending | v178 |
-| Destructive Button | `.ec-btn-destructive` | `.sheet__btn--danger`, `.entry-screen__delete`, `.paused-action--end` | 🔴 Pending | v178 |
-| Blue Text Link | `.ec-link-primary` | `.sheet__action-link`, `.qr-action-link`, `.dashboard-tab-link`, `.consignor-list__add`, `.setup-card__action-link` | 🔴 Pending | v178 |
-| Red Text Link | `.ec-link-destructive` | `.sheet__action-link--danger`, `.order-actions__clear`, `.setup-card__action-link--remove` | 🔴 Pending | v178 |
-| Text Input | `.ec-input` | `.consignor-form__input`, `.entry-screen__input`, `.setup-section__input`, `.haggle-input`, `.invoice-discount__input`, `.join-code-input`, `.sheet__input`, `.discount-row__input` | 🔴 Pending | v179 |
-| Inline Field Error | `.ec-field-error` | `.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error` | 🔴 Pending | v179 |
+| Component family | Target name | Current name(s) | Status |
+|---|---|---|---|
+| Filled Primary Button | `.ec-btn-primary` | (target name in use) | 🟢 v178 |
+| Tinted Secondary Button | `.ec-btn-secondary` | (target name in use) | 🟢 v178 |
+| Destructive Button | `.ec-btn-destructive` | (target name in use) | 🟢 v178 |
+| Blue Text Link | `.ec-link-primary` | (target name in use) | 🟢 v178 |
+| Red Text Link | `.ec-link-destructive` | (target name in use) | 🟢 v178 |
+| Outline Destructive Button | (TBD) | `.sheet__btn--danger-outline` (2 uses: Remove Discount in haggle + ticket-discount sheets) | 🔴 Deferred |
+| Text Input | `.ec-input` | `.consignor-form__input`, `.entry-screen__input`, `.setup-section__input`, `.haggle-input`, `.invoice-discount__input`, `.join-code-input`, `.sheet__input`, `.discount-row__input` | 🔴 v179 |
+| Inline Field Error | `.ec-field-error` | `.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error` | 🔴 v179 |
 | Grouped List Card | `.ec-card` | `.setup-card`, `.payouts__card`, `.consignor-revenue` | 🔴 Pending | v180 |
 | Card Row | `.ec-card__row` | `.setup-card__row` (+ variants), `.payouts__row`, `.consignor-list__item` | 🔴 Pending | v180 |
 | Section Header | `.ec-section-header` | `.setup-section__header`, `.consignor-form__label`, `.edit-sale__label`, `.dashboard-stat__label`, `.consignor-revenue__title` | 🔴 Pending | v180 |

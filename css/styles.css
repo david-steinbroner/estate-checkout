@@ -1006,49 +1006,92 @@ body {
   border-top: 1px solid var(--color-divider);
 }
 
-.entry-screen__confirm {
+/* === Canonical buttons + text links (v178 migration target) ===
+   .ec-btn is the role-neutral base; modifier sets color. Default shape
+   is 56px (bottom-anchored). Parent contexts override:
+     - .sheet__buttons → 48px tall, 20px font (in-sheet)
+     - .action-bar → flex:1 instead of width:100% (paired)
+*/
+.ec-btn {
   width: 100%;
   height: var(--bottom-action-button-height);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.01em;
   transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
 }
 
-.entry-screen__confirm:active {
-  background: var(--color-success-dark);
-  transform: scale(0.98);
+.ec-btn:active {
+  transform: scale(0.97);
 }
 
-.entry-screen__confirm:disabled {
+.ec-btn:disabled {
   opacity: 0.4;
   pointer-events: none;
 }
 
-.entry-screen__delete {
-  width: 100%;
-  height: var(--bottom-action-button-height);
+.sheet__buttons .ec-btn {
+  height: var(--height-button);
+  font-size: var(--font-size-lg);
+}
+
+.action-bar .ec-btn {
+  flex: 1;
+  width: auto;
+}
+
+.ec-btn-primary {
+  background: var(--color-success);
+  color: var(--color-text-on-success);
+}
+.ec-btn-primary:active {
+  background: var(--color-success-dark);
+}
+
+.ec-btn-secondary {
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+.ec-btn-secondary:active {
+  background: rgba(0, 122, 255, 0.25);
+}
+
+.ec-btn-destructive {
   background: var(--color-danger);
   color: var(--color-text-on-danger);
+}
+.ec-btn-destructive:active {
+  background: var(--color-danger-dark);
+}
+
+.ec-link-primary,
+.ec-link-destructive {
+  background: none;
   border: none;
-  border-radius: var(--radius-md);
+  padding: var(--space-md) 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.01em;
 }
-
-.entry-screen__delete:active {
-  background: var(--color-danger-dark);
+.ec-link-primary {
+  color: var(--color-primary);
+}
+.ec-link-destructive {
+  color: var(--color-danger);
+}
+.ec-link-primary:active,
+.ec-link-destructive:active {
+  opacity: 0.5;
 }
 
 /* === Number Pad === */
@@ -1107,23 +1150,9 @@ body {
   display: none;
 }
 
-.order-actions__clear {
-  background: none;
-  border: none;
-  padding: var(--space-xs) var(--space-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-danger);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: 0.01em;
-}
-
-.order-actions__clear:active {
-  opacity: 0.5;
-}
-
-/* === Action Bar (Venmo paired Request/Pay archetype) === */
+/* === Action Bar (Venmo paired Request/Pay archetype) ===
+   Container only. Buttons inside are .ec-btn .ec-btn-primary/--secondary
+   (v178). The .action-bar > .ec-btn descendant rule sets flex:1 + width:auto. */
 .action-bar {
   display: flex;
   gap: var(--space-md);
@@ -1135,46 +1164,6 @@ body {
   position: relative;
   z-index: 51;
   margin-top: auto;
-}
-
-.action-bar__button {
-  flex: 1;
-  height: var(--bottom-action-button-height);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-  transition: opacity var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
-}
-
-.action-bar__button:active {
-  transform: scale(0.97);
-}
-
-.action-bar__button--primary {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-}
-
-.action-bar__button--primary:active {
-  background: var(--color-success-dark);
-}
-
-.action-bar__button--secondary {
-  background: var(--color-primary-tint);
-  color: var(--color-primary);
-}
-
-.action-bar__button--secondary:active {
-  background: rgba(0, 122, 255, 0.25);
-}
-
-.action-bar__button:disabled {
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 /* === Stacking Price Display (haggle) === */
@@ -1466,17 +1455,6 @@ body {
   flex-shrink: 0;
 }
 
-.consignor-list__add {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-sm) 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .consignor-section__header {
   display: flex;
   align-items: center;
@@ -1739,14 +1717,6 @@ body {
   margin-bottom: var(--space-md);
 }
 
-.consignor-form__save {
-  margin-top: var(--space-md);
-}
-
-.consignor-form__delete {
-  margin-top: var(--space-sm);
-}
-
 /* === Share Sale Sheet === */
 .share-sale__qr {
   display: flex;
@@ -1766,24 +1736,6 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-lg);
-}
-
-/* === Join Sale Button === */
-.join-sale-button {
-  flex: 1;
-  height: var(--height-button);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-primary);
-  background: transparent;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.join-sale-button:active {
-  background: var(--color-primary-light);
 }
 
 /* === Join Sale Instruction Sheet — Scan QR button + manual code entry === */
@@ -2181,27 +2133,6 @@ body {
   display: none;
 }
 
-.sheet__action-link {
-  background: none;
-  border: none;
-  padding: var(--space-md) 0;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  color: var(--color-primary);
-  letter-spacing: -0.01em;
-}
-
-.sheet__action-link:active {
-  opacity: 0.5;
-}
-
-.sheet__action-link--danger {
-  color: var(--color-danger);
-}
-
 /* === Menu Sheet (V2 §1.4.G — Settings/action-sheet pattern) === */
 .sheet--menu {
   background: var(--color-bg);
@@ -2430,24 +2361,9 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.sheet__btn--confirm {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-}
-
-.sheet__btn--confirm:active {
-  background: var(--color-success-dark);
-}
-
-.sheet__btn--danger {
-  background: var(--color-danger);
-  color: var(--color-text-on-danger);
-}
-
-.sheet__btn--danger:active {
-  background: var(--color-danger-dark);
-}
-
+/* .sheet__btn--danger-outline kept for the two Remove Discount buttons in
+   haggle + ticket-discount sheets — outline destructive variant not yet in
+   the .ec-* catalog. Migrated in a later pass. */
 .sheet__btn--danger-outline {
   background: transparent;
   color: var(--color-danger);
@@ -2456,26 +2372,6 @@ body {
 
 .sheet__btn--danger-outline:active {
   background: var(--color-danger-light);
-}
-
-.sheet__btn--primary {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
-}
-
-.sheet__btn--primary:active {
-  background: var(--color-primary-dark);
-}
-
-.sheet__btn--secondary {
-  height: var(--height-button);
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.sheet__btn--secondary:active {
-  background: var(--color-bg-hover);
 }
 
 /* === Speech Processing Overlay === */
@@ -2646,25 +2542,12 @@ body {
   background: transparent;
 }
 
-.setup-card__action-link {
+/* The action links inside .setup-card__row--split are .ec-link-primary /
+   .ec-link-destructive (v178). The split row gives them flex:0 layout. */
+.setup-card__row--split .ec-link-primary,
+.setup-card__row--split .ec-link-destructive {
   flex: 0 0 auto;
-  background: none;
-  border: none;
   padding: var(--space-xs) 0;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.setup-card__action-link:active {
-  opacity: 0.6;
-}
-
-.setup-card__action-link--remove {
-  color: var(--color-danger);
 }
 
 /* Make existing discount + consignor rows behave as card rows when nested */
@@ -3010,28 +2893,6 @@ body {
 .setup-actions__row {
   display: flex;
   gap: var(--space-md);
-}
-
-.start-sale-button {
-  flex: 1;
-  height: var(--height-button);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.start-sale-button:active {
-  background: var(--color-success-dark);
-}
-
-.start-sale-button:disabled {
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 .setup-dashboard-button {
@@ -3429,58 +3290,8 @@ body {
   margin-top: auto;
 }
 
-.paused-action--resume {
-  width: 100%;
-  height: var(--bottom-action-button-height);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
-}
-
-.paused-action--resume:active {
-  background: var(--color-success-dark);
-  transform: scale(0.98);
-}
-
-.paused-action--dashboard {
-  width: 100%;
-  background: none;
-  border: none;
-  padding: var(--space-md) 0;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-}
-
-.paused-action--dashboard:active {
-  opacity: 0.5;
-}
-
-.paused-action--end {
-  width: 100%;
-  background: none;
-  border: none;
-  padding: var(--space-md) 0;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-danger);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.paused-action--end:active {
-  opacity: 0.5;
-}
+/* The Resume / Dashboard / End Sale buttons inside .paused-actions are
+   .ec-btn / .ec-link-* — see v178 migration. */
 
 /* Sheet option layout (for End Day / End Sale sheet) */
 .sheet__option {
@@ -3663,20 +3474,12 @@ body {
   flex-wrap: wrap;
 }
 
-.qr-action-link {
-  background: none;
-  border: none;
+/* QR action links inside .qr-action-row are .ec-link-primary (v178). The
+   row's tighter sm-size styling is overridden here. */
+.qr-action-row .ec-link-primary {
   padding: var(--space-xs) var(--space-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--color-primary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-}
-
-.qr-action-link:active {
-  opacity: 0.5;
 }
 
 .qr-action-sep {
@@ -3899,45 +3702,6 @@ body {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
-}
-
-.payment-action--new {
-  width: 100%;
-  height: var(--bottom-action-button-height);
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.payment-action--new:active {
-  background: var(--color-bg-hover);
-}
-
-.payment-action--paid {
-  width: 100%;
-  height: var(--bottom-action-button-height);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.payment-action--paid:active {
-  background: var(--color-success-dark);
-}
-
-.payment-action--paid:disabled {
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 /* Payment Success Overlay */
@@ -4573,25 +4337,6 @@ button.dashboard-detail__consignor--empty:active {
   flex-shrink: 0;
 }
 
-.dashboard-action {
-  width: 100%;
-  height: var(--bottom-action-button-height);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.dashboard-action--new {
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-}
-
-.dashboard-action--new:active {
-  background: var(--color-success-dark);
-}
 
 
 

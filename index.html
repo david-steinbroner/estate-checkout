@@ -42,13 +42,13 @@
 
     <!-- Order Actions (secondary destructive link — hidden when cart empty) -->
     <div class="order-actions" id="order-actions" hidden>
-      <button class="order-actions__clear" id="clear-button" type="button">Clear all</button>
+      <button class="ec-link-destructive" id="clear-button" type="button">Clear all</button>
     </div>
 
     <!-- Action Bar (bottom) -->
     <div class="action-bar">
-      <button class="action-bar__button action-bar__button--secondary" id="done-button" disabled>Create Invoice</button>
-      <button class="action-bar__button action-bar__button--primary" id="add-item-button">Add Item</button>
+      <button class="ec-btn ec-btn-secondary" id="done-button" disabled>Create Invoice</button>
+      <button class="ec-btn ec-btn-primary" id="add-item-button">Add Item</button>
     </div>
   </div>
 
@@ -79,11 +79,11 @@
     <div class="qr-actions">
       <button type="button" class="qr-action-primary" id="qr-mark-paid">Mark paid now</button>
       <div class="qr-action-row">
-        <button type="button" class="qr-action-link" id="qr-edit">Edit invoice</button>
+        <button type="button" class="ec-link-primary" id="qr-edit">Edit invoice</button>
         <span class="qr-action-sep" aria-hidden="true">·</span>
-        <button type="button" class="qr-action-link" id="qr-discount">Adjust price</button>
+        <button type="button" class="ec-link-primary" id="qr-discount">Adjust price</button>
         <span class="qr-action-sep" aria-hidden="true">·</span>
-        <button type="button" class="qr-action-link" id="qr-new">New order</button>
+        <button type="button" class="ec-link-primary" id="qr-new">New order</button>
       </div>
     </div>
   </div>
@@ -125,8 +125,8 @@
             <!-- Day rows rendered by JS (renderDiscountList) -->
           </div>
           <div class="setup-card__row setup-card__row--action setup-card__row--split">
-            <button class="setup-card__action-link" id="add-day-button" type="button">+ Add Day</button>
-            <button class="setup-card__action-link setup-card__action-link--remove" id="days-edit-toggle" type="button" hidden>Remove</button>
+            <button class="ec-link-primary" id="add-day-button" type="button">+ Add Day</button>
+            <button class="ec-link-destructive" id="days-edit-toggle" type="button" hidden>Remove</button>
           </div>
         </div>
         <p class="setup-section__error" id="schedule-error" hidden></p>
@@ -138,8 +138,8 @@
         <div class="setup-card">
           <div id="setup-consignor-list"></div>
           <div class="setup-card__row setup-card__row--action setup-card__row--split">
-            <button class="setup-card__action-link" id="setup-add-consignor" type="button">+ Add Consignor</button>
-            <button class="setup-card__action-link setup-card__action-link--remove" id="consignors-edit-toggle" type="button" hidden>Remove</button>
+            <button class="ec-link-primary" id="setup-add-consignor" type="button">+ Add Consignor</button>
+            <button class="ec-link-destructive" id="consignors-edit-toggle" type="button" hidden>Remove</button>
           </div>
         </div>
       </div>
@@ -149,8 +149,8 @@
     <div class="setup-actions">
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
       <div class="setup-actions__row">
-        <button type="button" class="action-bar__button action-bar__button--secondary" id="join-sale-button">Join Sale</button>
-        <button type="button" class="action-bar__button action-bar__button--primary" id="start-sale-button">Start Sale</button>
+        <button type="button" class="ec-btn ec-btn-secondary" id="join-sale-button">Join Sale</button>
+        <button type="button" class="ec-btn ec-btn-primary" id="start-sale-button">Start Sale</button>
       </div>
     </div>
   </div>
@@ -162,8 +162,8 @@
       <div class="sale-confirm__summary" id="sale-confirm-summary"></div>
       <p class="sale-confirm__hint">You can always edit these details later from the menu.</p>
       <div class="sheet__buttons">
-        <button type="button" class="sheet__btn sheet__btn--confirm" id="sale-confirm-start">Start Sale</button>
-        <button type="button" class="sheet__btn sheet__btn--secondary" id="sale-confirm-back">Continue Setup</button>
+        <button type="button" class="ec-btn ec-btn-primary" id="sale-confirm-start">Start Sale</button>
+        <button type="button" class="ec-btn ec-btn-secondary" id="sale-confirm-back">Continue Setup</button>
       </div>
     </div>
   </div>
@@ -239,10 +239,10 @@
 
     <!-- Actions -->
     <div class="payment-actions">
-      <button class="payment-action payment-action--paid" id="payment-mark-paid">
+      <button class="ec-btn ec-btn-primary" id="payment-mark-paid">
         Mark Paid
       </button>
-      <button class="payment-action payment-action--new" id="payment-new-customer">
+      <button class="ec-btn ec-btn-secondary" id="payment-new-customer">
         New Order
       </button>
     </div>
@@ -322,7 +322,7 @@
 
     <!-- Actions -->
     <div class="dashboard-actions">
-      <button class="dashboard-action dashboard-action--new" id="dashboard-new-customer">New Order</button>
+      <button class="ec-btn ec-btn-primary" id="dashboard-new-customer">New Order</button>
     </div>
   </div>
 
@@ -371,9 +371,9 @@
     </div>
 
     <div class="paused-actions">
-      <button type="button" class="paused-action paused-action--resume" id="paused-resume">Resume Sale</button>
-      <button type="button" class="paused-action paused-action--dashboard" id="paused-dashboard">View Dashboard</button>
-      <button type="button" class="paused-action paused-action--end" id="paused-end-sale">End Sale Permanently</button>
+      <button type="button" class="ec-btn ec-btn-primary" id="paused-resume">Resume Sale</button>
+      <button type="button" class="ec-link-primary" id="paused-dashboard">View Dashboard</button>
+      <button type="button" class="ec-link-destructive" id="paused-end-sale">End Sale Permanently</button>
     </div>
   </div>
 
@@ -456,8 +456,8 @@
 
       <!-- Sticky footer with primary action -->
       <div class="entry-screen__footer">
-        <button class="entry-screen__confirm" id="add-item-confirm">Add Item</button>
-        <button class="entry-screen__delete" id="add-item-delete" type="button" hidden>Delete Item</button>
+        <button class="ec-btn ec-btn-primary" id="add-item-confirm">Add Item</button>
+        <button class="ec-btn ec-btn-destructive" id="add-item-delete" type="button" hidden>Delete Item</button>
       </div>
     </div>
   </div>
@@ -468,8 +468,8 @@
     <div class="sheet">
       <p class="sheet__title sheet__title--small">Clear all items?</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="clear-confirm">Clear All</button>
-        <button class="sheet__btn sheet__btn--secondary" id="clear-cancel">Cancel</button>
+        <button class="ec-btn ec-btn-destructive" id="clear-confirm">Clear All</button>
+        <button class="ec-btn ec-btn-secondary" id="clear-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -568,8 +568,8 @@
       <input type="text" class="consignor-form__input" id="end-sale-confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
       <p class="sheet__field-error" id="end-sale-confirm-error" hidden></p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm" disabled>End Sale</button>
-        <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>
+        <button class="ec-btn ec-btn-destructive" id="end-sale-confirm" disabled>End Sale</button>
+        <button class="ec-btn ec-btn-secondary" id="end-sale-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -580,7 +580,7 @@
       <p class="sheet__title">Edit Sale</p>
       <div class="edit-sale" id="edit-sale-content"></div>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="edit-sale-done">Done</button>
+        <button class="ec-btn ec-btn-primary" id="edit-sale-done">Done</button>
       </div>
     </div>
   </div>
@@ -593,7 +593,7 @@
       <div class="share-sale__qr" id="share-sale-qr"></div>
       <div class="share-sale__code" id="share-sale-code">---</div>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--secondary" id="share-sale-done">Done</button>
+        <button class="ec-btn ec-btn-secondary" id="share-sale-done">Done</button>
       </div>
     </div>
   </div>
@@ -604,8 +604,8 @@
       <p class="sheet__title sheet__title--small" id="join-sale-title">Join Sale?</p>
       <p class="sheet__text" id="join-sale-desc">Join this sale to use the same discount schedule.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="join-sale-confirm">Join Sale</button>
-        <button class="sheet__btn sheet__btn--secondary" id="join-sale-cancel">Cancel</button>
+        <button class="ec-btn ec-btn-primary" id="join-sale-confirm">Join Sale</button>
+        <button class="ec-btn ec-btn-secondary" id="join-sale-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -616,7 +616,7 @@
       <p class="sheet__title">Join a Sale</p>
       <p class="sheet__text">Scan the QR code shown on the organizer's phone, or enter the 6-digit code below.</p>
 
-      <button type="button" class="sheet__btn sheet__btn--primary join-scan-btn" id="join-scan-button">
+      <button type="button" class="ec-btn ec-btn-primary join-scan-btn" id="join-scan-button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M21 7V5a2 2 0 0 0-2-2h-2"/><path d="M3 17v2a2 2 0 0 0 2 2h2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 12h10"/></svg>
         <span>Scan QR Code</span>
       </button>
@@ -663,9 +663,9 @@
       <input type="text" inputmode="decimal" class="haggle-input" id="haggle-input" placeholder="0.00" autocomplete="off">
       <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="haggle-apply">Apply</button>
+        <button class="ec-btn ec-btn-primary" id="haggle-apply">Apply</button>
         <button class="sheet__btn sheet__btn--danger-outline" id="haggle-remove" hidden>Remove Discount</button>
-        <button class="sheet__btn sheet__btn--secondary" id="haggle-cancel">Cancel</button>
+        <button class="ec-btn ec-btn-secondary" id="haggle-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -704,9 +704,9 @@
         </div>
       </div>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="ticket-discount-apply">Apply Discount</button>
+        <button class="ec-btn ec-btn-primary" id="ticket-discount-apply">Apply Discount</button>
         <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
-        <button class="sheet__btn sheet__btn--secondary" id="ticket-discount-cancel">Cancel</button>
+        <button class="ec-btn ec-btn-secondary" id="ticket-discount-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -725,8 +725,8 @@
       <p class="sheet__title sheet__title--small cancel-confirm__title">Cancel Invoice?</p>
       <p class="sheet__text">This will void the invoice. This can't be undone.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--danger" id="cancel-confirm-yes">Cancel Invoice</button>
-        <button class="sheet__btn sheet__btn--secondary" id="cancel-confirm-no">Keep Invoice</button>
+        <button class="ec-btn ec-btn-destructive" id="cancel-confirm-yes">Cancel Invoice</button>
+        <button class="ec-btn ec-btn-secondary" id="cancel-confirm-no">Keep Invoice</button>
       </div>
     </div>
   </div>
@@ -792,8 +792,8 @@
       <input type="text" class="consignor-form__input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
 
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="consignor-save">Save</button>
-        <button class="sheet__btn sheet__btn--danger" id="consignor-delete" hidden>Delete Consignor</button>
+        <button class="ec-btn ec-btn-primary" id="consignor-save">Save</button>
+        <button class="ec-btn ec-btn-destructive" id="consignor-delete" hidden>Delete Consignor</button>
       </div>
     </div>
   </div>
@@ -812,9 +812,9 @@
       <p class="sheet__text" id="speech-confirm-desc">Add item</p>
       <p class="sheet__price" id="speech-confirm-price">$0.00</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="speech-confirm-btn">Confirm</button>
-        <button class="sheet__btn sheet__btn--primary" id="speech-edit-btn">Edit</button>
-        <button class="sheet__btn sheet__btn--secondary" id="speech-cancel-btn">Cancel</button>
+        <button class="ec-btn ec-btn-primary" id="speech-confirm-btn">Confirm</button>
+        <button class="ec-btn ec-btn-primary" id="speech-edit-btn">Edit</button>
+        <button class="ec-btn ec-btn-secondary" id="speech-cancel-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -826,8 +826,8 @@
       <p class="sheet__heard" id="speech-fail-heard">Heard: <span id="speech-fail-transcript">"..."</span></p>
       <p class="sheet__tip" id="speech-fail-tip">Hold the button, speak clearly, then release.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="speech-retry-btn">Try Again</button>
-        <button class="sheet__btn sheet__btn--secondary" id="speech-fail-cancel-btn">Cancel</button>
+        <button class="ec-btn ec-btn-primary" id="speech-retry-btn">Try Again</button>
+        <button class="ec-btn ec-btn-secondary" id="speech-fail-cancel-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -842,7 +842,7 @@
       </div>
       <ul class="sheet__item-list" id="item-sheet-list"></ul>
       <div class="sheet__actions" id="item-sheet-actions" hidden>
-        <button class="sheet__action-link sheet__action-link--danger" id="item-sheet-clear" type="button">Clear all items</button>
+        <button class="ec-link-destructive" id="item-sheet-clear" type="button">Clear all items</button>
       </div>
     </div>
   </div>
@@ -861,7 +861,7 @@
       <p class="sheet__title">How to Use Voice Input</p>
       <p class="sheet__text">Press and hold the 🎤 Speak button while you say a price. Try something like "twenty five dollars" or "chair twelve dollars" to include a description. Release when you're done.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="mic-guide-btn">Got It</button>
+        <button class="ec-btn ec-btn-primary" id="mic-guide-btn">Got It</button>
       </div>
     </div>
   </div>
@@ -872,8 +872,8 @@
       <p class="sheet__title" id="speech-permission-title">Voice Input</p>
       <p class="sheet__text" id="speech-permission-body">Voice input needs microphone access to work.</p>
       <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--confirm" id="speech-permission-allow">Allow Microphone</button>
-        <button class="sheet__btn sheet__btn--secondary" id="speech-permission-dismiss">Use Number Pad Instead</button>
+        <button class="ec-btn ec-btn-primary" id="speech-permission-allow">Allow Microphone</button>
+        <button class="ec-btn ec-btn-secondary" id="speech-permission-dismiss">Use Number Pad Instead</button>
       </div>
     </div>
   </div>

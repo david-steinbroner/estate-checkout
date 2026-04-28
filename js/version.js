@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v177';
+const APP_VERSION = 'v178';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v178',
+    date: '2026-04-28',
+    changes: [
+      'Internal: every button and link in the app now uses the canonical naming (ec-btn / ec-link) — first major step in the design system migration. No user-visible changes except the Join Sale Scan QR button is now green (was blue) and the Cancel buttons in confirmation sheets are now blue-tinted (were white-bordered).'
+    ]
+  },
   {
     version: 'v177',
     date: '2026-04-28',
