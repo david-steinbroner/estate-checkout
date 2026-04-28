@@ -38,7 +38,10 @@ const Dashboard = {
       customerCount: document.getElementById('dashboard-customers'),
       revenue: document.getElementById('dashboard-revenue'),
       avgTicket: document.getElementById('dashboard-avg'),
-      filtersContainer: document.getElementById('dashboard-filters'),
+      filterTrigger: document.getElementById('dashboard-filter-trigger'),
+      filterLabel: document.getElementById('dashboard-filter-label'),
+      filterModal: document.getElementById('dashboard-filter-modal'),
+      filterList: document.getElementById('dashboard-filter-list'),
       sortButton: document.getElementById('dashboard-sort'),
       transactionList: document.getElementById('dashboard-transactions'),
       emptyState: document.getElementById('dashboard-empty'),
@@ -78,13 +81,26 @@ const Dashboard = {
       });
     }
 
-    // Filter pill clicks (event delegation)
-    if (this.elements.filtersContainer) {
-      this.elements.filtersContainer.addEventListener('click', (e) => {
-        const pill = e.target.closest('.dashboard-filter');
-        if (!pill) return;
-        this.activeFilter = pill.dataset.filter;
+    // Filter pill → open the filter sheet
+    if (this.elements.filterTrigger) {
+      this.elements.filterTrigger.addEventListener('click', () => this.openFilterSheet());
+    }
+
+    // Filter sheet: pick an option
+    if (this.elements.filterList) {
+      this.elements.filterList.addEventListener('click', (e) => {
+        const item = e.target.closest('.ec-picker-item');
+        if (!item) return;
+        this.activeFilter = item.dataset.filter;
+        this.closeFilterSheet();
         this.render();
+      });
+    }
+
+    // Filter sheet: tap-backdrop to close
+    if (this.elements.filterModal) {
+      this.elements.filterModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.filterModal) this.closeFilterSheet();
       });
     }
 
@@ -146,8 +162,8 @@ const Dashboard = {
     // Revenue by consignor card (V2 §1.6)
     this.renderConsignorRevenue(transactions);
 
-    // Render filter pills with counts
-    this.renderFilterPills(transactions);
+    // Update filter trigger label with the active filter + its count
+    this.renderFilterTrigger(transactions);
 
     // Update sort toggle text
     this.renderSortToggle();
@@ -276,31 +292,61 @@ const Dashboard = {
   },
 
   /**
-   * Render filter pills with live counts
+   * Filter options with their human labels (single source of truth for both
+   * the trigger label and the filter sheet rows).
    */
-  renderFilterPills(transactions) {
-    if (!this.elements.filtersContainer) return;
+  _filterOptions: [
+    { key: 'all', label: 'All' },
+    { key: 'open', label: 'Open' },
+    { key: 'unpaid', label: 'Unpaid' },
+    { key: 'paid', label: 'Paid' },
+    { key: 'void', label: 'Void' }
+  ],
 
-    const counts = {
+  _filterCounts(transactions) {
+    return {
       all: transactions.length,
       open: transactions.filter(t => t.status === 'open').length,
       unpaid: transactions.filter(t => t.status === 'unpaid').length,
       paid: transactions.filter(t => t.status === 'paid').length,
       void: transactions.filter(t => t.status === 'void').length
     };
+  },
 
-    const pills = [
-      { key: 'all', label: 'All' },
-      { key: 'open', label: 'Open' },
-      { key: 'unpaid', label: 'Unpaid' },
-      { key: 'paid', label: 'Paid' },
-      { key: 'void', label: 'Void' }
-    ];
+  /**
+   * Update the filter pill's label to reflect the active filter + count.
+   */
+  renderFilterTrigger(transactions) {
+    if (!this.elements.filterLabel) return;
+    const counts = this._filterCounts(transactions);
+    const opt = this._filterOptions.find(o => o.key === this.activeFilter) || this._filterOptions[0];
+    this.elements.filterLabel.textContent = `${opt.label} (${counts[opt.key]})`;
+  },
 
-    this.elements.filtersContainer.innerHTML = pills.map(pill => {
-      const active = this.activeFilter === pill.key ? ' dashboard-filter--active' : '';
-      return `<button class="dashboard-filter dashboard-filter--${pill.key}${active}" data-filter="${pill.key}" type="button">${pill.label} (${counts[pill.key]})</button>`;
+  /**
+   * Open the filter bottom sheet, rendering all 5 options with live counts
+   * and a checkmark on the active one.
+   */
+  openFilterSheet() {
+    if (!this.elements.filterModal || !this.elements.filterList) return;
+    const transactions = this.getTransactionsForCurrentSale();
+    const counts = this._filterCounts(transactions);
+
+    this.elements.filterList.innerHTML = this._filterOptions.map(opt => {
+      const selected = opt.key === this.activeFilter ? ' ec-picker-item--selected' : '';
+      return `
+        <li class="ec-picker-item${selected}" data-filter="${opt.key}">
+          <span class="ec-picker-item__label">${opt.label} (${counts[opt.key]})</span>
+          <span class="ec-picker-item__check" aria-hidden="true">✓</span>
+        </li>
+      `;
     }).join('');
+
+    this.elements.filterModal.classList.add('visible');
+  },
+
+  closeFilterSheet() {
+    if (this.elements.filterModal) this.elements.filterModal.classList.remove('visible');
   },
 
   /**

@@ -35,7 +35,8 @@ const Scan = {
       status: document.getElementById('scan-status'),
       error: document.getElementById('scan-error'),
       retryButton: document.getElementById('scan-retry'),
-      newCustomerButton: document.getElementById('scan-new-customer')
+      newCustomerButton: document.getElementById('scan-new-customer'),
+      backButton: document.getElementById('scan-back')
     };
   },
 
@@ -55,6 +56,19 @@ const Scan = {
       this.elements.newCustomerButton.addEventListener('click', () => {
         Checkout.clearAll();
         App.showScreen('checkout');
+      });
+    }
+
+    // Back button — return to the previous screen, or dashboard as fallback.
+    // Transient screens (payment, qr, scan itself) are skipped as targets:
+    // returning there would land the user in a confirmation that's already
+    // done. showScreen() stops the camera via its scan-cleanup hook.
+    if (this.elements.backButton) {
+      this.elements.backButton.addEventListener('click', () => {
+        const transient = new Set(['payment', 'qr', 'scan']);
+        const prev = App._previousScreen;
+        const target = (prev && !transient.has(prev)) ? prev : 'dashboard';
+        App.showScreen(target);
       });
     }
   },

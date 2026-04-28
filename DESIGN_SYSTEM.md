@@ -541,7 +541,8 @@ For consignor color picker. Already a clean implementation — codified here as 
 - Handle indicator: 36×5, `--color-text-tertiary`, `--radius-pill`, centered at `--space-md` from top
 - Padding: `--space-lg`
 - Backdrop: `--overlay-sheet-backdrop`
-- Max height: 85vh, content scrolls
+- Max height: 80dvh, content scrolls
+- **Title-to-content gap:** `--sheet-content-gap` (24px) for normal-sized titles, `--sheet-content-gap-tight` (16px) for `.sheet__title--small` (terse confirms). Applied via `margin-bottom` on the title element. Every sheet inherits this — first content child should not override `margin-top`.
 
 **`.ec-menu-context` — Context Menu (iOS native popover)**
 - Small floating panel, `--radius-lg`, `--color-surface` bg

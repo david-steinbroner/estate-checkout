@@ -91,6 +91,13 @@
   --space-2xl: 28px;
   --space-3xl: 40px;
 
+  /* Sheet content gap: vertical breathing room between a sheet's title and
+     its first content section. Two values so terse confirms (Cancel Order?,
+     Clear all items?) don't feel airy while taller forms (Add Consignor,
+     Sale Confirmation) get proper room. */
+  --sheet-content-gap: 24px;
+  --sheet-content-gap-tight: 16px;
+
   /* === Typography: Font Family (V2 adds SF Pro variants + rounded for numbers) === */
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
@@ -624,51 +631,11 @@ body {
   border-bottom: none;
 }
 
-/* Swipe-to-delete structure */
-.item-row--swipeable {
-  position: relative;
-  overflow: hidden;
-}
-
-.item-row__delete-bg {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 56px;
-  background: var(--color-danger);
-  color: var(--color-text-on-danger);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
-
 .item-row__content {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   background: var(--color-bg);
-  will-change: transform;
-  z-index: 1;
-}
-
-/* Swipe hint tooltip */
-.swipe-hint {
-  text-align: center;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--space-sm);
-  transition: opacity 0.3s ease-out;
-}
-
-.swipe-hint--fading {
-  opacity: 0;
 }
 
 .item-row__qty {
@@ -909,13 +876,16 @@ body {
   border-color: var(--color-primary);
 }
 
+/* Mic sits inside a 48px input — visual circle is 40px so it doesn't
+   touch the input borders; the input itself is part of the touch area
+   context, matching the iOS native pattern of embedded action buttons. */
 .entry-screen__mic {
   position: absolute;
-  right: 6px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 50%;
   background: var(--color-primary);
@@ -943,8 +913,8 @@ body {
 }
 
 .entry-screen__mic svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -969,19 +939,24 @@ body {
 }
 
 .entry-screen__qty-btn {
-  width: 36px;
-  height: 36px;
+  width: var(--height-touch-min);
+  height: var(--height-touch-min);
   border: 1px solid var(--color-border);
   border-radius: 50%;
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+}
+
+.entry-screen__qty-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .entry-screen__qty-btn:active {
@@ -1001,9 +976,14 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Sticky footer: primary action — never falls below the fold */
+/* Sticky footer: primary action — never falls below the fold.
+   Stacks Save above Delete (when in edit mode) so Save remains the primary
+   target and Delete is a deliberate secondary action. */
 .entry-screen__footer {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   padding: var(--space-md) var(--space-lg);
   padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
@@ -1037,6 +1017,24 @@ body {
   pointer-events: none;
 }
 
+.entry-screen__delete {
+  width: 100%;
+  height: 56px;
+  background: var(--color-danger);
+  color: var(--color-text-on-danger);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+}
+
+.entry-screen__delete:active {
+  background: var(--color-danger-dark);
+}
+
 /* === Number Pad === */
 .numpad {
   display: grid;
@@ -1065,7 +1063,17 @@ body {
 }
 
 .numpad__button--backspace {
-  font-size: var(--font-size-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.numpad__button--backspace svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  color: var(--color-primary);
 }
 
 /* === Action Bar === */
@@ -1748,6 +1756,67 @@ body {
   background: var(--color-primary-light);
 }
 
+/* === Join Sale Instruction Sheet — manual code entry === */
+.join-code-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0 var(--space-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.join-code-divider::before,
+.join-code-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-divider);
+}
+
+.join-code-input {
+  width: 100%;
+  height: var(--height-input);
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  letter-spacing: 0.25em;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tinted);
+  color: var(--color-text);
+  padding: 0 var(--space-lg);
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
+}
+
+.join-code-input::placeholder {
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.25em;
+}
+
+.join-code-input:focus {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.join-code-status {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.join-code-status--error {
+  color: var(--color-danger);
+}
+
 /* === Haggle & Invoice Discount Sheets === */
 .haggle-options {
   display: flex;
@@ -2003,7 +2072,7 @@ body {
   font-size: 28px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--sheet-content-gap);
   letter-spacing: -0.02em;
   line-height: var(--line-height-tight);
 }
@@ -2012,47 +2081,18 @@ body {
   font-size: var(--font-size-xl);
   letter-spacing: 0;
   line-height: var(--line-height-normal);
+  margin-bottom: var(--sheet-content-gap-tight);
 }
 
-/* === Sheet: Detail variant (V2 §1.4.B Wallet Detail archetype) === */
+/* === Sheet: Detail variant (V2 §1.4.B Wallet Detail archetype).
+   Left-aligned title for dense detail views. Dismiss via swipe-down handle
+   or backdrop tap, like every other sheet. */
 .sheet--detail {
   text-align: left;
-  padding-top: var(--space-2xl); /* room for handle (5px) + close X */
 }
 
 .sheet--detail .sheet__title {
   text-align: left;
-  padding-right: 52px; /* clear the close button */
-}
-
-.sheet__close {
-  position: absolute;
-  top: var(--space-lg);
-  right: var(--space-lg);
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: var(--color-surface-tinted);
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  padding: 0;
-  z-index: 1;
-  transition: background var(--duration-fast, 150ms) ease;
-}
-
-.sheet__close:active {
-  background: var(--color-bg-active);
-}
-
-.sheet__close svg {
-  width: 14px;
-  height: 14px;
-  display: block;
 }
 
 .sheet__hero {
@@ -2589,7 +2629,7 @@ body {
 
 .setup-card .discount-row__content {
   background: transparent;
-  height: 48px;
+  min-height: 48px;
   padding: var(--space-md) var(--space-lg);
 }
 
@@ -2755,37 +2795,17 @@ body {
 }
 
 .discount-row {
-  position: relative;
-  overflow: hidden;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
 
-.discount-row__delete-bg {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 56px;
-  background: var(--color-danger);
-  color: var(--color-text-on-danger);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
 .discount-row__content {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--height-input);
+  min-height: var(--height-input);
   background: var(--color-surface);
-  padding: 0 var(--space-lg);
-  will-change: transform;
-  z-index: 1;
+  padding: var(--space-sm) var(--space-lg);
 }
 
 .discount-row__label {
@@ -2806,6 +2826,14 @@ body {
 .discount-row__right {
   display: flex;
   align-items: center;
+  gap: var(--space-xs);
+}
+
+/* When the inline edit surfaces a "Remove this day" link, stack the right
+   column so the input row sits on top and the link below. */
+.discount-row__right:has(.discount-row__remove) {
+  flex-direction: column;
+  align-items: flex-end;
   gap: var(--space-xs);
 }
 
@@ -2857,18 +2885,19 @@ body {
 }
 
 .discount-row__remove {
-  width: var(--height-touch-min);
-  height: var(--height-touch-min);
-  margin-left: auto;
   border: none;
   background: transparent;
   color: var(--color-danger);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: var(--space-xs) 0;
+  align-self: flex-end;
+}
+
+.discount-row__remove:active {
+  opacity: 0.6;
 }
 
 
@@ -2935,7 +2964,7 @@ body {
 }
 
 #sale-confirm-modal .sheet__title {
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--sheet-content-gap);
 }
 
 .sale-confirm__summary {
@@ -3577,6 +3606,37 @@ body {
   position: relative;
 }
 
+.scan-back {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + var(--space-md));
+  left: var(--space-md);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  color: var(--color-text-on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.scan-back:active {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.scan-back svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .scan-viewfinder {
   flex: 1;
   position: relative;
@@ -4040,10 +4100,12 @@ body {
   flex-shrink: 0;
 }
 
-/* Dashboard Filter & Sort Controls */
+/* Dashboard Filter & Sort Controls — single row, two pills.
+   Filter pill opens a bottom sheet; sort pill toggles direction. */
 .dashboard-controls {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-sm);
   padding: var(--space-md) var(--space-lg);
   background: var(--color-surface);
@@ -4051,81 +4113,33 @@ body {
   flex-shrink: 0;
 }
 
-.dashboard-controls__top {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.dashboard-filters {
-  display: flex;
-  gap: var(--space-sm);
-  min-width: 0;
-  overflow-x: auto;
-  margin: 0 calc(-1 * var(--space-lg));
-  padding: 0 var(--space-lg);
-  scrollbar-width: none;
-}
-
-.dashboard-filters::-webkit-scrollbar {
-  display: none;
-}
-
-.dashboard-filter {
+.dashboard-pill {
   display: inline-flex;
   align-items: center;
-  height: 32px;
+  gap: var(--space-xs);
+  height: var(--height-touch-min);
   padding: 0 var(--space-md);
   border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: var(--color-text-secondary);
+  color: var(--color-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.dashboard-filter--active {
-  border-color: transparent;
-  color: var(--color-text-on-dark);
+.dashboard-pill:active {
+  background: var(--color-bg-hover);
 }
 
-/* Active pill colors match status colors */
-.dashboard-filter--all.dashboard-filter--active {
-  background: var(--color-primary);
-}
-
-.dashboard-filter--open.dashboard-filter--active {
-  background: var(--color-primary);
-}
-
-.dashboard-filter--unpaid.dashboard-filter--active {
-  background: var(--color-pending);
-}
-
-.dashboard-filter--paid.dashboard-filter--active {
-  background: var(--color-success);
-}
-
-.dashboard-filter--void.dashboard-filter--active {
-  background: var(--color-text-secondary);
-}
-
-.dashboard-sort {
-  background: none;
-  border: none;
-  font-size: var(--font-size-sm);
+.dashboard-pill__chevron {
+  width: 10px;
+  height: 7px;
   color: var(--color-text-secondary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
   flex-shrink: 0;
-  min-height: var(--height-touch-min);
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-sm);
 }
 
 /* Dashboard Transaction List */

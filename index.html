@@ -177,6 +177,11 @@
 
   <!-- QR Scan Screen -->
   <div id="screen-scan" class="screen scan-screen">
+    <!-- Back button: returns to the previous screen, stops the camera. -->
+    <button class="scan-back" id="scan-back" type="button" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+
     <!-- Camera Viewfinder -->
     <div class="scan-viewfinder" id="scan-viewfinder">
       <video id="scan-video" autoplay playsinline></video>
@@ -269,7 +274,7 @@
       </div>
       <div class="dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-avg">$0.00</span>
-        <span class="dashboard-stat__label">Avg Invoice</span>
+        <span class="dashboard-stat__label">Avg</span>
       </div>
     </div>
 
@@ -282,14 +287,13 @@
       <ul class="consignor-revenue__list" id="consignor-revenue-list"></ul>
     </div>
 
-    <!-- Filter & Sort Controls -->
+    <!-- Filter & Sort Controls (one row, two pills) -->
     <div class="dashboard-controls">
-      <div class="dashboard-controls__top">
-        <button class="dashboard-sort" id="dashboard-sort" type="button">Newest First ↓</button>
-      </div>
-      <div class="dashboard-filters" id="dashboard-filters">
-        <!-- Filter pills rendered by JS -->
-      </div>
+      <button class="dashboard-pill" id="dashboard-filter-trigger" type="button">
+        <span class="dashboard-pill__label" id="dashboard-filter-label">All (0)</span>
+        <svg class="dashboard-pill__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+      </button>
+      <button class="dashboard-pill" id="dashboard-sort" type="button">Newest First ↓</button>
     </div>
 
     <!-- Transaction List -->
@@ -341,7 +345,7 @@
       </div>
       <div class="paused-stat">
         <span class="paused-stat__value" id="paused-avg">$0.00</span>
-        <span class="paused-stat__label">Avg Invoice</span>
+        <span class="paused-stat__label">Avg</span>
       </div>
     </div>
 
@@ -399,9 +403,13 @@
         <!-- Qty row -->
         <div class="entry-screen__qty">
           <span class="entry-screen__qty-label">Qty</span>
-          <button class="entry-screen__qty-btn" id="add-item-qty-minus" type="button" aria-label="Decrease quantity">&minus;</button>
+          <button class="entry-screen__qty-btn" id="add-item-qty-minus" type="button" aria-label="Decrease quantity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+          </button>
           <span class="entry-screen__qty-value" id="add-item-qty">1</span>
-          <button class="entry-screen__qty-btn" id="add-item-qty-plus" type="button" aria-label="Increase quantity">+</button>
+          <button class="entry-screen__qty-btn" id="add-item-qty-plus" type="button" aria-label="Increase quantity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
         </div>
 
         <!-- Numpad -->
@@ -417,7 +425,9 @@
           <button class="numpad__button" data-value="9">9</button>
           <button class="numpad__button" data-value=".">.</button>
           <button class="numpad__button" data-value="0">0</button>
-          <button class="numpad__button numpad__button--backspace" data-value="backspace">⌫</button>
+          <button class="numpad__button numpad__button--backspace" data-value="backspace" aria-label="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M18 9l-6 6M12 9l6 6"/></svg>
+          </button>
         </div>
 
         <!-- Consignor chip (V2 §1.6) -->
@@ -434,6 +444,7 @@
       <!-- Sticky footer with primary action -->
       <div class="entry-screen__footer">
         <button class="entry-screen__confirm" id="add-item-confirm">Add Item</button>
+        <button class="entry-screen__delete" id="add-item-delete" type="button" hidden>Delete Item</button>
       </div>
     </div>
   </div>
@@ -596,10 +607,24 @@
     <div class="sheet">
       <p class="sheet__title">Join a Sale</p>
       <p class="sheet__text">Scan the QR code shown on the organizer's phone with your camera app.</p>
-      <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">The organizer can show the code by tapping "Share Sale" on their device.</p>
-      <div class="sheet__buttons">
-        <button class="sheet__btn sheet__btn--secondary" id="join-instruction-done">Got It</button>
-      </div>
+
+      <div class="join-code-divider"><span>or enter the code</span></div>
+
+      <input
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="6"
+        class="join-code-input"
+        id="join-code-input"
+        placeholder="000000"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        aria-label="Enter 6-digit sale code"
+      >
+      <p class="join-code-status" id="join-code-status" hidden></p>
     </div>
   </div>
 
@@ -670,6 +695,14 @@
         <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
         <button class="sheet__btn sheet__btn--secondary" id="ticket-discount-cancel">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Filter Picker Sheet -->
+  <div class="overlay" id="dashboard-filter-modal">
+    <div class="sheet">
+      <p class="sheet__title">Filter</p>
+      <ul class="ec-picker-list" id="dashboard-filter-list"></ul>
     </div>
   </div>
 
@@ -744,7 +777,6 @@
       <div class="sheet__buttons">
         <button class="sheet__btn sheet__btn--confirm" id="consignor-save">Save</button>
         <button class="sheet__btn sheet__btn--danger" id="consignor-delete" hidden>Delete Consignor</button>
-        <button class="sheet__btn sheet__btn--secondary" id="consignor-cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -778,9 +810,6 @@
   <!-- Item List Sheet — V2 Wallet Detail archetype -->
   <div class="overlay" id="item-sheet-backdrop">
     <div class="sheet sheet--detail" id="item-sheet">
-      <button class="sheet__close" id="item-sheet-close" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
-      </button>
       <p class="sheet__title sheet__title--editable" id="item-sheet-title">All Items</p>
       <div class="sheet__hero">
         <span class="sheet__hero-amount" id="item-sheet-total">$0.00</span>

@@ -68,7 +68,8 @@ const App = {
       joinSaleCancel: document.getElementById('join-sale-cancel'),
       // Join instruction sheet
       joinInstructionModal: document.getElementById('join-instruction-modal'),
-      joinInstructionDone: document.getElementById('join-instruction-done'),
+      joinCodeInput: document.getElementById('join-code-input'),
+      joinCodeStatus: document.getElementById('join-code-status'),
       // Join Sale button on setup
       joinSaleButton: document.getElementById('join-sale-button'),
       // Edit sale sheet
@@ -266,16 +267,20 @@ const App = {
       this.headerElements.joinSaleButton.addEventListener('click', () => this.showJoinInstruction());
     }
 
-    // Join instruction done/backdrop
-    if (this.headerElements.joinInstructionDone) {
-      this.headerElements.joinInstructionDone.addEventListener('click', () => {
-        this.headerElements.joinInstructionModal.classList.remove('visible');
+    // Join instruction sheet — manual code entry with auto-submit on 6 digits
+    if (this.headerElements.joinCodeInput) {
+      this.headerElements.joinCodeInput.addEventListener('input', (e) => {
+        // Strip non-digits defensively (paste, autofill, etc.)
+        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 6);
+        if (cleaned !== e.target.value) e.target.value = cleaned;
+        this._clearJoinCodeStatus();
+        if (cleaned.length === 6) this._submitJoinCode(cleaned);
       });
     }
     if (this.headerElements.joinInstructionModal) {
       this.headerElements.joinInstructionModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.joinInstructionModal) {
-          this.headerElements.joinInstructionModal.classList.remove('visible');
+          this._closeJoinInstruction();
         }
       });
     }
@@ -868,13 +873,11 @@ const App = {
     const modal = document.getElementById('consignor-modal');
     const saveBtn = document.getElementById('consignor-save');
     const deleteBtn = document.getElementById('consignor-delete');
-    const cancelBtn = document.getElementById('consignor-cancel');
     const payoutType = document.getElementById('consignor-payout-type');
     const payoutValue = document.getElementById('consignor-payout-value');
 
     saveBtn.addEventListener('click', () => this._saveConsignor());
     deleteBtn.addEventListener('click', () => this._deleteConsignor());
-    cancelBtn.addEventListener('click', () => modal.classList.remove('visible'));
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.classList.remove('visible');
     });
@@ -1096,6 +1099,12 @@ const App = {
     if (this._stopSyncPoll) {
       this._stopSyncPoll();
       this._stopSyncPoll = null;
+    }
+
+    // Track previous screen so back-style buttons (e.g. scan-back) can
+    // return the user to where they came from instead of a hardcoded target.
+    if (this.currentScreen && this.currentScreen !== screenName) {
+      this._previousScreen = this.currentScreen;
     }
 
     // Hide all screens
@@ -1549,7 +1558,81 @@ const App = {
    * Show the join instruction sheet (from setup screen button)
    */
   showJoinInstruction() {
+    if (this.headerElements.joinCodeInput) {
+      this.headerElements.joinCodeInput.value = '';
+    }
+    this._clearJoinCodeStatus();
+    this._joinCodeInFlight = false;
     this.headerElements.joinInstructionModal.classList.add('visible');
+  },
+
+  _closeJoinInstruction() {
+    this.headerElements.joinInstructionModal.classList.remove('visible');
+    this._clearJoinCodeStatus();
+  },
+
+  _clearJoinCodeStatus() {
+    const el = this.headerElements.joinCodeStatus;
+    if (!el) return;
+    el.hidden = true;
+    el.textContent = '';
+    el.classList.remove('join-code-status--error');
+  },
+
+  _showJoinCodeStatus(message, isError = false) {
+    const el = this.headerElements.joinCodeStatus;
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+    el.classList.toggle('join-code-status--error', isError);
+  },
+
+  /**
+   * Submit a 6-digit code from the join instruction sheet.
+   * Defensive: trim + uppercase so legacy alphanumeric codes typed by hand
+   * still resolve, even though new codes are pure digits.
+   */
+  async _submitJoinCode(rawCode) {
+    if (this._joinCodeInFlight) return;
+    const code = rawCode.trim().toUpperCase();
+    if (code.length !== 6) return;
+
+    this._joinCodeInFlight = true;
+    this._showJoinCodeStatus('Looking up sale…', false);
+
+    try {
+      const remote = await Sync.fetchSaleByCode(code);
+      if (!remote || !remote.shareCode) {
+        throw new Error('No sale data');
+      }
+
+      // Blur the input so the iOS keyboard dismisses before the next sheet opens
+      if (this.headerElements.joinCodeInput) this.headerElements.joinCodeInput.blur();
+
+      this.pendingJoinData = {
+        shareCode: remote.shareCode,
+        name: remote.name,
+        startDate: remote.startDate,
+        endDate: remote.endDate,
+        discounts: remote.discounts,
+        consignors: remote.consignors,
+        maxDiscountPercent: remote.maxDiscountPercent,
+        _remote: remote
+      };
+
+      this._closeJoinInstruction();
+      const sale = Storage.getSale();
+      this.showJoinConfirmation(this.pendingJoinData, !!sale);
+    } catch (err) {
+      console.warn('[join] code lookup failed:', err.message);
+      this._showJoinCodeStatus("That code isn't active. Check with the organizer.", true);
+      if (this.headerElements.joinCodeInput) {
+        this.headerElements.joinCodeInput.value = '';
+        this.headerElements.joinCodeInput.focus();
+      }
+    } finally {
+      this._joinCodeInFlight = false;
+    }
   },
 
   /**

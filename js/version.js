@@ -4,9 +4,47 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v166';
+const APP_VERSION = 'v170';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v170',
+    date: '2026-04-28',
+    changes: [
+      'Scan QR screen now has a back button in the top-left corner — returns you to whichever screen you came from. No more being stuck without a code in hand.',
+      'Add Item screen: Qty − / + buttons bumped to full 48px tap targets and converted to centered SVG icons (was 36px text glyphs that sat slightly off-center). Mic button icon also re-centered. Numpad backspace is now an SVG icon for crisp centering.',
+      'Add Consignor sheet: removed the redundant Cancel button. Swipe down or tap outside to dismiss, same pattern as every other sheet.',
+      'Sheets now have proper breathing room above their first content row — title and content no longer sit squished together.'
+    ]
+  },
+  {
+    version: 'v169',
+    date: '2026-04-28',
+    changes: [
+      'Dashboard: "Avg Invoice" → "Avg" — fits cleanly on one line.',
+      'Dashboard: filter pills consolidated into a single pill that opens a Filter sheet. Sort and Filter now share one row instead of two — saves vertical space and stops cutting off the Paid/Void filters on narrow screens.',
+      'Order #1 sheet: removed the redundant close X in the top-right corner. Swipe down or tap outside to dismiss, same as every other sheet.'
+    ]
+  },
+  {
+    version: 'v168',
+    date: '2026-04-28',
+    changes: [
+      'Removed swipe-to-delete on items and sale days — replaced with explicit Delete buttons that show up when you tap to edit. No more hidden gestures, no more swipe hint tooltip.',
+      'Editing an item: a red "Delete Item" button now appears under "Save Changes" on the Edit Item screen.',
+      'Editing a sale day discount: a "Remove this day" link appears next to the percent input (only when more than one day exists).',
+      'Tap an item or day, get all the actions in one place — no more swiping to discover delete.'
+    ]
+  },
+  {
+    version: 'v167',
+    date: '2026-04-28',
+    changes: [
+      'Share codes are now 6 digits instead of 6 letters/numbers — way easier to read aloud and to type.',
+      'Join Sale: you can now type the 6-digit code right into the Join sheet if scanning the QR isn\'t working. Auto-submits as soon as the 6th digit is entered.',
+      'Old alphanumeric codes from existing sales still work — only newly created sales use the new format.'
+    ]
+  },
   {
     version: 'v166',
     date: '2026-04-26',

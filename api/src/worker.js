@@ -42,12 +42,13 @@ function json(data, status = 200) {
   });
 }
 
-// Unambiguous chars only — no 0/O/1/I/L
+// 6-digit numeric codes — easier to type on iOS native numpad.
+// Address space: 1M codes (10^6). Plenty for current scale; legacy alphanumeric
+// codes already in D1 still resolve via the [A-Z0-9]+ route regex.
 function generateShareCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += Math.floor(Math.random() * 10);
   }
   return code;
 }
@@ -123,12 +124,15 @@ async function createSale(request, env) {
   const body = await request.json().catch(() => ({}));
   const id = crypto.randomUUID();
 
-  // Generate a unique share code (retry on collision — extremely rare at 32^6)
+  // Generate a unique share code (retry on collision).
+  // 1M code space — collisions should be vanishingly rare in practice.
+  // Warn at attempt >= 3 so an unexpected collision rate becomes visible in Workers logs.
   let shareCode;
   for (let attempts = 0; attempts < 10; attempts++) {
     shareCode = generateShareCode();
     const existing = await getSaleByShareCode(env, shareCode);
     if (!existing) break;
+    if (attempts >= 2) console.warn(`[generateShareCode] collision on attempt ${attempts + 1}: ${shareCode}`);
     if (attempts === 9) return json({ error: 'Could not generate unique share code' }, 500);
   }
 

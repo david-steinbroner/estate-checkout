@@ -164,12 +164,10 @@ const SaleSetup = {
   },
 
   /**
-   * Render the discount list with swipe-to-delete and tap-to-edit
+   * Render the discount list. Tap a row's discount value to edit; the inline
+   * edit also surfaces a "Remove this day" link when more than one day exists.
    */
   renderDiscountList() {
-    const canDelete = this.scheduleDays.length > 1;
-    const deleteIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
-
     const html = this.scheduleDays.map((dayObj, index) => {
       const dayNum = index + 1;
       const dateLabel = this._formatDateLabel(dayObj.date);
@@ -184,7 +182,6 @@ const SaleSetup = {
 
       return `
         <div class="discount-row" data-day-index="${index}">
-          ${canDelete ? `<div class="discount-row__delete-bg" data-delete-index="${index}">${deleteIcon}</div>` : ''}
           <div class="discount-row__content">
             <span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}<input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}"></span></span>
             <div class="discount-row__right">${rightHtml}</div>
@@ -222,68 +219,6 @@ const SaleSetup = {
         this.validateForm();
       });
     });
-
-    // Bind swipe-to-delete (only if more than 1 day)
-    if (canDelete) {
-      this.elements.discountList.querySelectorAll('.discount-row').forEach(row => {
-        this._bindSwipeToDelete(row);
-      });
-      this.elements.discountList.querySelectorAll('.discount-row__delete-bg').forEach(el => {
-        el.addEventListener('click', () => {
-          const idx = parseInt(el.dataset.deleteIndex);
-          this._deleteDay(idx);
-        });
-      });
-    }
-  },
-
-  /**
-   * Bind swipe-to-delete touch events on a discount row
-   */
-  _bindSwipeToDelete(row) {
-    const content = row.querySelector('.discount-row__content');
-    if (!content) return;
-
-    const MAX_SWIPE = 56;
-    const DELETE_THRESHOLD = 40;
-    let startX = 0;
-    let startY = 0;
-    let currentX = 0;
-    let swiping = false;
-
-    content.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-      currentX = 0;
-      swiping = false;
-      content.style.transition = 'none';
-    }, { passive: true });
-
-    content.addEventListener('touchmove', (e) => {
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - startX;
-      const deltaY = touch.clientY - startY;
-
-      if (!swiping && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
-        swiping = true;
-      }
-      if (!swiping) return;
-
-      e.preventDefault();
-      currentX = Math.max(-MAX_SWIPE, Math.min(0, deltaX));
-      content.style.transform = `translateX(${currentX}px)`;
-    }, { passive: false });
-
-    content.addEventListener('touchend', () => {
-      content.style.transition = 'transform 0.2s ease-out';
-      if (currentX < -DELETE_THRESHOLD) {
-        content.style.transform = `translateX(-${MAX_SWIPE}px)`;
-      } else {
-        content.style.transform = 'translateX(0)';
-      }
-      swiping = false;
-    });
   },
 
   /**
@@ -297,11 +232,14 @@ const SaleSetup = {
   },
 
   /**
-   * Open inline discount edit for a specific day
+   * Open inline discount edit for a specific day. When more than one day
+   * exists, surface a "Remove this day" link so the user has an explicit
+   * delete path (replaces the previous swipe-to-delete pattern).
    */
   _openDiscountEdit(index, rowEl) {
     const rightEl = rowEl.querySelector('.discount-row__right');
     const current = this.scheduleDays[index].discount || 0;
+    const canDelete = this.scheduleDays.length > 1;
 
     rightEl.innerHTML = `
       <div class="discount-row__edit">
@@ -309,13 +247,17 @@ const SaleSetup = {
           min="0" max="100" inputmode="numeric" data-day-index="${index}" placeholder="0">
         <span class="discount-row__suffix">% off</span>
       </div>
+      ${canDelete ? `<button type="button" class="discount-row__remove" data-remove-index="${index}">Remove this day</button>` : ''}
     `;
 
     const input = rightEl.querySelector('.discount-row__input');
     input.focus();
     input.select();
 
+    let removing = false;
+
     const commitEdit = () => {
+      if (removing) return;
       let value = parseInt(input.value) || 0;
       value = Math.max(0, Math.min(100, value));
       this.scheduleDays[index].discount = value;
@@ -329,6 +271,18 @@ const SaleSetup = {
         input.blur();
       }
     });
+
+    const removeBtn = rightEl.querySelector('.discount-row__remove');
+    if (removeBtn) {
+      // mousedown fires before the input's blur, so we mark `removing` to
+      // suppress commitEdit's re-render and let _deleteDay do the rendering.
+      removeBtn.addEventListener('mousedown', () => { removing = true; });
+      removeBtn.addEventListener('touchstart', () => { removing = true; }, { passive: true });
+      removeBtn.addEventListener('click', () => {
+        const idx = parseInt(removeBtn.dataset.removeIndex);
+        this._deleteDay(idx);
+      });
+    }
   },
 
   /**
