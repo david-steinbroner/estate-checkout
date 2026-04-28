@@ -542,6 +542,7 @@ For consignor color picker. Already a clean implementation — codified here as 
 - Padding: `--space-lg`
 - Backdrop: `--overlay-sheet-backdrop`
 - Max height: 80dvh, content scrolls
+- **Top padding:** `--sheet-top-padding` (40px) on every sheet variant (regular, `--detail`, `--menu`). Defines the space from the top edge of the sheet to where content (title or first row) begins. Clears the 5px handle indicator with breathing room above and below. Per-sheet styles must NOT override this — only side/bottom padding.
 - **Title-to-content gap:** `--sheet-content-gap` (24px) for normal-sized titles, `--sheet-content-gap-tight` (16px) for `.sheet__title--small` (terse confirms). Applied via `margin-bottom` on the title element. Every sheet inherits this — first content child should not override `margin-top`.
 
 **`.ec-menu-context` — Context Menu (iOS native popover)**

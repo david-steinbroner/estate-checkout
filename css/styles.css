@@ -98,6 +98,12 @@
   --sheet-content-gap: 24px;
   --sheet-content-gap-tight: 16px;
 
+  /* Sheet top padding: vertical space from the top of the sheet to where
+     content starts. Has to clear the 5px handle indicator (positioned 12px
+     from the top) AND leave breathing room. Single token applied to every
+     sheet variant — terse confirms, forms, menus all share it. */
+  --sheet-top-padding: 40px;
+
   /* === Typography: Font Family (V2 adds SF Pro variants + rounded for numbers) === */
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
@@ -2026,7 +2032,7 @@ body {
   background: var(--color-surface-raised);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: var(--space-2xl);
-  padding-top: calc(var(--space-md) + 5px + var(--space-md) + var(--space-md)); /* room for handle */
+  padding-top: var(--sheet-top-padding);
   padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
   /* dvh (dynamic viewport height) accounts for the iOS Safari URL bar.
      vh measures the full window even when chrome is visible — so a 80vh
@@ -2163,7 +2169,7 @@ body {
 /* === Menu Sheet (V2 §1.4.G — Settings/action-sheet pattern) === */
 .sheet--menu {
   background: var(--color-bg);
-  padding: var(--space-2xl) var(--space-md) var(--space-md);
+  padding: var(--sheet-top-padding) var(--space-md) var(--space-md);
   text-align: left;
 }
 
@@ -2253,28 +2259,7 @@ body {
   font-weight: var(--font-weight-semibold);
 }
 
-/* Cancel button — iOS action-sheet convention: white card, bold, separated */
-.ec-menu-cancel {
-  width: 100%;
-  height: 56px;
-  margin-top: var(--space-md);
-  background: var(--color-surface);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-  transition: background var(--duration-fast, 150ms) ease;
-}
-
-.ec-menu-cancel:active {
-  background: var(--color-bg-hover);
-}
-
-/* === Version label (inside menu sheet, below Cancel) === */
+/* === Version label (inside menu sheet, footer) === */
 .sheet__version {
   font-size: var(--font-size-footnote);
   color: var(--color-text-tertiary);
@@ -2958,13 +2943,13 @@ body {
   display: none;
 }
 
-/* Sale Confirmation Sheet */
+/* Sale Confirmation Sheet — only override side/bottom padding; top padding
+   stays on the canonical --sheet-top-padding so the title has the same
+   breathing room as every other sheet. */
 #sale-confirm-modal .sheet {
-  padding: var(--space-xl) var(--space-lg) var(--space-lg);
-}
-
-#sale-confirm-modal .sheet__title {
-  margin-bottom: var(--sheet-content-gap);
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
 }
 
 .sale-confirm__summary {

@@ -4,9 +4,21 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v170';
+const APP_VERSION = 'v171';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v171',
+    date: '2026-04-28',
+    changes: [
+      'Edit Sale: name, day override, and discount changes now sync to other devices on a shared sale (was saving locally but not propagating).',
+      'End Sale Permanently from the Paused screen now requires typing the sale name to confirm — same guardrail the menu version had.',
+      'Setup screen menu redesigned to match the in-sale menu pattern: tap menu and you see What\'s New + Share Feedback as proper rows with icons. Version number now shown at the bottom, same as during a sale.',
+      'Share Feedback now actually works — opens a feedback form in a new tab.',
+      'Removed the redundant Cancel buttons from both the setup menu and the in-sale menu. Swipe down or tap outside to dismiss.',
+      'Sale Confirmation sheet: top spacing fixed — title now has the same breathing room from the top of the sheet as every other sheet (was visibly squished).'
+    ]
+  },
   {
     version: 'v170',
     date: '2026-04-28',

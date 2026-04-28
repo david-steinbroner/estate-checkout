@@ -45,7 +45,6 @@ const App = {
       menuShare: document.getElementById('menu-share'),
       menuEndDay: document.getElementById('menu-end-day'),
       menuEndSale: document.getElementById('menu-end-sale'),
-      menuCancel: document.getElementById('menu-cancel'),
       menuWhatsNew: document.getElementById('menu-whats-new'),
       menuVersionLabel: document.getElementById('menu-version-label'),
       versionHistoryModal: document.getElementById('version-history-modal'),
@@ -80,7 +79,9 @@ const App = {
       // Setup menu
       setupMenuBtn: document.getElementById('setup-menu-btn'),
       setupMenuModal: document.getElementById('setup-menu-modal'),
-      setupMenuCancel: document.getElementById('setup-menu-cancel')
+      setupMenuWhatsNew: document.getElementById('setup-menu-whats-new'),
+      setupMenuFeedback: document.getElementById('setup-menu-feedback'),
+      setupMenuVersionLabel: document.getElementById('setup-menu-version-label')
     };
   },
 
@@ -174,9 +175,6 @@ const App = {
         this.showEndSaleConfirm();
       });
     }
-    if (this.headerElements.menuCancel) {
-      this.headerElements.menuCancel.addEventListener('click', () => this.closeMenu());
-    }
     if (this.headerElements.menuModal) {
       this.headerElements.menuModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.menuModal) this.closeMenu();
@@ -236,7 +234,10 @@ const App = {
       pausedDashboard.addEventListener('click', () => this.showScreen('dashboard'));
     }
     if (pausedEndSale) {
-      pausedEndSale.addEventListener('click', () => this.endSale());
+      // Route through the type-the-name confirmation, same as the menu's
+      // End Sale Permanently. Without this, ending the sale from the
+      // Paused screen would skip the guardrail.
+      pausedEndSale.addEventListener('click', () => this.showEndSaleConfirm());
     }
 
     // Share sale modal done/backdrop
@@ -285,23 +286,38 @@ const App = {
       });
     }
 
-    // Setup menu
+    // Setup menu — open/close + items (What's New, Share Feedback)
     if (this.headerElements.setupMenuBtn) {
       this.headerElements.setupMenuBtn.addEventListener('click', () => {
         this.headerElements.setupMenuModal.classList.add('visible');
       });
     }
-    if (this.headerElements.setupMenuCancel) {
-      this.headerElements.setupMenuCancel.addEventListener('click', () => {
-        this.headerElements.setupMenuModal.classList.remove('visible');
-      });
-    }
     if (this.headerElements.setupMenuModal) {
       this.headerElements.setupMenuModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.setupMenuModal) {
-          this.headerElements.setupMenuModal.classList.remove('visible');
+          this._closeSetupMenu();
         }
       });
+    }
+    if (this.headerElements.setupMenuWhatsNew) {
+      this.headerElements.setupMenuWhatsNew.addEventListener('click', () => {
+        this._closeSetupMenu();
+        this.openVersionHistory();
+      });
+    }
+    if (this.headerElements.setupMenuFeedback) {
+      this.headerElements.setupMenuFeedback.addEventListener('click', () => {
+        this._closeSetupMenu();
+        // Opens the feedback Google Form in a new tab.
+        window.open(
+          'https://docs.google.com/forms/d/e/1FAIpQLSf6XbPVyTISA1ED2Xp4ESGCXW7kE6eJsOIUamTOEonpqzxdXQ/viewform',
+          '_blank',
+          'noopener'
+        );
+      });
+    }
+    if (this.headerElements.setupMenuVersionLabel && typeof APP_VERSION !== 'undefined') {
+      this.headerElements.setupMenuVersionLabel.textContent = `Version ${APP_VERSION}`;
     }
 
     // Consignor sheet events (shared by Edit Sale + Setup)
@@ -335,10 +351,36 @@ const App = {
     }
   },
 
+  /**
+   * Close the setup menu sheet (no-active-sale state)
+   */
+  _closeSetupMenu() {
+    if (this.headerElements.setupMenuModal) {
+      this.headerElements.setupMenuModal.classList.remove('visible');
+    }
+  },
+
   // ── Edit Sale Sheet ──
 
   // Track whether an input is actively being edited in the Edit Sale sheet
   _editSaleEditing: false,
+
+  /**
+   * Persist edits made inside the Edit Sale sheet — local + remote.
+   * Local save is the source of truth; the sync.patchSale call propagates
+   * the synced fields (name, discounts) to other devices on this shared sale.
+   * dayOverride stays per-device and is not sent (worker schema doesn't have
+   * a column for it). Fire-and-forget; errors are logged but don't block.
+   */
+  _persistEditSale(sale) {
+    Storage.saveSale(sale);
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      Sync.patchSale(sale.id, sale.shareCode, {
+        name: sale.name,
+        discounts: sale.discounts
+      }).catch(err => console.warn('[sync] edit-sale patch failed:', err.message));
+    }
+  },
 
   /**
    * Open the edit sale sheet and render its content
@@ -493,7 +535,7 @@ const App = {
         const save = () => {
           const val = input.value.trim();
           if (val) sale.name = val;
-          Storage.saveSale(sale);
+          this._persistEditSale(sale);
           this._setEditSaleEditing(false);
           this.renderEditSale(sale);
         };
@@ -522,7 +564,7 @@ const App = {
         this._setEditSaleEditing(true);
         select.addEventListener('change', () => {
           sale.dayOverride = parseInt(select.value);
-          Storage.saveSale(sale);
+          this._persistEditSale(sale);
           this._setEditSaleEditing(false);
           this.renderEditSale(sale);
         });
@@ -553,7 +595,7 @@ const App = {
           if (!isNaN(val) && val >= 0 && val <= 100) {
             sale.discounts[day] = val;
           }
-          Storage.saveSale(sale);
+          this._persistEditSale(sale);
           this._setEditSaleEditing(false);
           this.renderEditSale(sale);
         };
@@ -589,7 +631,7 @@ const App = {
           sale.dayOverride = maxDay;
         }
 
-        Storage.saveSale(sale);
+        this._persistEditSale(sale);
         this.renderEditSale(sale);
       });
     });
@@ -603,7 +645,7 @@ const App = {
         const lastDiscount = days.length > 0 ? sale.discounts[Math.max(...days)] : 0;
         // Default new day to last discount + 25, capped at 100
         sale.discounts[nextDay] = Math.min(100, lastDiscount + 25);
-        Storage.saveSale(sale);
+        this._persistEditSale(sale);
         this.renderEditSale(sale);
       });
     }
