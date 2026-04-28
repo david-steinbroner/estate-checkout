@@ -1504,7 +1504,11 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: var(--space-xs);
-  margin-top: var(--space-md);
+  /* v175: bumped from --space-md (12px) to --space-xl (20px) so the section
+     boundary (input → next label) is meaningfully larger than the within-
+     section gap (label → input = 4px). Fixes the "squished sections" feel
+     on Add/Edit Consignor. */
+  margin-top: var(--space-xl);
 }
 
 .consignor-form__label:first-of-type {
@@ -3819,33 +3823,6 @@ body {
 
 .scan-error__retry:active {
   background: var(--color-primary-dark);
-}
-
-/* Scan Actions (bottom bar — z-index above scan-error overlay) */
-.scan-actions {
-  position: relative;
-  z-index: 11;
-  padding: var(--bottom-action-padding) var(--space-lg);
-  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
-  background: var(--overlay-opaque);
-  flex-shrink: 0;
-}
-
-.scan-action--new {
-  width: 100%;
-  height: var(--bottom-action-button-height);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.scan-action--new:active {
-  background: var(--color-success-dark);
 }
 
 /* === Payment Receive Screen === */

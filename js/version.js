@@ -9,9 +9,18 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v174';
+const APP_VERSION = 'v175';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v175',
+    date: '2026-04-28',
+    changes: [
+      'Removed the "New Order" button from the Scan QR screen — it was wiping the active cart on whichever device owned checkout. Use the menu to navigate.',
+      'End Sale Permanently: when the typed name doesn\'t match, you now see a clear error message under the field instead of just a disabled button.',
+      'Add Consignor: more breathing room between Name, Color, Payout, and Notes sections (was squished).'
+    ]
+  },
   {
     version: 'v174',
     date: '2026-04-28',

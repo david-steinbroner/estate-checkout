@@ -217,11 +217,6 @@
       <p class="scan-error__help">Enable camera permissions in your browser settings</p>
       <button class="scan-error__retry" id="scan-retry">Retry</button>
     </div>
-
-    <!-- Actions -->
-    <div class="scan-actions">
-      <button type="button" class="scan-action scan-action--new" id="scan-new-customer">New Order</button>
-    </div>
   </div>
 
   <!-- Payment Receive Screen -->
@@ -571,6 +566,7 @@
       <p class="sheet__text">This affects all joined devices. The sale cannot be reopened. Past invoices stay on the dashboard.</p>
       <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-md);">Type <strong id="end-sale-confirm-name" style="color:var(--color-text)"></strong> to confirm.</p>
       <input type="text" class="consignor-form__input" id="end-sale-confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
+      <p class="sheet__field-error" id="end-sale-confirm-error" hidden></p>
       <div class="sheet__buttons">
         <button class="sheet__btn sheet__btn--danger" id="end-sale-confirm" disabled>End Sale</button>
         <button class="sheet__btn sheet__btn--secondary" id="end-sale-cancel">Cancel</button>

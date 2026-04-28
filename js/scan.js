@@ -35,7 +35,6 @@ const Scan = {
       status: document.getElementById('scan-status'),
       error: document.getElementById('scan-error'),
       retryButton: document.getElementById('scan-retry'),
-      newCustomerButton: document.getElementById('scan-new-customer'),
       backButton: document.getElementById('scan-back')
     };
   },
@@ -48,14 +47,6 @@ const Scan = {
       this.elements.retryButton.addEventListener('click', () => {
         this.elements.error.hidden = true;
         this.start();
-      });
-    }
-
-    // New Customer button - clear cart and navigate to checkout
-    if (this.elements.newCustomerButton) {
-      this.elements.newCustomerButton.addEventListener('click', () => {
-        Checkout.clearAll();
-        App.showScreen('checkout');
       });
     }
 

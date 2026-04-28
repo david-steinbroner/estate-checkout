@@ -998,11 +998,26 @@ const App = {
     this._endSaleConfirmInputBound = true;
     const input = document.getElementById('end-sale-confirm-input');
     const confirmBtn = document.getElementById('end-sale-confirm');
+    const error = document.getElementById('end-sale-confirm-error');
     if (!input || !confirmBtn) return;
     input.addEventListener('input', () => {
       const sale = Storage.getSale();
       const saleName = sale ? sale.name : '';
-      confirmBtn.disabled = input.value.trim() !== saleName.trim();
+      const typed = input.value.trim();
+      const matches = typed === saleName.trim();
+      confirmBtn.disabled = !matches;
+      // Inline error: stay quiet while the field is empty (user hasn't tried
+      // anything yet) and while it matches. Show only when the user has typed
+      // something that doesn't match — case-sensitive, must match exactly.
+      if (error) {
+        if (typed.length > 0 && !matches) {
+          error.textContent = `Doesn't match — type "${saleName}" exactly (case matters).`;
+          error.hidden = false;
+        } else {
+          error.hidden = true;
+          error.textContent = '';
+        }
+      }
     });
   },
 
