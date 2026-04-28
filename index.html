@@ -102,7 +102,7 @@
       <div class="setup-section">
         <span class="ec-section-header">Sale Name</span>
         <div class="ec-card setup-card">
-          <div class="setup-card__row setup-card__row--input">
+          <div class="ec-card__row ec-card__row--input">
             <input
               type="text"
               id="setup-sale-name"
@@ -124,7 +124,7 @@
           <div class="discount-list" id="discount-list">
             <!-- Day rows rendered by JS (renderDiscountList) -->
           </div>
-          <div class="setup-card__row setup-card__row--action setup-card__row--split">
+          <div class="ec-card__row ec-card__row--action ec-card__row--split">
             <button class="ec-link-primary" id="add-day-button" type="button">+ Add Day</button>
             <button class="ec-link-destructive" id="days-edit-toggle" type="button" hidden>Remove</button>
           </div>
@@ -137,7 +137,7 @@
         <span class="ec-section-header">Consignors</span>
         <div class="ec-card setup-card">
           <div id="setup-consignor-list"></div>
-          <div class="setup-card__row setup-card__row--action setup-card__row--split">
+          <div class="ec-card__row ec-card__row--action ec-card__row--split">
             <button class="ec-link-primary" id="setup-add-consignor" type="button">+ Add Consignor</button>
             <button class="ec-link-destructive" id="consignors-edit-toggle" type="button" hidden>Remove</button>
           </div>
@@ -664,7 +664,7 @@
       <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="haggle-apply">Apply</button>
-        <button class="sheet__btn sheet__btn--danger-outline" id="haggle-remove" hidden>Remove Discount</button>
+        <button class="ec-btn ec-btn-destructive ec-btn-destructive--outline" id="haggle-remove" hidden>Remove Discount</button>
         <button class="ec-btn ec-btn-secondary" id="haggle-cancel">Cancel</button>
       </div>
     </div>
@@ -705,7 +705,7 @@
       </div>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="ticket-discount-apply">Apply Discount</button>
-        <button class="sheet__btn sheet__btn--danger-outline" id="ticket-discount-remove" hidden>Remove Discount</button>
+        <button class="ec-btn ec-btn-destructive ec-btn-destructive--outline" id="ticket-discount-remove" hidden>Remove Discount</button>
         <button class="ec-btn ec-btn-secondary" id="ticket-discount-cancel">Cancel</button>
       </div>
     </div>

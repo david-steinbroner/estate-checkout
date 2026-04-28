@@ -31,8 +31,7 @@
   /* === Colors: Brand / Primary === */
   --color-primary: #007AFF;             /* iOS systemBlue */
   --color-primary-dark: #0051D5;
-  --color-primary-light: rgba(0, 122, 255, 0.15);
-  --color-primary-tint: rgba(0, 122, 255, 0.15);  /* V2: secondary button bg */
+  --color-primary-tint: rgba(0, 122, 255, 0.15);  /* V2: secondary button bg, also used for "open" status pills */
 
   /* === Colors: Semantic — Success === */
   --color-success: #34C759;             /* iOS systemGreen */
@@ -166,16 +165,25 @@
   --height-header: 76px;
   --height-total-bar: 56px;
 
-  /* === Shadows === */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --shadow-qr: 0 2px 12px rgba(0, 0, 0, 0.15);
+  /* === Shadows ===
+     iOS uses almost none. Default is none; --shadow-sheet is for the
+     bottom-sheet floating chrome; --shadow-floating for context menus
+     or rare elevated panels. The previous --shadow-sm/-md/-lg/-qr
+     were declared but never referenced — removed v183. */
+  --shadow-sheet: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-floating: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-  /* === Transitions === */
-  --transition-fast: 100ms ease;
-  --transition-normal: 200ms ease;
-
+  /* === Motion ===
+     Durations apply to background, color, transform, opacity. Easing
+     curves match Material/iOS standard, decelerate-on-enter,
+     accelerate-on-exit. The previous --transition-fast/-normal were
+     declared but never referenced — removed v183. */
+  --duration-fast: 150ms;
+  --duration-default: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
 }
 
 /* === Reset & Base === */
@@ -272,7 +280,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, transform var(--duration-fast) ease;
   flex-shrink: 0;
 }
 
@@ -379,7 +387,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   border-bottom: 1px solid var(--color-divider);
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .running-total:active {
@@ -825,7 +833,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   padding: 0;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .entry-screen__back:active {
@@ -892,7 +900,7 @@ body {
   -webkit-touch-callout: none;
   touch-action: manipulation;
   padding: 0;
-  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
 .entry-screen__mic:active {
@@ -1001,7 +1009,7 @@ body {
   -webkit-user-select: none;
   user-select: none;
   letter-spacing: -0.01em;
-  transition: background var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
 .ec-btn:active {
@@ -1270,7 +1278,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   min-height: 52px;
   text-align: left;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
   letter-spacing: -0.01em;
 }
 
@@ -1472,7 +1480,7 @@ body {
   appearance: none;
   font-family: var(--font-family);
   outline: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .ec-input:focus {
@@ -1615,7 +1623,7 @@ body {
   text-align: left;
   -webkit-appearance: none;
   appearance: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .ec-picker-button:active {
@@ -1657,7 +1665,7 @@ body {
   border-bottom: 1px solid var(--color-divider);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .ec-picker-item:last-child {
@@ -1707,7 +1715,7 @@ body {
   height: var(--height-input);
   flex: 1;
   overflow: hidden;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
 
 .consignor-form__payout-input-wrap:focus-within {
@@ -1840,7 +1848,7 @@ body {
 
 .haggle-option:has(input:checked) {
   border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: var(--color-primary-tint);
 }
 
 .haggle-option input[type="radio"] {
@@ -1889,7 +1897,7 @@ body {
 
 .invoice-discount__mode:has(input:checked) {
   border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: var(--color-primary-tint);
 }
 
 .invoice-discount__mode input[type="radio"] {
@@ -2129,7 +2137,7 @@ body {
   border-bottom: 1px solid var(--color-divider);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .ec-menu-item:last-child {
@@ -2300,28 +2308,18 @@ body {
   margin-top: var(--space-lg); /* V2 §2.3a: gap from preceding content */
 }
 
-.sheet__btn {
-  width: 100%;
-  height: var(--height-button);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* .sheet__btn--danger-outline kept for the two Remove Discount buttons in
-   haggle + ticket-discount sheets — outline destructive variant not yet in
-   the .ec-* catalog. Migrated in a later pass. */
-.sheet__btn--danger-outline {
+/* Outline destructive — modifier on .ec-btn-destructive. Used for
+   "Remove Discount" buttons in haggle + ticket-discount sheets, where
+   the action is destructive but the user-flow context is "tweak this"
+   rather than "delete this thing forever" — the outline form reads as
+   less alarming than a fully-filled red button. */
+.ec-btn-destructive--outline {
   background: transparent;
   color: var(--color-danger);
   border: 1px solid var(--color-danger);
 }
 
-.sheet__btn--danger-outline:active {
+.ec-btn-destructive--outline:active {
   background: var(--color-danger-light);
 }
 
@@ -2443,7 +2441,7 @@ body {
   margin-bottom: var(--space-sm);
 }
 
-.setup-card__row {
+.ec-card__row {
   display: flex;
   align-items: center;
   min-height: 48px;
@@ -2451,17 +2449,17 @@ body {
   border-bottom: 1px solid var(--color-divider);
 }
 
-.setup-card__row:last-child {
+.ec-card__row:last-child {
   border-bottom: none;
 }
 
-.setup-card__row--input {
+.ec-card__row--input {
   padding: 0;
 }
 
 /* Inputs nested inside a card row drop their own border/bg — the row
    itself provides the surface. */
-.setup-card__row--input .ec-input {
+.ec-card__row--input .ec-input {
   border: none;
   background: transparent;
   border-radius: 0;
@@ -2469,33 +2467,26 @@ body {
   padding: 0 var(--space-lg);
 }
 
-.setup-card__row--input .ec-input:focus {
+.ec-card__row--input .ec-input:focus {
   background: transparent;
   border: none;
 }
 
-.setup-card__row--toggle {
+.ec-card__row--toggle {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   justify-content: space-between;
   gap: var(--space-md);
 }
 
-.setup-card__label {
-  flex: 1;
-  font-size: var(--font-size-base);
-  color: var(--color-text);
-  letter-spacing: -0.01em;
-}
-
-.setup-card__row--toggle input[type="checkbox"] {
+.ec-card__row--toggle input[type="checkbox"] {
   width: 18px;
   height: 18px;
   accent-color: var(--color-primary);
   flex-shrink: 0;
 }
 
-.setup-card__row--action {
+.ec-card__row--action {
   display: flex;
   align-items: center;
   position: relative;
@@ -2507,34 +2498,26 @@ body {
   text-align: left;
 }
 
-.setup-card__row--action:active {
+.ec-card__row--action:active {
   background: var(--color-bg-hover);
 }
 
-.setup-card__action-label {
-  flex: 1;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  letter-spacing: -0.01em;
-}
-
 /* Split action row — paired controls (e.g., + Add Day | Remove). */
-.setup-card__row--split {
+.ec-card__row--split {
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
   cursor: default;
   min-height: 48px;
 }
 
-.setup-card__row--split:active {
+.ec-card__row--split:active {
   background: transparent;
 }
 
-/* The action links inside .setup-card__row--split are .ec-link-primary /
+/* The action links inside .ec-card__row--split are .ec-link-primary /
    .ec-link-destructive (v178). The split row gives them flex:0 layout. */
-.setup-card__row--split .ec-link-primary,
-.setup-card__row--split .ec-link-destructive {
+.ec-card__row--split .ec-link-primary,
+.ec-card__row--split .ec-link-destructive {
   flex: 0 0 auto;
   padding: var(--space-xs) 0;
 }
@@ -2570,8 +2553,8 @@ body {
   border-bottom: 1px solid var(--color-divider);
 }
 
-#setup-consignor-list:empty + .setup-card__row--action,
-#setup-consignor-list:empty ~ .setup-card__row--action {
+#setup-consignor-list:empty + .ec-card__row--action,
+#setup-consignor-list:empty ~ .ec-card__row--action {
   /* When no consignors yet, the Add row IS the only row — no top border needed */
   border-top: none;
 }
@@ -3028,7 +3011,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   text-align: left;
   font-family: inherit;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .payouts__row--toggle:active {
@@ -3039,7 +3022,7 @@ body {
   width: 12px;
   height: 8px;
   color: var(--color-text-tertiary);
-  transition: transform var(--duration-fast, 150ms) ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .payouts__chevron--up {
@@ -3344,7 +3327,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.01em;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .qr-action-primary:active {
@@ -3671,7 +3654,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.01em;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .dashboard-ended-banner__cta:active {
@@ -3850,7 +3833,7 @@ body {
 .dashboard-txn {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .dashboard-txn:last-child .dashboard-txn__summary {
@@ -3947,7 +3930,7 @@ body {
 }
 
 .ec-pill-status--open {
-  background: var(--color-primary-light);
+  background: var(--color-primary-tint);
   color: var(--color-primary);
 }
 .ec-pill-status--open::before {
@@ -4076,7 +4059,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: 0.01em;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: background var(--duration-fast) ease;
 }
 
 button.dashboard-detail__consignor:active {
@@ -4147,7 +4130,7 @@ button.dashboard-detail__consignor--empty:active {
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.01em;
   border-bottom: 1px solid var(--color-divider);
-  transition: opacity var(--duration-fast, 150ms) ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .dashboard-detail__action:last-child {

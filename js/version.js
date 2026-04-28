@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v182';
+const APP_VERSION = 'v183';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v183',
+    date: '2026-04-28',
+    changes: [
+      'Internal: design system migration complete. Card row variants and the outline destructive button moved to canonical naming; dead style tokens removed; missing motion + shadow tokens added. No user-visible changes.'
+    ]
+  },
   {
     version: 'v182',
     date: '2026-04-28',

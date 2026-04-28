@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~85% complete, v182).** This document describes the **target** component system. As of v182, the numpad, hero number, empty state, and flash toast have all migrated to `.ec-*` naming. The remaining work (v183) is cleanup: the `.setup-card__row*` BEM rename, the outline destructive button, and a token-followup pass. See **§3 Migration Roadmap** for the schedule.
+**Status:** **Migration complete (v183).** As of v183 every component family in the catalog has been renamed to canonical `.ec-*` naming, with three documented exceptions (`.sheet` itself — too entangled to rename cheaply; `.consignor-color-chip` — already a `.ec-picker-button` modifier; `.join-code-status` — informational status, not a pure field-error). Tokens cleaned up: dead `--transition-*` and unused `--shadow-sm/-md/-lg/-qr` removed; redundant `--color-primary-light` consolidated into `--color-primary-tint`; canonical `--shadow-sheet`, `--shadow-floating`, `--duration-*`, `--ease-*` tokens added. The `var(--duration-fast, 150ms)` literal-fallback pattern (18 instances) replaced with plain `var(--duration-fast)` now that the token is real.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -772,12 +772,12 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Destructive Button | `.ec-btn-destructive` | (target name in use) | 🟢 v178 |
 | Blue Text Link | `.ec-link-primary` | (target name in use) | 🟢 v178 |
 | Red Text Link | `.ec-link-destructive` | (target name in use) | 🟢 v178 |
-| Outline Destructive Button | (TBD) | `.sheet__btn--danger-outline` (2 uses: Remove Discount in haggle + ticket-discount sheets) | 🔴 Deferred |
 | Text Input | `.ec-input` (+ `--with-action`, `--amount`, `--code`, `--compact`) | (target name in use) | 🟢 v179 |
 | Inline Field Error | `.ec-field-error` (+ `--centered` for entry-screen) | (target name in use) | 🟢 v179 |
 | Form Status (informational gray) | `.join-code-status` (kept as one-off — different semantic than field-error) | one use | 🟡 Exception |
 | Grouped List Card (base) | `.ec-card` | (target name in use as additive base; `.setup-card`, `.payouts__card`, `.consignor-revenue`, `.dashboard-stat` retained as context-modifier classes) | 🟢 v180 |
-| Card Row variants | `.ec-card__row` (+ `--input`, `--toggle`, `--action`, `--split`) | currently `.setup-card__row*` — BEM rename deferred (~30 selectors of nested rules); base card already canonical | 🟡 Deferred |
+| Card Row variants | `.ec-card__row` (+ `--input`, `--toggle`, `--action`, `--split`) | (target name in use) | 🟢 v183 |
+| Outline Destructive Button | `.ec-btn-destructive--outline` | (target name in use) | 🟢 v183 |
 | Section Header | `.ec-section-header` | (target name in use) | 🟢 v180 |
 | Status Pill | `.ec-pill-status--*` (paid/open/unpaid/edited/cancelled) | (target name in use) | 🟢 v181 |
 | Inline Chip Selector | `.ec-chip-selector` (+ `__dot`, `__label`, `__prefix`, `__name`, `__chevron`) | (target name in use) | 🟢 v181 |
