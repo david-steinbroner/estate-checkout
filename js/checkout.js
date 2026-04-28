@@ -102,8 +102,6 @@ const Checkout = {
       clearModal: document.getElementById('clear-modal'),
       clearCancel: document.getElementById('clear-cancel'),
       clearConfirm: document.getElementById('clear-confirm'),
-      flashSuccess: document.getElementById('flash-success'),
-      flashError: document.getElementById('flash-error'),
       // Add Item sheet
       addItemModal: document.getElementById('add-item-modal'),
       addItemDesc: document.getElementById('add-item-desc'),
@@ -620,11 +618,9 @@ const Checkout = {
     this.render();
 
     if (wasEditing) {
-      this.showFlash('success', 'Updated!');
-      // Re-open the item sheet to show changes
+      // Re-open the item sheet to show changes (live state update — no toast)
       this.openItemSheet();
     } else {
-      this.showFlash('success', 'Added!');
       // Flash the newly added item row
       const rows = this.elements.itemList.querySelectorAll('.item-row');
       if (rows.length > 0) {
@@ -1373,7 +1369,7 @@ const Checkout = {
     const rawValue = parseFloat(this.elements.haggleInput.value) || 0;
 
     if (!rawValue) {
-      this.showFlash('error', 'Enter a value');
+      this._showFieldError('haggle-error', 'Enter a value');
       return;
     }
 
@@ -1388,7 +1384,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
-    this.showFlash('success', 'Discount applied!');
   },
 
   /**
@@ -1408,7 +1403,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeHaggleSheet();
     this.render();
-    this.showFlash('success', 'Discount removed');
   },
 
   /**
@@ -1480,22 +1474,22 @@ const Checkout = {
     const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
 
     if (!rawValue) {
-      this.showFlash('error', 'Enter a value');
+      this._showFieldError('ticket-discount-error', 'Enter a value');
       return;
     }
 
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
 
     if (type === 'percent' && rawValue > 100) {
-      this.showFlash('error', 'Percentage cannot exceed 100%');
+      this._showFieldError('ticket-discount-error', 'Percentage cannot exceed 100%');
       return;
     }
     if (type === 'dollar' && rawValue > subtotal) {
-      this.showFlash('error', 'Discount exceeds subtotal');
+      this._showFieldError('ticket-discount-error', 'Discount exceeds subtotal');
       return;
     }
     if (type === 'newprice' && rawValue > subtotal) {
-      this.showFlash('error', 'New price exceeds subtotal');
+      this._showFieldError('ticket-discount-error', 'New price exceeds subtotal');
       return;
     }
 
@@ -1506,7 +1500,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();
-    this.showFlash('success', 'Invoice discount applied!');
   },
 
   /**
@@ -1520,7 +1513,6 @@ const Checkout = {
     this.transactionSaved = false;
     this.closeTicketDiscountSheet();
     this.render();
-    this.showFlash('success', 'Invoice discount removed');
   },
 
   /**
@@ -1528,19 +1520,6 @@ const Checkout = {
    */
   closeTicketDiscountSheet() {
     this.elements.ticketDiscountModal.classList.remove('visible');
-  },
-
-  /**
-   * Show flash feedback
-   */
-  showFlash(type, message) {
-    const flash = type === 'success' ? this.elements.flashSuccess : this.elements.flashError;
-    flash.textContent = message;
-    flash.classList.add('visible');
-
-    setTimeout(() => {
-      flash.classList.remove('visible');
-    }, 800);
   },
 
   /**

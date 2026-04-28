@@ -9,9 +9,18 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v183';
+const APP_VERSION = 'v184';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v184',
+    date: '2026-04-28',
+    changes: [
+      'Removed the centered "Added!" / error toasts that appeared on item add and discount apply. The row already animates when added, sheets already close on apply — the toast was redundant.',
+      'Validation errors in the Adjust Price and Invoice Discount sheets (e.g. "Enter a value", "Discount exceeds subtotal") now appear as inline red text under the input field, the same pattern used everywhere else.',
+      'Internal: tokenized the last few magic font sizes and box-shadows so the design system has zero hardcoded values outside the token block.'
+    ]
+  },
   {
     version: 'v183',
     date: '2026-04-28',

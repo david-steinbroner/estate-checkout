@@ -269,18 +269,16 @@ const QR = {
     Checkout.applyTicketDiscount = function() {
       const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
       const rawValue = parseFloat(Checkout.elements.ticketDiscountInput.value) || 0;
-      if (!rawValue) { Checkout.showFlash('error', 'Enter a value'); return; }
+      if (!rawValue) { Checkout._showFieldError('ticket-discount-error', 'Enter a value'); return; }
 
       Checkout.ticketDiscount = { type, value: rawValue };
       Checkout.closeTicketDiscountSheet();
-      Checkout.showFlash('success', 'Invoice discount applied!');
       afterUpdate();
     };
 
     Checkout.removeTicketDiscount = function() {
       Checkout.ticketDiscount = null;
       Checkout.closeTicketDiscountSheet();
-      Checkout.showFlash('success', 'Invoice discount removed');
       afterUpdate();
     };
 

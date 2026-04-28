@@ -378,8 +378,6 @@
   </div>
 
   <!-- Flash Feedback -->
-  <div class="ec-flash ec-flash--success" id="flash-success">Added!</div>
-  <div class="ec-flash ec-flash--error" id="flash-error">Error</div>
 
   <!-- Add Item Entry — V2 §1.4.C full-viewport Entry archetype -->
   <div class="overlay overlay--fullscreen" id="add-item-modal">
@@ -661,6 +659,7 @@
         </label>
       </div>
       <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="haggle-input" placeholder="0.00" autocomplete="off">
+      <p class="ec-field-error" id="haggle-error" hidden></p>
       <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="haggle-apply">Apply</button>
@@ -689,6 +688,7 @@
         </label>
       </div>
       <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
+      <p class="ec-field-error" id="ticket-discount-error" hidden></p>
       <div class="invoice-discount__preview" id="ticket-discount-preview">
         <div class="invoice-discount__line">
           <span>Subtotal</span>

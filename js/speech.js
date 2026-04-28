@@ -1067,13 +1067,6 @@ const Speech = {
   },
 
   /**
-   * Show error flash
-   */
-  showError(message) {
-    Checkout.showFlash('error', message);
-  },
-
-  /**
    * Hide the mic button if speech is not supported
    */
   hideButton() {

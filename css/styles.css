@@ -121,6 +121,8 @@
   --font-size-lg: 20px;        /* V2 body-large — numpad digits (was 16px) */
   --font-size-xl: 22px;        /* V2 title — card titles (was 20px) */
   --font-size-2xl: 32px;       /* V2 title-large — screen titles (was 28px) */
+  --font-size-title-medium: 28px; /* sheet titles (between xl and 2xl) */
+  --font-size-display: 48px;   /* sheet hero amount (between 2xl and price) */
   --font-size-price: 56px;     /* V2 hero — running total, today's revenue (was 36px) */
   --font-size-icon: 48px;      /* Onboarding/speech icons */
   --font-size-icon-lg: 72px;   /* Payment success checkmark */
@@ -166,12 +168,17 @@
   --height-total-bar: 56px;
 
   /* === Shadows ===
-     iOS uses almost none. Default is none; --shadow-sheet is for the
-     bottom-sheet floating chrome; --shadow-floating for context menus
-     or rare elevated panels. The previous --shadow-sm/-md/-lg/-qr
-     were declared but never referenced — removed v183. */
+     iOS uses almost none. Per §1.2: shadows are only allowed on bottom
+     sheets (which are actually floating), small floating action buttons,
+     and the customer-facing QR card (the deliberate handoff moment).
+     --shadow-sheet     bottom sheet chrome
+     --shadow-floating  context menus / rare elevated panels (8px blur)
+     --shadow-button    small floating buttons (menu icon, etc.) — subtle
+     --shadow-card      QR code on customer-facing handoff (lifted card) */
   --shadow-sheet: 0 -4px 20px rgba(0, 0, 0, 0.08);
   --shadow-floating: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-button: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
 
   /* === Motion ===
      Durations apply to background, color, transform, opacity. Easing
@@ -279,7 +286,7 @@ body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-button);
   transition: background var(--duration-fast) ease, transform var(--duration-fast) ease;
   flex-shrink: 0;
 }
@@ -627,7 +634,7 @@ body {
 }
 
 .sheet__title-input {
-  font-size: 28px;
+  font-size: var(--font-size-title-medium);
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
   color: var(--color-text);
@@ -1939,37 +1946,11 @@ body {
 }
 
 /* === Feedback Flash === */
-/* === Flash Toast (v182 migration target) ===
-   Centered fixed toast for ephemeral micro-confirmations only ("Added!").
-   See principle 1.1.6 — this is the documented exception to the
-   "no success modals" rule. Don't use for navigation or status changes. */
-.ec-flash {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: var(--space-lg) var(--space-lg);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-on-dark);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 1000;
-}
-
-.ec-flash--success {
-  background: var(--color-success);
-}
-
-.ec-flash--error {
-  background: var(--color-danger);
-}
-
-.ec-flash.visible {
-  opacity: 1;
-}
+/* Flash toast removed in v184 — violated principle 1.1.6 (success modals)
+   on the success side and principle 1.5 (errors should be inline, not
+   popups) on the error side. Replaced by:
+   - live state updates (row animation, sheet close) for success cases
+   - .ec-field-error inline messages for validation errors */
 
 /* === Unified Bottom Sheet Overlay === */
 .overlay {
@@ -2038,7 +2019,7 @@ body {
 }
 
 .sheet__title {
-  font-size: 28px;
+  font-size: var(--font-size-title-medium);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin-bottom: var(--sheet-content-gap);
@@ -2076,7 +2057,7 @@ body {
 
 .sheet__hero-amount {
   font-family: var(--font-family-number);
-  font-size: 48px;
+  font-size: var(--font-size-display);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   line-height: var(--line-height-tight);
@@ -3204,7 +3185,7 @@ body {
   background: var(--color-surface);
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .qr-code img,

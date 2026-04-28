@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration complete (v183).** As of v183 every component family in the catalog has been renamed to canonical `.ec-*` naming, with three documented exceptions (`.sheet` itself — too entangled to rename cheaply; `.consignor-color-chip` — already a `.ec-picker-button` modifier; `.join-code-status` — informational status, not a pure field-error). Tokens cleaned up: dead `--transition-*` and unused `--shadow-sm/-md/-lg/-qr` removed; redundant `--color-primary-light` consolidated into `--color-primary-tint`; canonical `--shadow-sheet`, `--shadow-floating`, `--duration-*`, `--ease-*` tokens added. The `var(--duration-fast, 150ms)` literal-fallback pattern (18 instances) replaced with plain `var(--duration-fast)` now that the token is real.
+**Status:** **Migration complete + token gaps closed (v184).** As of v184 every component family in the catalog has been renamed to canonical `.ec-*` naming, with three documented exceptions (`.sheet` itself — too entangled to rename cheaply; `.consignor-color-chip` — already a `.ec-picker-button` modifier; `.join-code-status` — informational status, not a pure field-error). Tokens fully cleaned up: dead tokens removed, all magic numbers tokenized (28px sheet titles → `--font-size-title-medium`, 48px sheet hero amounts → `--font-size-display`), all hardcoded shadows tokenized (`--shadow-button`, `--shadow-card` added). The Flash toast was removed entirely — it violated principles 1.1.6 (success modals) and 1.5 (errors as popups); replaced by live state updates and inline `.ec-field-error` messages.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -40,7 +40,7 @@ These are non-negotiable. If a decision conflicts with a principle, the principl
 
 5. **Cards group, never decorate.** A tinted rounded rectangle exists ONLY to visually group related info (e.g. Order ID + Email + Total). No decorative cards, no cards-in-cards, no cards for visual rhythm.
 
-6. **Live state updates, no success modals.** When something changes (item added, order paid), the view updates in place. Optional "Marked paid now" subtitle. **Exception:** the centered Flash toast (`.flash--success`/`.flash--error`) is permitted *only* for ephemeral, micro-confirmations like "Added!" — never for navigation completion or status transitions.
+6. **Live state updates, no success modals, no toasts.** When something changes (item added, order paid), the view updates in place — the row animates in, the sheet closes, the running total updates. Optional "Marked paid now" subtitle on the order. No toasts, no "Success!" overlays, no celebration animations. (The `.ec-flash` toast was removed in v184; it had been carved out as an exception for "Added!" but the row-flash animation already conveys that signal — the toast was redundant.)
 
 7. **Confirm destructive, not affirmative.** Adding an item: happens immediately. Voiding an order, deleting a sale: bottom sheet with red destructive action. Never confirm safe actions.
 
@@ -785,7 +785,7 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Numpad | `.ec-numpad` / `.ec-numpad-key` (+ `--backspace`) | (target name in use) | 🟢 v182 |
 | Hero Number | `.ec-hero-number` (+ `--centered`) | (target name in use; only the genuine 56px display number — smaller stat values like `.payment-total__amount` 32px and `.dashboard-stat__value` 22px keep their context-specific classes) | 🟢 v182 |
 | Empty State | `.ec-empty-state` (+ `__icon`, `__heading`, `__helper`) | (target name in use across Order #1 sheet, Dashboard, Payouts) | 🟢 v182 |
-| Flash Toast | `.ec-flash` (+ `--success`, `--error`) | (target name in use) | 🟢 v182 |
+| Flash Toast | (removed v184) | violated principles 1.1.6 + 1.5; replaced by live state updates (success) and inline `.ec-field-error` (errors) | 🪦 Removed |
 | Hamburger Menu | `.ec-menu-*` | (target name in use) | 🟢 Migrated | v152 |
 | Picker Button + List | `.ec-picker-*` | (target name in use) | 🟢 Migrated | v149 |
 | Bottom Sheet | `.sheet` (kept as exception) | `.sheet`, `.sheet--detail`, `.sheet--menu` | 🟡 Exception | — |
