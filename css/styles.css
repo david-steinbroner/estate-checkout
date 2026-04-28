@@ -856,40 +856,11 @@ body {
   margin-bottom: var(--space-xl);
 }
 
-.entry-screen__error {
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
-  margin: calc(-1 * var(--space-md)) 0 var(--space-md);
-  text-align: center;
-}
-
-/* Description input with inline mic icon (V2 §1.4.C — Messages dictation pattern) */
+/* Description input wrap holds the input + the inline mic icon. The
+   input itself is .ec-input.ec-input--with-action (v179). */
 .entry-screen__input-wrap {
   position: relative;
   margin-bottom: var(--space-lg);
-}
-
-.entry-screen__input {
-  width: 100%;
-  min-width: 0;
-  height: var(--height-input);
-  padding: 0 56px 0 var(--space-lg);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-tinted);
-  color: var(--color-text);
-  font-size: var(--font-size-base);
-  outline: none;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  font-family: var(--font-family);
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
-}
-
-.entry-screen__input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
 }
 
 /* Mic sits inside a 48px input — visual circle is 40px so it doesn't
@@ -1492,29 +1463,103 @@ body {
   letter-spacing: 0;
 }
 
-/* Canonical input visual — see V2 §2.2. All input classes alias to this style.
-   Tinted bg, no border at rest, focus = white bg + primary border. */
-.consignor-form__input {
+/* === Canonical text inputs + field error (v179 migration target) ===
+   .ec-input is the canonical text-input shape: 48px tall, tinted bg,
+   --color-divider border at rest, white bg + primary border on focus.
+   Variants below extend it for amount entry, OTP code entry, embedded
+   action buttons (mic/clear-X), and the inline 32px compact case.
+*/
+.ec-input {
   width: 100%;
   min-width: 0;
   height: var(--height-input);
+  padding: 0 var(--space-lg);
   font-size: var(--font-size-base);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   background: var(--color-surface-tinted);
   color: var(--color-text);
-  padding: 0 var(--space-lg);
   box-sizing: border-box;
   -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   font-family: var(--font-family);
   outline: none;
   transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
 }
 
-.consignor-form__input:focus {
+.ec-input:focus {
   background: var(--color-surface);
   border-color: var(--color-primary);
+}
+
+.ec-input:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Embedded action button on the right edge (mic, clear-X, etc.). */
+.ec-input--with-action {
+  padding-right: 56px;
+}
+
+/* Amount entry — used in haggle and invoice-discount sheets. */
+.ec-input--amount {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+/* OTP / share-code style — monospace, big, centered, letter-spaced. iOS
+   SMS-code pattern (the one carve-out from v174's "no centered text inputs"). */
+.ec-input--code {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  letter-spacing: 0.25em;
+}
+.ec-input--code::placeholder {
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.25em;
+}
+
+/* Inline compact (the discount-row inline edit). Intentional 32px height. */
+.ec-input--compact {
+  width: 48px;
+  height: 32px;
+  padding: 0 var(--space-sm);
+  font-weight: var(--font-weight-medium);
+  border-color: var(--color-border-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* Native date input — center the displayed value; iOS Safari shadow-DOM
+   needs the appearance:none above to keep the input from overflowing. */
+.ec-input[type="date"] {
+  display: block;
+  -webkit-min-logical-width: 0;
+  text-align: center;
+  font-weight: var(--font-weight-medium);
+}
+
+.ec-input--readonly {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* === Inline Field Error === */
+.ec-field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin: var(--space-xs) 0 0;
+}
+
+/* Centered variant — for the entry-screen hero amount where the error
+   pulls up close to the price field via negative margin. */
+.ec-field-error--centered {
+  text-align: center;
+  margin: calc(-1 * var(--space-md)) 0 var(--space-md);
 }
 
 /* Color swatches — used inside the color picker bottom sheet, no longer
@@ -1773,36 +1818,6 @@ body {
   background: var(--color-divider);
 }
 
-.join-code-input {
-  width: 100%;
-  height: var(--height-input);
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  text-align: center;
-  letter-spacing: 0.25em;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-tinted);
-  color: var(--color-text);
-  padding: 0 var(--space-lg);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  outline: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
-}
-
-.join-code-input::placeholder {
-  color: var(--color-text-tertiary);
-  letter-spacing: 0.25em;
-}
-
-.join-code-input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
-}
-
 .join-code-status {
   margin-top: var(--space-md);
   font-size: var(--font-size-sm);
@@ -1848,30 +1863,10 @@ body {
   font-weight: var(--font-weight-medium);
 }
 
-.haggle-input {
-  width: 100%;
-  min-width: 0;
-  height: var(--height-input);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  text-align: center;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-tinted);
-  color: var(--color-text);
+/* Haggle amount input is .ec-input.ec-input--amount; the sheet adds its
+   own bottom margin via descendant selector. */
+#haggle-modal .ec-input--amount {
   margin-bottom: var(--space-lg);
-  padding: 0 var(--space-lg);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  font-family: var(--font-family);
-  outline: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
-}
-
-.haggle-input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
 }
 
 .haggle-preview {
@@ -1913,30 +1908,10 @@ body {
   display: none;
 }
 
-.invoice-discount__input {
-  width: 100%;
-  min-width: 0;
-  height: var(--height-input);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  text-align: center;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-tinted);
-  color: var(--color-text);
+/* Ticket-discount amount input is .ec-input.ec-input--amount; the sheet
+   adds its own bottom margin via descendant selector. */
+#ticket-discount-modal .ec-input--amount {
   margin-bottom: var(--space-lg);
-  padding: 0 var(--space-lg);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  font-family: var(--font-family);
-  outline: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
-}
-
-.invoice-discount__input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
 }
 
 .invoice-discount__preview {
@@ -2323,22 +2298,6 @@ body {
   line-height: var(--line-height-relaxed);
 }
 
-.sheet__input {
-  width: 100%;
-  height: var(--height-input);
-  font-size: var(--font-size-base);
-  padding: 0 var(--space-lg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  margin-bottom: var(--space-lg);
-  box-sizing: border-box;
-}
-
-.sheet__input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
-}
 
 /* === Description Entry Mic Button === */
 
@@ -2472,15 +2431,17 @@ body {
   padding: 0;
 }
 
-.setup-card__row--input .setup-section__input {
+/* Inputs nested inside a card row drop their own border/bg — the row
+   itself provides the surface. */
+.setup-card__row--input .ec-input {
   border: none;
   background: transparent;
   border-radius: 0;
-  height: 48px;
+  height: var(--height-input);
   padding: 0 var(--space-lg);
 }
 
-.setup-card__row--input .setup-section__input:focus {
+.setup-card__row--input .ec-input:focus {
   background: transparent;
   border: none;
 }
@@ -2656,59 +2617,11 @@ body {
   accent-color: var(--color-primary);
 }
 
-.setup-section__input {
-  width: 100%;
-  min-width: 0;
-  height: var(--height-input);
-  padding: 0 var(--space-lg);
-  font-size: var(--font-size-base);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-tinted);
-  color: var(--color-text);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  font-family: var(--font-family);
-  outline: none;
-  transition: background var(--duration-fast, 150ms) ease, border-color var(--duration-fast, 150ms) ease;
-}
-
-.setup-section__input[type="date"] {
-  display: block;
-  -webkit-min-logical-width: 0;
-  text-align: center;
-  font-weight: var(--font-weight-medium);
-}
-
-.setup-section__input:focus {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
-}
-
-.setup-section__input--readonly {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 .setup-section-row {
   display: flex;
   align-items: flex-start;
   gap: var(--space-xl);
   margin-bottom: var(--space-2xl);
-}
-
-.setup-section__error {
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
-  margin: var(--space-xs) 0 0;
-}
-
-.sheet__field-error {
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
-  margin: var(--space-xs) 0 0;
 }
 
 .setup-hidden-input {
@@ -2856,22 +2769,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-}
-
-.discount-row__input {
-  width: 48px; /* intentional: compact discount input */
-  height: 32px; /* intentional: inline edit height */
-  padding: 0 var(--space-sm);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  text-align: left;
-  border: 1px solid var(--color-border-focus);
-  border-radius: var(--radius-sm);
-}
-
-.discount-row__input:focus {
-  outline: none;
-  border-color: var(--color-primary);
 }
 
 .discount-row__suffix {

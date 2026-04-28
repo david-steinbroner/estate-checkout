@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~25% complete, v178).** This document describes the **target** component system. As of v178, the buttons + links migration has shipped — `.ec-btn`, `.ec-btn-primary`, `.ec-btn-secondary`, `.ec-btn-destructive`, `.ec-link-primary`, `.ec-link-destructive` are now canonical alongside `.ec-menu-*` and `.ec-picker-*`. Inputs, cards, status pills, and the rest follow in v179–v183. See **§3 Migration Roadmap** for the schedule.
+**Status:** **Migration in progress (~40% complete, v179).** This document describes the **target** component system. As of v179, the inputs + field-error migration has shipped — `.ec-input` (with `--with-action`, `--amount`, `--code`, `--compact` variants) and `.ec-field-error` are now canonical alongside the v178 buttons + links and the older `.ec-menu-*` / `.ec-picker-*`. Cards, status pills, and the rest follow in v180–v183. See **§3 Migration Roadmap** for the schedule.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -773,8 +773,9 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Blue Text Link | `.ec-link-primary` | (target name in use) | 🟢 v178 |
 | Red Text Link | `.ec-link-destructive` | (target name in use) | 🟢 v178 |
 | Outline Destructive Button | (TBD) | `.sheet__btn--danger-outline` (2 uses: Remove Discount in haggle + ticket-discount sheets) | 🔴 Deferred |
-| Text Input | `.ec-input` | `.consignor-form__input`, `.entry-screen__input`, `.setup-section__input`, `.haggle-input`, `.invoice-discount__input`, `.join-code-input`, `.sheet__input`, `.discount-row__input` | 🔴 v179 |
-| Inline Field Error | `.ec-field-error` | `.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error` | 🔴 v179 |
+| Text Input | `.ec-input` (+ `--with-action`, `--amount`, `--code`, `--compact`) | (target name in use) | 🟢 v179 |
+| Inline Field Error | `.ec-field-error` (+ `--centered` for entry-screen) | (target name in use) | 🟢 v179 |
+| Form Status (informational gray) | `.join-code-status` (kept as one-off — different semantic than field-error) | one use | 🟡 Exception |
 | Grouped List Card | `.ec-card` | `.setup-card`, `.payouts__card`, `.consignor-revenue` | 🔴 Pending | v180 |
 | Card Row | `.ec-card__row` | `.setup-card__row` (+ variants), `.payouts__row`, `.consignor-list__item` | 🔴 Pending | v180 |
 | Section Header | `.ec-section-header` | `.setup-section__header`, `.consignor-form__label`, `.edit-sale__label`, `.dashboard-stat__label`, `.consignor-revenue__title` | 🔴 Pending | v180 |

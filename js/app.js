@@ -533,7 +533,7 @@ const App = {
       nameEl.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'text';
-        input.className = 'sheet__input';
+        input.className = 'ec-input';
         input.value = sale.name;
         input.maxLength = 50;
         nameEl.replaceWith(input);
@@ -558,7 +558,7 @@ const App = {
         const currentDay = Utils.getSaleDay(sale.startDate, sale);
         const days = Object.keys(sale.discounts).map(Number).sort((a, b) => a - b);
         const select = document.createElement('select');
-        select.className = 'sheet__input';
+        select.className = 'ec-input';
         days.forEach(d => {
           const opt = document.createElement('option');
           opt.value = d;
@@ -588,7 +588,7 @@ const App = {
         const day = parseInt(el.dataset.editDiscount);
         const input = document.createElement('input');
         input.type = 'number';
-        input.className = 'sheet__input';
+        input.className = 'ec-input';
         input.value = sale.discounts[day] || 0;
         input.min = 0;
         input.max = 100;

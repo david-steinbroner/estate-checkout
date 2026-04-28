@@ -106,7 +106,7 @@
             <input
               type="text"
               id="setup-sale-name"
-              class="setup-section__input"
+              class="ec-input"
               placeholder="e.g., Johnson Estate - Oak Hill"
               autocomplete="off"
             >
@@ -129,7 +129,7 @@
             <button class="ec-link-destructive" id="days-edit-toggle" type="button" hidden>Remove</button>
           </div>
         </div>
-        <p class="setup-section__error" id="schedule-error" hidden></p>
+        <p class="ec-field-error" id="schedule-error" hidden></p>
       </div>
 
       <!-- Consignors -->
@@ -397,11 +397,11 @@
       <div class="entry-screen__body">
         <!-- Hero: current item's price (updates live from numpad) -->
         <div class="entry-screen__hero" id="add-item-price">$0.00</div>
-        <p class="entry-screen__error" id="add-item-price-error" hidden></p>
+        <p class="ec-field-error ec-field-error--centered" id="add-item-price-error" hidden></p>
 
         <!-- Description input with inline mic -->
         <div class="entry-screen__input-wrap">
-          <input type="text" class="entry-screen__input" id="add-item-desc"
+          <input type="text" class="ec-input ec-input--with-action" id="add-item-desc"
             placeholder="What's this for?" autocomplete="off" maxlength="60">
           <button class="entry-screen__mic" id="add-item-mic" type="button" aria-label="Hold to speak price and description">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -411,7 +411,7 @@
             </svg>
           </button>
         </div>
-        <p class="entry-screen__error" id="add-item-desc-error" hidden></p>
+        <p class="ec-field-error ec-field-error--centered" id="add-item-desc-error" hidden></p>
 
         <!-- Qty row -->
         <div class="entry-screen__qty">
@@ -565,8 +565,8 @@
       <p class="sheet__title sheet__title--small">End Sale Permanently?</p>
       <p class="sheet__text">This affects all joined devices. The sale cannot be reopened. Past invoices stay on the dashboard.</p>
       <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-md);">Type <strong id="end-sale-confirm-name" style="color:var(--color-text)"></strong> to confirm.</p>
-      <input type="text" class="consignor-form__input" id="end-sale-confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
-      <p class="sheet__field-error" id="end-sale-confirm-error" hidden></p>
+      <input type="text" class="ec-input" id="end-sale-confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
+      <p class="ec-field-error" id="end-sale-confirm-error" hidden></p>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-destructive" id="end-sale-confirm" disabled>End Sale</button>
         <button class="ec-btn ec-btn-secondary" id="end-sale-cancel">Cancel</button>
@@ -628,7 +628,7 @@
         inputmode="numeric"
         pattern="[0-9]*"
         maxlength="6"
-        class="join-code-input"
+        class="ec-input ec-input--code"
         id="join-code-input"
         placeholder="000000"
         autocomplete="off"
@@ -660,7 +660,7 @@
           <span class="haggle-option__label">% off</span>
         </label>
       </div>
-      <input type="text" inputmode="decimal" class="haggle-input" id="haggle-input" placeholder="0.00" autocomplete="off">
+      <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="haggle-input" placeholder="0.00" autocomplete="off">
       <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="haggle-apply">Apply</button>
@@ -688,7 +688,7 @@
           <span class="invoice-discount__mode-label">New Price</span>
         </label>
       </div>
-      <input type="text" inputmode="decimal" class="invoice-discount__input" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
+      <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
       <div class="invoice-discount__preview" id="ticket-discount-preview">
         <div class="invoice-discount__line">
           <span>Subtotal</span>
@@ -764,7 +764,7 @@
       <p class="sheet__title" id="consignor-modal-title">Add Consignor</p>
 
       <label class="consignor-form__label">Name</label>
-      <input type="text" class="consignor-form__input" id="consignor-name" placeholder="e.g., Aunt Beth" autocomplete="off">
+      <input type="text" class="ec-input" id="consignor-name" placeholder="e.g., Aunt Beth" autocomplete="off">
 
       <label class="consignor-form__label">Color</label>
       <button type="button" class="ec-picker-button consignor-color-chip" id="consignor-color-btn">
@@ -789,7 +789,7 @@
       <p class="consignor-form__hint" id="consignor-payout-hint">Consignor gets 70%, you keep 30%</p>
 
       <label class="consignor-form__label">Notes <span class="consignor-form__optional">(optional)</span></label>
-      <input type="text" class="consignor-form__input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
+      <input type="text" class="ec-input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
 
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="consignor-save">Save</button>

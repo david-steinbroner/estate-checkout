@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v178';
+const APP_VERSION = 'v179';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v179',
+    date: '2026-04-28',
+    changes: [
+      'Internal: every text input and inline error message in the app now uses canonical naming (ec-input / ec-field-error). No user-visible changes.'
+    ]
+  },
   {
     version: 'v178',
     date: '2026-04-28',

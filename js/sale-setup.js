@@ -340,13 +340,13 @@ const SaleSetup = {
 
     rightEl.innerHTML = `
       <div class="discount-row__edit">
-        <input type="number" class="discount-row__input" value="${current || ''}"
+        <input type="number" class="ec-input ec-input--compact" value="${current || ''}"
           min="0" max="100" inputmode="numeric" data-day-index="${index}" placeholder="0">
         <span class="discount-row__suffix">% off</span>
       </div>
     `;
 
-    const input = rightEl.querySelector('.discount-row__input');
+    const input = rightEl.querySelector('.ec-input--compact');
     input.focus();
     input.select();
 
