@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~40% complete, v179).** This document describes the **target** component system. As of v179, the inputs + field-error migration has shipped — `.ec-input` (with `--with-action`, `--amount`, `--code`, `--compact` variants) and `.ec-field-error` are now canonical alongside the v178 buttons + links and the older `.ec-menu-*` / `.ec-picker-*`. Cards, status pills, and the rest follow in v180–v183. See **§3 Migration Roadmap** for the schedule.
+**Status:** **Migration in progress (~55% complete, v180).** This document describes the **target** component system. As of v180, cards + section headers have shipped — `.ec-card` (Grouped List Card base) and `.ec-section-header` (the uppercase eyebrow) are canonical, alongside v178 buttons + links, v179 inputs + field-error, and the older `.ec-menu-*` / `.ec-picker-*`. Status pills + chip selector + color picker follow in v181. See **§3 Migration Roadmap** for the schedule.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -776,9 +776,9 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Text Input | `.ec-input` (+ `--with-action`, `--amount`, `--code`, `--compact`) | (target name in use) | 🟢 v179 |
 | Inline Field Error | `.ec-field-error` (+ `--centered` for entry-screen) | (target name in use) | 🟢 v179 |
 | Form Status (informational gray) | `.join-code-status` (kept as one-off — different semantic than field-error) | one use | 🟡 Exception |
-| Grouped List Card | `.ec-card` | `.setup-card`, `.payouts__card`, `.consignor-revenue` | 🔴 Pending | v180 |
-| Card Row | `.ec-card__row` | `.setup-card__row` (+ variants), `.payouts__row`, `.consignor-list__item` | 🔴 Pending | v180 |
-| Section Header | `.ec-section-header` | `.setup-section__header`, `.consignor-form__label`, `.edit-sale__label`, `.dashboard-stat__label`, `.consignor-revenue__title` | 🔴 Pending | v180 |
+| Grouped List Card (base) | `.ec-card` | (target name in use as additive base; `.setup-card`, `.payouts__card`, `.consignor-revenue`, `.dashboard-stat` retained as context-modifier classes) | 🟢 v180 |
+| Card Row variants | `.ec-card__row` (+ `--input`, `--toggle`, `--action`, `--split`) | currently `.setup-card__row*` — BEM rename deferred (~30 selectors of nested rules); base card already canonical | 🟡 Deferred |
+| Section Header | `.ec-section-header` | (target name in use) | 🟢 v180 |
 | Status Pill | `.ec-pill-status--*` | `.dashboard-txn__status--*` (5 variants) | 🔴 Pending | v181 |
 | Inline Chip Selector | `.ec-chip-selector` | `.consignor-chip` | 🔴 Pending | v181 |
 | Color Picker | `.ec-color-picker` / `.ec-color-dot` | `.consignor-form__colors`, `.consignor-color-chip`, `.consignor-form__color-dot` | 🔴 Pending | v181 |

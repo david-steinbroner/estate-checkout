@@ -466,20 +466,20 @@ const App = {
 
     // Sale Name
     html += `<div class="edit-sale__section">
-      <div class="edit-sale__label">Sale Name</div>
+      <div class="ec-section-header">Sale Name</div>
       <div class="edit-sale__value" id="edit-sale-name">${Utils.escapeHtml(sale.name)}</div>
     </div>`;
 
     // Current Day (dropdown)
     html += `<div class="edit-sale__section">
-      <div class="edit-sale__label">Current Day</div>
+      <div class="ec-section-header">Current Day</div>
       <div class="edit-sale__value" id="edit-sale-day">Day ${currentDay}</div>
     </div>`;
 
     // Discount Schedule
     html += `<div class="edit-sale__section">
       <div class="consignor-section__header">
-        <div class="edit-sale__label">Discount Schedule</div>
+        <div class="ec-section-header">Discount Schedule</div>
         <button class="ec-link-primary" id="edit-sale-add-day">+ Add Day</button>
       </div>`;
     days.forEach(d => {
@@ -497,7 +497,7 @@ const App = {
     const consignors = sale.consignors || [];
     html += `<div class="edit-sale__section">
       <div class="consignor-section__header">
-        <div class="edit-sale__label">Consignors</div>
+        <div class="ec-section-header">Consignors</div>
         <button class="ec-link-primary" id="edit-sale-add-consignor">+ Add</button>
       </div>`;
     if (consignors.length === 0) {

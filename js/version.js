@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v179';
+const APP_VERSION = 'v180';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v180',
+    date: '2026-04-28',
+    changes: [
+      'Internal: cards and section header labels now use canonical naming (ec-card / ec-section-header). Eyebrow labels in a few places (Add Consignor, Edit Sale, Dashboard stats) are now slightly smaller (13px vs 15px) to match the spec — minor visual tweak.'
+    ]
+  },
   {
     version: 'v179',
     date: '2026-04-28',

@@ -87,7 +87,7 @@ const Payouts = {
     </div>`;
 
     // Totals card (Sale Total / Your Cut)
-    html += `<div class="payouts__card">
+    html += `<div class="ec-card payouts__card">
       <div class="payouts__row">
         <span class="payouts__row-label">Sale Total</span>
         <span class="payouts__row-value">${Utils.formatCurrency(saleTotal)}</span>
@@ -121,7 +121,7 @@ const Payouts = {
       const itemsHtml = renderItemsList(g.items);
       const itemCountLabel = `${g.count} item${g.count !== 1 ? 's' : ''}`;
 
-      html += `<div class="payouts__card">
+      html += `<div class="ec-card payouts__card">
         <div class="payouts__card-header">
           <span class="payouts__dot" style="background: ${c.color}"></span>
           <span class="payouts__name">${Utils.escapeHtml(c.name)}</span>
@@ -160,7 +160,7 @@ const Payouts = {
       const uItemsHtml = renderItemsList(untagged.items);
       const uItemCountLabel = `${untagged.count} item${untagged.count !== 1 ? 's' : ''}`;
 
-      html += `<div class="payouts__card">
+      html += `<div class="ec-card payouts__card">
         <div class="payouts__card-header">
           <span class="payouts__dot payouts__dot--empty"></span>
           <span class="payouts__name">Untagged items</span>

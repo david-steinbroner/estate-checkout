@@ -1156,14 +1156,6 @@ body {
   margin-bottom: var(--space-lg);
 }
 
-.edit-sale__label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-sm);
-}
 
 .edit-sale__value {
   font-size: var(--font-size-base);
@@ -1432,30 +1424,13 @@ body {
   justify-content: space-between;
 }
 
-.consignor-section__header .setup-field__label,
-.consignor-section__header .edit-sale__label {
+.consignor-section__header .ec-section-header {
   margin-bottom: 0;
 }
 
-/* === Consignor Form (Add/Edit Sheet) === */
-.consignor-form__label {
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-xs);
-  /* v175: bumped from --space-md (12px) to --space-xl (20px) so the section
-     boundary (input → next label) is meaningfully larger than the within-
-     section gap (label → input = 4px). Fixes the "squished sections" feel
-     on Add/Edit Consignor. */
-  margin-top: var(--space-xl);
-}
-
-.consignor-form__label:first-of-type {
-  margin-top: 0;
-}
+/* Consignor Form section labels are now .ec-section-header. The
+   per-context margins (xs bottom + xl top, 0 top on first) live in the
+   #consignor-modal .ec-section-header descendant rules above. */
 
 .consignor-form__optional {
   font-weight: var(--font-weight-normal);
@@ -2409,10 +2384,46 @@ body {
 }
 
 /* Grouped list card — white surface that holds rows */
-.setup-card {
+/* === Canonical card + section header (v180 migration target) ===
+   .ec-card is the Grouped List Card base — white surface, rounded, content
+   clipped. Per-context styling (margins, child layouts) lives on the
+   legacy modifier class kept alongside (e.g., class="ec-card setup-card").
+   .ec-section-header is the uppercase eyebrow label that sits above each
+   card or stat. Migration consolidated drift in font-size (some used
+   --font-size-sm 15px) and weight (dashboard stats had no weight set).
+*/
+.ec-card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
+}
+
+.ec-section-header {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Per-context spacing — base has no margin, so add it where the section
+   header appears. Setup form sections need more breathing room than dense
+   cards on Dashboard. */
+.setup-section .ec-section-header {
+  margin-bottom: var(--space-md);
+}
+
+#consignor-modal .ec-section-header {
+  margin-bottom: var(--space-xs);
+  margin-top: var(--space-xl);
+}
+#consignor-modal .ec-section-header:first-of-type {
+  margin-top: 0;
+}
+
+.edit-sale__section .ec-section-header {
+  margin-bottom: var(--space-sm);
 }
 
 .setup-card__row {
@@ -2557,26 +2568,10 @@ body {
 /* The max-width:90% hack is no longer needed — box-sizing on the input
    constrains it to its 50% half. The flex gap handles separation. */
 
-.setup-section__header {
-  display: block;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-md);
-}
-
-.setup-section__header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-md);
-}
-
-.setup-section__header-row .setup-section__header {
-  margin-bottom: 0;
-}
+/* Setup section headers are now .ec-section-header. Spacing handled by
+   the .setup-section .ec-section-header descendant rule. The
+   .setup-section__header-row variant was unused (last reference removed
+   in the v173 Edit Mode refactor). */
 
 .setup-section__action {
   font-size: var(--font-size-sm);
@@ -2901,11 +2896,9 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Card — V2 grouped list card pattern */
+/* Payouts card — base styling on .ec-card; this rule adds the inter-card
+   spacing specific to the Payouts screen layout. */
 .payouts__card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
   margin-bottom: var(--space-md);
 }
 
@@ -3701,8 +3694,6 @@ body {
   flex: 1;
   text-align: center;
   padding: var(--space-md) var(--space-sm);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
 }
 
 .dashboard-stat__value {
@@ -3713,20 +3704,10 @@ body {
   margin-bottom: var(--space-xs);
 }
 
-.dashboard-stat__label {
-  display: block;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px; /* intentional: typographic detail */
-}
 
 /* === Revenue by Consignor card (V2 §1.6) === */
 .consignor-revenue {
   margin: 0 var(--space-lg) var(--space-lg);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
 }
 
 .consignor-revenue[hidden] {
@@ -3741,13 +3722,8 @@ body {
   border-bottom: 1px solid var(--color-divider);
 }
 
-.consignor-revenue__title {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+/* .consignor-revenue__title kept as a hook for the row layout; eyebrow
+   styling now lives on .ec-section-header (paired class on the markup). */
 
 .consignor-revenue__more {
   background: none;

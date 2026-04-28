@@ -100,8 +100,8 @@
     <div class="setup-form">
       <!-- Sale Name -->
       <div class="setup-section">
-        <span class="setup-section__header">Sale Name</span>
-        <div class="setup-card">
+        <span class="ec-section-header">Sale Name</span>
+        <div class="ec-card setup-card">
           <div class="setup-card__row setup-card__row--input">
             <input
               type="text"
@@ -119,8 +119,8 @@
            consecutive day, tap any day's date to change it inline.
            Remove toggle (v173): switches the days list into batch-delete mode. -->
       <div class="setup-section">
-        <span class="setup-section__header">Sale Days</span>
-        <div class="setup-card">
+        <span class="ec-section-header">Sale Days</span>
+        <div class="ec-card setup-card">
           <div class="discount-list" id="discount-list">
             <!-- Day rows rendered by JS (renderDiscountList) -->
           </div>
@@ -134,8 +134,8 @@
 
       <!-- Consignors -->
       <div class="setup-section">
-        <span class="setup-section__header">Consignors</span>
-        <div class="setup-card">
+        <span class="ec-section-header">Consignors</span>
+        <div class="ec-card setup-card">
           <div id="setup-consignor-list"></div>
           <div class="setup-card__row setup-card__row--action setup-card__row--split">
             <button class="ec-link-primary" id="setup-add-consignor" type="button">+ Add Consignor</button>
@@ -277,24 +277,24 @@
 
     <!-- Summary Stats -->
     <div class="dashboard-stats">
-      <div class="dashboard-stat">
+      <div class="ec-card dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-customers">0</span>
-        <span class="dashboard-stat__label">Invoices</span>
+        <span class="ec-section-header">Invoices</span>
       </div>
-      <div class="dashboard-stat">
+      <div class="ec-card dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-revenue">$0.00</span>
-        <span class="dashboard-stat__label">Revenue</span>
+        <span class="ec-section-header">Revenue</span>
       </div>
-      <div class="dashboard-stat">
+      <div class="ec-card dashboard-stat">
         <span class="dashboard-stat__value" id="dashboard-avg">$0.00</span>
-        <span class="dashboard-stat__label">Avg</span>
+        <span class="ec-section-header">Avg</span>
       </div>
     </div>
 
     <!-- Revenue by Consignor card (V2 §1.6) -->
-    <div class="consignor-revenue" id="consignor-revenue" hidden>
+    <div class="ec-card consignor-revenue" id="consignor-revenue" hidden>
       <div class="consignor-revenue__header">
-        <span class="consignor-revenue__title">Revenue by consignor</span>
+        <span class="ec-section-header consignor-revenue__title">Revenue by consignor</span>
         <button class="consignor-revenue__more" id="consignor-revenue-more" type="button" hidden>View all</button>
       </div>
       <ul class="consignor-revenue__list" id="consignor-revenue-list"></ul>
@@ -763,17 +763,17 @@
     <div class="sheet">
       <p class="sheet__title" id="consignor-modal-title">Add Consignor</p>
 
-      <label class="consignor-form__label">Name</label>
+      <label class="ec-section-header">Name</label>
       <input type="text" class="ec-input" id="consignor-name" placeholder="e.g., Aunt Beth" autocomplete="off">
 
-      <label class="consignor-form__label">Color</label>
+      <label class="ec-section-header">Color</label>
       <button type="button" class="ec-picker-button consignor-color-chip" id="consignor-color-btn">
         <span class="consignor-color-chip__dot" id="consignor-color-current"></span>
         <span class="ec-picker-button__label" id="consignor-color-label">Choose color</span>
         <svg class="ec-picker-button__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
       </button>
 
-      <label class="consignor-form__label">Payout</label>
+      <label class="ec-section-header">Payout</label>
       <div class="consignor-form__payout-row">
         <input type="hidden" id="consignor-payout-type" value="percentage">
         <button type="button" class="ec-picker-button consignor-form__payout-type-btn" id="consignor-payout-type-btn">
@@ -788,7 +788,7 @@
       </div>
       <p class="consignor-form__hint" id="consignor-payout-hint">Consignor gets 70%, you keep 30%</p>
 
-      <label class="consignor-form__label">Notes <span class="consignor-form__optional">(optional)</span></label>
+      <label class="ec-section-header">Notes <span class="consignor-form__optional">(optional)</span></label>
       <input type="text" class="ec-input" id="consignor-notes" placeholder="Storage unit items, etc." autocomplete="off">
 
       <div class="sheet__buttons">
