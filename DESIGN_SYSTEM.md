@@ -552,6 +552,17 @@ For consignor color picker. Already a clean implementation — codified here as 
 - Shadow: `--shadow-floating`
 - Backdrop blur if feasible (iOS-native feel)
 
+### Bottom Action Bar (V2 §1.4.J)
+
+Every screen with a fixed CTA at the bottom uses one shape:
+
+- Container: `padding: var(--bottom-action-padding)` (12px) on all sides; bottom padding adds `env(safe-area-inset-bottom, 0px)` for the iOS home indicator.
+- Background: `--color-surface` (or `--overlay-opaque` on Scan, since the camera feed is dark).
+- Border: 1px top divider matching the screen's bg.
+- Buttons: `var(--bottom-action-button-height)` (56px). Full width or split row, never smaller than 56px.
+
+**Don't ad-hoc the bar height per screen.** Every fixed bottom CTA — Setup, Checkout, Dashboard, Scan, Paused — uses the same vertical shape so the user's thumb lands in the same place across screens.
+
 ### Edit Mode (batch delete pattern, V2 §1.4.I)
 
 **Use this whenever a list section needs a way to remove rows in bulk.** Currently used by Sale Days and Consignors on the Setup screen. Replaces swipe-to-delete (which we removed in v168 because hidden gestures fail the design philosophy).

@@ -104,6 +104,13 @@
      sheet variant — terse confirms, forms, menus all share it. */
   --sheet-top-padding: 40px;
 
+  /* Bottom action bar: every screen with a fixed CTA at the bottom uses
+     these. Standardized v174 — Setup, Checkout, Paused all matched at
+     56px buttons + 12px padding; Scan and Dashboard were drifting at
+     48px + 8px. One pattern, applied everywhere. */
+  --bottom-action-padding: var(--space-md);
+  --bottom-action-button-height: 56px;
+
   /* === Typography: Font Family (V2 adds SF Pro variants + rounded for numbers) === */
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
@@ -198,6 +205,9 @@ body {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  /* Rebalances line breaks to avoid orphans (single hanging word at the end
+     of a paragraph). Modern Safari/Chrome only — older browsers no-op. */
+  text-wrap: pretty;
 }
 
 /* === Shared Header === */
@@ -1117,8 +1127,8 @@ body {
 .action-bar {
   display: flex;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -1129,7 +1139,7 @@ body {
 
 .action-bar__button {
   flex: 1;
-  height: 56px;
+  height: var(--bottom-action-button-height);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
@@ -2306,6 +2316,7 @@ body {
   overflow-y: auto;
   margin-bottom: var(--space-lg);
   padding-right: var(--space-xs);
+  text-align: left;
 }
 
 .version-history__entry {
@@ -2995,8 +3006,8 @@ body {
 
 /* Setup Actions */
 .setup-actions {
-  padding: var(--space-md) var(--space-lg);
-  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-divider);
   flex-shrink: 0;
@@ -3425,8 +3436,8 @@ body {
 
 /* Paused actions — primary CTA + secondary text links per V2 */
 .paused-actions {
-  padding: var(--space-md) var(--space-lg);
-  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -3435,7 +3446,7 @@ body {
 
 .paused-action--resume {
   width: 100%;
-  height: 56px;
+  height: var(--bottom-action-button-height);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -3814,15 +3825,15 @@ body {
 .scan-actions {
   position: relative;
   z-index: 11;
-  padding: var(--space-sm) var(--space-lg);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   background: var(--overlay-opaque);
   flex-shrink: 0;
 }
 
 .scan-action--new {
   width: 100%;
-  height: var(--height-button);
+  height: var(--bottom-action-button-height);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -4597,8 +4608,8 @@ button.dashboard-detail__consignor--empty:active {
 
 /* Dashboard Actions */
 .dashboard-actions {
-  padding: var(--space-sm) var(--space-lg);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -4606,7 +4617,7 @@ button.dashboard-detail__consignor--empty:active {
 
 .dashboard-action {
   width: 100%;
-  height: var(--height-button);
+  height: var(--bottom-action-button-height);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-lg);

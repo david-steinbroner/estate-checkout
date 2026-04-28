@@ -49,7 +49,6 @@ const App = {
       menuVersionLabel: document.getElementById('menu-version-label'),
       versionHistoryModal: document.getElementById('version-history-modal'),
       versionHistoryContent: document.getElementById('version-history-content'),
-      versionHistoryDone: document.getElementById('version-history-done'),
       // End sale confirmation
       endSaleConfirmModal: document.getElementById('end-sale-confirm-modal'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
@@ -189,9 +188,6 @@ const App = {
         this.closeMenu();
         this.openVersionHistory();
       });
-    }
-    if (this.headerElements.versionHistoryDone) {
-      this.headerElements.versionHistoryDone.addEventListener('click', () => this.closeVersionHistory());
     }
     if (this.headerElements.versionHistoryModal) {
       this.headerElements.versionHistoryModal.addEventListener('click', (e) => {
@@ -1441,13 +1437,11 @@ const App = {
 
     this.headerElements.shareSaleCode.textContent = code;
 
-    // Mark this sale as shared
-    sale.isShared = true;
-    sale.sharedAt = sale.sharedAt || Utils.getTimestamp();
-    Storage.saveSale(sale);
-
-    // v163: refresh per-screen SHARED chips
-    this.updateHeaderContent(sale);
+    // v174: don't flip isShared just because the user opened the Share Sale
+    // sheet — that produced a SHARED badge before anyone actually joined.
+    // The flag is set in confirmJoinSale on the joining device. Showing
+    // SHARED on the originator after a real join needs a backend device-count
+    // signal (logged in BACKLOG.md).
 
     // QR encodes a clean URL with just the share code — phone fetches the
     // full sale config from the backend on join.

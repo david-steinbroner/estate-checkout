@@ -12,6 +12,7 @@
 
 Scope is driven entirely by what we learn in field tests. These are likely candidates, not commitments:
 
+- [ ] **SHARED tag on the originating device.** v174 fixed the false-positive (SHARED was flipping just on opening the Share Sale sheet). Currently SHARED only shows on devices that joined someone else's sale. To show SHARED on the originator when another device actually joins, we need a backend signal — e.g., increment a `device_count` column on each `/sales/by-code/:code` lookup, then poll it from the originator and flip the chip when count > 1.
 - [ ] One-person checkout flow shortcut (skip QR, mark paid directly from checkout)
 - [ ] Export sale data as CSV
 - [ ] Dashboard search by customer number
