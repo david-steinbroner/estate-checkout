@@ -161,9 +161,9 @@
       <p class="sheet__title">Sale Confirmation</p>
       <div class="sale-confirm__summary" id="sale-confirm-summary"></div>
       <p class="sale-confirm__hint">You can always edit these details later from the menu.</p>
-      <div class="sale-confirm__buttons">
-        <button type="button" class="sheet__btn sheet__btn--confirm sale-confirm__start" id="sale-confirm-start">Start Sale</button>
-        <button type="button" class="sheet__btn sheet__btn--secondary sale-confirm__back" id="sale-confirm-back">Continue Setup</button>
+      <div class="sheet__buttons">
+        <button type="button" class="sheet__btn sheet__btn--confirm" id="sale-confirm-start">Start Sale</button>
+        <button type="button" class="sheet__btn sheet__btn--secondary" id="sale-confirm-back">Continue Setup</button>
       </div>
     </div>
   </div>
@@ -576,7 +576,7 @@
 
   <!-- Edit Sale Sheet -->
   <div class="overlay" id="edit-sale-modal">
-    <div class="sheet">
+    <div class="sheet sheet--detail">
       <p class="sheet__title">Edit Sale</p>
       <div class="edit-sale" id="edit-sale-content"></div>
       <div class="sheet__buttons">
@@ -672,7 +672,7 @@
 
   <!-- Invoice Discount Sheet -->
   <div class="overlay" id="ticket-discount-modal">
-    <div class="sheet invoice-discount-sheet">
+    <div class="sheet sheet--detail invoice-discount-sheet">
       <p class="sheet__title">Invoice Discount</p>
       <div class="invoice-discount__modes">
         <label class="invoice-discount__mode">

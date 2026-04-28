@@ -714,7 +714,7 @@ body {
 
 .item-row__trash-btn:active {
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-text-on-danger);
 }
 
 .item-row__qty-controls {
@@ -1008,7 +1008,7 @@ body {
 
 .entry-screen__confirm {
   width: 100%;
-  height: 56px;
+  height: var(--bottom-action-button-height);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;
@@ -1035,7 +1035,7 @@ body {
 
 .entry-screen__delete {
   width: 100%;
-  height: 56px;
+  height: var(--bottom-action-button-height);
   background: var(--color-danger);
   color: var(--color-text-on-danger);
   border: none;
@@ -1185,15 +1185,8 @@ body {
 }
 
 
-/* === Edit Sale Sheet === */
-#edit-sale-modal .sheet {
-  text-align: left;
-}
-
-/* === Item Sheet === */
-#item-sheet-backdrop .sheet {
-  text-align: left;
-}
+/* Edit Sale and Item sheets use the .sheet--detail variant for left-align;
+   no id-scoped overrides needed. */
 
 .edit-sale {
   margin-bottom: var(--space-lg);
@@ -1937,10 +1930,7 @@ body {
   margin-bottom: var(--space-lg);
 }
 
-/* === Invoice Discount Sheet === */
-.invoice-discount-sheet {
-  text-align: left;
-}
+/* Invoice Discount sheet uses the .sheet--detail variant for left-align. */
 
 .invoice-discount__modes {
   display: flex;
@@ -3105,7 +3095,7 @@ body {
 }
 
 .sale-confirm__value--default {
-  color: #aaa; /* intentional: lighter gray for empty/default values */
+  color: var(--color-text-tertiary);
   font-weight: var(--font-weight-normal);
 }
 
@@ -3116,18 +3106,9 @@ body {
   text-align: center;
 }
 
-.sale-confirm__buttons {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.sale-confirm__start {
-  flex: 1;
-}
-
-.sale-confirm__back {
-  flex: 1;
-}
+/* .sale-confirm__buttons / __start / __back removed in v176 — Sale
+   Confirmation now uses the standard .sheet__buttons vertical stack like
+   every other sheet in the app. */
 
 /* === Consignor Payouts Screen (V2 §1.4.A List + §1.4.B Detail hybrid) === */
 .payouts-screen {
@@ -3913,8 +3894,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  padding: var(--space-sm) var(--space-lg);
-  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -3922,7 +3903,7 @@ body {
 
 .payment-action--new {
   width: 100%;
-  height: var(--height-button);
+  height: var(--bottom-action-button-height);
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
@@ -3939,7 +3920,7 @@ body {
 
 .payment-action--paid {
   width: 100%;
-  height: var(--height-button);
+  height: var(--bottom-action-button-height);
   background: var(--color-success);
   color: var(--color-text-on-success);
   border: none;

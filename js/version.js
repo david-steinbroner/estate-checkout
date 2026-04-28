@@ -9,9 +9,18 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v175';
+const APP_VERSION = 'v176';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v176',
+    date: '2026-04-28',
+    changes: [
+      'Payment screen action buttons match the rest of the app now (was a tiny bit shorter than every other screen).',
+      'Sale Confirmation buttons stack vertically like every other sheet (was the only horizontal pair).',
+      'Internal cleanup so future sheets stay cohesive.'
+    ]
+  },
   {
     version: 'v175',
     date: '2026-04-28',
