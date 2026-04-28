@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v188';
+const APP_VERSION = 'v189';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v189',
+    date: '2026-04-28',
+    changes: [
+      'Sale Ended banner redesigned — text was getting squished against the buttons in a horizontal layout. Now stacks vertically: title, hint, full-width Start New Estate Sale button, then the Export Sale Data link below. Reads cleanly on phone width.',
+      'The Start New Estate Sale button now uses the same canonical primary button style as every other green CTA in the app — was a bespoke smaller variant that didn\'t match.'
+    ]
+  },
   {
     version: 'v188',
     date: '2026-04-28',

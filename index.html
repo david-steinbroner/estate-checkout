@@ -266,16 +266,17 @@
       <p class="dashboard-large-subtitle" id="dashboard-large-subtitle"></p>
     </div>
 
-    <!-- Sale-ended banner (visible only when sale.status === 'ended') -->
-    <div class="dashboard-ended-banner" id="dashboard-ended-banner" hidden>
+    <!-- Sale-ended banner (visible only when sale.status === 'ended').
+         Card-with-embedded-actions: vertical stack of title + hint + full-
+         width primary CTA + text link, matching the Paused screen action
+         pattern. -->
+    <div class="ec-card dashboard-ended-banner" id="dashboard-ended-banner" hidden>
       <div class="dashboard-ended-banner__content">
         <span class="dashboard-ended-banner__title">Estate sale ended</span>
         <span class="dashboard-ended-banner__hint">Review past invoices below, or start fresh.</span>
       </div>
-      <div class="dashboard-ended-banner__actions">
-        <button class="dashboard-ended-banner__cta" id="dashboard-start-new-sale" type="button">Start New Estate Sale</button>
-        <button class="ec-link-primary" id="dashboard-export" type="button">Export Sale Data</button>
-      </div>
+      <button class="ec-btn ec-btn-primary" id="dashboard-start-new-sale" type="button">Start New Estate Sale</button>
+      <button class="ec-link-primary" id="dashboard-export" type="button">Export Sale Data</button>
       <p class="ec-field-error" id="dashboard-export-error" hidden></p>
     </div>
 

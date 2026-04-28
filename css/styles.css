@@ -3592,17 +3592,16 @@ body {
   background: var(--color-bg);
 }
 
-/* Dashboard Stats */
-/* === Dashboard sale-ended banner (v159) === */
+/* === Dashboard sale-ended banner (v189) ===
+   Card-with-embedded-actions: vertical stack of title + hint + primary CTA
+   + secondary link. Same archetype as the Paused screen actions. Inherits
+   the .ec-card base (white surface, --radius-lg) and adds layout. */
 .dashboard-ended-banner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
+  flex-direction: column;
+  gap: var(--space-sm);
   margin: var(--space-md) var(--space-lg) 0;
-  padding: var(--space-md) var(--space-lg);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
 }
 
 .dashboard-ended-banner[hidden] {
@@ -3612,54 +3611,29 @@ body {
 .dashboard-ended-banner__content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
 }
 
 .dashboard-ended-banner__title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
 }
 
 .dashboard-ended-banner__hint {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  line-height: var(--line-height-default);
 }
 
-.dashboard-ended-banner__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-xs);
-  flex-shrink: 0;
-}
-
-.dashboard-ended-banner__cta {
-  height: 40px;
-  padding: 0 var(--space-lg);
-  background: var(--color-success);
-  color: var(--color-text-on-success);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: -0.01em;
-  transition: background var(--duration-fast) ease;
-}
-
-.dashboard-ended-banner__cta:active {
-  background: var(--color-success-dark);
-}
-
-/* Export link inside the banner — small, right-aligned under the green CTA. */
+/* Export link sits centered under the primary CTA — matches the
+   Paused screen's stacked-actions look. */
 .dashboard-ended-banner #dashboard-export {
-  padding: var(--space-xs) 0;
-  font-size: var(--font-size-sm);
+  text-align: center;
+  width: 100%;
 }
 
 .dashboard-stats {
