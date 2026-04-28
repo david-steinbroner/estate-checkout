@@ -1532,16 +1532,19 @@ body {
   border-color: var(--color-primary);
 }
 
+/* Color swatches — used inside the color picker bottom sheet, no longer
+   inline in the consignor form (saves a row). */
 .consignor-form__colors {
   display: flex;
   gap: var(--space-md);
   flex-wrap: wrap;
   padding: var(--space-sm) 0;
+  justify-content: center;
 }
 
 .consignor-form__color-dot {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -1552,6 +1555,20 @@ body {
 .consignor-form__color-dot--selected {
   border-color: var(--color-text);
   box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px currentColor;
+}
+
+/* Color chip in the consignor form — tap to open the color picker sheet. */
+.consignor-color-chip {
+  width: 100%;
+  gap: var(--space-md);
+}
+
+.consignor-color-chip__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-divider);
+  flex-shrink: 0;
 }
 
 .consignor-form__payout-row {
@@ -1762,7 +1779,22 @@ body {
   background: var(--color-primary-light);
 }
 
-/* === Join Sale Instruction Sheet — manual code entry === */
+/* === Join Sale Instruction Sheet — Scan QR button + manual code entry === */
+.join-scan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.join-scan-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+
 .join-code-divider {
   display: flex;
   align-items: center;
@@ -2597,6 +2629,39 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Split action row — paired controls (e.g., + Add Day | Remove). */
+.setup-card__row--split {
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  cursor: default;
+  min-height: 48px;
+}
+
+.setup-card__row--split:active {
+  background: transparent;
+}
+
+.setup-card__action-link {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setup-card__action-link:active {
+  opacity: 0.6;
+}
+
+.setup-card__action-link--remove {
+  color: var(--color-danger);
+}
+
 /* Make existing discount + consignor rows behave as card rows when nested */
 .setup-card .discount-list {
   gap: 0;
@@ -2772,11 +2837,76 @@ body {
   z-index: 1;
 }
 
+/* === Edit Mode pattern (V2 §1.4.I) ===
+   Section card renders rows with a Remove toggle next to its + Add control.
+   Tap Remove → toggle becomes "Done", rows show a minus circle on the left.
+   Tap minus → row arms (right side becomes a red Confirm button).
+   Tap Confirm → row deletes. Tap minus again → unarmed. Tap Done → exits.
+   Used by Sale Days and Consignors on the Setup screen. */
+
+/* Minus-circle handle, sits to the left of the row content when section is
+   in edit mode. Hidden by default; shown via the parent's --editing modifier. */
+.row-edit-handle {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: var(--color-text-on-danger);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: var(--space-md);
+}
+
+.row-edit-handle::before {
+  content: '';
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.row-edit-handle:active {
+  opacity: 0.7;
+}
+
+/* Confirm button (red, right side of an armed row, replaces the row's
+   normal right-side content). Two-tap delete: minus arms, this confirms. */
+.row-edit-confirm {
+  height: 32px;
+  padding: 0 var(--space-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-danger);
+  color: var(--color-text-on-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row-edit-confirm:active {
+  background: var(--color-danger-dark);
+}
+
 /* Discount List */
 .discount-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+}
+
+/* When a list is in edit mode, every row's minus handle becomes visible.
+   Normal row interactions (date picker, discount edit, tap-to-edit consignor)
+   are suppressed by JS — only the handle and confirm button respond. */
+.discount-list--editing .row-edit-handle,
+#setup-consignor-list.consignor-list--editing .row-edit-handle {
+  display: flex;
 }
 
 .discount-row {
@@ -2811,14 +2941,6 @@ body {
 .discount-row__right {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-}
-
-/* When the inline edit surfaces a "Remove this day" link, stack the right
-   column so the input row sits on top and the link below. */
-.discount-row__right:has(.discount-row__remove) {
-  flex-direction: column;
-  align-items: flex-end;
   gap: var(--space-xs);
 }
 
@@ -2869,21 +2991,6 @@ body {
   color: var(--color-text-secondary);
 }
 
-.discount-row__remove {
-  border: none;
-  background: transparent;
-  color: var(--color-danger);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  padding: var(--space-xs) 0;
-  align-self: flex-end;
-}
-
-.discount-row__remove:active {
-  opacity: 0.6;
-}
 
 
 /* Setup Actions */

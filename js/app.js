@@ -67,6 +67,7 @@ const App = {
       joinSaleCancel: document.getElementById('join-sale-cancel'),
       // Join instruction sheet
       joinInstructionModal: document.getElementById('join-instruction-modal'),
+      joinScanButton: document.getElementById('join-scan-button'),
       joinCodeInput: document.getElementById('join-code-input'),
       joinCodeStatus: document.getElementById('join-code-status'),
       // Join Sale button on setup
@@ -266,6 +267,16 @@ const App = {
     // Join Sale button on setup screen
     if (this.headerElements.joinSaleButton) {
       this.headerElements.joinSaleButton.addEventListener('click', () => this.showJoinInstruction());
+    }
+
+    // Join instruction sheet — Scan QR opens the in-app scanner. The
+    // scanner detects ?join= URLs on its own and routes to the join flow,
+    // so no mode flag is needed.
+    if (this.headerElements.joinScanButton) {
+      this.headerElements.joinScanButton.addEventListener('click', () => {
+        this._closeJoinInstruction();
+        this.showScreen('scan');
+      });
     }
 
     // Join instruction sheet — manual code entry with auto-submit on 6 digits
@@ -687,7 +698,7 @@ const App = {
       notesInput.value = consignor.notes || '';
       deleteBtn.hidden = false;
       this._consignorEditId = consignor.id;
-      this._renderConsignorColors(consignor.color);
+      this._setConsignorColor(consignor.color);
     } else {
       title.textContent = 'Add Consignor';
       nameInput.value = '';
@@ -701,26 +712,50 @@ const App = {
       const existing = sale ? Storage.getConsignors() : SaleSetup.pendingConsignors;
       const used = existing.map(c => c.color);
       const defaultColor = CONSIGNOR_COLORS.find(c => !used.includes(c)) || CONSIGNOR_COLORS[0];
-      this._renderConsignorColors(defaultColor);
+      this._setConsignorColor(defaultColor);
     }
 
     this._updateConsignorPayoutUI();
     modal.classList.add('visible');
   },
 
-  _renderConsignorColors(selected) {
-    const container = document.getElementById('consignor-colors');
-    container.innerHTML = CONSIGNOR_COLORS.map(color => {
+  /**
+   * Currently-selected color in the Add/Edit Consignor sheet. Persisted on
+   * the App instance because the color picker is now a separate sheet that
+   * opens and closes — we need somewhere to hold the value between those
+   * two surfaces. Read by _saveConsignor.
+   */
+  _consignorSelectedColor: null,
+
+  _setConsignorColor(color) {
+    this._consignorSelectedColor = color;
+    const dot = document.getElementById('consignor-color-current');
+    if (dot) dot.style.background = color;
+  },
+
+  /**
+   * Open the color picker bottom sheet. Renders the 10 swatches with the
+   * currently-selected one highlighted.
+   */
+  _openConsignorColorPicker() {
+    const modal = document.getElementById('consignor-color-picker-modal');
+    const grid = document.getElementById('consignor-color-picker-grid');
+    if (!modal || !grid) return;
+
+    const selected = this._consignorSelectedColor;
+    grid.innerHTML = CONSIGNOR_COLORS.map(color => {
       const sel = color === selected ? ' consignor-form__color-dot--selected' : '';
       return `<div class="consignor-form__color-dot${sel}" data-color="${color}" style="background: ${color}"></div>`;
     }).join('');
 
-    container.querySelectorAll('.consignor-form__color-dot').forEach(dot => {
+    grid.querySelectorAll('.consignor-form__color-dot').forEach(dot => {
       dot.addEventListener('click', () => {
-        container.querySelectorAll('.consignor-form__color-dot').forEach(d => d.classList.remove('consignor-form__color-dot--selected'));
-        dot.classList.add('consignor-form__color-dot--selected');
+        this._setConsignorColor(dot.dataset.color);
+        modal.classList.remove('visible');
       });
     });
+
+    modal.classList.add('visible');
   },
 
   _updateConsignorPayoutUI() {
@@ -794,8 +829,7 @@ const App = {
     const payoutType = document.getElementById('consignor-payout-type').value;
     const payoutValue = parseFloat(document.getElementById('consignor-payout-value').value) || 0;
     const notes = document.getElementById('consignor-notes').value.trim();
-    const selectedDot = document.querySelector('.consignor-form__color-dot--selected');
-    const color = selectedDot ? selectedDot.dataset.color : CONSIGNOR_COLORS[0];
+    const color = this._consignorSelectedColor || CONSIGNOR_COLORS[0];
 
     if (!name) {
       this._showConsignorFlash('Enter a name');
@@ -925,6 +959,18 @@ const App = {
     });
     payoutType.addEventListener('change', () => this._updateConsignorPayoutUI());
     payoutValue.addEventListener('input', () => this._updateConsignorPayoutUI());
+
+    // Color chip → opens the color picker bottom sheet
+    const colorBtn = document.getElementById('consignor-color-btn');
+    if (colorBtn) {
+      colorBtn.addEventListener('click', () => this._openConsignorColorPicker());
+    }
+    const colorPickerModal = document.getElementById('consignor-color-picker-modal');
+    if (colorPickerModal) {
+      colorPickerModal.addEventListener('click', (e) => {
+        if (e.target === colorPickerModal) colorPickerModal.classList.remove('visible');
+      });
+    }
   },
 
   /**

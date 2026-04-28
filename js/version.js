@@ -4,9 +4,27 @@
  * Keep entries short, in plain language (Alissa-readable).
  */
 
-const APP_VERSION = 'v171';
+const APP_VERSION = 'v173';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v173',
+    date: '2026-04-28',
+    changes: [
+      'Add Consignor sheet: color picker is now a single tappable chip (with the current color showing) that opens a small color sheet. Saves a row, and the Delete button on Edit Consignor now fits without scrolling.',
+      'Sale Days: Remove button on the same line as + Add Day. Tap it to enter edit mode — each day gets a red minus circle. Tap minus then tap red Remove to delete (two-tap so you can\'t fat-finger it). Tap Done to exit.',
+      'Consignors: same Remove → minus → confirm pattern.',
+      'Old way of removing days (tap discount, get a Remove this day link) is gone — Edit Mode is the single, discoverable path.'
+    ]
+  },
+  {
+    version: 'v172',
+    date: '2026-04-28',
+    changes: [
+      'Join Sale: scan the organizer\'s QR right inside the app — no need to switch to your camera. New Scan QR Code button at the top of the Join sheet opens the in-app scanner.',
+      'The scanner is smart now — it recognizes both ticket QRs and share-sale QRs, so it does the right thing automatically.'
+    ]
+  },
   {
     version: 'v171',
     date: '2026-04-28',

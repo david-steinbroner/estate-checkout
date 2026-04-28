@@ -116,16 +116,18 @@
 
       <!-- Sale Days (v164: replaces separate Start Date + End Date + Schedule).
            The schedule IS the sale — Day 1 = today, "+ Add Day" appends next
-           consecutive day, tap any day's date to change it inline. -->
+           consecutive day, tap any day's date to change it inline.
+           Remove toggle (v173): switches the days list into batch-delete mode. -->
       <div class="setup-section">
         <span class="setup-section__header">Sale Days</span>
         <div class="setup-card">
           <div class="discount-list" id="discount-list">
             <!-- Day rows rendered by JS (renderDiscountList) -->
           </div>
-          <button class="setup-card__row setup-card__row--action" id="add-day-button" type="button">
-            <span class="setup-card__action-label">+ Add Day</span>
-          </button>
+          <div class="setup-card__row setup-card__row--action setup-card__row--split">
+            <button class="setup-card__action-link" id="add-day-button" type="button">+ Add Day</button>
+            <button class="setup-card__action-link setup-card__action-link--remove" id="days-edit-toggle" type="button" hidden>Remove</button>
+          </div>
         </div>
         <p class="setup-section__error" id="schedule-error" hidden></p>
       </div>
@@ -135,9 +137,10 @@
         <span class="setup-section__header">Consignors</span>
         <div class="setup-card">
           <div id="setup-consignor-list"></div>
-          <button type="button" class="setup-card__row setup-card__row--action" id="setup-add-consignor">
-            <span class="setup-card__action-label">+ Add Consignor</span>
-          </button>
+          <div class="setup-card__row setup-card__row--action setup-card__row--split">
+            <button class="setup-card__action-link" id="setup-add-consignor" type="button">+ Add Consignor</button>
+            <button class="setup-card__action-link setup-card__action-link--remove" id="consignors-edit-toggle" type="button" hidden>Remove</button>
+          </div>
         </div>
       </div>
     </div>
@@ -618,7 +621,12 @@
   <div class="overlay" id="join-instruction-modal">
     <div class="sheet">
       <p class="sheet__title">Join a Sale</p>
-      <p class="sheet__text">Scan the QR code shown on the organizer's phone with your camera app.</p>
+      <p class="sheet__text">Scan the QR code shown on the organizer's phone, or enter the 6-digit code below.</p>
+
+      <button type="button" class="sheet__btn sheet__btn--primary join-scan-btn" id="join-scan-button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M21 7V5a2 2 0 0 0-2-2h-2"/><path d="M3 17v2a2 2 0 0 0 2 2h2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 12h10"/></svg>
+        <span>Scan QR Code</span>
+      </button>
 
       <div class="join-code-divider"><span>or enter the code</span></div>
 
@@ -766,7 +774,11 @@
       <input type="text" class="consignor-form__input" id="consignor-name" placeholder="e.g., Aunt Beth" autocomplete="off">
 
       <label class="consignor-form__label">Color</label>
-      <div class="consignor-form__colors" id="consignor-colors"></div>
+      <button type="button" class="ec-picker-button consignor-color-chip" id="consignor-color-btn">
+        <span class="consignor-color-chip__dot" id="consignor-color-current"></span>
+        <span class="ec-picker-button__label" id="consignor-color-label">Choose color</span>
+        <svg class="ec-picker-button__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+      </button>
 
       <label class="consignor-form__label">Payout</label>
       <div class="consignor-form__payout-row">
@@ -790,6 +802,14 @@
         <button class="sheet__btn sheet__btn--confirm" id="consignor-save">Save</button>
         <button class="sheet__btn sheet__btn--danger" id="consignor-delete" hidden>Delete Consignor</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Consignor Color Picker Sheet — opens when the Color chip is tapped -->
+  <div class="overlay" id="consignor-color-picker-modal">
+    <div class="sheet">
+      <p class="sheet__title">Color</p>
+      <div class="consignor-form__colors" id="consignor-color-picker-grid"></div>
     </div>
   </div>
 

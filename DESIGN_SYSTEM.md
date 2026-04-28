@@ -552,6 +552,26 @@ For consignor color picker. Already a clean implementation — codified here as 
 - Shadow: `--shadow-floating`
 - Backdrop blur if feasible (iOS-native feel)
 
+### Edit Mode (batch delete pattern, V2 §1.4.I)
+
+**Use this whenever a list section needs a way to remove rows in bulk.** Currently used by Sale Days and Consignors on the Setup screen. Replaces swipe-to-delete (which we removed in v168 because hidden gestures fail the design philosophy).
+
+**Anatomy:**
+- The section's action row has a `+ Add` button on the left and a `Remove` button on the right (`.setup-card__action-link--remove`, red text, no border).
+- The `Remove` button is hidden when there's nothing to delete (e.g., zero consignors, single day).
+- Tapping `Remove` flips the section into edit mode: the toggle becomes `Done`, every row gets a red minus circle (`.row-edit-handle`) on the left.
+
+**Two-tap delete:**
+1. Tap the minus circle on a row → row becomes "armed". The right side switches from its normal content (e.g., `+ Add Discount`, payout label) to a red `Remove` button (`.row-edit-confirm`).
+2. Tap the red `Remove` → row deletes. Toggle stays in edit mode for further deletions; if no removable rows remain, edit mode auto-exits.
+3. Tap the minus on an armed row to un-arm. Tap `Done` to exit edit mode entirely.
+
+**Why two taps:** these are persistent destructive operations on shared sale state. One-tap minus is too easy to mis-fire on a phone. The armed state gives an obvious visual "are you sure" without a separate confirm sheet.
+
+**While in edit mode, the row's normal interactions are suppressed** — the user can't accidentally open a date picker or detail sheet. Add controls (`+ Add Day`, `+ Add Consignor`) stay live so the user can interleave adds and removes.
+
+**Don't reinvent this** — when you need batch delete on a new list, use `.row-edit-handle` + `.row-edit-confirm` and pair it with a `.setup-card__row--split` action row.
+
 ### Special
 
 **`.ec-hero-number` — Hero Number**

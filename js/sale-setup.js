@@ -34,11 +34,21 @@ const SaleSetup = {
     this.elements = {
       saleNameInput: document.getElementById('setup-sale-name'),
       addDayButton: document.getElementById('add-day-button'),
+      daysEditToggle: document.getElementById('days-edit-toggle'),
       discountList: document.getElementById('discount-list'),
+      consignorList: document.getElementById('setup-consignor-list'),
+      consignorsEditToggle: document.getElementById('consignors-edit-toggle'),
       dashboardButton: document.getElementById('setup-dashboard-button'),
       startSaleButton: document.getElementById('start-sale-button')
     };
   },
+
+  // Edit-mode state for the Sale Days and Consignors sections (v173).
+  // _editMode flips when the user taps Remove → Done. _armed holds the
+  // index/id of a row whose minus has been tapped once and is awaiting
+  // the second confirm tap.
+  _editMode: { days: false, consignors: false },
+  _armed: { dayIndex: null, consignorId: null },
 
   /**
    * Set up default state on page load
@@ -95,6 +105,51 @@ const SaleSetup = {
     const addConsignorBtn = document.getElementById('setup-add-consignor');
     if (addConsignorBtn) {
       addConsignorBtn.addEventListener('click', () => App.openConsignorSheet(null));
+    }
+
+    // Edit-mode toggles for Sale Days and Consignors (v173)
+    if (this.elements.daysEditToggle) {
+      this.elements.daysEditToggle.addEventListener('click', () => this._toggleEditMode('days'));
+    }
+    if (this.elements.consignorsEditToggle) {
+      this.elements.consignorsEditToggle.addEventListener('click', () => this._toggleEditMode('consignors'));
+    }
+  },
+
+  /**
+   * Flip edit mode for a section ("days" or "consignors"). Clears any armed
+   * row, swaps the toggle text between Remove/Done, and re-renders the list.
+   */
+  _toggleEditMode(section) {
+    this._editMode[section] = !this._editMode[section];
+    this._armed.dayIndex = null;
+    this._armed.consignorId = null;
+    this._refreshEditToggles();
+    if (section === 'days') {
+      this.renderDiscountList();
+    } else {
+      this.renderConsignorList();
+    }
+  },
+
+  /**
+   * Update the Remove/Done labels and visibility of the edit-mode toggles.
+   * Hide the toggle entirely when there's nothing to edit (1 day for Days,
+   * 0 consignors for Consignors).
+   */
+  _refreshEditToggles() {
+    const sale = Storage.getSale();
+    const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
+
+    if (this.elements.daysEditToggle) {
+      const showDays = this.scheduleDays.length > 1;
+      this.elements.daysEditToggle.hidden = !showDays;
+      this.elements.daysEditToggle.textContent = this._editMode.days ? 'Done' : 'Remove';
+    }
+    if (this.elements.consignorsEditToggle) {
+      const showCons = consignors.length > 0;
+      this.elements.consignorsEditToggle.hidden = !showCons;
+      this.elements.consignorsEditToggle.textContent = this._editMode.consignors ? 'Done' : 'Remove';
     }
   },
 
@@ -166,24 +221,42 @@ const SaleSetup = {
   /**
    * Render the discount list. Tap a row's discount value to edit; the inline
    * edit also surfaces a "Remove this day" link when more than one day exists.
+   * In edit mode, each row gets a minus-circle handle on the left; tapping
+   * it arms the row (right side becomes a Confirm button).
    */
   renderDiscountList() {
+    const editing = this._editMode.days;
+    const armedIndex = this._armed.dayIndex;
+
     const html = this.scheduleDays.map((dayObj, index) => {
       const dayNum = index + 1;
       const dateLabel = this._formatDateLabel(dayObj.date);
+      const armed = editing && armedIndex === index;
 
-      // Right side: tap-to-edit discount
+      // Left side: minus-circle handle (rendered always, hidden by CSS when
+      // not in edit mode, so toggling edit mode doesn't require a re-render).
+      const handleHtml = `<button class="row-edit-handle" data-arm-day="${index}" type="button" aria-label="Remove Day ${dayNum}"></button>`;
+
+      // Right side: depends on armed state. Armed row → red Confirm button.
+      // Otherwise → the existing tap-to-edit-discount affordance.
       let rightHtml;
-      if (dayObj.discount > 0) {
+      if (armed) {
+        rightHtml = `<button class="row-edit-confirm" data-confirm-day="${index}" type="button">Remove</button>`;
+      } else if (dayObj.discount > 0) {
         rightHtml = `<span class="discount-row__value" data-day-index="${index}">${dayObj.discount}% off</span>`;
       } else {
         rightHtml = `<button class="discount-row__add-link" data-day-index="${index}">+ Add Discount</button>`;
       }
 
+      const labelHtml = editing
+        ? `<span class="discount-row__label">Day ${dayNum} &middot; ${dateLabel}</span>`
+        : `<span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}<input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}"></span></span>`;
+
       return `
         <div class="discount-row" data-day-index="${index}">
           <div class="discount-row__content">
-            <span class="discount-row__label">Day ${dayNum} <span class="discount-row__date" data-edit-date="${index}">&middot; ${dateLabel}<input type="date" class="setup-hidden-input" data-row-picker="${index}" value="${dayObj.date}"></span></span>
+            ${handleHtml}
+            ${labelHtml}
             <div class="discount-row__right">${rightHtml}</div>
           </div>
         </div>
@@ -191,8 +264,35 @@ const SaleSetup = {
     }).join('');
 
     this.elements.discountList.innerHTML = html;
+    this.elements.discountList.classList.toggle('discount-list--editing', editing);
+    this._refreshEditToggles();
 
-    // Bind tap-to-edit discount
+    if (editing) {
+      // In edit mode: only the minus handles and confirm buttons respond.
+      this.elements.discountList.querySelectorAll('[data-arm-day]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.armDay);
+          this._armed.dayIndex = (this._armed.dayIndex === idx) ? null : idx;
+          this.renderDiscountList();
+        });
+      });
+      this.elements.discountList.querySelectorAll('[data-confirm-day]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.confirmDay);
+          this._deleteDay(idx);
+          this._armed.dayIndex = null;
+          // Auto-exit edit mode if no more removable rows remain
+          if (this.scheduleDays.length <= 1) {
+            this._editMode.days = false;
+          }
+          this._refreshEditToggles();
+          this.renderDiscountList();
+        });
+      });
+      return;
+    }
+
+    // Normal (non-edit) mode bindings — date picker + discount tap-to-edit
     this.elements.discountList.querySelectorAll('.discount-row__value, .discount-row__add-link').forEach(el => {
       el.addEventListener('click', () => {
         const idx = parseInt(el.dataset.dayIndex);
@@ -200,7 +300,6 @@ const SaleSetup = {
       });
     });
 
-    // Per-row date pickers — overlay input handles native tap, change event does the update
     this.elements.discountList.querySelectorAll('[data-row-picker]').forEach(input => {
       input.addEventListener('change', () => {
         const idx = parseInt(input.dataset.rowPicker);
@@ -232,14 +331,12 @@ const SaleSetup = {
   },
 
   /**
-   * Open inline discount edit for a specific day. When more than one day
-   * exists, surface a "Remove this day" link so the user has an explicit
-   * delete path (replaces the previous swipe-to-delete pattern).
+   * Open inline discount edit for a specific day. Day deletion lives in
+   * Edit Mode now (Remove toggle on the action row), not inside this flow.
    */
   _openDiscountEdit(index, rowEl) {
     const rightEl = rowEl.querySelector('.discount-row__right');
     const current = this.scheduleDays[index].discount || 0;
-    const canDelete = this.scheduleDays.length > 1;
 
     rightEl.innerHTML = `
       <div class="discount-row__edit">
@@ -247,17 +344,13 @@ const SaleSetup = {
           min="0" max="100" inputmode="numeric" data-day-index="${index}" placeholder="0">
         <span class="discount-row__suffix">% off</span>
       </div>
-      ${canDelete ? `<button type="button" class="discount-row__remove" data-remove-index="${index}">Remove this day</button>` : ''}
     `;
 
     const input = rightEl.querySelector('.discount-row__input');
     input.focus();
     input.select();
 
-    let removing = false;
-
     const commitEdit = () => {
-      if (removing) return;
       let value = parseInt(input.value) || 0;
       value = Math.max(0, Math.min(100, value));
       this.scheduleDays[index].discount = value;
@@ -271,18 +364,6 @@ const SaleSetup = {
         input.blur();
       }
     });
-
-    const removeBtn = rightEl.querySelector('.discount-row__remove');
-    if (removeBtn) {
-      // mousedown fires before the input's blur, so we mark `removing` to
-      // suppress commitEdit's re-render and let _deleteDay do the rendering.
-      removeBtn.addEventListener('mousedown', () => { removing = true; });
-      removeBtn.addEventListener('touchstart', () => { removing = true; }, { passive: true });
-      removeBtn.addEventListener('click', () => {
-        const idx = parseInt(removeBtn.dataset.removeIndex);
-        this._deleteDay(idx);
-      });
-    }
   },
 
   /**
@@ -560,8 +641,13 @@ const SaleSetup = {
 
     const sale = Storage.getSale();
     const consignors = sale ? (sale.consignors || []) : this.pendingConsignors;
+    const editing = this._editMode.consignors;
+    const armedId = this._armed.consignorId;
+
     if (consignors.length === 0) {
       container.innerHTML = '';
+      container.classList.remove('consignor-list--editing');
+      this._refreshEditToggles();
       return;
     }
 
@@ -569,12 +655,41 @@ const SaleSetup = {
       const payoutLabel = c.payoutType === 'percentage'
         ? `${c.payoutValue}% to consignor`
         : `$${c.payoutValue} fee per item`;
+      const armed = editing && armedId === c.id;
+      const handleHtml = `<button class="row-edit-handle" data-arm-consignor="${c.id}" type="button" aria-label="Remove ${Utils.escapeHtml(c.name)}"></button>`;
+      const rightHtml = armed
+        ? `<button class="row-edit-confirm" data-confirm-consignor="${c.id}" type="button">Remove</button>`
+        : `<span class="consignor-list__payout">${payoutLabel}</span>`;
       return `<div class="consignor-list__item" data-consignor-id="${c.id}">
+        ${handleHtml}
         <span class="consignor-list__dot" style="background: ${c.color}"></span>
         <span class="consignor-list__name">${Utils.escapeHtml(c.name)}</span>
-        <span class="consignor-list__payout">${payoutLabel}</span>
+        ${rightHtml}
       </div>`;
     }).join('');
+
+    container.classList.toggle('consignor-list--editing', editing);
+    this._refreshEditToggles();
+
+    if (editing) {
+      // In edit mode: only the minus handles and confirm buttons respond.
+      container.querySelectorAll('[data-arm-consignor]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.armConsignor;
+          this._armed.consignorId = (this._armed.consignorId === id) ? null : id;
+          this.renderConsignorList();
+        });
+      });
+      container.querySelectorAll('[data-confirm-consignor]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.confirmConsignor;
+          this._removeConsignor(id);
+        });
+      });
+      return;
+    }
 
     container.querySelectorAll('[data-consignor-id]').forEach(el => {
       el.addEventListener('click', () => {
@@ -586,10 +701,35 @@ const SaleSetup = {
   },
 
   /**
+   * Remove a consignor from edit-mode batch delete. Mirrors App._deleteConsignor
+   * but driven by id (not the modal's _consignorEditId) and skips the modal.
+   */
+  _removeConsignor(consignorId) {
+    const sale = Storage.getSale();
+    if (sale) {
+      Storage.deleteConsignor(consignorId);
+      if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+        const fresh = Storage.getSale();
+        Sync.patchSale(fresh.id, fresh.shareCode, { consignors: fresh.consignors || [] })
+          .catch(err => console.warn('[sync] _removeConsignor failed:', err.message));
+      }
+    } else {
+      this.pendingConsignors = this.pendingConsignors.filter(c => c.id !== consignorId);
+    }
+    this._armed.consignorId = null;
+    // Auto-exit edit mode if no more rows remain
+    const remaining = sale ? Storage.getConsignors() : this.pendingConsignors;
+    if (remaining.length === 0) this._editMode.consignors = false;
+    this.renderConsignorList();
+  },
+
+  /**
    * Reset the form for a new sale
    */
   resetForm() {
     this.elements.saleNameInput.value = '';
+    this._editMode = { days: false, consignors: false };
+    this._armed = { dayIndex: null, consignorId: null };
     this._initDefaultState();
     this.pendingConsignors = [];
     this.renderConsignorList();

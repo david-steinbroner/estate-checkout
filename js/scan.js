@@ -215,8 +215,18 @@ const Scan = {
 
       if (rawData.startsWith('http')) {
         const url = new URL(rawData);
+        const joinCode = url.searchParams.get('join');
         const pointerId = url.searchParams.get('id');
         const legacyEncoded = url.searchParams.get('d');
+
+        // Share-sale QR — route to the Join flow instead of payment.
+        // Lets a worker scan an organizer's Share Sale QR from inside the app
+        // (entered via the Scan QR button on the Join Sale sheet).
+        if (joinCode) {
+          this.elements.status.textContent = 'Joining sale…';
+          App.handleJoinUrl(joinCode);
+          return;
+        }
 
         if (pointerId) {
           // v158+ pointer QR — fetch live invoice from the backend
