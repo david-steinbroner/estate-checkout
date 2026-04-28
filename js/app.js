@@ -463,14 +463,10 @@ const App = {
       return;
     }
 
-    // Single-day shortcut: if there's only one day in the schedule, no
-    // selection is needed — go straight to share with all transactions.
-    const scheduleDays = sale.scheduleDays || [];
-    if (scheduleDays.length <= 1) {
-      await this._executeExport(null);
-      return;
-    }
-
+    // Always show the picker, even for single-day sales (v190.1). The
+    // single-day shortcut surprised users — they tapped Export and got
+    // the share sheet with no preview of what was being exported. The
+    // picker is now consistent across all sale shapes.
     this._renderExportSheet(sale, transactions);
     document.getElementById('export-modal').classList.add('visible');
   },

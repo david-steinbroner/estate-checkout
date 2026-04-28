@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v190';
+const APP_VERSION = 'v191';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v191',
+    date: '2026-04-28',
+    changes: [
+      'Export Sale Data: the picker sheet now opens for every sale, not just multi-day ones. Single-day shortcut was confusing — you\'d tap Export and get the share sheet with no chance to preview what you were exporting.'
+    ]
+  },
   {
     version: 'v190',
     date: '2026-04-28',
