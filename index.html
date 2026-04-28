@@ -444,13 +444,13 @@
         </div>
 
         <!-- Consignor chip (V2 §1.6) -->
-        <button class="consignor-chip" id="add-item-consignor-btn" type="button" hidden>
-          <span class="consignor-chip__dot" id="add-item-consignor-dot"></span>
-          <span class="consignor-chip__label">
-            <span class="consignor-chip__prefix">Consigned by</span>
-            <span class="consignor-chip__name" id="add-item-consignor-name">Select consignor</span>
+        <button class="ec-chip-selector" id="add-item-consignor-btn" type="button" hidden>
+          <span class="ec-chip-selector__dot" id="add-item-consignor-dot"></span>
+          <span class="ec-chip-selector__label">
+            <span class="ec-chip-selector__prefix">Consigned by</span>
+            <span class="ec-chip-selector__name" id="add-item-consignor-name">Select consignor</span>
           </span>
-          <svg class="consignor-chip__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+          <svg class="ec-chip-selector__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
         </button>
       </div>
 
@@ -802,7 +802,7 @@
   <div class="overlay" id="consignor-color-picker-modal">
     <div class="sheet">
       <p class="sheet__title">Color</p>
-      <div class="consignor-form__colors" id="consignor-color-picker-grid"></div>
+      <div class="ec-color-picker" id="consignor-color-picker-grid"></div>
     </div>
   </div>
 

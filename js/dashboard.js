@@ -505,13 +505,13 @@ const Dashboard = {
       const isEdited = voidReason === 'Edited Invoice' || voidReason === 'Edited';
       const label = isEdited ? 'Edited' : 'Cancelled';
       const cssClass = isEdited ? 'edited' : 'cancelled';
-      return `<span class="dashboard-txn__status dashboard-txn__status--${cssClass}">${label}</span>`;
+      return `<span class="ec-pill-status ec-pill-status--${cssClass}">${label}</span>`;
     }
 
     const badges = {
-      'open': '<span class="dashboard-txn__status dashboard-txn__status--open">Open</span>',
-      'paid': '<span class="dashboard-txn__status dashboard-txn__status--paid">Paid</span>',
-      'unpaid': '<span class="dashboard-txn__status dashboard-txn__status--unpaid">Unpaid</span>'
+      'open': '<span class="ec-pill-status ec-pill-status--open">Open</span>',
+      'paid': '<span class="ec-pill-status ec-pill-status--paid">Paid</span>',
+      'unpaid': '<span class="ec-pill-status ec-pill-status--unpaid">Unpaid</span>'
     };
     return badges[status] || badges['unpaid'];
   },

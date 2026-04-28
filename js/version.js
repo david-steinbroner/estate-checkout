@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v180';
+const APP_VERSION = 'v181';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v181',
+    date: '2026-04-28',
+    changes: [
+      'Internal: status pills, the consignor chip, and the color picker now use canonical naming. No user-visible changes.'
+    ]
+  },
   {
     version: 'v180',
     date: '2026-04-28',

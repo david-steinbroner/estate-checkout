@@ -1250,7 +1250,11 @@ body {
 
 /* === Consignor Selector (Add Item + Item Sheet) === */
 /* === Consignor chip selector (V2 §1.6 — prominent chip above Add Item) === */
-.consignor-chip {
+/* === Inline Chip Selector (v181 migration target) ===
+   Pill-shaped tappable element that opens a picker bottom sheet. Currently
+   used only by the consignor chip on Add Item; the spec lets it be reused
+   for any "pick from a list" affordance. */
+.ec-chip-selector {
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -1263,23 +1267,21 @@ body {
   color: var(--color-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  margin-top: var(--space-lg);    /* V2 §2.3a: gap from preceding component (e.g. numpad) */
-  margin-bottom: var(--space-md); /* gap to the primary action */
   min-height: 52px;
   text-align: left;
   transition: background var(--duration-fast, 150ms) ease;
   letter-spacing: -0.01em;
 }
 
-.consignor-chip:active {
+.ec-chip-selector:active {
   background: var(--color-bg-active);
 }
 
-.consignor-chip[hidden] {
+.ec-chip-selector[hidden] {
   display: none;
 }
 
-.consignor-chip__dot {
+.ec-chip-selector__dot {
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -1288,12 +1290,13 @@ body {
   background: transparent;
 }
 
-.consignor-chip__dot:not(:empty),
-.consignor-chip__dot[style*="background"] {
+/* When the dot has a real color set inline, drop the dashed empty-state border. */
+.ec-chip-selector__dot:not(:empty),
+.ec-chip-selector__dot[style*="background"] {
   border: none;
 }
 
-.consignor-chip__label {
+.ec-chip-selector__label {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1301,14 +1304,14 @@ body {
   min-width: 0;
 }
 
-.consignor-chip__prefix {
+.ec-chip-selector__prefix {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.01em;
 }
 
-.consignor-chip__name {
+.ec-chip-selector__name {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
@@ -1317,11 +1320,19 @@ body {
   text-overflow: ellipsis;
 }
 
-.consignor-chip__chevron {
+.ec-chip-selector__chevron {
   width: 12px;
   height: 8px;
   color: var(--color-text-secondary);
   flex-shrink: 0;
+}
+
+/* The Add Item consignor chip needs spacing from the numpad above and
+   the primary action below (V2 §2.3a). Other future chip selectors set
+   their own context spacing. */
+#add-item-consignor-btn.ec-chip-selector {
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 /* Item row consignor dot */
@@ -1537,9 +1548,10 @@ body {
   margin: calc(-1 * var(--space-md)) 0 var(--space-md);
 }
 
-/* Color swatches — used inside the color picker bottom sheet, no longer
-   inline in the consignor form (saves a row). */
-.consignor-form__colors {
+/* === Color Picker (v181 migration target) ===
+   Swatch grid inside the consignor color picker bottom sheet. Generic
+   pattern — wrap any 1-of-N color choice in this. */
+.ec-color-picker {
   display: flex;
   gap: var(--space-md);
   flex-wrap: wrap;
@@ -1547,7 +1559,7 @@ body {
   justify-content: center;
 }
 
-.consignor-form__color-dot {
+.ec-color-dot {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1557,7 +1569,7 @@ body {
   transition: border-color 0.15s;
 }
 
-.consignor-form__color-dot--selected {
+.ec-color-dot--selected {
   border-color: var(--color-text);
   box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px currentColor;
 }
@@ -3920,7 +3932,11 @@ body {
   flex-shrink: 0;
 }
 
-.dashboard-txn__status {
+/* === Status Pill (v181 migration target) ===
+   Icon + label + color, three signals together (principle 1.1.4). Currently
+   used on dashboard transactions; documented for any future status surface
+   (sale state, export status, etc.). */
+.ec-pill-status {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -3932,46 +3948,46 @@ body {
   flex-shrink: 0;
 }
 
-.dashboard-txn__status::before {
+.ec-pill-status::before {
   font-size: 11px;
   line-height: 1;
   display: inline-block;
 }
 
-.dashboard-txn__status--paid {
+.ec-pill-status--paid {
   background: var(--color-status-paid-bg);
   color: var(--color-success);
 }
-.dashboard-txn__status--paid::before {
+.ec-pill-status--paid::before {
   content: '✓';
   font-weight: var(--font-weight-bold);
 }
 
-.dashboard-txn__status--open {
+.ec-pill-status--open {
   background: var(--color-primary-light);
   color: var(--color-primary);
 }
-.dashboard-txn__status--open::before {
+.ec-pill-status--open::before {
   content: '●';
   font-size: 8px;
 }
 
-.dashboard-txn__status--unpaid {
+.ec-pill-status--unpaid {
   background: var(--color-status-pending-bg);
   color: var(--color-pending);
 }
-.dashboard-txn__status--unpaid::before {
+.ec-pill-status--unpaid::before {
   content: '●';
   font-size: 8px;
 }
 
-.dashboard-txn__status--edited,
-.dashboard-txn__status--cancelled {
+.ec-pill-status--edited,
+.ec-pill-status--cancelled {
   background: var(--color-bg-hover);
   color: var(--color-text-secondary);
 }
-.dashboard-txn__status--edited::before,
-.dashboard-txn__status--cancelled::before {
+.ec-pill-status--edited::before,
+.ec-pill-status--cancelled::before {
   content: '✕';
   font-weight: var(--font-weight-bold);
 }

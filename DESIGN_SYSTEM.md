@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~55% complete, v180).** This document describes the **target** component system. As of v180, cards + section headers have shipped — `.ec-card` (Grouped List Card base) and `.ec-section-header` (the uppercase eyebrow) are canonical, alongside v178 buttons + links, v179 inputs + field-error, and the older `.ec-menu-*` / `.ec-picker-*`. Status pills + chip selector + color picker follow in v181. See **§3 Migration Roadmap** for the schedule.
+**Status:** **Migration in progress (~70% complete, v181).** This document describes the **target** component system. As of v181, status pills + chip selector + color picker have shipped — `.ec-pill-status` (5 variants), `.ec-chip-selector` (with BEM children), and `.ec-color-picker` / `.ec-color-dot` are canonical. Numpad + hero number + empty state + flash follow in v182. See **§3 Migration Roadmap** for the schedule.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -779,9 +779,9 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Grouped List Card (base) | `.ec-card` | (target name in use as additive base; `.setup-card`, `.payouts__card`, `.consignor-revenue`, `.dashboard-stat` retained as context-modifier classes) | 🟢 v180 |
 | Card Row variants | `.ec-card__row` (+ `--input`, `--toggle`, `--action`, `--split`) | currently `.setup-card__row*` — BEM rename deferred (~30 selectors of nested rules); base card already canonical | 🟡 Deferred |
 | Section Header | `.ec-section-header` | (target name in use) | 🟢 v180 |
-| Status Pill | `.ec-pill-status--*` | `.dashboard-txn__status--*` (5 variants) | 🔴 Pending | v181 |
-| Inline Chip Selector | `.ec-chip-selector` | `.consignor-chip` | 🔴 Pending | v181 |
-| Color Picker | `.ec-color-picker` / `.ec-color-dot` | `.consignor-form__colors`, `.consignor-color-chip`, `.consignor-form__color-dot` | 🔴 Pending | v181 |
+| Status Pill | `.ec-pill-status--*` (paid/open/unpaid/edited/cancelled) | (target name in use) | 🟢 v181 |
+| Inline Chip Selector | `.ec-chip-selector` (+ `__dot`, `__label`, `__prefix`, `__name`, `__chevron`) | (target name in use) | 🟢 v181 |
+| Color Picker | `.ec-color-picker` / `.ec-color-dot` (+ `--selected`) | (target name in use; `.consignor-color-chip` kept as the form-side chip that opens the picker — it's a `.ec-picker-button` modifier) | 🟢 v181 |
 | Numpad | `.ec-numpad` / `.ec-numpad-key` | `.numpad`, `.numpad__button` | 🔴 Pending | v182 |
 | Hero Number | `.ec-hero-number` | `.running-total__amount`, `.payment-total__amount`, `.qr-hero`, `.dashboard-stat__value`, `.entry-screen__hero` | 🔴 Pending | v182 |
 | Empty State | `.ec-empty-state` | `.dashboard-empty`, `.payouts__empty`, `.item-list__empty` | 🔴 Pending | v182 |

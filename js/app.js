@@ -740,11 +740,11 @@ const App = {
 
     const selected = this._consignorSelectedColor;
     grid.innerHTML = CONSIGNOR_COLORS.map(color => {
-      const sel = color === selected ? ' consignor-form__color-dot--selected' : '';
-      return `<div class="consignor-form__color-dot${sel}" data-color="${color}" style="background: ${color}"></div>`;
+      const sel = color === selected ? ' ec-color-dot--selected' : '';
+      return `<div class="ec-color-dot${sel}" data-color="${color}" style="background: ${color}"></div>`;
     }).join('');
 
-    grid.querySelectorAll('.consignor-form__color-dot').forEach(dot => {
+    grid.querySelectorAll('.ec-color-dot').forEach(dot => {
       dot.addEventListener('click', () => {
         this._setConsignorColor(dot.dataset.color);
         modal.classList.remove('visible');
