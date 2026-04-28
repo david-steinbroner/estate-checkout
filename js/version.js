@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v181';
+const APP_VERSION = 'v182';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v182',
+    date: '2026-04-28',
+    changes: [
+      'Internal: numpad, hero numbers, empty states, and flash toasts now use canonical naming. No user-visible changes.'
+    ]
+  },
   {
     version: 'v181',
     date: '2026-04-28',

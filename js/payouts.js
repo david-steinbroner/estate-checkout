@@ -190,9 +190,9 @@ const Payouts = {
 
     // Empty state — no paid items at all
     if (allItems.length === 0) {
-      html += `<div class="payouts__empty">
-        <span class="payouts__empty-heading">No paid invoices yet</span>
-        <span class="payouts__empty-helper">Payouts will appear here as orders are paid.</span>
+      html += `<div class="ec-empty-state">
+        <span class="ec-empty-state__heading">No paid invoices yet</span>
+        <span class="ec-empty-state__helper">Payouts will appear here as orders are paid.</span>
       </div>`;
     }
 

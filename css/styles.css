@@ -425,7 +425,13 @@ body {
   display: block;
 }
 
-.running-total__amount {
+/* === Hero Number (v182 migration target) ===
+   The 56px tabular-nums display number — running total, today's revenue,
+   the live amount on Add Item, etc. Only the genuine 56px instances use
+   this; smaller bold numbers (.payment-total__amount 32px, .dashboard-stat__value
+   22px) keep their context-specific classes — they're stat values, not heroes.
+*/
+.ec-hero-number {
   font-family: var(--font-family-number);
   font-size: var(--font-size-price);
   font-weight: var(--font-weight-bold);
@@ -434,6 +440,13 @@ body {
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
+
+/* Centered hero (Add Item Entry screen). */
+.ec-hero-number--centered {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
 
 /* === Item List (inline preview — shows last 2-3 items) === */
 .item-list-container {
@@ -452,7 +465,11 @@ body {
   list-style: none;
 }
 
-.item-list__empty {
+/* === Empty State (v182 migration target) ===
+   Centered column: optional icon + heading + helper text. Used wherever
+   a list has no items yet (Order #1 sheet, Dashboard, Payouts, future
+   Past Sales / Export Archive screens). */
+.ec-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -461,26 +478,25 @@ body {
   text-align: center;
   color: var(--color-text-secondary);
   padding: var(--space-3xl) var(--space-xl);
-  min-height: 160px;
   font-size: var(--font-size-base);
   list-style: none;
 }
 
-.item-list__empty-icon {
+.ec-empty-state__icon {
   width: 48px;
   height: 48px;
   color: var(--color-text-tertiary);
   display: block;
 }
 
-.item-list__empty-icon svg {
+.ec-empty-state__icon svg {
   width: 100%;
   height: 100%;
   display: block;
   stroke-width: 1.5;
 }
 
-.item-list__empty-heading {
+.ec-empty-state__heading {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
@@ -488,11 +504,11 @@ body {
   line-height: var(--line-height-tight);
 }
 
-.item-list__empty-helper {
+.ec-empty-state__helper {
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   line-height: var(--line-height-default);
-  max-width: 260px;
+  max-width: 280px;
 }
 
 .item-row {
@@ -844,17 +860,6 @@ body {
 }
 
 /* Hero: the price being entered (V2 §1.4.C) */
-.entry-screen__hero {
-  font-family: var(--font-family-number);
-  font-size: var(--font-size-price);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  text-align: center;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--space-xl);
-}
 
 /* Description input wrap holds the input + the inline mic icon. The
    input itself is .ec-input.ec-input--with-action (v179). */
@@ -1065,14 +1070,16 @@ body {
   opacity: 0.5;
 }
 
-/* === Number Pad === */
-.numpad {
+/* === Numpad (v182 migration target) ===
+   Custom 3×4 grid for amount entry. Used only on the Add Item Entry
+   screen — native iOS numeric keyboards are used everywhere else. */
+.ec-numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-sm);
 }
 
-.numpad__button {
+.ec-numpad-key {
   height: var(--height-numpad-btn);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -1086,20 +1093,14 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-.numpad__button:active {
-  background: var(--color-bg);
-}
-
-.numpad__button--backspace {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
 }
 
-.numpad__button--backspace svg {
+.ec-numpad-key:active {
+  background: var(--color-bg);
+}
+
+.ec-numpad-key--backspace svg {
   width: 22px;
   height: 22px;
   display: block;
@@ -1930,7 +1931,11 @@ body {
 }
 
 /* === Feedback Flash === */
-.flash {
+/* === Flash Toast (v182 migration target) ===
+   Centered fixed toast for ephemeral micro-confirmations only ("Added!").
+   See principle 1.1.6 — this is the documented exception to the
+   "no success modals" rule. Don't use for navigation or status changes. */
+.ec-flash {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -1946,15 +1951,15 @@ body {
   z-index: 1000;
 }
 
-.flash--success {
+.ec-flash--success {
   background: var(--color-success);
 }
 
-.flash--error {
+.ec-flash--error {
   background: var(--color-danger);
 }
 
-.flash.visible {
+.ec-flash.visible {
   opacity: 1;
 }
 
@@ -3084,29 +3089,7 @@ body {
   flex-shrink: 0;
 }
 
-/* Empty state */
-.payouts__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-3xl) var(--space-lg);
-  text-align: center;
-}
-
-.payouts__empty-heading {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  letter-spacing: -0.01em;
-}
-
-.payouts__empty-helper {
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  max-width: 280px;
-  line-height: var(--line-height-default);
-}
+/* Payouts empty state — uses .ec-empty-state. */
 
 /* === Sale Paused Screen === */
 .paused-screen {
@@ -4188,25 +4171,10 @@ button.dashboard-detail__consignor--empty:active {
   color: var(--color-danger);
 }
 
-/* Dashboard Empty State */
-.dashboard-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
-  text-align: center;
-  color: var(--color-text-secondary);
-  height: 100%;
-}
-
-.dashboard-empty[hidden] {
+/* Dashboard empty state — uses .ec-empty-state. The id #dashboard-empty
+   is preserved for the [hidden] toggle semantics. */
+#dashboard-empty[hidden] {
   display: none;
-}
-
-.dashboard-empty__hint {
-  font-size: var(--font-size-sm);
-  margin-top: var(--space-sm);
 }
 
 .dashboard-filter-empty {

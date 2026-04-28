@@ -182,7 +182,7 @@ const Checkout = {
     // Add Item sheet events
     if (this.elements.numpad) {
       this.elements.numpad.addEventListener('click', (e) => {
-        const button = e.target.closest('.numpad__button');
+        const button = e.target.closest('.ec-numpad-key');
         if (!button) return;
         this.handleNumpadInput(button.dataset.value);
       });
@@ -711,15 +711,15 @@ const Checkout = {
   renderItemList() {
     if (this.items.length === 0) {
       this.elements.itemList.innerHTML = `
-        <li class="item-list__empty">
-          <span class="item-list__empty-icon" aria-hidden="true">
+        <li class="ec-empty-state">
+          <span class="ec-empty-state__icon" aria-hidden="true">
             <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <rect x="10" y="8" width="28" height="34" rx="3"/>
               <path d="M16 18h16M16 26h16M16 34h10"/>
             </svg>
           </span>
-          <span class="item-list__empty-heading">No items yet</span>
-          <span class="item-list__empty-helper">Tap <strong>Add Item</strong> to start this order.</span>
+          <span class="ec-empty-state__heading">No items yet</span>
+          <span class="ec-empty-state__helper">Tap <strong>Add Item</strong> to start this order.</span>
         </li>`;
       return;
     }
@@ -913,7 +913,7 @@ const Checkout = {
     }
 
     if (this.items.length === 0) {
-      this.elements.itemSheetList.innerHTML = '<li class="item-list__empty">No items yet</li>';
+      this.elements.itemSheetList.innerHTML = '<li class="ec-empty-state">No items yet</li>';
     } else {
       const consignors = Storage.getConsignors();
       const html = this.items.map((item) => {

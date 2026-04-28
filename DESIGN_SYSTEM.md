@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration in progress (~70% complete, v181).** This document describes the **target** component system. As of v181, status pills + chip selector + color picker have shipped — `.ec-pill-status` (5 variants), `.ec-chip-selector` (with BEM children), and `.ec-color-picker` / `.ec-color-dot` are canonical. Numpad + hero number + empty state + flash follow in v182. See **§3 Migration Roadmap** for the schedule.
+**Status:** **Migration in progress (~85% complete, v182).** This document describes the **target** component system. As of v182, the numpad, hero number, empty state, and flash toast have all migrated to `.ec-*` naming. The remaining work (v183) is cleanup: the `.setup-card__row*` BEM rename, the outline destructive button, and a token-followup pass. See **§3 Migration Roadmap** for the schedule.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -782,10 +782,10 @@ Inputs, cards, status pills, and the rest follow on the schedule below.
 | Status Pill | `.ec-pill-status--*` (paid/open/unpaid/edited/cancelled) | (target name in use) | 🟢 v181 |
 | Inline Chip Selector | `.ec-chip-selector` (+ `__dot`, `__label`, `__prefix`, `__name`, `__chevron`) | (target name in use) | 🟢 v181 |
 | Color Picker | `.ec-color-picker` / `.ec-color-dot` (+ `--selected`) | (target name in use; `.consignor-color-chip` kept as the form-side chip that opens the picker — it's a `.ec-picker-button` modifier) | 🟢 v181 |
-| Numpad | `.ec-numpad` / `.ec-numpad-key` | `.numpad`, `.numpad__button` | 🔴 Pending | v182 |
-| Hero Number | `.ec-hero-number` | `.running-total__amount`, `.payment-total__amount`, `.qr-hero`, `.dashboard-stat__value`, `.entry-screen__hero` | 🔴 Pending | v182 |
-| Empty State | `.ec-empty-state` | `.dashboard-empty`, `.payouts__empty`, `.item-list__empty` | 🔴 Pending | v182 |
-| Flash Toast | `.ec-flash` | `.flash`, `.flash--success`, `.flash--error` | 🔴 Pending | v182 |
+| Numpad | `.ec-numpad` / `.ec-numpad-key` (+ `--backspace`) | (target name in use) | 🟢 v182 |
+| Hero Number | `.ec-hero-number` (+ `--centered`) | (target name in use; only the genuine 56px display number — smaller stat values like `.payment-total__amount` 32px and `.dashboard-stat__value` 22px keep their context-specific classes) | 🟢 v182 |
+| Empty State | `.ec-empty-state` (+ `__icon`, `__heading`, `__helper`) | (target name in use across Order #1 sheet, Dashboard, Payouts) | 🟢 v182 |
+| Flash Toast | `.ec-flash` (+ `--success`, `--error`) | (target name in use) | 🟢 v182 |
 | Hamburger Menu | `.ec-menu-*` | (target name in use) | 🟢 Migrated | v152 |
 | Picker Button + List | `.ec-picker-*` | (target name in use) | 🟢 Migrated | v149 |
 | Bottom Sheet | `.sheet` (kept as exception) | `.sheet`, `.sheet--detail`, `.sheet--menu` | 🟡 Exception | — |

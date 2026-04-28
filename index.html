@@ -29,14 +29,14 @@
         <button class="screen-menu-btn" id="nav-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
       <span class="running-total__context" id="running-total-context"></span>
-      <span class="running-total__amount" id="running-total">$0.00</span>
+      <span class="ec-hero-number" id="running-total">$0.00</span>
       <span class="running-total__info" id="running-total-info"></span>
     </div>
 
     <!-- Item List (inline preview — shows last 2-3 items) -->
     <div class="item-list-container" id="item-list-container">
       <ul class="item-list" id="item-list">
-        <li class="item-list__empty">No items yet</li>
+        <li class="ec-empty-state">No items yet</li>
       </ul>
     </div>
 
@@ -314,9 +314,9 @@
       <ul class="dashboard-list" id="dashboard-transactions">
         <!-- Transactions rendered by JS -->
       </ul>
-      <div class="dashboard-empty" id="dashboard-empty" hidden>
-        <p>No transactions yet.</p>
-        <p class="dashboard-empty__hint">Complete a checkout to see data here.</p>
+      <div class="ec-empty-state" id="dashboard-empty" hidden>
+        <p class="ec-empty-state__heading">No transactions yet.</p>
+        <p class="ec-empty-state__helper">Complete a checkout to see data here.</p>
       </div>
     </div>
 
@@ -378,8 +378,8 @@
   </div>
 
   <!-- Flash Feedback -->
-  <div class="flash flash--success" id="flash-success">Added!</div>
-  <div class="flash flash--error" id="flash-error">Error</div>
+  <div class="ec-flash ec-flash--success" id="flash-success">Added!</div>
+  <div class="ec-flash ec-flash--error" id="flash-error">Error</div>
 
   <!-- Add Item Entry — V2 §1.4.C full-viewport Entry archetype -->
   <div class="overlay overlay--fullscreen" id="add-item-modal">
@@ -396,7 +396,7 @@
       <!-- Body (scrollable) -->
       <div class="entry-screen__body">
         <!-- Hero: current item's price (updates live from numpad) -->
-        <div class="entry-screen__hero" id="add-item-price">$0.00</div>
+        <div class="ec-hero-number ec-hero-number--centered" id="add-item-price">$0.00</div>
         <p class="ec-field-error ec-field-error--centered" id="add-item-price-error" hidden></p>
 
         <!-- Description input with inline mic -->
@@ -426,19 +426,19 @@
         </div>
 
         <!-- Numpad -->
-        <div class="numpad" id="numpad">
-          <button class="numpad__button" data-value="1">1</button>
-          <button class="numpad__button" data-value="2">2</button>
-          <button class="numpad__button" data-value="3">3</button>
-          <button class="numpad__button" data-value="4">4</button>
-          <button class="numpad__button" data-value="5">5</button>
-          <button class="numpad__button" data-value="6">6</button>
-          <button class="numpad__button" data-value="7">7</button>
-          <button class="numpad__button" data-value="8">8</button>
-          <button class="numpad__button" data-value="9">9</button>
-          <button class="numpad__button" data-value=".">.</button>
-          <button class="numpad__button" data-value="0">0</button>
-          <button class="numpad__button numpad__button--backspace" data-value="backspace" aria-label="Delete">
+        <div class="ec-numpad" id="numpad">
+          <button class="ec-numpad-key" data-value="1">1</button>
+          <button class="ec-numpad-key" data-value="2">2</button>
+          <button class="ec-numpad-key" data-value="3">3</button>
+          <button class="ec-numpad-key" data-value="4">4</button>
+          <button class="ec-numpad-key" data-value="5">5</button>
+          <button class="ec-numpad-key" data-value="6">6</button>
+          <button class="ec-numpad-key" data-value="7">7</button>
+          <button class="ec-numpad-key" data-value="8">8</button>
+          <button class="ec-numpad-key" data-value="9">9</button>
+          <button class="ec-numpad-key" data-value=".">.</button>
+          <button class="ec-numpad-key" data-value="0">0</button>
+          <button class="ec-numpad-key ec-numpad-key--backspace" data-value="backspace" aria-label="Delete">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M18 9l-6 6M12 9l6 6"/></svg>
           </button>
         </div>
