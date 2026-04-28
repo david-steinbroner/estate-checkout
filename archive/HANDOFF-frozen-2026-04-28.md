@@ -1,5 +1,11 @@
 # HANDOFF — Estate Sale Checkout MVP
 
+> **⚠ ARCHIVED — 2026-04-28**
+>
+> Frozen document. Source of truth through 2026-03-10 (Session 56 / SW v127). Stopped being maintained when the workflow shifted to using git commit history (`vNNN: <subject>`) as the changelog. Kept for historical context — Sessions 1–56 have real narrative value. Do not edit. For current state, run `git log --oneline` and read CLAUDE.md / DESIGN_SYSTEM.md / BACKLOG.md.
+
+---
+
 **Last updated:** 2026-03-10
 **Last session by:** Claude Code
 **Current version:** v0.1

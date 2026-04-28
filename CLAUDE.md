@@ -1,6 +1,8 @@
-# CLAUDE CODE RULES — Estate Sale Checkout MVP
+# CLAUDE.md — Estate Checkout
 
 **Read this file at the start of EVERY session. No exceptions.**
+
+The umbrella `/Users/davidsteinbroner/Projects/CLAUDE.md` also applies; this file extends and overrides where they differ.
 
 ---
 
@@ -36,7 +38,6 @@ A feature is DONE when:
 - [ ] The UI is usable by someone who has never seen the app before
 - [ ] No console errors
 - [ ] Code is commented where logic is non-obvious
-- [ ] The HANDOFF.md doc is updated
 
 ---
 
@@ -55,10 +56,11 @@ A feature is DONE when:
 - **PWA:** Service worker for offline support, web app manifest
 - **Speech-to-text:** Web Speech API (browser native)
 - **QR codes:** `qrcode.js` library (lightweight, no dependencies)
-- **Storage:** localStorage for MVP (IndexedDB only if localStorage limits are hit)
-- **Hosting:** Cloudflare Pages (auto-deploys from GitHub main branch)
+- **Storage (client):** localStorage for MVP (IndexedDB only if localStorage limits are hit). localStorage is the source of truth for the checkout flow; the backend is a sync layer.
+- **Backend:** Cloudflare Worker (`api/src/worker.js`) + D1 database (`estate-checkout`). Multi-device sync layer — any device can create and edit any sale created by any device. The app still works fully offline against localStorage; the Worker is a sync target that reconciles state across devices, not a hard dependency for the checkout flow.
+- **Hosting (frontend):** Cloudflare Pages (auto-deploys from GitHub main branch)
+- **Hosting (backend):** Cloudflare Workers via `wrangler deploy` from `api/`
 - **Version control:** GitHub. All code lives in a git repo.
-- **No backend for v1.** Everything runs client-side.
 
 ### File Structure
 ```
@@ -83,6 +85,12 @@ A feature is DONE when:
     icons/                # PWA icons (icon-192.svg, icon-512.svg)
   /lib/
     qrcode.min.js         # QR code library
+  /api/                   # Cloudflare Worker + D1 sync API
+    src/
+      worker.js           # Worker entry point (sync endpoints)
+    migrations/           # D1 SQL migrations (0001_init.sql, ...)
+    wrangler.toml         # Worker + D1 binding config
+    package.json          # wrangler scripts (dev, deploy, db:migrate)
 ```
 
 ### Service Worker Convention
@@ -141,16 +149,15 @@ A feature is DONE when:
 - Edit Order flow (void + reload with same customer number)
 - Shared header navigation (Dashboard, Scan Ticket, End Estate Sale)
 - PWA install + offline support via service worker
-- localStorage persistence
+- localStorage persistence (client source of truth)
+- Multi-device sync via Cloudflare Worker + D1 — any device can create and edit any sale created by any device
 
 **OUT OF SCOPE for v0.1 (do not build, do not suggest):**
 - User accounts / login / authentication
-- Cloud sync or any backend
 - Inventory management / pre-sale cataloging
 - Photo capture or image recognition
 - POS integration
 - Bluetooth printer support
-- Multi-user / multi-device sync
 - Analytics beyond basic totals
 - Payment processing of any kind
 
@@ -161,49 +168,31 @@ If the user asks for something out of scope, acknowledge it, note it in BACKLOG.
 ## 6. SESSION PROTOCOL
 
 ### Starting a Session
-1. Read this file (CLAUDE_CODE_RULES.md)
-2. Read HANDOFF.md for current state
-3. Read BACKLOG.md for known issues
+1. Read this file (CLAUDE.md)
+2. Run `git log -10 --oneline` for the recent changelog
+3. Read BACKLOG.md for scope and known issues
 4. If doing CSS/UI work, read DESIGN_SYSTEM.md
-5. Confirm with the user what you'll be working on this session
+5. Confirm with the user what you'll be working on
 6. State what files you expect to touch
 
 ### During a Session
-- Commit logical chunks of work with clear commit messages — not giant blobs
+- Commit logical chunks of work with clear messages — not giant blobs
 - If you hit a decision point, STOP and ask. Don't guess.
 - If something is taking way longer than expected, say so
-- Test as you go — don't build 5 features then test
+- Test as you go
 - Push to GitHub when a feature or meaningful chunk is complete
 
-### Git Rules
-- First session: initialize a git repo, set up the project structure, make an initial commit
-- Commit messages should be descriptive: "Add checkout pad number entry" not "update files"
-- Commit after each completed feature or logical chunk of work
-- Push to GitHub at the end of every session at minimum
-- Never commit broken code to main — if something is half-done, say so and keep it local or use a branch
+### Versioning + Commits (this IS the changelog)
+- Bump SW cache (`sw.js`) and the visible UI version on every meaningful change
+- Commit subject format: `vNNN: <short description>` — these subjects are the session log
+- For decisions worth preserving (why X over Y), use the commit body, not a separate doc
+- Never commit broken code to main — keep half-done work local or on a branch
 
-### Ending a Session — MANDATORY HANDOFF
-Before the session ends, you MUST update these docs:
-
-**HANDOFF.md** (always):
-1. **What was accomplished** — specific features/fixes completed
-2. **Current state** — what works, what's broken, what's half-done
-3. **Files changed** — list every file modified or created
-4. **Next steps** — what should be done next, in priority order
-5. **Open questions** — anything unresolved that needs a decision
-6. **Known bugs** — anything broken that you're aware of
-7. **How to test** — specific steps to verify what was built
-
-**PM_TRACKER.md** (quick updates only — don't re-read the whole doc):
-- Update "Service worker cache" version if bumped
-- Update "What's Left Before Ship" if items were completed or new blockers found
-- Update "Known Issues / Tech Debt" if issues were fixed or discovered
-
-**BACKLOG.md** (only if relevant):
-- Add new items if out-of-scope requests came up during the session
-- Update "Known Issues / Tech Debt" if issues were fixed or discovered
-
-**Do not end a session without updating HANDOFF.md. This is non-negotiable.**
+### Ending a Session
+- Make sure your last commit's subject accurately summarizes the session
+- Push to GitHub
+- If a new out-of-scope idea came up, add it to BACKLOG.md
+- That's it. No HANDOFF.md, no PM_TRACKER.md.
 
 ---
 

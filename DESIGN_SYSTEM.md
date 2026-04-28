@@ -1,551 +1,681 @@
 # DESIGN SYSTEM — Estate Checkout
 
-> **⚠ DEPRECATED — 2026-04-23**
->
-> This document is no longer the source of truth. It has been superseded by `DESIGN_SYSTEM_V2.md`, which shifts direction from a Tailwind-based SaaS palette to iOS-native (Apple Wallet + Venmo references) and formalizes consignor rules based on field feedback.
->
-> This file is retained for historical context only. **Do not implement against it.** All new work follows `DESIGN_SYSTEM_V2.md`.
+**Status:** Authoritative reference. All new implementation must conform to this document.
+**Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
 ---
 
-**Last updated:** 2026-03-03
-**Status:** Implementation complete. All 10 prompts executed. System fully tokenized.
-**Scope:** This document defines the complete design system for Estate Checkout. It is the single source of truth for all visual and interaction decisions. Every screen in the app must conform to this spec.
+## How to use this document
+
+This is the single source of truth for every visual, structural, and interaction decision in the app. It has two parts:
+
+- **Part 1 — Product:** the *what* and *when*. Design principles, banned patterns, pattern catalog, screen archetypes, interaction rules. Read this when deciding what to build.
+- **Part 2 — Frontend:** the *how*. Tokens, component library, implementation rules, quality gates. Read this when writing code.
+
+**Before adding any new UI:**
+1. Find the matching pattern in §1.3 or screen archetype in §1.4
+2. Assemble from existing components in §2.2
+3. Never invent a new component without updating this doc first
+
+**When in doubt:** defer to iOS-native behavior. The user is a 58-year-old estate sale operator whose frame of reference is Apple Wallet and Venmo. Anything that feels "like software" violates this spec.
 
 ---
 
-## How to Use This Document
+# PART 1 — PRODUCT SPEC
 
-This is a **build guide**. It is written to be handed directly to a coding session as a prompt. Each section defines exact values, exact rules, and exact changes needed. There is no ambiguity by design — if something isn't specified here, ask before implementing.
+## §1.1 Design principles (inviolate)
 
-**Files that will be modified:**
-- `css/styles.css` — Complete overhaul of CSS variables, component styles, and screen-specific styles
-- `index.html` — Class name updates where component markup needs to change
-- `js/*.js` — Any JS that sets inline styles or manipulates classes may need updates
+These are non-negotiable. If a decision conflicts with a principle, the principle wins.
 
-**Files this document replaces or supersedes:**
-- The CSS Rules section (§3) and Design Principles section (§4) in `CLAUDE_CODE_RULES.md` — this document is now the authoritative design reference. CLAUDE_CODE_RULES.md should reference this file.
-- The UX/UI Design System section (§3) in `PRODUCT_STRATEGY.md` — that section describes the *why*; this document describes the *what* and *how*.
+1. **It's a tool, not an app.** If a decision makes it feel like software — decorative shadows, gradients, startup colors, "fun" illustrations, marketing-style hero sections — reverse it. Apple Wallet is the vibe target: calm, native, trustworthy, invisible.
 
-**Implementation order:**
-1. Replace the `:root` CSS variables block with the new token system (§1)
-2. Rebuild component styles to use new tokens (§2)
-3. Screen-by-screen fixes (§3)
-4. Remove all hardcoded values — grep for any hex color, px value, or font-size not using a variable (§4)
-5. Test on mobile Chrome and Safari at 375px width
+2. **One hero per screen.** Every screen has exactly ONE element that is visually loudest. On Checkout it's the running total. On Order Detail it's the order name + status pill. On Dashboard it's today's revenue. Everything else supports. No ties, no competing heroes.
+
+3. **Primary action lives in the thumb zone.** Pinned to the bottom, full-width (minus side margins), filled color, single clear label. One primary per screen.
+
+4. **Status is a pill with icon + color + word.** Never only color. Never only a word. The three together make it instant-readable across age and literacy.
+
+5. **Cards group, never decorate.** A tinted rounded rectangle exists ONLY to visually group related info (e.g. Order ID + Email + Total). No decorative cards, no cards-in-cards, no cards for visual rhythm.
+
+6. **Live state updates, no success modals.** When something changes (item added, order paid), the view updates in place. Optional "Marked paid now" subtitle. No toasts, no "Success! ✓" screens, no celebration animations.
+
+7. **Confirm destructive, not affirmative.** Adding an item: happens immediately. Voiding an order, deleting a sale: bottom sheet with red destructive action. Never confirm safe actions.
+
+8. **Native iOS conventions, always.** Back arrow top-left, share/more top-right, bottom sheets not mid-screen modals, context menus for "..." actions, segmented pill controls for view switching. If iOS does it, we do it that way.
+
+9. **Consignor is a first-class citizen of every order.** When a sale has consignors, every item entry shows the consignor chip, every order recap shows the consignor, every dashboard row shows consignor breakdown. Never hidden, never optional to surface.
+
+10. **Offline is the default state.** The app must never show "loading" or "no connection" during core checkout. All checkout-critical behavior works in airplane mode. Sync is invisible if/when it exists.
+
+## §1.2 Banned patterns
+
+Hard "no." If you find yourself reaching for any of these, stop:
+
+- Blue gradients, purple gradients, any gradient for decoration (status gradients in Instagram QR are an exception we do not need)
+- Drop shadows for "elevation" except on bottom sheets that are actually floating
+- Tailwind-style palette values (`blue-600`, `green-600`, etc.) — use iOS system colors only
+- Inter font (not installed; do not install)
+- Icons without labels (exception: ubiquitous iOS glyphs — back arrow, share, more, close)
+- "Success!" modals with checkmark animations
+- Tooltips for user-facing explanation (build clarity into the screen)
+- Cards-inside-cards
+- Oversized padding that creates artificial breathing room
+- Branded custom numpad styling — numpad must feel native iOS
+- Dark mode in v1 (light mode only — dark mode is a v2 conversation)
+- Any color not in the palette tokens
+- Any font-size not in the type scale
+- Any spacing value not in the spacing scale
+- Grid-of-icons menus (Facebook-style) — use iOS Settings-style grouped list instead
+- Loading spinners in checkout-critical paths
+- Full-screen modals for confirmations (use bottom sheets)
+
+## §1.3 Pattern catalog
+
+For every product need, the named pattern to use. Components are defined in §2.2.
+
+| Need | Pattern | Reference |
+|---|---|---|
+| Show one key number (total, revenue) | **Hero Number** | Wallet Balance Details, Venmo Send |
+| Group related facts | **Grouped List Card** | Wallet (every screen) |
+| Switch between views of same data | **Segmented Pill Control** | Wallet Week/Month/Year |
+| Filter a list quickly | **Horizontal Filter Chips** | YouTube filters, Venmo filter row |
+| Show an order's state | **Status Pill** | Wallet "Shipped ✓" / "Complete ✓" |
+| Confirm a destructive action | **Bottom Sheet + red destructive** | Wallet Delete Order |
+| Open a menu of actions on an item | **Context Menu (native popover)** | Wallet "..." Mark/Delete |
+| Show empty list | **Empty State** | Wallet "No Orders" |
+| Capture a sequence of inputs | **Multi-step form + pinned Continue** | FB Creating Event |
+| Enter an amount | **Hero Number + Numpad + Primary** | Venmo Send |
+| Tag an item with a category | **Inline Chip Selector** | Venmo Privacy toggle |
+| Primary action on screen | **Filled Primary Button (bottom-anchored)** | Venmo Pay |
+| Secondary non-destructive action | **Blue Text Link** | Wallet "Manage Order" |
+| Destructive link action | **Red Text Link** | Wallet "Delete Order" |
+| Pick from many options | **Bottom Sheet w/ list** | Wallet Export Transactions (CSV/OFX/QFX) |
+| Settings / menu | **iOS grouped list** | Apple Settings app |
+
+## §1.4 Screen archetypes
+
+Estate Checkout has 8 screen archetypes. Every screen in the app must fit one.
+
+### A. List Screen
+*Examples: Dashboard, item list inside an order, transaction history*
+
+- **Top:** screen title (big bold)
+- **Below title:** Hero Number card (one key metric — e.g. "Today's Revenue $1,247")
+- **Below hero:** Segmented Pill Control (if multiple views exist — e.g. Pending/Paid/Voided)
+- **Below segment:** Horizontal Filter Chips (if sub-filters apply)
+- **Body:** list rows grouped in Grouped List Cards
+- **Top-right:** "..." context menu (if bulk actions exist)
+- **Bottom-anchored primary action** ONLY if there is exactly one "add" action available
+
+### B. Detail Screen
+*Examples: Order Detail*
+
+- **Top:** back arrow (left), share/more (right)
+- **Hero:** merchant-style icon or emoji, centered
+- **Name/title:** centered, large
+- **Subtitle:** ordered/created timestamp, centered, secondary color
+- **Status Pill:** centered or full-width below the subtitle
+- **Items:** product rows in a Grouped List Card
+- **Metadata:** Grouped List Card with Total, Item count, Consignor summary
+- **Actions:** Blue Text Links for non-destructive, Red Text Link for destructive (e.g. Void)
+- **NO bottom-anchored button** on Detail screens — actions live in the link list
+
+### C. Entry Screen
+*Examples: Add Item, Edit Item*
+
+- **Top bar:** back arrow (left) + screen title (center, body semibold, e.g. "Add Item" or "Edit Item")
+- **Hero:** the **value being entered** as a Hero Number — for item entry that's the **current item's price** (NOT the order's running total). The hero updates live as the user taps the numpad. Centered, 56px, SF Pro Rounded bold, tabular-nums.
+- **Below hero:** item description Text Input (like Venmo "What's this for?"). Mic button (when voice input is enabled) lives as an icon inside the input on the right edge — iOS Messages dictation pattern, not a side-by-side button that competes for horizontal space.
+- **Below input:** Quantity row (label + − value + buttons), only when qty > 1 is meaningful for this entry
+- **Below qty:** Numpad (centered, iOS-native styling)
+- **Below numpad:** Inline Chip Selector for consignor (ONLY if sale has consignors)
+- **Bottom (sticky):** Primary Button (filled green, full-width). Label changes by mode: "Add Item" / "Save Changes".
+
+**Implementation note:** Entry screens MAY be presented as full-viewport overlays rather than full screen-push navigations, to keep the parent context (running total, item list) one tap away. When presented as a full-viewport overlay, the overlay must cover the entire viewport (height: 100%/100dvh, not the 80–85vh of a bottom sheet) so action buttons never fall below the fold.
+
+### D. Setup Wizard Screen
+*Examples: Sale setup, new sale flow*
+
+- **Top:** back arrow (left), optional step indicator (center), close X (right)
+- **Screen title:** big bold
+- **Form:** **fields stack vertically, full width each, labels above inputs.** Side-by-side / half-row layouts are NOT permitted on mobile viewports — they cause overflow with native iOS controls (date pickers especially) and break the consistent left-edge alignment. Two related fields (e.g. start date + end date) get stacked rows, not columns.
+- **Pickers:** open in Bottom Sheets (dates, consignor lists, discount schedules)
+- **Bottom:** Primary Button "Continue"
+
+### E. Confirmation Screen
+*Examples: QR handoff*
+
+- **Top:** close X (right) — this is a transient state, not a navigable one
+- **Hero:** the content being handed off (giant QR code)
+- **Context:** order summary below the hero (small, secondary)
+- **Instruction:** single line of explicit copy — e.g., "Hand this phone to your payment worker"
+- **Action:** one blue Text Link for the self-scan alternate path (e.g., "Mark as paid without scanning")
+
+### F. Empty State
+*Examples: No sales yet, no items in order*
+
+- Centered vertically in the available space
+- **Icon:** 64×64, outlined/stroke style, secondary color
+- **Heading:** "No sales yet" (title size, semibold)
+- **Helper text:** what will appear here when it does (body size, secondary color, max 2 lines)
+- **Single text link** for primary action (e.g. "Start a sale")
+
+### G. Settings / Menu Screen
+*Examples: main hamburger menu, settings, setup menu*
+
+- iOS Settings / action-sheet style **Grouped List Cards**
+- **Never a grid of icons** (Facebook grid is banned — too busy)
+- **Never a stack of full-width buttons** either — buttons are for primary actions, not menu navigation. Buttons visually compete for attention; menu rows don't.
+- Each row: icon left (20×20 outlined SVG, secondary color for nav items, semantic color for actions), label (body 17px, left-aligned), chevron right for navigation items
+- Group related rows into separate cards. Typical layout for a hamburger menu:
+  1. **Navigation card** — all "go to X" items (Dashboard, Share Sale, Edit Sale, etc.)
+  2. **Actions card** — state-changing actions (End Day in primary color, End Sale Permanently in destructive color)
+  3. **Cancel** — as a separate, bolder standalone row below the cards. iOS action-sheet convention.
+- Sheet background: `--color-bg` (tinted) so the white cards float with visual separation
+- Cards: `--radius-lg`, no shadow, 1px divider between rows inset from the left by the icon+gap width
+- Version label (if present) below Cancel, small tertiary text
+
+### H. Bottom Sheet
+*For: confirmations, pickers, context actions that need more than a menu*
+
+- **Handle indicator** at top (36×5, tertiary color, centered)
+- **Short title**, no body text unless needed
+- **Primary action:** filled color; destructive: red
+- **Close:** X top-right OR pull-to-dismiss
+- **Max height:** 85vh — content scrolls
+
+## §1.5 Interaction rules
+
+- **Tap targets:** never below 48×48 px. This includes padding — visual size can be smaller.
+- **Tap feedback:** subtle scale-down on press (0.97×), no glows/shadows.
+- **State change feedback:**
+  - Adding an item: row fades in at top of list, optional inline "Added!" flash label (1s)
+  - Marking paid: status pill color changes instantly + subtitle updates to "Marked paid now"
+  - Voiding: item greys out with strikethrough, status pill changes to "Voided" red
+- **Keyboards:** use native iOS numeric keyboard where input is a standard numeric field. Custom numpad only on the primary Checkout entry screen.
+- **Haptic feedback:** subtle tap on Primary actions (Add Item, Mark Paid, Void). Use `navigator.vibrate(10)` if available.
+- **Transitions:**
+  - Detail drill-in: push from right
+  - Bottom sheet: slide up from bottom
+  - Dismissal: reverse of entry
+  - No fade-in for primary navigation — feels slow
+- **Error states:** inline text below the field, red color, never a popup
+
+## §1.6 Consignor rules
+
+Consignors are a real-world requirement per Alissa's feedback from estate sale operators. They must be:
+
+- **Optional:** sales without consignors continue to work exactly as before
+- **First-class when present:** if a sale has consignors, they appear everywhere an order or item is shown
+- **Editable anytime:** including for paid orders (consignor is a reporting field, not a financial state)
+- **Retroactively assignable:** if an item is rung up without a consignor, the operator can assign one later from the item or order view
+
+### Specific UX rules
+
+- **Setup page:** "Add consignors" is a first-class step, not buried. Tap "+ Add Consignor" → type name → done. Add as many as needed. Skip if none.
+- **Inline at item entry:** if sale has ≥1 consignor, the consignor chip appears above the "Add Item" button. Default: last-used consignor for this session. Tap chip to change (opens bottom-sheet picker).
+- **Editable post-entry:** every item row in an order shows its consignor chip. Tap to edit — even for paid orders.
+- **Add consignor retroactively:** from the sale setup page OR from the consignor picker ("+ Add Consignor" option at bottom of picker list).
+- **Per-order default:** sale setup has "Default consignor for new items" (optional single-select). Saves taps for single-consignor orders.
+- **Dashboard:** "Revenue by consignor" is a Grouped List Card on the Dashboard whenever the sale has consignors. Simple rows: Name | $total | # items | % of revenue.
+- **CSV export:** `consignor` column is always included when sale has consignors.
 
 ---
 
-## §1. Design Tokens
+# PART 2 — FRONTEND SPEC
 
-These CSS variables are the foundation. **Every** color, size, spacing, font, and radius in the app must reference a token. No hardcoded values anywhere in the stylesheet.
+## §2.1 Tokens
 
-### Colors
+All tokens live in `css/styles.css` under `:root`. No hardcoded values outside this block. Verified by: grep for hex colors, px values, and font-sizes outside `:root`.
+
+### Colors (iOS system)
 
 ```css
 :root {
-  /* === Surface & Background === */
-  --color-bg: #f5f5f5;                    /* Page background */
-  --color-surface: #ffffff;                /* Cards, panels, inputs */
-  --color-surface-raised: #ffffff;         /* Modals, sheets, overlays */
+  /* === Surfaces === */
+  --color-bg: #F2F2F7;                  /* iOS systemGroupedBackground */
+  --color-surface: #FFFFFF;
+  --color-surface-tinted: #F2F2F7;      /* grouped list cards on white bg */
 
   /* === Text === */
-  --color-text: #1a1a1a;                  /* Primary text */
-  --color-text-secondary: #666666;         /* Secondary/helper text */
-  --color-text-on-dark: #ffffff;           /* Text on dark backgrounds */
-  --color-text-on-primary: #ffffff;        /* Text on primary-color backgrounds */
-  --color-text-on-success: #ffffff;        /* Text on success-color backgrounds */
-  --color-text-on-danger: #ffffff;         /* Text on danger-color backgrounds */
+  --color-text: #1C1C1E;                /* iOS label */
+  --color-text-secondary: #8E8E93;      /* iOS secondaryLabel */
+  --color-text-tertiary: #C7C7CC;       /* iOS tertiaryLabel */
+  --color-text-on-primary: #FFFFFF;
+  --color-text-link: #007AFF;           /* iOS systemBlue */
+  --color-text-destructive: #FF3B30;    /* iOS systemRed */
 
-  /* === Brand / Primary === */
-  --color-primary: #2563eb;                /* Primary actions, links, active states */
-  --color-primary-dark: #1d4ed8;           /* Primary hover/active */
-  --color-primary-light: rgba(37, 99, 235, 0.1);  /* Primary tinted background */
+  /* === Semantic === */
+  --color-primary: #007AFF;             /* iOS systemBlue */
+  --color-success: #34C759;             /* iOS systemGreen */
+  --color-danger: #FF3B30;              /* iOS systemRed */
+  --color-pending: #FF9500;             /* iOS systemOrange */
+  --color-warning: #FFCC00;             /* iOS systemYellow (rare) */
 
-  /* === Semantic: Success === */
-  --color-success: #16a34a;                /* Positive actions, paid status, add buttons */
-  --color-success-dark: #15803d;           /* Success hover/active */
-  --color-success-light: rgba(22, 163, 74, 0.15); /* Success tinted background */
+  /* === Status pill backgrounds (15% opacity of semantic color) === */
+  --color-status-paid-bg: rgba(52, 199, 89, 0.15);
+  --color-status-pending-bg: rgba(255, 149, 0, 0.15);
+  --color-status-voided-bg: rgba(255, 59, 48, 0.15);
 
-  /* === Semantic: Danger === */
-  --color-danger: #dc2626;                 /* Destructive actions, remove, void */
-  --color-danger-dark: #b91c1c;            /* Danger hover/active */
-  --color-danger-light: rgba(220, 38, 38, 0.1);   /* Danger tinted background */
+  /* === Borders & dividers === */
+  --color-border: #C6C6C8;              /* iOS separator */
+  --color-border-focus: var(--color-primary);
+  --color-divider: #E5E5EA;             /* lighter separator (between rows) */
 
-  /* === Semantic: Warning/Pending === */
-  --color-pending: #b45309;                /* Pending status text */
-  --color-pending-light: rgba(217, 119, 6, 0.15); /* Pending tinted background */
-
-  /* === Borders & Dividers === */
-  --color-border: #e5e5e5;                 /* Default border */
-  --color-border-focus: var(--color-primary); /* Input focus border */
-
-  /* === Interactive States === */
-  --color-bg-hover: #e5e5e5;              /* Hover background */
-  --color-bg-active: #d4d4d4;             /* Active/pressed background */
-  --color-disabled: #999999;               /* Disabled elements */
+  /* === Interactive states === */
+  --color-bg-hover: #E5E5EA;
+  --color-bg-active: #D1D1D6;
+  --color-disabled: #AEAEB2;
 
   /* === Overlays === */
-  --overlay-light: rgba(0, 0, 0, 0.2);    /* Light backdrop (item list) */
-  --overlay-medium: rgba(0, 0, 0, 0.5);   /* Standard modal backdrop */
-  --overlay-dark: rgba(0, 0, 0, 0.7);     /* Heavy overlay (speech) */
-  --overlay-opaque: rgba(0, 0, 0, 0.8);   /* Near-opaque (scan status) */
-  --overlay-success: rgba(22, 163, 74, 0.95); /* Payment success overlay */
+  --overlay-sheet-backdrop: rgba(0, 0, 0, 0.4);
+  --overlay-scan-bg: #000000;
 
-  /* === Scan Screen === */
-  --color-scan-bg: #000000;                /* Camera/scan background */
+  /* === Button tints (semi-transparent for secondary buttons) === */
+  --color-primary-tint: rgba(0, 122, 255, 0.15);
+  --color-success-tint: rgba(52, 199, 89, 0.15);
 }
 ```
-
-**Rule:** If you need a color that isn't here, add it as a token. Never use a raw hex/rgba value in a component style.
-
-### Spacing
-
-```css
-:root {
-  /* === Spacing Scale === */
-  --space-xs: 2px;     /* Micro: border offsets, badge padding */
-  --space-sm: 4px;     /* Small: inner gaps, tight padding */
-  --space-md: 8px;     /* Medium: standard component padding, icon gaps */
-  --space-lg: 12px;    /* Large: section padding, card padding */
-  --space-xl: 16px;    /* XL: generous padding, modal content gaps */
-  --space-2xl: 24px;   /* 2XL: modal/sheet padding, screen sections */
-  --space-3xl: 32px;   /* 3XL: major section separation */
-}
-```
-
-**Rule:** Every padding, margin, and gap must use a spacing token. The scale is: 2, 4, 8, 12, 16, 24, 32. If you need something in between, use `calc()` with tokens — don't invent a one-off value.
 
 ### Typography
 
 ```css
 :root {
-  /* === Font Family === */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  --font-family-number: -apple-system, 'SF Pro Rounded', ui-rounded, system-ui, sans-serif;
 
-  /* === Font Sizes === */
-  --font-size-xs: 11px;    /* Smallest: badges, fine print (use sparingly) */
-  --font-size-sm: 12px;    /* Small: secondary labels, context strip */
-  --font-size-base: 14px;  /* Base: body text, form inputs */
-  --font-size-lg: 16px;    /* Large: buttons, section headers */
-  --font-size-xl: 20px;    /* XL: screen titles, emphasis */
-  --font-size-2xl: 28px;   /* 2XL: large totals, dashboard stats */
-  --font-size-price: 36px; /* Price: checkout price display */
+  /* Scale */
+  --font-size-hero: 56px;         /* running total, today's revenue */
+  --font-size-title-large: 32px;  /* screen titles (Wallet "Balance Details") */
+  --font-size-title: 22px;        /* card titles, section headers */
+  --font-size-body-large: 20px;   /* numpad digits */
+  --font-size-body: 17px;         /* default body text, row labels */
+  --font-size-footnote: 13px;     /* timestamps, helper text, pill labels */
+  --font-size-caption: 11px;      /* rare — only when space-constrained */
 
-  /* === Font Weights === */
-  --font-weight-normal: 400;   /* Body text */
-  --font-weight-medium: 500;   /* Secondary labels, form elements */
-  --font-weight-semibold: 600; /* Buttons, badges, emphasis */
-  --font-weight-bold: 700;     /* Prices, totals, strong emphasis */
+  /* Weight */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
-  /* === Line Heights === */
-  --line-height-tight: 1;      /* Icons, single-line elements */
-  --line-height-normal: 1.3;   /* Default body text */
-  --line-height-relaxed: 1.5;  /* Long-form text, onboarding */
+  /* Line-height */
+  --line-height-tight: 1.1;       /* hero numbers */
+  --line-height-default: 1.4;     /* body */
+  --line-height-relaxed: 1.5;     /* paragraphs */
 }
 ```
 
-**Rule:** No hardcoded font sizes. If 13px, 18px, or 40px appear anywhere, they must be replaced with the nearest token or a new token must be added to this scale with justification.
-
-### Border Radius
+### Spacing (7-tier)
 
 ```css
 :root {
-  --radius-sm: 4px;    /* Subtle rounding: inputs, small buttons */
-  --radius-md: 6px;    /* Standard: cards, primary buttons */
-  --radius-lg: 12px;   /* Pronounced: sheets, modal corners */
-  --radius-pill: 999px; /* Full pill: filter pills, badges */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 28px;
+  --space-3xl: 40px;
 }
 ```
 
-**Change from current:** `--radius-lg` changes from 16px to 12px. Dashboard filter pills move from hardcoded 18px to `--radius-pill`. Sheet top corners use `--radius-lg`.
-
-### Component Heights
+### Radii
 
 ```css
 :root {
-  /* === Interactive Element Heights === */
-  /* One height for everything interactive: 48px. No exceptions. */
-  --height-touch-min: 48px;    /* MINIMUM height for any tappable element */
-  --height-button: 48px;       /* All buttons */
-  --height-input: 48px;        /* Form inputs */
-  --height-numpad-btn: 48px;   /* Number pad keys (same as buttons) */
-
-  /* === Layout Heights === */
-  --height-header-context: 24px;  /* Context strip (sale name, day, discount) */
-  --height-header-buttons: 48px;  /* Header button bar */
-  --height-header: 72px;          /* Total header (context + buttons) */
-  --height-total-bar: 36px;       /* Running total bar */
-
-  /* === Spacing for Modals === */
-  --sheet-padding: 24px;       /* Bottom sheet internal padding */
+  --radius-sm: 8px;     /* chips, small pills */
+  --radius-md: 10px;    /* buttons (iOS default) */
+  --radius-lg: 14px;    /* grouped list cards (iOS default) */
+  --radius-xl: 20px;    /* bottom sheets (top corners) */
+  --radius-pill: 999px; /* status pills, segmented control inner pills */
 }
 ```
 
-**Critical rule:** `--height-touch-min: 48px` is the absolute floor. Nothing tappable can be shorter than this. This is non-negotiable — our users are 40–70 years old, standing up, in poor lighting, with a line of customers behind them.
+### Shadows
 
-### Shadows & Elevation
+iOS uses almost none. Default is `none`.
 
 ```css
 :root {
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);                     /* Subtle lift */
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);                     /* Cards, buttons */
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);                    /* Modals, sheets */
-  --shadow-qr: 0 2px 12px rgba(0, 0, 0, 0.15);                    /* QR code container */
+  --shadow-none: none;
+  --shadow-sheet: 0 -4px 20px rgba(0, 0, 0, 0.08);   /* bottom sheets */
+  --shadow-floating: 0 2px 8px rgba(0, 0, 0, 0.06);  /* FABs or true floats, rare */
 }
 ```
 
-### Transitions
+### Motion
 
 ```css
 :root {
-  --transition-fast: 100ms ease;    /* Button press, color change */
-  --transition-normal: 200ms ease;  /* Expand/collapse, screen transitions */
+  --duration-fast: 150ms;
+  --duration-default: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
 }
 ```
 
----
+### Component heights
 
-## §2. Component Standards
+```css
+:root {
+  --height-interactive: 48px;        /* buttons, inputs, list rows */
+  --height-interactive-small: 36px;  /* pills, chips (with generous padding) */
+  --height-interactive-large: 56px;  /* primary CTA at bottom */
+}
+```
 
-Every component in the app must conform to these specs. When building or modifying any screen, use these components — do not create one-off styles.
+## §2.2 Component library
+
+All components live in `css/styles.css`. All classes prefixed `.ec-`.
 
 ### Buttons
 
-**One size, four colors. That's it.**
+**`.ec-btn-primary` — Filled Primary Button**
+- Use: the ONE primary action per screen (Add Item, Continue, Mark Paid)
+- Background: `--color-primary` or `--color-success` (green for "add/confirm")
+- Text: `--color-text-on-primary`, semibold, body size
+- Height: `--height-interactive-large` (56px)
+- Radius: `--radius-md`
+- Width: full-width minus `--space-lg` margins on each side
+- Position: bottom-anchored with `--space-lg` bottom margin
 
-#### Size: Standard (all buttons and numpad keys)
-```
-height: var(--height-button)          /* 48px */
-font-size: var(--font-size-lg)        /* 16px */
-font-weight: var(--font-weight-semibold)  /* 600 */
-padding: 0 var(--space-xl)            /* 0 16px */
-border-radius: var(--radius-md)       /* 6px */
-```
+**`.ec-btn-secondary` — Tinted Secondary Button**
+- Use: only when TWO buttons are genuinely paired (rare — Venmo Request/Pay is the archetype)
+- Background: `--color-primary-tint`
+- Text: `--color-primary`, semibold
+- Same height/radius as primary
 
-Numpad keys use the same 48px height but with `--font-size-xl` (20px) and `--font-weight-bold` (700) for a calculator feel.
+**`.ec-btn-destructive` — Destructive Button**
+- Use: bottom sheet destructive confirmation only ("Delete", "Void", "Cancel Sale")
+- Background: `--color-danger`
+- Text: white, semibold
+- Same height/radius
 
-#### Color: Primary (navigation, secondary actions)
-```
-background: var(--color-primary)
-color: var(--color-text-on-primary)
-border: none
-:active → background: var(--color-primary-dark)
-```
+**`.ec-link-primary` — Blue Text Link**
+- Use: non-destructive secondary actions inside detail screens and cards
+- Color: `--color-primary`, semibold, body size
+- No background, no border
+- Padding: `--space-md` vertical, 0 horizontal (hit area generous, visual minimal)
 
-#### Color: Success (positive/confirm — "Add Item", "Start Sale", "Mark as Paid")
-```
-background: var(--color-success)
-color: var(--color-text-on-success)
-border: none
-:active → background: var(--color-success-dark)
-```
-
-#### Color: Danger (destructive — "End Estate Sale", "Clear All")
-```
-background: transparent
-color: var(--color-danger)
-border: 1px solid var(--color-danger)
-:active → background: var(--color-danger-light)
-```
-
-#### Color: Neutral (secondary/ghost — "New Customer", "Cancel", header nav)
-```
-background: var(--color-surface)
-color: var(--color-text)
-border: 1px solid var(--color-border)
-:active → background: var(--color-bg-hover)
-```
-
-**Button rules:**
-- Every button gets `cursor: pointer`
-- Every button gets `-webkit-tap-highlight-color: transparent`
-- Disabled state: `opacity: 0.4; pointer-events: none`
-- No button in the app is shorter than `--height-touch-min` (48px)
-- Full-width buttons in modals/sheets: `width: 100%`
-- Icon-only buttons (like remove): still 48x48px minimum, use the same color variants
+**`.ec-link-destructive` — Red Text Link**
+- Same as blue link but `--color-danger`
+- Use: "Void Order", "Delete Sale" inside detail screens
 
 ### Inputs
 
-```
-height: var(--height-input)             /* 48px */
-font-size: var(--font-size-base)        /* 14px */
-padding: 0 var(--space-lg)              /* 0 12px */
-border: 1px solid var(--color-border)
-border-radius: var(--radius-sm)         /* 4px */
-background: var(--color-surface)
-:focus → border-color: var(--color-border-focus)
-:focus → outline: none
-::placeholder → color: var(--color-text-secondary)
-```
+**`.ec-input` — Text Input (Wallet/Venmo modern pattern)**
 
-**All inputs are 48px tall.** No exceptions. The current discount row inputs at 40px must increase.
+Reference: Apple Wallet "Card Details", Venmo "What's this for?", Facebook Marketplace listing form. The dominant post-iOS-15 pattern is **tinted background, no border at rest** — a clean, low-chrome look. White-with-border is the older Settings-app pattern and feels heavier.
 
-### Cards / List Items
+- Background: `--color-surface-tinted` (light gray; iOS `secondarySystemBackground`)
+- Border: **1px solid `--color-divider`** at rest (very faint, primarily for affordance — without it, pre-populated inputs like date pickers read as static text instead of tappable fields)
+- On focus: background flips to `--color-surface` (white), border becomes 1px solid `--color-primary`
+- Height: `--height-interactive` (48px)
+- Radius: `--radius-md` (10px)
+- Padding: 0 `--space-lg`
+- Font: body size (17px), regular, color `--color-text`
+- Required: `box-sizing: border-box`, `min-width: 0`, `-webkit-appearance: none`, `appearance: none` — the iOS Safari shadow-DOM lessons from v148 are now table stakes for every input.
+- Label: above the input, footnote (13px) semibold uppercase secondary color (iOS Settings caps style). Avoid placing both a label AND a placeholder — pick one source of truth.
 
-```
-padding: var(--space-md) var(--space-lg)    /* 8px 12px */
-border-bottom: 1px solid var(--color-border)
-background: var(--color-surface)
-min-height: var(--height-touch-min)         /* 48px if tappable */
-```
+**Variants:**
+- `.ec-input--center` — `text-align: center` for amount inputs in centered sheets (haggle, invoice discount)
+- `.ec-input--bold` — bold weight (for prominent amount entry)
+- `.ec-input--with-action` — `padding-right: 56px` to make room for an inline icon button (mic, clear-X)
+- `.ec-input--hero` — no background, no border, 56px font, used for the giant hero amount on Entry screens (Add Item)
 
-Item rows in the checkout list, dashboard transaction rows, and payment item rows all use this pattern.
+**States:**
+- `:disabled` — `opacity: 0.5; pointer-events: none`
+- `:invalid` — `border: 1px solid --color-danger` (replaces focus border)
 
-### Status Badges
+### Pickers
 
-```
-display: inline-flex
-padding: var(--space-xs) var(--space-md)    /* 2px 8px */
-border-radius: var(--radius-pill)           /* 999px */
-font-size: var(--font-size-sm)              /* 12px */
-font-weight: var(--font-weight-semibold)    /* 600 */
-```
+**Native HTML controls (`<select>`, `<input type="date">`) are not used as visible UI** — they look out-of-place in an otherwise iOS-native app. Native `<input type="date">` is allowed because the platform picker it opens IS native iOS, but the input itself must be styled with `appearance: none` to prevent shadow-DOM width overflow on iOS (per v148 fix).
 
-| Status  | Text Color              | Background                   |
-|---------|-------------------------|------------------------------|
-| Paid    | `--color-success`       | `--color-success-light`      |
-| Pending | `--color-pending`       | `--color-pending-light`      |
-| Unpaid  | `--color-danger`        | `--color-danger-light`       |
-| Void    | `--color-text-secondary`| `--color-bg-hover`           |
+**`.ec-picker-button` — Tappable picker that opens a bottom sheet**
 
-### Bottom Sheets / Modals
+Use anywhere a native `<select>` would otherwise appear. Visually mirrors `.ec-input` for consistency.
 
-```
-/* Backdrop */
-position: fixed; inset: 0;
-background: var(--overlay-medium)
-z-index: 100
+- Background: `--color-surface-tinted`
+- Border: none at rest; 1px primary border on `:active`
+- Height: `--height-interactive` (48px)
+- Radius: `--radius-md` (10px)
+- Padding: 0 `--space-lg`
+- Layout: flex row — leading icon/dot (optional), label (body, regular, primary text), chevron-down at right (`--color-text-secondary`)
+- Tapping opens a bottom-sheet picker (see below) and updates a hidden input or data state on selection.
 
-/* Sheet */
-position: fixed;
-bottom: 0; left: 0; right: 0;
-background: var(--color-surface-raised)
-border-radius: var(--radius-lg) var(--radius-lg) 0 0
-padding: var(--space-2xl)                   /* 24px */
-max-height: 80vh
-overflow-y: auto
+**`.ec-picker-list` / `.ec-picker-item` — Bottom-sheet picker rows**
 
-/* Sheet title */
-font-size: var(--font-size-xl)             /* 20px */
-font-weight: var(--font-weight-bold)       /* 700 */
-margin-bottom: var(--space-xl)             /* 16px */
+Standardizes the bottom-sheet selection pattern across the app (currently the consignor picker; will also be used for payout type, future filter pickers, etc.).
 
-/* Sheet buttons — stacked, full-width */
-display: flex; flex-direction: column;
-gap: var(--space-lg)                        /* 12px */
-```
+- Container: `.ec-picker-list` — `<ul>`, no list style, no padding, divider between items
+- Each row: `.ec-picker-item`, 48px min height, full-width, `--space-lg` horizontal padding
+- Layout: optional leading icon/dot, label (body, regular), trailing checkmark (✓) when selected, secondary tint
+- Active state: `--color-bg-hover` background
 
-All sheet buttons use the standard button sizes and colors from above. Primary action is a Large Success or Large Primary button. Cancel/dismiss is a Standard Neutral button.
+**`.ec-color-picker` / `.ec-color-dot` — Color swatch grid**
 
-### Filter Pills (Dashboard)
+For consignor color picker. Already a clean implementation — codified here as the canonical pattern.
 
-```
-height: var(--height-touch-min)             /* 48px */
-padding: 0 var(--space-xl)                  /* 0 16px */
-border-radius: var(--radius-pill)           /* 999px */
-font-size: var(--font-size-base)            /* 14px */
-font-weight: var(--font-weight-medium)      /* 500 */
-border: 1px solid var(--color-border)
-background: var(--color-surface)
-```
+- Container: `.ec-color-picker` — flex row, `--space-md` gap, wraps
+- Each dot: `.ec-color-dot`, 32×32 circle, `border-radius: 50%`
+- Selected: 2px solid `--color-text` ring + 2px white inset (creates floating ring)
 
-Active state uses the corresponding status color as background with white text. **Current 36px height must increase to 48px.**
+**`.ec-numpad` — Custom Numpad (Checkout only)**
+- Grid: 4 rows × 3 cols, `--space-sm` gap
+- Key size: 64×64 min
+- Key: `.ec-numpad-key`
+  - Background: `--color-surface`
+  - Border: 1px solid `--color-divider`
+  - Font: `--font-size-body-large`, regular
+  - Color: `--color-text`
+- Special keys (backspace, decimal): `--color-surface-tinted` background
+- No labels below keys — just the digit/icon
 
-### Order Name Input
+### Containers
 
-```
-height: 28px              /* intentional: supplementary input, not primary interactive element */
-font-size: var(--font-size-sm)
-color: var(--color-text-secondary)
-background: var(--color-bg)
-border: 1px solid var(--color-border)
-border-radius: var(--radius-sm)
-```
+**`.ec-card` — Grouped List Card**
+- Background: `--color-surface`
+- Radius: `--radius-lg`
+- Padding: 0 (content has its own padding)
+- No shadow
+- Optional 1px `--color-border` around for emphasis
+- Rows inside: 48px min height, full-width, `--space-lg` horizontal padding
+- Between rows: 1px `--color-divider` inset `--space-lg` from left (iOS-style)
+- Max 7 rows — split into separate cards above that
+- Stack gap between cards: `--space-2xl`
 
-**Note:** This is an intentional exception to the 48px minimum height rule. The order name input is supplementary — the primary workflow doesn't require naming orders. The 28px height keeps it visually subordinate to the running total bar and item list.
+**`.ec-card__row` — Card Row**
+- Flex, space-between, `--space-lg` gap
+- Label (left): body size, regular, `--color-text`
+- Value (right): body size, regular, `--color-text` (tabular-nums for amounts)
 
-**Note:** `ticket.html` is a standalone customer-facing page with its own inline styles. It is intentionally outside the design system — it must render without importing app CSS/JS.
+### Status
 
-### Sale Paused Screen
+**`.ec-pill-status` — Status Pill**
+- Shape: `--radius-pill`
+- Padding: `--space-xs` `--space-sm`
+- Font: `--font-size-footnote`, semibold
+- Gap: `--space-xs` between icon and label
+- Variants:
+  - `.ec-pill-status--paid`: bg `--color-status-paid-bg`, text+icon `--color-success`, label "Paid" + check icon
+  - `.ec-pill-status--pending`: bg `--color-status-pending-bg`, text+icon `--color-pending`, label "Pending" + dot icon
+  - `.ec-pill-status--voided`: bg `--color-status-voided-bg`, text+icon `--color-danger`, label "Voided" + x icon
 
-Shown after End Day. Layout:
-- Header: sale name + "Day X Complete" subtitle (centered)
-- Stats row: 3 equal columns (Orders Today, Revenue Today, Avg Ticket) — mirrors dashboard stat style
-- Next-day preview text (centered, secondary color)
-- Optional stale-sale nudge (>7 days, warning/pending color)
-- Actions (stacked, full-width): Resume Sale (success), View Dashboard (neutral), End Sale Permanently (text link, muted)
+### Controls
 
-### End Day / End Sale Bottom Sheet
+**`.ec-segmented` — Segmented Pill Control**
+- Container: full-width, `--color-surface-tinted` bg, `--radius-pill`, `--space-xs` padding
+- Inner pills: `.ec-segmented__option`, flex-1, `--radius-pill`
+- Active pill: `--color-surface` bg, `--shadow-floating`, semibold text
+- Inactive pills: transparent bg, regular weight, `--color-text-secondary`
+- Use for: view switching (2-4 options max)
 
-Replaces the old "End this estate sale?" confirmation. Two-option layout:
-- "End Day X" button (primary) with description text below
-- "End Sale" button (danger outline) with description text below
-- Cancel button (secondary)
+**`.ec-chips` — Horizontal Filter Chips**
+- Container: scrollable row, `--space-md` gap, no visible scrollbar
+- Each chip: `.ec-chip`
+  - Background: `--color-surface`
+  - Border: 1px `--color-border`
+  - Radius: `--radius-pill`
+  - Padding: `--space-sm` `--space-md`
+  - Font: footnote, semibold
+  - Icon + label inline, `--space-xs` gap, optional count badge on right
+- Active chip: `--color-primary` bg, white text, no border
 
-Uses `.sheet__option` wrapper with `.sheet__option-desc` for the helper text beneath each button.
+**`.ec-chip-selector` — Inline Chip Selector (e.g. consignor chip)**
+- Pill-shaped, tap to open picker
+- Background: `--color-surface-tinted`
+- Border: 1px `--color-border`
+- Padding: `--space-sm` `--space-md`
+- Font: body size, semibold
+- Icon (left) + label + chevron down (right)
 
-### Remove / Delete Buttons (Item List)
+### Overlays
 
-```
-width: var(--height-touch-min)              /* 48px */
-height: var(--height-touch-min)             /* 48px */
-border: none
-background: transparent
-color: var(--color-danger)
-font-size: var(--font-size-xl)              /* 20px */
-display: flex; align-items: center; justify-content: center;
-```
+**`.ec-sheet` — Bottom Sheet**
+- Radius: `--radius-xl` on TOP corners only, 0 on bottom
+- Background: `--color-surface`
+- Shadow: `--shadow-sheet`
+- Handle indicator: 36×5, `--color-text-tertiary`, `--radius-pill`, centered at `--space-md` from top
+- Padding: `--space-lg`
+- Backdrop: `--overlay-sheet-backdrop`
+- Max height: 85vh, content scrolls
 
-**Current 32x32px must increase to 48x48px.** This is the single most impactful touch target fix.
+**`.ec-menu-context` — Context Menu (iOS native popover)**
+- Small floating panel, `--radius-lg`, `--color-surface` bg
+- Max 5 options, each a row with icon + label
+- Destructive options: red text, separated from non-destructive by a divider
+- Shadow: `--shadow-floating`
+- Backdrop blur if feasible (iOS-native feel)
+
+### Special
+
+**`.ec-hero-number` — Hero Number**
+- Font family: `--font-family-number`
+- Size: `--font-size-hero` (56px)
+- Weight: `--font-weight-bold`
+- Color: `--color-text`
+- Line-height: `--line-height-tight`
+- `font-variant-numeric: tabular-nums`
+- Currency symbol inline, 0.6× the number size
+
+**`.ec-empty-state` — Empty State**
+- Centered vertically in parent
+- Icon: 64×64, outline style, `--color-text-secondary`
+- Heading: `--font-size-title`, semibold, `--color-text`
+- Helper: body, regular, `--color-text-secondary`, max 2 lines, centered
+- Optional single `.ec-link-primary` below helper
+
+## §2.3 File structure & implementation rules
+
+### CSS organization
+- `css/styles.css` contains: tokens → base styles → component classes → screen-specific overrides
+- All components prefixed `.ec-` (no exceptions)
+- No inline styles in HTML except genuinely dynamic values (computed widths, transition states)
+- No `style=""` injection from JS except for dynamic cases
+
+### HTML conventions
+- Use semantic elements: `<button>` not `<div>` for buttons, `<nav>` for navigation, `<main>` for primary content
+- `aria-label` on all icon-only buttons
+- `role="dialog"` on bottom sheets, `role="menu"` on context menus
+- All interactive elements keyboard-accessible (Enter/Space must activate)
+
+### JS conventions
+- No style generation inline; toggle classes instead
+- Animations via CSS transitions; JS only for complex state choreography
+- State via class-based modifiers: `.is-active`, `.is-disabled`, `.is-loading`, `.is-selected`
+
+### When adding new UI
+
+1. **Does an existing component fit?** Use it. (Answer: yes, 95% of the time.)
+2. **Is it a new variant of an existing component?** Add a modifier class (e.g. `.ec-btn-primary--large`). Do not duplicate.
+3. **Is it truly new?** Update this doc FIRST. Then build.
+
+### When adding a new screen
+
+1. Identify the archetype (§1.4, A–H)
+2. Assemble from existing components in §2.2
+3. If the archetype fits, do not invent a new one
+
+### When adding a new interaction
+
+1. Check §1.5 interaction rules
+2. If unclear, default to native iOS behavior
+3. Never invent novel interactions for core flows
+
+## §2.3a Inter-element spacing
+
+The 7-tier spacing scale (§2.1) defines token *values*. This section defines *which tier to use* for the gaps between components within a screen or sheet — the rules that prevent components from visually crashing into each other.
+
+### Within a sheet (Bottom Sheet, §1.4.H)
+
+- Title → first content element: `--space-md` (12px) below the title
+- Between content sections (input ↔ input, input ↔ row, text block ↔ row): `--space-md` (12px) minimum
+- Last content element → button group: `--space-lg` (16px). This is enforced via a default `margin-top: var(--space-lg)` on `.sheet__buttons`.
+- Inside the button group itself: gap `--space-md` (12px) between buttons
+
+### Within a screen (List, Detail, Entry, Setup, Confirmation)
+
+- Hero element → first content element: `--space-xl` (20px)
+- Between major sections (input block ↔ numpad, numpad ↔ chip selector, chip ↔ primary action): `--space-lg` (16px) minimum, `--space-xl` (20px) preferred when vertical room permits
+- Between Setup form sections (Sale Name → Dates → Schedule → Consignors): `--space-2xl` (28px). Already enforced by `.setup-section { margin-bottom: var(--space-2xl) }`.
+
+### Inline chip selectors (`.ec-chip-selector`)
+
+A chip selector that follows another major component (numpad, input block, picker) MUST have `margin-top: var(--space-lg)` minimum. The chip's `margin-bottom` (already set) handles separation from the next element.
+
+### Why these are explicit
+
+Without these rules, components defined in §2.2 with no inherent margin can end up touching each other when composed into a screen. Each component should be self-contained but spaced via these rules. Violations show up as visual crashes (chip touching numpad, button touching input) — usually a sign the rule is being skipped, not that the rule is wrong.
+
+## §2.4 Quality gates
+
+Before any commit/deploy, verify:
+
+- [ ] No hardcoded hex colors outside `:root`
+- [ ] No hardcoded px sizes outside `:root` (positioning offsets are OK)
+- [ ] No font-sizes outside the type scale
+- [ ] All interactive elements meet 48×48 min tap target
+- [ ] Semantic colors (green/orange/red) used only for status, never decoration
+- [ ] Every screen has exactly one hero element
+- [ ] Every screen has at most one bottom-anchored primary action
+- [ ] No nested cards
+- [ ] No "Success!" modals
+- [ ] All destructive actions confirmed via bottom sheet + red text
+- [ ] Status pills use icon + label + color (all three)
+- [ ] No drop shadows except bottom sheets and (rare) floating elements
+- [ ] All interactive elements have `:focus` states for keyboard accessibility
+
+## §2.5 Migration plan (from current build to V2)
+
+### Files affected
+- `css/styles.css` — full token replacement, component class rewrite
+- `index.html` — class name updates (old `.status-badge` → `.ec-pill-status`, etc.)
+- `js/checkout.js`, `js/dashboard.js`, etc. — class toggles updated where needed
+
+### Migration order (execute sequentially)
+
+1. **Palette + typography token swap** — replace `:root` values only. No structural change. Vibe shift is immediate and evaluable on-phone.
+2. **Screen title pass** — swap existing titles to `--font-size-title-large` bold style (Wallet-style)
+3. **Status pills** — replace all status badges with `.ec-pill-status` variants
+4. **Checkout screen** → Entry Screen archetype (Venmo pattern): hero total + numpad + consignor chip + bottom CTA
+5. **Order detail sheet** → Detail Screen archetype (Wallet pattern): header + status pill + item card + metadata card + action links
+6. **Dashboard** → List Screen archetype (Wallet Activity pattern): hero revenue card + segmented control + filter chips + transaction list
+7. **QR handoff** → Confirmation Screen archetype: explicit copy, single alternate action link
+8. **Context menu** for Mark Paid / Void / Delete — replace any existing "more" menus
+9. **Bottom-sheet destructive confirmations** — replace any existing modal dialogs
+10. **Consignor UX pass** — promote chip inline at entry, make editable post-paid, add retroactive assignment
+
+### Checkpoint after step 3
+
+After the palette/typography/pills are in, stop. Evaluate on phone. If the vibe shift doesn't feel right, reconsider BEFORE doing structural work (steps 4–10). This is cheap insurance against committing hours to a direction that doesn't land.
 
 ---
 
-## §3. Screen-by-Screen Fixes
+## Revision history
 
-All screen-specific fixes implemented. See §2 for component specs. Every screen conforms to the token system and 48px touch target minimum.
-
----
-
-## §4. Hardcoded Value Elimination Checklist
-
-After implementing §1–§3, run this audit to catch any remaining hardcoded values:
-
-### Colors to grep for and replace
-```
-#fef2f2          → var(--color-danger-light) or remove
-#b45309          → var(--color-pending)
-#000             → var(--color-scan-bg) or var(--color-text)
-#999             → var(--color-disabled) or var(--color-text-secondary)
-#fff / white     → var(--color-text-on-dark) or var(--color-surface) as appropriate
-rgba(0, 0, 0,   → use appropriate --overlay-* token
-rgba(220, 38,    → use --color-danger-light or animation-specific token
-rgba(217, 119,   → use --color-pending-light
-rgba(22, 163,    → use --color-success-light or --overlay-success
-rgba(37, 99,     → use --color-primary-light
-```
-
-### Font sizes to grep for and replace
-```
-13px  → var(--font-size-sm) or var(--font-size-xs)
-18px  → var(--font-size-lg)
-20px (non-variable) → var(--font-size-xl)
-40px  → var(--font-size-price)
-48px  → icon-specific token
-72px  → icon-specific token
-```
-
-### Spacing to grep for and replace
-```
-16px (padding/margin/gap) → var(--space-xl)
-24px (non-sheet-padding)  → var(--space-2xl)
-32px                      → var(--space-3xl)
-18px                      → var(--space-xl) or calc expression
-```
-
-### Heights to check
-```
-32px (interactive) → var(--height-touch-min) minimum
-36px (interactive) → var(--height-touch-min) minimum
-40px (buttons)     → var(--height-button) or var(--height-touch-min)
-44px (inputs)      → var(--height-input) (48px)
-```
-
----
-
-## §5. Design Philosophy & Rules for Building
-
-These rules must be followed for ALL future code — not just the design system overhaul. They apply to every CSS change, every new screen, every component modification.
-
-### The Cardinal Rules
-
-**1. Nothing tappable is shorter than 48px.**
-This is the most important rule. If a human finger needs to touch it, it's 48px minimum. No exceptions. Not for "secondary" actions, not for "rarely used" buttons, not for icon buttons. 48px minimum, always.
-
-**2. Every value comes from a token.**
-No hardcoded colors, no hardcoded font sizes, no hardcoded spacing, no hardcoded radii. If the value you need doesn't exist as a token, add it to the token system in `:root` first, then use it. This is how we maintain consistency across screens.
-
-**3. One component, one pattern.**
-A button looks the same everywhere. An input looks the same everywhere. A card looks the same everywhere. There are not "checkout buttons" and "dashboard buttons" — there are buttons, and they use the standard button specs from §2.
-
-**4. Fewer unique values = better.**
-The app should use a minimal set of sizes. If we have 8 different button heights, something is wrong. Target: 1 height for everything interactive (48px). Buttons, inputs, numpad keys — all 48px. That's it.
-
-**5. Mobile-first means mobile-only (for now).**
-Design for 375px width, one-handed use, standing up, phone in hand. There are no tablet optimizations, no desktop layouts, no responsive breakpoints. If it works beautifully on an iPhone SE, it works everywhere we need it to.
-
-**6. The number pad is the hero.**
-On the checkout screen, the number pad dominates via its 3×4 grid — the largest visual block on the screen. Keys are 48px (same as all buttons) but use bold weight and large font for a calculator feel. High contrast, instant feedback. Everything else on the checkout screen is secondary to the pad.
-
-**7. White space is not wasted space.**
-Generous padding between elements prevents mis-taps and reduces cognitive load. When in doubt, add more space, not less. The checkout screen is tight by necessity (viewport fitting), but setup, dashboard, and modal screens should breathe.
-
-**8. Color communicates function.**
-Green = positive action or success (add item, start sale, mark paid, paid badge). Red = destructive or negative (remove, clear, end sale, void, unpaid badge). Blue = navigation or informational (dashboard, primary actions). Orange = waiting/pending. Gray = neutral or secondary. That's the complete color vocabulary. No decorative color.
-
-### CSS Organization Rules
-
-- `:root` tokens at the top, organized by category (colors, spacing, typography, heights, radii, shadows, transitions)
-- Reset/base styles next
-- Shared components (buttons, inputs, cards, badges, sheets) next
-- Screen-specific styles last, organized by screen (checkout, setup, payment, dashboard, qr, scan, onboarding)
-- Within each screen section, styles follow visual top-to-bottom order
-- Comments use `/* === Section Name === */` format
-- No deeply nested selectors (max 2 levels)
-- Class names use BEM-like convention: `.block__element--modifier`
-
-### Naming Conventions
-
-All class names follow the existing BEM-ish pattern. Do not introduce new naming patterns.
-
-```
-.component              → Block
-.component__child       → Element within block
-.component--variant     → Modifier on block
-.component__child--variant → Modifier on element
-```
-
-Examples from the current codebase (keep these patterns):
-```
-.header__btn--danger
-.item-row__remove
-.dashboard-filter--active
-.sheet__btn--confirm
-```
-
----
-
-## §6. Implementation Prompts
-
-These are structured prompts for a coding session. Each prompt is a self-contained unit of work that can be done sequentially.
-
-### Prompt 1: Replace CSS Token System ✅
-### Prompt 2: Standardize All Buttons ✅
-### Prompt 3: Flatten Button Heights + Standardize Inputs ✅
-### Prompt 4: Fix Touch Targets + Replace Hardcoded Colors ✅ (combined with Prompt 5)
-### Prompt 5: Item List UX Overhaul + Numpad Resize ✅
-### Prompt 6: Replace All Hardcoded Sizes + Item Numbering + Inline Flash ✅
-### Prompt 7: Fix Item Numbering + Standardize Status Badges ✅
-### Prompt 8: Standardize Bottom Sheets + Screen-by-Screen Polish ✅ (combined with Prompt 9)
-### Prompt 10: Final Audit ✅
-
----
-
-## §7. What Success Looks Like
-
-After the design system implementation is complete, the app should:
-
-- **Feel like one product.** A user moving from checkout → QR → payment → dashboard should feel like they're in the same app, not jumping between different prototypes.
-- **Feel like a calculator, not software.** The checkout screen is dominated by the number pad. Buttons are large and obvious. There are no menus, no settings panels, no complex navigation trees.
-- **Be usable by a 60-year-old standing in a crowded house.** Big touch targets (48px+), high contrast text, clear visual hierarchy, immediate feedback on every tap.
-- **Earn trust at first glance.** A polished, consistent design signals "this is a real tool" not "someone's side project." Operators need to trust this enough to replace their adding machine.
-- **Have zero hardcoded values.** Every design decision flows from the token system. Changing the primary color or spacing scale can be done by editing `:root` and having it cascade everywhere.
-
----
-
-## Revision History
-
-| Date | What Changed |
-|------|-------------|
-| 2026-03-03 | Initial version — complete design system spec with tokens, components, screen fixes, philosophy, and implementation prompts |
-| 2026-03-03 | Design system implementation complete. All 10 prompts executed. System fully tokenized. |
+| Date | What changed |
+|------|--------------|
+| 2026-04-23 | Initial V2. Direction shift from Tailwind SaaS palette to iOS-native (Apple Wallet + Venmo + FB Creating Event references). Added consignor rules (§1.6) based on Alissa's field feedback. Added banned patterns (§1.2). Added screen archetype catalog (§1.4). Tokens fully replaced with iOS system values. |

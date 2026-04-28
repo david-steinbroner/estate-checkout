@@ -1,6 +1,12 @@
 # Project: Real-time Sale Sync (B-real)
 
-**Status:** Spec, awaiting review
+> **⚠ ARCHIVED — 2026-04-28**
+>
+> Design spec for real-time sync. Feature shipped in v156–v159; the code is now the source of truth. Kept for historical context — useful for understanding the why and the original architecture. Do not edit. For current sync behavior, read `api/src/worker.js`, `js/sync.js`, and `api/migrations/`.
+
+---
+
+**Status:** Shipped (v156–v159)
 **Owner:** David
 **Target:** Replace QR-as-sync with backend sync so multiple workers on a shared sale see each other's invoices live, and simplify the customer ticket flow.
 

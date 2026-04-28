@@ -1,5 +1,11 @@
 # PM TRACKER — Estate Checkout
 
+> **⚠ ARCHIVED — 2026-04-28**
+>
+> Frozen document. Source of truth through 2026-03-10 (SW v127). Stopped being maintained when the workflow shifted to using git commit history as the changelog. Kept for historical context. Do not edit. For current state, run `git log --oneline` and read CLAUDE.md / DESIGN_SYSTEM.md / BACKLOG.md.
+
+---
+
 **Last updated:** 2026-03-10
 **Purpose:** Tracking doc for Claude (PM partner) to maintain context across chat sessions. Human should add this to the project files.
 
@@ -76,7 +82,7 @@
 | MARKET_INTEL.md | Competitive research, market data, positioning, GTM | Updated 2026-03-03 — Aravenda deep-dive findings added |
 | DESIGN_SYSTEM.md | Complete design system spec — tokens, components, screen fixes, implementation prompts | Created 2026-03-03 — all 10 prompts executed and complete |
 | PRODUCT_SPEC.md | Detailed screen-by-screen functional spec for v0.1 | Current — may need update to reflect item list UX changes |
-| CLAUDE_CODE_RULES.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
+| CLAUDE.md | Coding standards, tech stack, session protocol for Claude Code | Updated 2026-03-03 — references DESIGN_SYSTEM.md |
 | HANDOFF.md | Session-by-session changelog for Claude Code sessions | Current (Session 56) |
 | BACKLOG.md | Parked features, future versions, known issues | Updated 2026-03-03 — design system resolved |
 | COMPETITIVE_RESEARCH_QUESTIONS.md | Demo question guide for SimpleConsign/Aravenda | Updated 2026-03-03 — Aravenda pre-demo findings added |

@@ -15,15 +15,14 @@ You are a developer acting as a product thinking partner. You know the codebase,
 Every session, before doing anything else:
 
 1. Read this file (COWORK_RULES.md)
-2. Read PM_TRACKER.md — current project status, what's working, what's left, open questions
+2. Run `git log -15 --oneline` for the recent changelog
 3. Read BACKLOG.md — scope boundaries, known issues, parked ideas
-4. Read CLAUDE_CODE_RULES.md — so your prompts never contradict Claude Code's instructions
+4. Read CLAUDE.md — so your prompts never contradict Claude Code's instructions
 
 **Read only when the conversation topic requires them:**
 - DESIGN_SYSTEM.md — when discussing UI, layout, styling, or visual changes
 - PRODUCT_SPEC.md — when discussing feature specs or functional requirements
 - PRODUCT_STRATEGY.md — when discussing positioning, roadmap, or scope decisions
-- HANDOFF.md — when you need to understand what Claude Code did in recent sessions
 
 ---
 
@@ -53,7 +52,7 @@ When David says we've agreed and it's time to write prompts:
 - **Plain English, not terminal commands.** Claude Code reads these conversationally.
 - **Be as descriptive as a PM writing perfect requirements for a developer.** What it should do. How it should look. What happens when things go wrong. What the edge cases are. What the default states are. What the error messages say.
 - **Reference specific files, elements, and existing patterns** where it helps — you know the codebase, use that knowledge. Mention specific function names, DOM IDs, CSS classes, existing validation patterns when relevant.
-- **Do not override CLAUDE_CODE_RULES.md.** Let Claude Code follow its own instructions for implementation details (tech stack, code style, file structure, testing, service worker versioning, HANDOFF updates). Your prompts describe WHAT to build, not HOW to code it.
+- **Do not override CLAUDE.md.** Let Claude Code follow its own instructions for implementation details (tech stack, code style, file structure, testing, service worker versioning, HANDOFF updates). Your prompts describe WHAT to build, not HOW to code it.
 - **Batch related changes into one prompt.** Split into separate prompts when a single prompt would be too large or covers unrelated features.
 - **Each prompt must be self-contained.** Claude Code should be able to execute it without needing a separate conversation for context.
 
