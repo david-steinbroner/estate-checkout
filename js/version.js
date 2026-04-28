@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v187';
+const APP_VERSION = 'v188';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v188',
+    date: '2026-04-28',
+    changes: [
+      'New: Export Sale Data. Tap the menu and pick "Export Sale Data" to share the entire estate sale\'s data as a CSV — handed to the iOS share sheet so you can drop it in Mail, Files, AirDrop, etc.',
+      'Same export action also available on the Paused screen (after End Day) and on the Sale Ended banner (after End Estate Sale Permanently) — same data, different moments you might want it.',
+      'CSV is one row per item with all the columns you\'d need: day, date, time, invoice, customer, item, qty, prices, day discount, haggle, invoice discount share, consignor, payout %, consignor cut, your cut, status. Open in Excel, Numbers, Google Sheets, whatever.',
+      'Multi-device note: when you tap Export, the app pulls the latest from the cloud first so a freshly-joined device that hasn\'t opened the dashboard yet still gets a complete export.'
+    ]
+  },
   {
     version: 'v187',
     date: '2026-04-28',

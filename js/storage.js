@@ -268,5 +268,145 @@ const Storage = {
   deleteConsignor(id) {
     const consignors = this.getConsignors().filter(c => c.id !== id);
     this.saveConsignors(consignors);
+  },
+
+  /**
+   * Generate a CSV export of the current estate sale's transactions.
+   * One row per line item, denormalized so consignor splits and discounts
+   * are visible at the item level. Returns the CSV string.
+   *
+   * Empty sale or zero transactions → returns headers-only CSV (caller
+   * should detect zero data and surface an inline error before calling).
+   *
+   * Status mapping (per v187 audit):
+   *   transaction.status === 'paid'   → 'paid'
+   *   transaction.status === 'unpaid' → 'unpaid'
+   *   transaction.status === 'open'   → 'open'
+   *   transaction.status === 'void' && voidReason includes 'Edit' → 'edited'
+   *   transaction.status === 'void' (other reasons)               → 'void'
+   *
+   * Deleted-consignor handling (v187 audit, A): if item.consignorId points
+   * to a consignor that no longer exists, treat as no-consignor — empty
+   * Consignor cell, 0 in Consignor Cut, full Final Price in Your Cut.
+   */
+  exportSaleCSV() {
+    const transactions = this.getTransactions();
+    const consignors = this.getConsignors();
+    const consignorById = {};
+    consignors.forEach(c => { consignorById[c.id] = c; });
+
+    const headers = [
+      'Day', 'Date', 'Time', 'Invoice #', 'Customer Name',
+      'Item', 'Qty', 'Original Price',
+      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Discount Share',
+      'Final Price',
+      'Consignor', 'Payout %', 'Consignor Cut', 'Your Cut',
+      'Status'
+    ];
+
+    const escape = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const fmt$ = (n) => (Math.round(n * 100) / 100).toFixed(2);
+
+    const rows = [headers.map(escape).join(',')];
+
+    transactions.forEach(txn => {
+      const date = new Date(txn.timestamp);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mn = String(date.getMinutes()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const timeStr = `${hh}:${mn}`;
+
+      const cssStatus = txn.status === 'void'
+        ? (txn.voidReason && /edit/i.test(txn.voidReason) ? 'edited' : 'void')
+        : (txn.status || 'unpaid');
+
+      // Per-item proportional share of the invoice-level (ticket) discount.
+      // ticketDiscount savings = subtotal − total. Each item carries a share
+      // proportional to its finalPrice / subtotal.
+      const subtotal = txn.subtotal || 0;
+      const total = txn.total || subtotal;
+      const ticketDiscountTotal = Math.max(0, subtotal - total);
+
+      (txn.items || []).forEach(item => {
+        const qty = item.quantity || 1;
+        const originalPriceTotal = (item.originalPrice || 0) * qty;
+        const dayDiscountedTotal = (item.dayDiscountedPrice || item.originalPrice || 0) * qty;
+        const finalLineTotal = item.finalPrice || 0;
+        const dayDiscountSavings = originalPriceTotal - dayDiscountedTotal;
+        const haggleSavings = dayDiscountedTotal - finalLineTotal;
+        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketDiscountTotal : 0;
+
+        // Consignor lookup (orphaned IDs render as no-consignor per v187 audit, A)
+        const consignor = item.consignorId ? consignorById[item.consignorId] : null;
+        let consignorCut = 0;
+        let payoutPctDisplay = '';
+        if (consignor) {
+          if (consignor.payoutType === 'percentage') {
+            consignorCut = (finalLineTotal - itemTicketShare) * (consignor.payoutValue / 100);
+            payoutPctDisplay = consignor.payoutValue;
+          } else {
+            // flat fee per item × qty (with safety cap at line total)
+            consignorCut = Math.min(finalLineTotal - itemTicketShare, consignor.payoutValue * qty);
+          }
+        }
+        const yourCut = (finalLineTotal - itemTicketShare) - consignorCut;
+
+        const row = [
+          txn.saleDay || 1,
+          dateStr,
+          timeStr,
+          txn.customerNumber || '',
+          txn.orderName || '',
+          item.description || '',
+          qty,
+          fmt$(item.originalPrice || 0),
+          (txn.discount || 0),  // Day Discount % snapshot from transaction
+          fmt$(dayDiscountSavings),
+          fmt$(haggleSavings),
+          fmt$(itemTicketShare),
+          fmt$(finalLineTotal),
+          consignor ? consignor.name : '',
+          payoutPctDisplay,
+          consignor ? fmt$(consignorCut) : '',
+          fmt$(yourCut),
+          cssStatus
+        ];
+        rows.push(row.map(escape).join(','));
+      });
+    });
+
+    return rows.join('\r\n');
+  },
+
+  /**
+   * Build a filesystem-safe filename for the CSV export.
+   *   "Johnson Estate - Oak Hill" → "johnson-estate-oak-hill-2026-04-28.csv"
+   *   No name set → "estate-sale-2026-04-28.csv"
+   */
+  exportFilename() {
+    const sale = this.getSale();
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    const rawName = sale && sale.name ? sale.name.trim() : '';
+    const slug = rawName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const prefix = slug || 'estate-sale';
+    return `${prefix}-${dateStr}.csv`;
   }
 };

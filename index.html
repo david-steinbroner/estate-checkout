@@ -272,7 +272,11 @@
         <span class="dashboard-ended-banner__title">Estate sale ended</span>
         <span class="dashboard-ended-banner__hint">Review past invoices below, or start fresh.</span>
       </div>
-      <button class="dashboard-ended-banner__cta" id="dashboard-start-new-sale" type="button">Start New Estate Sale</button>
+      <div class="dashboard-ended-banner__actions">
+        <button class="dashboard-ended-banner__cta" id="dashboard-start-new-sale" type="button">Start New Estate Sale</button>
+        <button class="ec-link-primary" id="dashboard-export" type="button">Export Sale Data</button>
+      </div>
+      <p class="ec-field-error" id="dashboard-export-error" hidden></p>
     </div>
 
     <!-- Summary Stats -->
@@ -373,7 +377,9 @@
     <div class="paused-actions">
       <button type="button" class="ec-btn ec-btn-primary" id="paused-resume">Resume Estate Sale</button>
       <button type="button" class="ec-link-primary" id="paused-dashboard">View Dashboard</button>
+      <button type="button" class="ec-link-primary" id="paused-export">Export Sale Data</button>
       <button type="button" class="ec-link-destructive" id="paused-end-sale">End Estate Sale Permanently</button>
+      <p class="ec-field-error" id="paused-export-error" hidden></p>
     </div>
   </div>
 
@@ -520,6 +526,13 @@
           <span class="ec-menu-item__label">Edit Estate Sale</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
+        <li class="ec-menu-item" id="menu-export" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v11"/><path d="M5 8l5 5 5-5"/><path d="M3 17h14"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Export Sale Data</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
         <li class="ec-menu-item" id="menu-whats-new" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 5 5 .5-4 3.5 1.5 5L10 13l-4.5 3L7 11 3 7.5 8 7z"/></svg>
@@ -528,6 +541,8 @@
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
       </ul>
+
+      <p class="ec-field-error" id="menu-export-error" hidden></p>
 
       <!-- Sale-state actions card -->
       <ul class="ec-menu-list">

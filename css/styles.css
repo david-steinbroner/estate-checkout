@@ -3629,8 +3629,15 @@ body {
   color: var(--color-text-secondary);
 }
 
-.dashboard-ended-banner__cta {
+.dashboard-ended-banner__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-xs);
   flex-shrink: 0;
+}
+
+.dashboard-ended-banner__cta {
   height: 40px;
   padding: 0 var(--space-lg);
   background: var(--color-success);
@@ -3647,6 +3654,12 @@ body {
 
 .dashboard-ended-banner__cta:active {
   background: var(--color-success-dark);
+}
+
+/* Export link inside the banner — small, right-aligned under the green CTA. */
+.dashboard-ended-banner #dashboard-export {
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-sm);
 }
 
 .dashboard-stats {

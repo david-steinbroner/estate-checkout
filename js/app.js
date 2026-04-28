@@ -189,6 +189,27 @@ const App = {
         this.openVersionHistory();
       });
     }
+
+    // Export Sale Data — three entry points share the same flow.
+    const menuExport = document.getElementById('menu-export');
+    if (menuExport) {
+      menuExport.addEventListener('click', async () => {
+        const sale = Storage.getSale();
+        const txns = Storage.getTransactions();
+        // Empty case stays in the menu so the user sees the inline error.
+        // Otherwise close the menu before the share sheet pops.
+        if (sale && txns.length > 0) this.closeMenu();
+        await this.exportSaleData('menu-export-error');
+      });
+    }
+    const pausedExport = document.getElementById('paused-export');
+    if (pausedExport) {
+      pausedExport.addEventListener('click', () => this.exportSaleData('paused-export-error'));
+    }
+    const dashboardExport = document.getElementById('dashboard-export');
+    if (dashboardExport) {
+      dashboardExport.addEventListener('click', () => this.exportSaleData('dashboard-export-error'));
+    }
     if (this.headerElements.versionHistoryModal) {
       this.headerElements.versionHistoryModal.addEventListener('click', (e) => {
         if (e.target === this.headerElements.versionHistoryModal) this.closeVersionHistory();
@@ -371,6 +392,86 @@ const App = {
     if (this.headerElements.setupMenuModal) {
       this.headerElements.setupMenuModal.classList.remove('visible');
     }
+  },
+
+  // ── Export Sale Data (v188) ──
+
+  /**
+   * App-level inline error helper (mirrors Checkout._showFieldError).
+   * Used by the export entry points where Checkout's helper isn't in scope.
+   */
+  _showFieldError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => { el.hidden = true; }, 2500);
+  },
+
+  /**
+   * Trigger the CSV export flow. Pulls fresh from sync first (closes the
+   * fresh-device gap where local cache could be empty), then generates the
+   * CSV and hands it to the iOS native share sheet via the Web Share API.
+   * Falls back to anchor-download for browsers without file-share support.
+   *
+   * Called from 3 entry points: in-sale menu item, Paused screen link, and
+   * the Sale Ended banner button. The errorElementId arg picks which
+   * inline error element to use for "no transactions" feedback.
+   */
+  async exportSaleData(errorElementId) {
+    const sale = Storage.getSale();
+    const errId = errorElementId || 'menu-export-error';
+
+    if (!sale) {
+      this._showFieldError(errId, 'No estate sale yet — start one first.');
+      return;
+    }
+
+    // Fresh-device gap: if this device is on a synced sale but hasn't visited
+    // a polling screen, the local cache may be empty. Pull once before
+    // exporting. Silent failure on offline — fall through to local cache.
+    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+      try {
+        await Sync.pullInvoices(sale);
+      } catch (err) {
+        console.warn('[export] sync pull failed, using local cache:', err.message);
+      }
+    }
+
+    const transactions = Storage.getTransactions();
+    if (transactions.length === 0) {
+      this._showFieldError(errId, 'No transactions to export yet.');
+      return;
+    }
+
+    const csv = Storage.exportSaleCSV();
+    const filename = Storage.exportFilename();
+    const file = new File([csv], filename, { type: 'text/csv' });
+
+    // Web Share API (iOS 15+) — opens the native share sheet
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Estate Sale Export' });
+      } catch (err) {
+        // User dismissed share sheet — silent. Other errors get logged.
+        if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+          console.warn('[export] share failed:', err.message);
+          this._showFieldError(errId, 'Export failed. Try again.');
+        }
+      }
+      return;
+    }
+
+    // Fallback: trigger an anchor download via a Blob URL.
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   },
 
   // ── Edit Sale Sheet ──
