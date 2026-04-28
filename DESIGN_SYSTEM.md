@@ -1,21 +1,24 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** Authoritative reference. All new implementation must conform to this document.
+**Status:** **Migration in progress (~5% complete).** This document describes the **target** component system. Current code uses the target names for `.ec-menu-*` and `.ec-picker-*` only; everything else still uses legacy class names. Each component spec in §2.2 lists both. See **§3 Migration Roadmap** for the rollout schedule.
+
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
 ---
 
 ## How to use this document
 
-This is the single source of truth for every visual, structural, and interaction decision in the app. It has two parts:
+This is the source of truth for every visual, structural, and interaction decision in the app. Three parts:
 
 - **Part 1 — Product:** the *what* and *when*. Design principles, banned patterns, pattern catalog, screen archetypes, interaction rules. Read this when deciding what to build.
-- **Part 2 — Frontend:** the *how*. Tokens, component library, implementation rules, quality gates. Read this when writing code.
+- **Part 2 — Frontend:** the *how*. Tokens, component library, implementation rules, quality gates. Each component lists its target name (`.ec-*`) and the legacy name in current code.
+- **Part 3 — Migration:** the rollout from legacy to target naming. Read this when shipping a refactor pass.
 
 **Before adding any new UI:**
-1. Find the matching pattern in §1.3 or screen archetype in §1.4
-2. Assemble from existing components in §2.2
-3. Never invent a new component without updating this doc first
+1. Find the matching pattern in §1.3 or screen archetype in §1.4.
+2. Assemble from existing components in §2.2.
+3. Use the **target** class name (`.ec-*`) only if the component's row in §3.2 says it has migrated. Otherwise use the legacy name listed in its §2.2 entry.
+4. Never invent a new component without updating this doc first.
 
 **When in doubt:** defer to iOS-native behavior. The user is a 58-year-old estate sale operator whose frame of reference is Apple Wallet and Venmo. Anything that feels "like software" violates this spec.
 
@@ -37,11 +40,11 @@ These are non-negotiable. If a decision conflicts with a principle, the principl
 
 5. **Cards group, never decorate.** A tinted rounded rectangle exists ONLY to visually group related info (e.g. Order ID + Email + Total). No decorative cards, no cards-in-cards, no cards for visual rhythm.
 
-6. **Live state updates, no success modals.** When something changes (item added, order paid), the view updates in place. Optional "Marked paid now" subtitle. No toasts, no "Success! ✓" screens, no celebration animations.
+6. **Live state updates, no success modals.** When something changes (item added, order paid), the view updates in place. Optional "Marked paid now" subtitle. **Exception:** the centered Flash toast (`.flash--success`/`.flash--error`) is permitted *only* for ephemeral, micro-confirmations like "Added!" — never for navigation completion or status transitions.
 
 7. **Confirm destructive, not affirmative.** Adding an item: happens immediately. Voiding an order, deleting a sale: bottom sheet with red destructive action. Never confirm safe actions.
 
-8. **Native iOS conventions, always.** Back arrow top-left, share/more top-right, bottom sheets not mid-screen modals, context menus for "..." actions, segmented pill controls for view switching. If iOS does it, we do it that way.
+8. **Native iOS conventions, always.** Back arrow top-left, share/more top-right, bottom sheets not mid-screen modals, context menus for "..." actions. If iOS does it, we do it that way.
 
 9. **Consignor is a first-class citizen of every order.** When a sale has consignors, every item entry shows the consignor chip, every order recap shows the consignor, every dashboard row shows consignor breakdown. Never hidden, never optional to surface.
 
@@ -51,23 +54,28 @@ These are non-negotiable. If a decision conflicts with a principle, the principl
 
 Hard "no." If you find yourself reaching for any of these, stop:
 
-- Blue gradients, purple gradients, any gradient for decoration (status gradients in Instagram QR are an exception we do not need)
+- Blue gradients, purple gradients, any gradient for decoration
 - Drop shadows for "elevation" except on bottom sheets that are actually floating
-- Tailwind-style palette values (`blue-600`, `green-600`, etc.) — use iOS system colors only
+- Tailwind-style palette values (`blue-600`, etc.) — use iOS system colors only
 - Inter font (not installed; do not install)
-- Icons without labels (exception: ubiquitous iOS glyphs — back arrow, share, more, close)
+- Icons without labels (exception: ubiquitous iOS glyphs — back arrow, share, more, close, hamburger)
 - "Success!" modals with checkmark animations
 - Tooltips for user-facing explanation (build clarity into the screen)
 - Cards-inside-cards
 - Oversized padding that creates artificial breathing room
 - Branded custom numpad styling — numpad must feel native iOS
-- Dark mode in v1 (light mode only — dark mode is a v2 conversation)
+- Dark mode in v1 (light mode only)
 - Any color not in the palette tokens
 - Any font-size not in the type scale
 - Any spacing value not in the spacing scale
 - Grid-of-icons menus (Facebook-style) — use iOS Settings-style grouped list instead
 - Loading spinners in checkout-critical paths
 - Full-screen modals for confirmations (use bottom sheets)
+- Hidden gestures as the only path to a destructive action (no swipe-to-delete; v168 removed it)
+- Cancel buttons in hamburger menu sheets (v170 removed; tap-backdrop + swipe-down dismiss)
+- Center-aligned text inputs except for OTP/code-style inputs (`.join-code-input`)
+- Hardcoded hex colors anywhere outside `:root` (v176 removed the last two: `#fff` → `--color-text-on-danger`, `#aaa` → `--color-text-tertiary`)
+- Buttons or sheets that drift from the canonical action-bar height (v174 standardized; v176 caught the payment screen)
 
 ## §1.3 Pattern catalog
 
@@ -78,9 +86,9 @@ For every product need, the named pattern to use. Components are defined in §2.
 | Show one key number (total, revenue) | **Hero Number** | Wallet Balance Details, Venmo Send |
 | Group related facts | **Grouped List Card** | Wallet (every screen) |
 | Switch between views of same data | **Segmented Pill Control** | Wallet Week/Month/Year |
-| Filter a list quickly | **Horizontal Filter Chips** | YouTube filters, Venmo filter row |
+| Filter a list quickly | **Filter Pill + Bottom Sheet picker** | iOS Mail filter |
 | Show an order's state | **Status Pill** | Wallet "Shipped ✓" / "Complete ✓" |
-| Confirm a destructive action | **Bottom Sheet + red destructive** | Wallet Delete Order |
+| Confirm a destructive action | **Confirm Destructive Sheet** | Wallet Delete Order |
 | Open a menu of actions on an item | **Context Menu (native popover)** | Wallet "..." Mark/Delete |
 | Show empty list | **Empty State** | Wallet "No Orders" |
 | Capture a sequence of inputs | **Multi-step form + pinned Continue** | FB Creating Event |
@@ -89,20 +97,21 @@ For every product need, the named pattern to use. Components are defined in §2.
 | Primary action on screen | **Filled Primary Button (bottom-anchored)** | Venmo Pay |
 | Secondary non-destructive action | **Blue Text Link** | Wallet "Manage Order" |
 | Destructive link action | **Red Text Link** | Wallet "Delete Order" |
-| Pick from many options | **Bottom Sheet w/ list** | Wallet Export Transactions (CSV/OFX/QFX) |
-| Settings / menu | **iOS grouped list** | Apple Settings app |
+| Pick from many options | **Bottom Sheet w/ list** (Picker List) | Wallet Export Transactions |
+| Settings / menu | **iOS grouped list** (Menu Sheet) | Apple Settings app |
+| Batch-delete rows | **Edit Mode** (toggle + minus + confirm) | iOS Mail Edit |
+| Inline field validation | **Inline Field Error** | iOS Settings |
 
 ## §1.4 Screen archetypes
 
-Estate Checkout has 8 screen archetypes. Every screen in the app must fit one.
+Estate Checkout has 11 screen archetypes. Every screen in the app must fit one.
 
 ### A. List Screen
 *Examples: Dashboard, item list inside an order, transaction history*
 
 - **Top:** screen title (big bold)
 - **Below title:** Hero Number card (one key metric — e.g. "Today's Revenue $1,247")
-- **Below hero:** Segmented Pill Control (if multiple views exist — e.g. Pending/Paid/Voided)
-- **Below segment:** Horizontal Filter Chips (if sub-filters apply)
+- **Below hero:** **Filter Pill row** — one Filter pill (label = active filter, opens Picker List sheet) + Sort pill on the same row. Replaces the older "horizontal filter chips" idea — chips overflowed on narrow viewports (the v169 fix).
 - **Body:** list rows grouped in Grouped List Cards
 - **Top-right:** "..." context menu (if bulk actions exist)
 - **Bottom-anchored primary action** ONLY if there is exactly one "add" action available
@@ -125,81 +134,134 @@ Estate Checkout has 8 screen archetypes. Every screen in the app must fit one.
 
 - **Top bar:** back arrow (left) + screen title (center, body semibold, e.g. "Add Item" or "Edit Item")
 - **Hero:** the **value being entered** as a Hero Number — for item entry that's the **current item's price** (NOT the order's running total). The hero updates live as the user taps the numpad. Centered, 56px, SF Pro Rounded bold, tabular-nums.
-- **Below hero:** item description Text Input (like Venmo "What's this for?"). Mic button (when voice input is enabled) lives as an icon inside the input on the right edge — iOS Messages dictation pattern, not a side-by-side button that competes for horizontal space.
-- **Below input:** Quantity row (label + − value + buttons), only when qty > 1 is meaningful for this entry
+- **Below hero:** description Text Input (Venmo "What's this for?" pattern). Mic icon inline at the right edge of the input — iOS Messages dictation pattern, not a separate side-by-side button.
+- **Below input:** Quantity row (label + − value + buttons), only when qty > 1 is meaningful
 - **Below qty:** Numpad (centered, iOS-native styling)
 - **Below numpad:** Inline Chip Selector for consignor (ONLY if sale has consignors)
-- **Bottom (sticky):** Primary Button (filled green, full-width). Label changes by mode: "Add Item" / "Save Changes".
+- **Bottom (sticky):** Primary Button. Label changes by mode: "Add Item" / "Save Changes". In Edit mode, a red Delete Item button stacks below Save Changes (v168).
 
-**Implementation note:** Entry screens MAY be presented as full-viewport overlays rather than full screen-push navigations, to keep the parent context (running total, item list) one tap away. When presented as a full-viewport overlay, the overlay must cover the entire viewport (height: 100%/100dvh, not the 80–85vh of a bottom sheet) so action buttons never fall below the fold.
+**Implementation note:** Entry screens are presented as full-viewport overlays (height: 100dvh, not the 80dvh of a bottom sheet) so action buttons never fall below the fold. The `.entry-screen` class explicitly opts out of `.sheet::before` (no swipe handle).
 
 ### D. Setup Wizard Screen
 *Examples: Sale setup, new sale flow*
 
-- **Top:** back arrow (left), optional step indicator (center), close X (right)
-- **Screen title:** big bold
-- **Form:** **fields stack vertically, full width each, labels above inputs.** Side-by-side / half-row layouts are NOT permitted on mobile viewports — they cause overflow with native iOS controls (date pickers especially) and break the consistent left-edge alignment. Two related fields (e.g. start date + end date) get stacked rows, not columns.
-- **Pickers:** open in Bottom Sheets (dates, consignor lists, discount schedules)
-- **Bottom:** Primary Button "Continue"
+- **Top:** menu button top-right (no back — Setup IS the root screen for un-started sales)
+- **Screen title:** big bold (Wallet "Balance Details" sized)
+- **Form:** **fields stack vertically, full width each, labels above inputs.** Side-by-side / half-row layouts are NOT permitted on mobile viewports. Date pickers especially break in two-column layouts (per v148).
+- **Each form section:** wrapped in a Grouped List Card (`.setup-card`). Cards may contain rows of varying types: input rows (`.setup-card__row--input`), action rows (`+ Add Day`, `+ Add Consignor`), split rows pairing an Add with a Remove toggle (Edit Mode entry — see §1.4.I).
+- **Pickers:** open in Bottom Sheets (dates, consignor lists, discount schedules, payout type, color)
+- **Bottom:** paired button row — primary (Start Sale, green) + secondary (Join Sale, blue tint)
 
 ### E. Confirmation Screen
 *Examples: QR handoff*
 
-- **Top:** close X (right) — this is a transient state, not a navigable one
+- **Top:** menu button (right) — this is a transient state, not a navigable one
 - **Hero:** the content being handed off (giant QR code)
 - **Context:** order summary below the hero (small, secondary)
 - **Instruction:** single line of explicit copy — e.g., "Hand this phone to your payment worker"
-- **Action:** one blue Text Link for the self-scan alternate path (e.g., "Mark as paid without scanning")
+- **Action:** one blue Text Link for the self-scan alternate path; small secondary links below for Edit / Adjust / New Order
 
 ### F. Empty State
-*Examples: No sales yet, no items in order*
+*Examples: No transactions yet, no items in order*
 
 - Centered vertically in the available space
 - **Icon:** 64×64, outlined/stroke style, secondary color
-- **Heading:** "No sales yet" (title size, semibold)
-- **Helper text:** what will appear here when it does (body size, secondary color, max 2 lines)
-- **Single text link** for primary action (e.g. "Start a sale")
+- **Heading:** "No transactions yet" (title size, semibold)
+- **Helper text:** what will appear here when it does (body size, secondary color, max 2 lines, balanced via `text-wrap: pretty`)
+- **Single text link** for primary action
 
-### G. Settings / Menu Screen
-*Examples: main hamburger menu, settings, setup menu*
+### G. Settings / Menu Sheet
+*Examples: hamburger menu (in-sale and on Setup), version history*
 
-- iOS Settings / action-sheet style **Grouped List Cards**
-- **Never a grid of icons** (Facebook grid is banned — too busy)
-- **Never a stack of full-width buttons** either — buttons are for primary actions, not menu navigation. Buttons visually compete for attention; menu rows don't.
-- Each row: icon left (20×20 outlined SVG, secondary color for nav items, semantic color for actions), label (body 17px, left-aligned), chevron right for navigation items
-- Group related rows into separate cards. Typical layout for a hamburger menu:
-  1. **Navigation card** — all "go to X" items (Dashboard, Share Sale, Edit Sale, etc.)
-  2. **Actions card** — state-changing actions (End Day in primary color, End Sale Permanently in destructive color)
-  3. **Cancel** — as a separate, bolder standalone row below the cards. iOS action-sheet convention.
-- Sheet background: `--color-bg` (tinted) so the white cards float with visual separation
-- Cards: `--radius-lg`, no shadow, 1px divider between rows inset from the left by the icon+gap width
-- Version label (if present) below Cancel, small tertiary text
+- iOS Settings / action-sheet style **Grouped List Cards** inside a `.sheet--menu` variant
+- **Never a grid of icons** (Facebook grid is banned)
+- **Never a stack of full-width buttons** for navigation — buttons are for primary actions, not menu navigation
+- Each row: icon left (20×20 outlined SVG, secondary color for nav, semantic color for actions), label (body 17px, left-aligned), chevron right for navigation items
+- Group related rows into separate cards. Typical layout for the in-sale hamburger menu:
+  1. **Sale identity block** — sale name + day/discount summary (so the user can confirm "what sale am I in?")
+  2. **Navigation card** — Dashboard, Share Sale, Edit Sale, Scan, etc.
+  3. **Sale-state actions card** — End Day (primary green) + End Sale Permanently (destructive red)
+  4. **Version label** at the bottom (footnote, tertiary)
+- **No Cancel button** in menu sheets (v170 removed). Dismiss via swipe-down or tap-backdrop. (Confirmation sheets in §1.4.H *do* still pair a destructive action with a Cancel — different context.)
 
 ### H. Bottom Sheet
 *For: confirmations, pickers, context actions that need more than a menu*
 
-- **Handle indicator** at top (36×5, tertiary color, centered)
-- **Short title**, no body text unless needed
-- **Primary action:** filled color; destructive: red
-- **Close:** X top-right OR pull-to-dismiss
-- **Max height:** 85vh — content scrolls
+- **Handle indicator** at top (36×5, tertiary color, centered at `--space-md` from top)
+- **Top padding:** `--sheet-top-padding` (40px), uniform across all variants. Per-sheet styles must NOT override this — only side/bottom padding.
+- **Title-to-content gap:** `--sheet-content-gap` (24px) on `.sheet__title`; `--sheet-content-gap-tight` (16px) on `.sheet__title--small` for terse confirms.
+- **Buttons:** stack vertically inside `.sheet__buttons`, full-width, gap `--space-md`. The base button height is `--height-button` (48px); sheet-button-stacked CTAs match.
+- **Dismiss:** swipe-down handle, tap-backdrop. **No close X** on standard sheets. The v3 `.sheet--detail` variant (left-aligned dense content) also dismisses via swipe-down — the close X was removed in v169.
+- **Max height:** 80dvh (dynamic viewport height accounts for the iOS Safari URL bar).
+
+#### Sub-archetype: Confirm Destructive Sheet
+
+- Title `.sheet__title--small`: short question form (e.g., "Cancel Invoice?", "End Sale Permanently?", "Clear all items?")
+- Body: 1 line of `.sheet__text` explaining consequence
+- Buttons (vertical stack, in `.sheet__buttons`):
+  - `.sheet__btn--danger` (red filled) with the destructive verb ("Cancel Invoice", "End Sale", "Clear")
+  - `.sheet__btn--secondary` Cancel — the *only* place a Cancel button is permitted on a sheet (v170 removed it from menu sheets)
+- For the highest-stakes destructive ops, additionally require type-the-name confirmation in the input above the buttons. Currently: `End Sale Permanently?` requires typing the sale name exactly (case-sensitive) with an inline error if mismatched (v175).
+
+### I. Edit Mode (batch delete pattern)
+
+**Use this whenever a list section needs a way to remove rows in bulk.** Currently used by Sale Days and Consignors on the Setup screen. Replaces swipe-to-delete (v168 removed swipe because hidden gestures fail principle 1.1.8).
+
+**Anatomy:**
+- The section's action row (`.setup-card__row--split`) pairs `+ Add` on the left with a Remove toggle on the right (red text). The toggle is hidden when there's nothing to delete.
+- Tapping `Remove` flips the section into edit mode: the toggle becomes `Done`, every row gets a red minus circle (`.row-edit-handle`) on the left.
+
+**Two-tap delete:**
+1. Tap the minus circle on a row → row becomes "armed". The right side switches from its normal content to a red `Remove` button (`.row-edit-confirm`).
+2. Tap the red `Remove` → row deletes. Toggle stays in edit mode for further deletions; if no removable rows remain, edit mode auto-exits.
+3. Tap the minus on an armed row to un-arm. Tap `Done` to exit edit mode entirely.
+
+**Why two taps:** these are persistent destructive operations on shared sale state. One-tap minus is too easy to mis-fire.
+
+**While in edit mode, the row's normal interactions are suppressed** — the user can't accidentally open a date picker or detail sheet. Add controls (`+ Add Day`, `+ Add Consignor`) stay live so the user can interleave adds and removes.
+
+### J. Bottom Action Bar
+
+Every screen with a fixed CTA at the bottom uses one shape:
+
+- Container: `padding: var(--bottom-action-padding)` (12px) on all sides; bottom padding adds `env(safe-area-inset-bottom, 0px)` for the iOS home indicator.
+- Background: `--color-surface` (or `--overlay-opaque` on Scan, since the camera feed is dark).
+- Border: 1px top divider.
+- Buttons: `var(--bottom-action-button-height)` (56px). Full width or split row, never smaller than 56px.
+
+**Don't ad-hoc the bar height per screen.** Setup, Checkout, Dashboard, Scan, Paused, Payment all use the same vertical shape so the user's thumb lands in the same place across screens. (v174 standardized 5 of 6; v176 caught Payment.)
+
+### K. Archive / Past Data Screen *(forward-looking)*
+
+For features that haven't shipped yet but are on the roadmap (export sale data, past sales, account history):
+
+- **Top:** screen title (big bold) + back arrow (left)
+- **Body:** Grouped List Cards. Each row: primary label, secondary metadata, trailing chevron or value.
+- **Tap a row:** drill into Detail Screen archetype (B) for that record.
+- **Top-right:** "..." context menu for bulk actions (export selected, delete archived).
+- **Empty state** when no records exist (Empty State archetype, F).
+- **No bottom-anchored CTA** — actions on archived data are non-additive.
+
+The closest existing implementation is the Payouts screen, which mixes List + Detail. When Past Sales / Export ships, the patterns above are the target.
 
 ## §1.5 Interaction rules
 
 - **Tap targets:** never below 48×48 px. This includes padding — visual size can be smaller.
-- **Tap feedback:** subtle scale-down on press (0.97×), no glows/shadows.
+- **Tap feedback:** subtle scale-down on press (0.97×) or opacity shift, no glows/shadows.
 - **State change feedback:**
-  - Adding an item: row fades in at top of list, optional inline "Added!" flash label (1s)
+  - Adding an item: row fades in at top of list, optional inline "Added!" Flash (centered toast, 1s) — the *only* permitted use of `.flash--success`.
   - Marking paid: status pill color changes instantly + subtitle updates to "Marked paid now"
   - Voiding: item greys out with strikethrough, status pill changes to "Voided" red
-- **Keyboards:** use native iOS numeric keyboard where input is a standard numeric field. Custom numpad only on the primary Checkout entry screen.
+- **Keyboards:** native iOS numeric keyboard via `inputmode="numeric"` for amount fields. The custom Numpad is only on Add Item / Edit Item Entry screens.
 - **Haptic feedback:** subtle tap on Primary actions (Add Item, Mark Paid, Void). Use `navigator.vibrate(10)` if available.
 - **Transitions:**
   - Detail drill-in: push from right
   - Bottom sheet: slide up from bottom
   - Dismissal: reverse of entry
   - No fade-in for primary navigation — feels slow
-- **Error states:** inline text below the field, red color, never a popup
+- **Inline Field Error:** small red text directly below the field (footnote 13px, `--color-danger`, `margin-top: --space-xs`), shown only after the user has typed something invalid. Never a popup. Auto-clears when the field becomes valid. Implementation: any of the four current classes (`.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error`) — they're aliases pending unification.
+- **Text wrapping:** body uses `text-wrap: pretty` to rebalance line breaks and avoid orphan words at paragraph ends (v174). Older browsers no-op gracefully.
+- **Center-alignment:** never on regular text inputs (matches Apple Wallet / Venmo / Instagram). The single exception is OTP/code inputs (`.join-code-input`), which follow the iOS SMS-code pattern.
 
 ## §1.6 Consignor rules
 
@@ -212,13 +274,12 @@ Consignors are a real-world requirement per Alissa's feedback from estate sale o
 
 ### Specific UX rules
 
-- **Setup page:** "Add consignors" is a first-class step, not buried. Tap "+ Add Consignor" → type name → done. Add as many as needed. Skip if none.
+- **Setup page:** "Add consignors" is a first-class step, not buried. Tap "+ Add Consignor" → fill the consignor sheet → done.
 - **Inline at item entry:** if sale has ≥1 consignor, the consignor chip appears above the "Add Item" button. Default: last-used consignor for this session. Tap chip to change (opens bottom-sheet picker).
 - **Editable post-entry:** every item row in an order shows its consignor chip. Tap to edit — even for paid orders.
-- **Add consignor retroactively:** from the sale setup page OR from the consignor picker ("+ Add Consignor" option at bottom of picker list).
-- **Per-order default:** sale setup has "Default consignor for new items" (optional single-select). Saves taps for single-consignor orders.
-- **Dashboard:** "Revenue by consignor" is a Grouped List Card on the Dashboard whenever the sale has consignors. Simple rows: Name | $total | # items | % of revenue.
-- **CSV export:** `consignor` column is always included when sale has consignors.
+- **Per-consignor color:** chosen from a 10-color palette via the color-picker chip on the consignor sheet (v173). Color appears as a small dot beside every consignor reference in the app.
+- **Dashboard:** "Revenue by consignor" Grouped List Card whenever the sale has consignors.
+- **CSV export** (future): `consignor` column always included when sale has consignors.
 
 ---
 
@@ -228,6 +289,12 @@ Consignors are a real-world requirement per Alissa's feedback from estate sale o
 
 All tokens live in `css/styles.css` under `:root`. No hardcoded values outside this block. Verified by: grep for hex colors, px values, and font-sizes outside `:root`.
 
+### Migration status of tokens
+
+- ✅ **Defined and used:** the tokens listed below in their respective sections.
+- ⚠️ **Aspirational (defined in this doc, NOT in CSS):** `--shadow-sheet`, `--shadow-floating`, `--duration-default`, `--duration-slow`, `--ease-standard`, `--ease-decelerate`, `--ease-accelerate`. Code uses literals or `var(--duration-fast, 150ms)` (which falls through to the literal). Migrating these into `:root` is part of v177-followup.
+- 🪦 **Dead in CSS, must be removed:** `--transition-fast`, `--transition-normal`, all four `--shadow-*` definitions in current CSS (`--shadow-none`, `--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-qr`) — never referenced. `--color-primary-light` (redundant with `--color-primary-tint`).
+
 ### Colors (iOS system)
 
 ```css
@@ -235,6 +302,7 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
   /* === Surfaces === */
   --color-bg: #F2F2F7;                  /* iOS systemGroupedBackground */
   --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;      /* sheet bg */
   --color-surface-tinted: #F2F2F7;      /* grouped list cards on white bg */
 
   /* === Text === */
@@ -242,15 +310,26 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
   --color-text-secondary: #8E8E93;      /* iOS secondaryLabel */
   --color-text-tertiary: #C7C7CC;       /* iOS tertiaryLabel */
   --color-text-on-primary: #FFFFFF;
-  --color-text-link: #007AFF;           /* iOS systemBlue */
-  --color-text-destructive: #FF3B30;    /* iOS systemRed */
+  --color-text-on-success: #FFFFFF;
+  --color-text-on-danger: #FFFFFF;
+  --color-text-on-dark: #FFFFFF;        /* on scan-bg */
+  --color-text-link: #007AFF;
+  --color-text-destructive: #FF3B30;
 
   /* === Semantic === */
   --color-primary: #007AFF;             /* iOS systemBlue */
+  --color-primary-dark: #0062CC;        /* :active state */
+  --color-primary-tint: rgba(0, 122, 255, 0.15);
   --color-success: #34C759;             /* iOS systemGreen */
+  --color-success-dark: #2A9D43;        /* :active */
+  --color-success-tint: rgba(52, 199, 89, 0.15);
+  --color-success-light: rgba(52, 199, 89, 0.10);
   --color-danger: #FF3B30;              /* iOS systemRed */
+  --color-danger-dark: #C82A22;         /* :active */
+  --color-danger-light: rgba(255, 59, 48, 0.10);
   --color-pending: #FF9500;             /* iOS systemOrange */
-  --color-warning: #FFCC00;             /* iOS systemYellow (rare) */
+  --color-pending-light: rgba(255, 149, 0, 0.10);
+  --color-warning: #FFCC00;
 
   /* === Status pill backgrounds (15% opacity of semantic color) === */
   --color-status-paid-bg: rgba(52, 199, 89, 0.15);
@@ -260,7 +339,7 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
   /* === Borders & dividers === */
   --color-border: #C6C6C8;              /* iOS separator */
   --color-border-focus: var(--color-primary);
-  --color-divider: #E5E5EA;             /* lighter separator (between rows) */
+  --color-divider: #E5E5EA;             /* lighter row divider */
 
   /* === Interactive states === */
   --color-bg-hover: #E5E5EA;
@@ -268,12 +347,19 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
   --color-disabled: #AEAEB2;
 
   /* === Overlays === */
+  --overlay-light: rgba(0, 0, 0, 0.2);
+  --overlay-medium: rgba(0, 0, 0, 0.4);
+  --overlay-dark: rgba(0, 0, 0, 0.6);
+  --overlay-opaque: #000000;
+  --overlay-success: rgba(52, 199, 89, 0.95);
   --overlay-sheet-backdrop: rgba(0, 0, 0, 0.4);
-  --overlay-scan-bg: #000000;
 
-  /* === Button tints (semi-transparent for secondary buttons) === */
-  --color-primary-tint: rgba(0, 122, 255, 0.15);
-  --color-success-tint: rgba(52, 199, 89, 0.15);
+  /* === Special-context === */
+  --color-scan-bg: #000000;
+  --color-scan-border: #FFFFFF;
+  --color-mic-highlight: var(--color-primary);
+  --color-mic-pulse: var(--color-danger);
+  --color-spinner-track: rgba(255, 255, 255, 0.2);
 }
 ```
 
@@ -286,25 +372,40 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
 
   /* Scale */
   --font-size-hero: 56px;         /* running total, today's revenue */
-  --font-size-title-large: 32px;  /* screen titles (Wallet "Balance Details") */
-  --font-size-title: 22px;        /* card titles, section headers */
-  --font-size-body-large: 20px;   /* numpad digits */
-  --font-size-body: 17px;         /* default body text, row labels */
-  --font-size-footnote: 13px;     /* timestamps, helper text, pill labels */
+  --font-size-price: 56px;        /* alias */
+  --font-size-icon-lg: 72px;      /* payment success checkmark */
+  --font-size-icon: 48px;         /* onboarding/speech icons */
+  --font-size-2xl: 32px;          /* screen titles (Wallet "Balance Details") */
+  --font-size-title-large: 32px;  /* alias */
+  --font-size-xl: 22px;           /* card titles, section headers */
+  --font-size-title: 22px;        /* alias */
+  --font-size-lg: 20px;           /* numpad digits */
+  --font-size-body-large: 20px;   /* alias */
+  --font-size-base: 17px;         /* default body text, row labels */
+  --font-size-body: 17px;         /* alias */
+  --font-size-sm: 15px;           /* iOS callout */
+  --font-size-xs: 13px;           /* timestamps, helper text, pill labels */
+  --font-size-footnote: 13px;     /* alias */
   --font-size-caption: 11px;      /* rare — only when space-constrained */
 
   /* Weight */
   --font-weight-regular: 400;
+  --font-weight-normal: 400;      /* alias */
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
   /* Line-height */
-  --line-height-tight: 1.1;       /* hero numbers */
+  --line-height-tight: 1;         /* hero numbers */
+  --line-height-normal: 1.3;
   --line-height-default: 1.4;     /* body */
-  --line-height-relaxed: 1.5;     /* paragraphs */
+  --line-height-relaxed: 1.5;
 }
 ```
+
+**Note:** the `body` element sets `text-wrap: pretty` globally (v174) so paragraphs avoid orphans automatically.
+
+**Outstanding gap:** sheet titles use **28px** (`.sheet__title`, `.sheet__title-input`) which is between `--font-size-xl` (22px) and `--font-size-2xl` (32px). The sheet hero amount uses **48px** (`.sheet__hero-amount`) which is between `--font-size-2xl` and `--font-size-hero`. Both should either become tokens (`--font-size-title-medium: 28px`, `--font-size-display: 48px`) or be reconciled to the existing scale. Tracked for v177-followup.
 
 ### Spacing (7-tier)
 
@@ -336,16 +437,19 @@ All tokens live in `css/styles.css` under `:root`. No hardcoded values outside t
 
 iOS uses almost none. Default is `none`.
 
+**Aspirational (not yet in CSS):**
 ```css
 :root {
-  --shadow-none: none;
-  --shadow-sheet: 0 -4px 20px rgba(0, 0, 0, 0.08);   /* bottom sheets */
-  --shadow-floating: 0 2px 8px rgba(0, 0, 0, 0.06);  /* FABs or true floats, rare */
+  --shadow-sheet: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-floating: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 ```
 
+These need to be added to `:root` and applied to `.sheet` and `.menu-context` instead of the current literal values. Tracked for v177-followup.
+
 ### Motion
 
+**Aspirational (CSS uses literals via `var(--duration-fast, 150ms)` fallback):**
 ```css
 :root {
   --duration-fast: 150ms;
@@ -357,255 +461,224 @@ iOS uses almost none. Default is `none`.
 }
 ```
 
+Promote into `:root` and remove the literal-fallback pattern.
+
 ### Component heights
 
 ```css
 :root {
-  --height-interactive: 48px;        /* buttons, inputs, list rows */
-  --height-interactive-small: 36px;  /* pills, chips (with generous padding) */
-  --height-interactive-large: 56px;  /* primary CTA at bottom */
+  --height-touch-min: 48px;            /* tap-target minimum for everything interactive */
+  --height-button: 48px;               /* sheet buttons, secondary CTAs */
+  --height-input: 48px;
+  --height-numpad-btn: 48px;
+  --height-header-context: 52px;
+}
+```
+
+### Sheet & action-bar layout
+
+```css
+:root {
+  --sheet-top-padding: 40px;
+  --sheet-content-gap: 24px;           /* title → first content */
+  --sheet-content-gap-tight: 16px;     /* small titles → first content */
+  --bottom-action-padding: var(--space-md);          /* 12px */
+  --bottom-action-button-height: 56px;
 }
 ```
 
 ## §2.2 Component library
 
-All components live in `css/styles.css`. All classes prefixed `.ec-`.
+Each component lists:
+- **Target name** (`.ec-*` — what we're migrating toward)
+- **Current name(s)** in shipping code
+- **Status:** 🟢 Migrated / 🟡 Partial / 🔴 Pending
 
 ### Buttons
 
-**`.ec-btn-primary` — Filled Primary Button**
-- Use: the ONE primary action per screen (Add Item, Continue, Mark Paid)
-- Background: `--color-primary` or `--color-success` (green for "add/confirm")
-- Text: `--color-text-on-primary`, semibold, body size
-- Height: `--height-interactive-large` (56px)
+**Filled Primary Button** — 🔴 Pending
+- Target: `.ec-btn-primary`
+- Current: `.action-bar__button--primary`, `.sheet__btn--confirm`, `.entry-screen__confirm`, `.dashboard-action`, `.payment-action--paid`, `.scan-error__retry`, `.start-sale-button`
+- Use: the ONE primary action per screen
+- Background: `--color-success` (green for "add/confirm") or `--color-primary` (blue for navigation/continue)
+- Text: `--color-text-on-primary` (white), semibold, body
+- Height: `--bottom-action-button-height` (56px) when bottom-anchored; `--height-button` (48px) inside sheets
 - Radius: `--radius-md`
-- Width: full-width minus `--space-lg` margins on each side
-- Position: bottom-anchored with `--space-lg` bottom margin
 
-**`.ec-btn-secondary` — Tinted Secondary Button**
-- Use: only when TWO buttons are genuinely paired (rare — Venmo Request/Pay is the archetype)
-- Background: `--color-primary-tint`
-- Text: `--color-primary`, semibold
-- Same height/radius as primary
+**Tinted Secondary Button** — 🔴 Pending
+- Target: `.ec-btn-secondary`
+- Current: `.action-bar__button--secondary`, `.sheet__btn--secondary`, `.payment-action--new`, `.join-sale-button`
+- Use: only when TWO buttons are paired (Setup's Join Sale + Start Sale, sheet Cancel + destructive)
+- Background: `--color-primary-tint` or `--color-surface`
+- Text: `--color-primary` or `--color-text`, semibold
 
-**`.ec-btn-destructive` — Destructive Button**
-- Use: bottom sheet destructive confirmation only ("Delete", "Void", "Cancel Sale")
+**Destructive Button** — 🔴 Pending
+- Target: `.ec-btn-destructive`
+- Current: `.sheet__btn--danger`, `.entry-screen__delete`, `.cancel-confirm__danger`, `.paused-action--end`
+- Use: confirm-destructive sheet primary, Edit Item Delete, end-sale buttons
 - Background: `--color-danger`
-- Text: white, semibold
-- Same height/radius
+- `:active` background: `--color-danger-dark`
 
-**`.ec-link-primary` — Blue Text Link**
-- Use: non-destructive secondary actions inside detail screens and cards
-- Color: `--color-primary`, semibold, body size
-- No background, no border
-- Padding: `--space-md` vertical, 0 horizontal (hit area generous, visual minimal)
+**Blue Text Link** — 🔴 Pending
+- Target: `.ec-link-primary`
+- Current: `.sheet__action-link`, `.qr-action-link`, `.dashboard-tab-link`, `.consignor-list__add`, `.setup-card__action-link`
+- Color: `--color-primary`, semibold, body
 
-**`.ec-link-destructive` — Red Text Link**
-- Same as blue link but `--color-danger`
-- Use: "Void Order", "Delete Sale" inside detail screens
+**Red Text Link** — 🔴 Pending
+- Target: `.ec-link-destructive`
+- Current: `.sheet__action-link--danger`, `.order-actions__clear`, `.item-sheet-actions .clear-link`, `.setup-card__action-link--remove`, `.paused-action--dashboard` (cosmetic destructive — review)
+- Color: `--color-danger`, semibold, body
 
 ### Inputs
 
-**`.ec-input` — Text Input (Wallet/Venmo modern pattern)**
+**Text Input** — 🔴 Pending
+- Target: `.ec-input` (single canonical class)
+- Current: `.consignor-form__input`, `.entry-screen__input`, `.setup-section__input`, `.haggle-input`, `.invoice-discount__input`, `.join-code-input`, `.consignor-form__payout-input`, `.discount-row__input`, `.sheet__input`
+- Background: `--color-surface-tinted`
+- Border: 1px `--color-divider` at rest
+- Focus: white bg + 1px `--color-primary` border
+- Height: `--height-input` (48px). `.discount-row__input` is intentionally 32px — flag as a `.ec-input--compact` modifier when migrated.
+- Required hardening (per v148 lessons): `box-sizing: border-box`, `min-width: 0`, `-webkit-appearance: none`, `appearance: none`
 
-Reference: Apple Wallet "Card Details", Venmo "What's this for?", Facebook Marketplace listing form. The dominant post-iOS-15 pattern is **tinted background, no border at rest** — a clean, low-chrome look. White-with-border is the older Settings-app pattern and feels heavier.
+**Variants when migrated:**
+- `.ec-input--center` — for OTP/code-style inputs only (`.join-code-input`)
+- `.ec-input--bold` — for prominent amount entry
+- `.ec-input--with-action` — `padding-right: 56px` for inline icon button (mic, clear-X)
+- `.ec-input--hero` — no bg/border, 56px font (Add Item hero amount)
+- `.ec-input--compact` — 32px height (inline discount edit)
 
-- Background: `--color-surface-tinted` (light gray; iOS `secondarySystemBackground`)
-- Border: **1px solid `--color-divider`** at rest (very faint, primarily for affordance — without it, pre-populated inputs like date pickers read as static text instead of tappable fields)
-- On focus: background flips to `--color-surface` (white), border becomes 1px solid `--color-primary`
-- Height: `--height-interactive` (48px)
-- Radius: `--radius-md` (10px)
-- Padding: 0 `--space-lg`
-- Font: body size (17px), regular, color `--color-text`
-- Required: `box-sizing: border-box`, `min-width: 0`, `-webkit-appearance: none`, `appearance: none` — the iOS Safari shadow-DOM lessons from v148 are now table stakes for every input.
-- Label: above the input, footnote (13px) semibold uppercase secondary color (iOS Settings caps style). Avoid placing both a label AND a placeholder — pick one source of truth.
-
-**Variants:**
-- `.ec-input--center` — `text-align: center` for amount inputs in centered sheets (haggle, invoice discount)
-- `.ec-input--bold` — bold weight (for prominent amount entry)
-- `.ec-input--with-action` — `padding-right: 56px` to make room for an inline icon button (mic, clear-X)
-- `.ec-input--hero` — no background, no border, 56px font, used for the giant hero amount on Entry screens (Add Item)
-
-**States:**
-- `:disabled` — `opacity: 0.5; pointer-events: none`
-- `:invalid` — `border: 1px solid --color-danger` (replaces focus border)
+**Inline Field Error** — 🔴 Pending
+- Target: `.ec-field-error`
+- Current: `.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error`
+- Footnote red text below the field, `margin-top: --space-xs`, `hidden` by default
 
 ### Pickers
 
-**Native HTML controls (`<select>`, `<input type="date">`) are not used as visible UI** — they look out-of-place in an otherwise iOS-native app. Native `<input type="date">` is allowed because the platform picker it opens IS native iOS, but the input itself must be styled with `appearance: none` to prevent shadow-DOM width overflow on iOS (per v148 fix).
+**Picker Button** — 🟢 Migrated
+- Class: `.ec-picker-button` (with `.ec-picker-button__label` and `.ec-picker-button__chevron`)
+- Tappable pill that opens a Picker List bottom sheet
+- Visual: matches `.ec-input` — tinted bg, no border at rest
+- Used by: payout type, consignor color, future export options
 
-**`.ec-picker-button` — Tappable picker that opens a bottom sheet**
+**Picker List + Item** — 🟢 Migrated
+- Class: `.ec-picker-list` / `.ec-picker-item` (with `__label`, `__hint`, `__check`)
+- Bottom-sheet selection rows
+- Each row 48px min, full-width, `--space-lg` horizontal padding
+- Selected: trailing checkmark visible (`.ec-picker-item--selected`)
 
-Use anywhere a native `<select>` would otherwise appear. Visually mirrors `.ec-input` for consistency.
+**Color Picker** — 🔴 Pending
+- Target: `.ec-color-picker` / `.ec-color-dot`
+- Current: `.consignor-form__colors` (grid of swatches inside the color picker sheet — v173) and `.consignor-color-chip` (the tappable chip on the consignor form that opens the color picker sheet)
+- Each dot 40×40 in the picker, 20×20 in the chip preview (no `--dot-*` token yet — see Token gaps)
+- Selected dot: 2px solid `--color-text` ring + 2px white inset
 
-- Background: `--color-surface-tinted`
-- Border: none at rest; 1px primary border on `:active`
-- Height: `--height-interactive` (48px)
-- Radius: `--radius-md` (10px)
-- Padding: 0 `--space-lg`
-- Layout: flex row — leading icon/dot (optional), label (body, regular, primary text), chevron-down at right (`--color-text-secondary`)
-- Tapping opens a bottom-sheet picker (see below) and updates a hidden input or data state on selection.
-
-**`.ec-picker-list` / `.ec-picker-item` — Bottom-sheet picker rows**
-
-Standardizes the bottom-sheet selection pattern across the app (currently the consignor picker; will also be used for payout type, future filter pickers, etc.).
-
-- Container: `.ec-picker-list` — `<ul>`, no list style, no padding, divider between items
-- Each row: `.ec-picker-item`, 48px min height, full-width, `--space-lg` horizontal padding
-- Layout: optional leading icon/dot, label (body, regular), trailing checkmark (✓) when selected, secondary tint
-- Active state: `--color-bg-hover` background
-
-**`.ec-color-picker` / `.ec-color-dot` — Color swatch grid**
-
-For consignor color picker. Already a clean implementation — codified here as the canonical pattern.
-
-- Container: `.ec-color-picker` — flex row, `--space-md` gap, wraps
-- Each dot: `.ec-color-dot`, 32×32 circle, `border-radius: 50%`
-- Selected: 2px solid `--color-text` ring + 2px white inset (creates floating ring)
-
-**`.ec-numpad` — Custom Numpad (Checkout only)**
+**Numpad** — 🔴 Pending
+- Target: `.ec-numpad` / `.ec-numpad-key`
+- Current: `.numpad`, `.numpad__button`, `.numpad__button--backspace`
 - Grid: 4 rows × 3 cols, `--space-sm` gap
-- Key size: 64×64 min
-- Key: `.ec-numpad-key`
-  - Background: `--color-surface`
-  - Border: 1px solid `--color-divider`
-  - Font: `--font-size-body-large`, regular
-  - Color: `--color-text`
-- Special keys (backspace, decimal): `--color-surface-tinted` background
-- No labels below keys — just the digit/icon
+- Key: `--height-numpad-btn` (48px), `--font-size-lg`, `--color-surface` bg, 1px `--color-divider` border
+- Backspace key: SVG icon (v170), centered
 
 ### Containers
 
-**`.ec-card` — Grouped List Card**
+**Grouped List Card** — 🔴 Pending
+- Target: `.ec-card` / `.ec-card__row`
+- Current: `.setup-card`, `.payouts__card`, `.consignor-revenue`, `.dashboard-stats` (each is a card archetype with slightly different inner padding)
 - Background: `--color-surface`
 - Radius: `--radius-lg`
-- Padding: 0 (content has its own padding)
-- No shadow
-- Optional 1px `--color-border` around for emphasis
-- Rows inside: 48px min height, full-width, `--space-lg` horizontal padding
-- Between rows: 1px `--color-divider` inset `--space-lg` from left (iOS-style)
-- Max 7 rows — split into separate cards above that
+- Rows inside: 48px min height, `--space-lg` horizontal padding
+- Between rows: 1px `--color-divider`, inset from left by icon+gap width when icons are present
 - Stack gap between cards: `--space-2xl`
 
-**`.ec-card__row` — Card Row**
-- Flex, space-between, `--space-lg` gap
-- Label (left): body size, regular, `--color-text`
-- Value (right): body size, regular, `--color-text` (tabular-nums for amounts)
+**Setup Card** — 🟡 Partial (named `setup-card-*` not `ec-card`, but the *row variants are well-defined*)
+- Class: `.setup-card`
+- Row variants:
+  - `.setup-card__row--input` — input field as a row
+  - `.setup-card__row--toggle` — checkbox/toggle as a row
+  - `.setup-card__row--action` — full-width tappable action ("+ Add Day", "+ Add Consignor")
+  - `.setup-card__row--split` — paired controls (Add on left, Remove toggle on right) — Edit Mode entry point
+
+**Section Header (eyebrow label)** — 🔴 Pending
+- Target: `.ec-section-header`
+- Current: `.setup-section__header`, `.consignor-form__label`, `.edit-sale__label`, `.dashboard-stat__label`, `.consignor-revenue__title`, `.payouts__card-header`
+- Style: 13px (`--font-size-xs`) semibold uppercase, letter-spacing 0.5px, `--color-text-secondary`
+- Margin-bottom: `--space-xs`. Margin-top within a sheet form: `--space-xl` (v175 fixed the consignor squish here).
 
 ### Status
 
-**`.ec-pill-status` — Status Pill**
+**Status Pill** — 🔴 Pending
+- Target: `.ec-pill-status` with variants `--paid`, `--pending`, `--voided`, `--open`, `--cancelled`, `--edited`
+- Current: `.dashboard-txn__status` with variants `--paid`, `--open`, `--unpaid`, `--edited`, `--cancelled`
 - Shape: `--radius-pill`
 - Padding: `--space-xs` `--space-sm`
-- Font: `--font-size-footnote`, semibold
-- Gap: `--space-xs` between icon and label
-- Variants:
-  - `.ec-pill-status--paid`: bg `--color-status-paid-bg`, text+icon `--color-success`, label "Paid" + check icon
-  - `.ec-pill-status--pending`: bg `--color-status-pending-bg`, text+icon `--color-pending`, label "Pending" + dot icon
-  - `.ec-pill-status--voided`: bg `--color-status-voided-bg`, text+icon `--color-danger`, label "Voided" + x icon
+- Font: `--font-size-xs`, semibold
+- Layout: small dot/icon + label
+- Backgrounds: `--color-status-paid-bg` / `--color-status-pending-bg` / `--color-status-voided-bg` / etc.
+
+**Outstanding:** the doc historically listed 3 statuses (paid/pending/voided); shipping code has 5. Reconcile when migrating: which is the canonical set? Likely the 5 are right (Open and Edited are real states); update the token list.
 
 ### Controls
 
-**`.ec-segmented` — Segmented Pill Control**
-- Container: full-width, `--color-surface-tinted` bg, `--radius-pill`, `--space-xs` padding
-- Inner pills: `.ec-segmented__option`, flex-1, `--radius-pill`
-- Active pill: `--color-surface` bg, `--shadow-floating`, semibold text
-- Inactive pills: transparent bg, regular weight, `--color-text-secondary`
-- Use for: view switching (2-4 options max)
+**Filter Pill (Dashboard)** — 🟡 Partial
+- Class: `.dashboard-pill` (with `.dashboard-pill__label`, `.dashboard-pill__chevron`)
+- Used for both Filter (opens Picker List sheet) and Sort (toggles direction)
+- Note: replaces the older `.ec-segmented` and `.ec-chips` ideas, which were never implemented and would have overflowed on narrow viewports
 
-**`.ec-chips` — Horizontal Filter Chips**
-- Container: scrollable row, `--space-md` gap, no visible scrollbar
-- Each chip: `.ec-chip`
-  - Background: `--color-surface`
-  - Border: 1px `--color-border`
-  - Radius: `--radius-pill`
-  - Padding: `--space-sm` `--space-md`
-  - Font: footnote, semibold
-  - Icon + label inline, `--space-xs` gap, optional count badge on right
-- Active chip: `--color-primary` bg, white text, no border
-
-**`.ec-chip-selector` — Inline Chip Selector (e.g. consignor chip)**
-- Pill-shaped, tap to open picker
+**Inline Chip Selector (consignor)** — 🔴 Pending
+- Target: `.ec-chip-selector`
+- Current: `.consignor-chip` (with `__dot`, `__label`, `__prefix`, `__name`, `__chevron`)
+- Pill-shaped, tap to open Picker List sheet
 - Background: `--color-surface-tinted`
 - Border: 1px `--color-border`
 - Padding: `--space-sm` `--space-md`
-- Font: body size, semibold
-- Icon (left) + label + chevron down (right)
+- Layout: leading dot + "Consigned by" prefix + name + chevron-down
 
 ### Overlays
 
-**`.ec-sheet` — Bottom Sheet**
-- Radius: `--radius-xl` on TOP corners only, 0 on bottom
-- Background: `--color-surface`
-- Shadow: `--shadow-sheet`
-- Handle indicator: 36×5, `--color-text-tertiary`, `--radius-pill`, centered at `--space-md` from top
-- Padding: `--space-lg`
-- Backdrop: `--overlay-sheet-backdrop`
-- Max height: 80dvh, content scrolls
-- **Top padding:** `--sheet-top-padding` (40px) on every sheet variant (regular, `--detail`, `--menu`). Defines the space from the top edge of the sheet to where content (title or first row) begins. Clears the 5px handle indicator with breathing room above and below. Per-sheet styles must NOT override this — only side/bottom padding.
-- **Title-to-content gap:** `--sheet-content-gap` (24px) for normal-sized titles, `--sheet-content-gap-tight` (16px) for `.sheet__title--small` (terse confirms). Applied via `margin-bottom` on the title element. Every sheet inherits this — first content child should not override `margin-top`.
+**Bottom Sheet** — 🟡 Partial
+- Class: `.sheet` (variants: `.sheet--detail` for left-aligned, `.sheet--menu` for grouped-list nav)
+- See §1.4.H for the full archetype spec.
+- Naming is *not* `.ec-sheet` because the .sheet name is in heavy use across HTML/JS/CSS. Consider this a deliberate exception when migrating; rename only if the migration cost is low.
 
-**`.ec-menu-context` — Context Menu (iOS native popover)**
-- Small floating panel, `--radius-lg`, `--color-surface` bg
-- Max 5 options, each a row with icon + label
-- Destructive options: red text, separated from non-destructive by a divider
-- Shadow: `--shadow-floating`
-- Backdrop blur if feasible (iOS-native feel)
+**Hamburger Menu Sheet** — 🟢 Migrated (sub-components)
+- Wrapper: `.sheet--menu`
+- Inner classes: `.ec-menu-list`, `.ec-menu-item` (with `__icon`, `__label`, `__chevron`), `.ec-menu-saleblock` (sale identity block at top)
+- Item modifiers: `.ec-menu-item--primary` (green End Day), `.ec-menu-item--danger` (red End Sale Permanently)
 
-### Bottom Action Bar (V2 §1.4.J)
+**Context Menu (popover)** — 🔴 Not implemented
+- Target: `.ec-menu-context`
+- Use case for the future: long-press on transaction row → Mark Paid / Void / Delete
+- Currently destructive actions live as expanded action links inside `.dashboard-txn` rows. Migrating to context menu is a UX call, not strictly required.
 
-Every screen with a fixed CTA at the bottom uses one shape:
-
-- Container: `padding: var(--bottom-action-padding)` (12px) on all sides; bottom padding adds `env(safe-area-inset-bottom, 0px)` for the iOS home indicator.
-- Background: `--color-surface` (or `--overlay-opaque` on Scan, since the camera feed is dark).
-- Border: 1px top divider matching the screen's bg.
-- Buttons: `var(--bottom-action-button-height)` (56px). Full width or split row, never smaller than 56px.
-
-**Don't ad-hoc the bar height per screen.** Every fixed bottom CTA — Setup, Checkout, Dashboard, Scan, Paused — uses the same vertical shape so the user's thumb lands in the same place across screens.
-
-### Edit Mode (batch delete pattern, V2 §1.4.I)
-
-**Use this whenever a list section needs a way to remove rows in bulk.** Currently used by Sale Days and Consignors on the Setup screen. Replaces swipe-to-delete (which we removed in v168 because hidden gestures fail the design philosophy).
-
-**Anatomy:**
-- The section's action row has a `+ Add` button on the left and a `Remove` button on the right (`.setup-card__action-link--remove`, red text, no border).
-- The `Remove` button is hidden when there's nothing to delete (e.g., zero consignors, single day).
-- Tapping `Remove` flips the section into edit mode: the toggle becomes `Done`, every row gets a red minus circle (`.row-edit-handle`) on the left.
-
-**Two-tap delete:**
-1. Tap the minus circle on a row → row becomes "armed". The right side switches from its normal content (e.g., `+ Add Discount`, payout label) to a red `Remove` button (`.row-edit-confirm`).
-2. Tap the red `Remove` → row deletes. Toggle stays in edit mode for further deletions; if no removable rows remain, edit mode auto-exits.
-3. Tap the minus on an armed row to un-arm. Tap `Done` to exit edit mode entirely.
-
-**Why two taps:** these are persistent destructive operations on shared sale state. One-tap minus is too easy to mis-fire on a phone. The armed state gives an obvious visual "are you sure" without a separate confirm sheet.
-
-**While in edit mode, the row's normal interactions are suppressed** — the user can't accidentally open a date picker or detail sheet. Add controls (`+ Add Day`, `+ Add Consignor`) stay live so the user can interleave adds and removes.
-
-**Don't reinvent this** — when you need batch delete on a new list, use `.row-edit-handle` + `.row-edit-confirm` and pair it with a `.setup-card__row--split` action row.
+**Flash Toast** — 🟡 Partial
+- Class: `.flash` with `.flash--success` / `.flash--error`
+- Centered fixed toast, used only for ephemeral confirmations like "Added!"
+- See principle 1.1.6 — this is the documented exception. Don't use for navigation-completion or status transitions.
 
 ### Special
 
-**`.ec-hero-number` — Hero Number**
+**Hero Number** — 🔴 Pending
+- Target: `.ec-hero-number`
+- Current: `.running-total__amount` (Checkout), `.payment-total__amount` (Payment), `.qr-hero` (QR), `.dashboard-stat__value` (Dashboard stats), `.payouts__card-* > stat` (Payouts), `.entry-screen__hero` (Add Item)
 - Font family: `--font-family-number`
-- Size: `--font-size-hero` (56px)
+- Size: 56px (use `--font-size-hero`); some smaller hero numbers use 32px (`--font-size-2xl`)
 - Weight: `--font-weight-bold`
 - Color: `--color-text`
 - Line-height: `--line-height-tight`
 - `font-variant-numeric: tabular-nums`
 - Currency symbol inline, 0.6× the number size
 
-**`.ec-empty-state` — Empty State**
-- Centered vertically in parent
-- Icon: 64×64, outline style, `--color-text-secondary`
-- Heading: `--font-size-title`, semibold, `--color-text`
-- Helper: body, regular, `--color-text-secondary`, max 2 lines, centered
-- Optional single `.ec-link-primary` below helper
+**Empty State** — 🔴 Pending (and inconsistent in code)
+- Target: `.ec-empty-state` / `.ec-empty-state__icon` / `.ec-empty-state__title` / `.ec-empty-state__helper`
+- Current: `.dashboard-empty`, `.payouts__empty` / `.payouts__empty-title`, `.item-list__empty` / `.item-list__empty-helper` — all bespoke per-screen
+- Spec: centered vertically, 64×64 icon (outlined, `--color-text-secondary`), title (font-size-xl, semibold), helper (body, secondary, max 2 lines, `text-wrap: pretty`)
+- Optional single text link below helper
 
 ## §2.3 File structure & implementation rules
 
 ### CSS organization
 - `css/styles.css` contains: tokens → base styles → component classes → screen-specific overrides
-- All components prefixed `.ec-` (no exceptions)
+- **Naming convention:** target is `.ec-*` for everything in §2.2. Until each component migrates, the legacy class names ship. **New components introduced after this revision MUST use the `.ec-*` name from day one.**
 - No inline styles in HTML except genuinely dynamic values (computed widths, transition states)
 - No `style=""` injection from JS except for dynamic cases
 
@@ -618,50 +691,39 @@ Every screen with a fixed CTA at the bottom uses one shape:
 ### JS conventions
 - No style generation inline; toggle classes instead
 - Animations via CSS transitions; JS only for complex state choreography
-- State via class-based modifiers: `.is-active`, `.is-disabled`, `.is-loading`, `.is-selected`
+- State via class-based modifiers: `.is-active`, `.is-disabled`, `.is-loading`, `.is-selected`, `.--editing`, `.--armed`
 
 ### When adding new UI
 
-1. **Does an existing component fit?** Use it. (Answer: yes, 95% of the time.)
-2. **Is it a new variant of an existing component?** Add a modifier class (e.g. `.ec-btn-primary--large`). Do not duplicate.
-3. **Is it truly new?** Update this doc FIRST. Then build.
+1. **Does an existing component fit?** Use it. (Answer: yes, 95% of the time.) Use the **legacy class name** if listed in §2.2; use the `.ec-*` target name if the component has migrated.
+2. **Is it a new variant of an existing component?** Add a modifier class (e.g. `.ec-btn-primary--large`, or `.consignor-form__input--small` if pre-migration). Do not duplicate the base.
+3. **Is it truly new?** Add it to §2.2 FIRST (target name, spec). Then build using the `.ec-*` target name from the start. Then add a row to §3.2 marking the new component as "shipped at vNN."
 
 ### When adding a new screen
 
-1. Identify the archetype (§1.4, A–H)
+1. Identify the archetype (§1.4, A–K)
 2. Assemble from existing components in §2.2
 3. If the archetype fits, do not invent a new one
-
-### When adding a new interaction
-
-1. Check §1.5 interaction rules
-2. If unclear, default to native iOS behavior
-3. Never invent novel interactions for core flows
+4. If a new archetype is required (rare), add it to §1.4 first with motivation
 
 ## §2.3a Inter-element spacing
 
-The 7-tier spacing scale (§2.1) defines token *values*. This section defines *which tier to use* for the gaps between components within a screen or sheet — the rules that prevent components from visually crashing into each other.
+The 7-tier spacing scale (§2.1) defines token *values*. This section defines *which tier to use* for the gaps between components within a screen or sheet.
 
 ### Within a sheet (Bottom Sheet, §1.4.H)
+- Title → first content element: `--sheet-content-gap` (24px) for normal titles, `--sheet-content-gap-tight` (16px) for `.sheet__title--small`. Applied via `margin-bottom` on the title.
+- Form section → next form section (label-to-label): `--space-xl` (20px) `margin-top` on the label (v175 fixed the consignor squish here).
+- Within a section (label → input): `--space-xs` (4px) `margin-bottom` on the label.
+- Last content element → button group: `--space-lg` (16px). Enforced via default `margin-top: var(--space-lg)` on `.sheet__buttons`.
+- Inside the button group itself: gap `--space-md` (12px) between buttons.
 
-- Title → first content element: `--space-md` (12px) below the title
-- Between content sections (input ↔ input, input ↔ row, text block ↔ row): `--space-md` (12px) minimum
-- Last content element → button group: `--space-lg` (16px). This is enforced via a default `margin-top: var(--space-lg)` on `.sheet__buttons`.
-- Inside the button group itself: gap `--space-md` (12px) between buttons
-
-### Within a screen (List, Detail, Entry, Setup, Confirmation)
-
+### Within a screen (List, Detail, Entry, Setup, Confirmation, Archive)
 - Hero element → first content element: `--space-xl` (20px)
-- Between major sections (input block ↔ numpad, numpad ↔ chip selector, chip ↔ primary action): `--space-lg` (16px) minimum, `--space-xl` (20px) preferred when vertical room permits
-- Between Setup form sections (Sale Name → Dates → Schedule → Consignors): `--space-2xl` (28px). Already enforced by `.setup-section { margin-bottom: var(--space-2xl) }`.
+- Between major sections: `--space-lg` (16px) minimum, `--space-xl` (20px) preferred
+- Between Setup form sections: `--space-2xl` (28px). Already enforced by `.setup-section { margin-bottom: var(--space-2xl) }`.
 
-### Inline chip selectors (`.ec-chip-selector`)
-
-A chip selector that follows another major component (numpad, input block, picker) MUST have `margin-top: var(--space-lg)` minimum. The chip's `margin-bottom` (already set) handles separation from the next element.
-
-### Why these are explicit
-
-Without these rules, components defined in §2.2 with no inherent margin can end up touching each other when composed into a screen. Each component should be self-contained but spaced via these rules. Violations show up as visual crashes (chip touching numpad, button touching input) — usually a sign the rule is being skipped, not that the rule is wrong.
+### Inline chip selectors (consignor chip)
+A chip selector that follows another major component (numpad, input block, picker) MUST have `margin-top: var(--space-lg)` minimum.
 
 ## §2.4 Quality gates
 
@@ -669,46 +731,88 @@ Before any commit/deploy, verify:
 
 - [ ] No hardcoded hex colors outside `:root`
 - [ ] No hardcoded px sizes outside `:root` (positioning offsets are OK)
-- [ ] No font-sizes outside the type scale
+- [ ] No font-sizes outside the type scale (or the documented 28px / 48px exceptions, pending tokenization)
 - [ ] All interactive elements meet 48×48 min tap target
 - [ ] Semantic colors (green/orange/red) used only for status, never decoration
 - [ ] Every screen has exactly one hero element
 - [ ] Every screen has at most one bottom-anchored primary action
 - [ ] No nested cards
-- [ ] No "Success!" modals
-- [ ] All destructive actions confirmed via bottom sheet + red text
-- [ ] Status pills use icon + label + color (all three)
-- [ ] No drop shadows except bottom sheets and (rare) floating elements
+- [ ] No "Success!" modals (Flash toast is OK only for ephemeral micro-confirmations)
+- [ ] All destructive actions confirmed via Confirm Destructive Sheet (§1.4.H)
+- [ ] Status pills use icon/dot + label + color (all three)
+- [ ] No drop shadows except bottom sheets (`--shadow-sheet`) and (rare) floating elements (`--shadow-floating`)
 - [ ] All interactive elements have `:focus` states for keyboard accessibility
+- [ ] **Migration:** new components introduced after v177 use the `.ec-*` target name from day one (not a legacy name)
+- [ ] **Cohesion:** if you touched a sheet, it conforms to §1.4.H (handle indicator, top padding, content gap, button stack, no Cancel except in Confirm Destructive variant)
 
-## §2.5 Migration plan (from current build to V2)
+---
 
-### Files affected
-- `css/styles.css` — full token replacement, component class rewrite
-- `index.html` — class name updates (old `.status-badge` → `.ec-pill-status`, etc.)
-- `js/checkout.js`, `js/dashboard.js`, etc. — class toggles updated where needed
+# PART 3 — MIGRATION
 
-### Migration order (execute sequentially)
+## §3.1 Migration status
 
-1. **Palette + typography token swap** — replace `:root` values only. No structural change. Vibe shift is immediate and evaluable on-phone.
-2. **Screen title pass** — swap existing titles to `--font-size-title-large` bold style (Wallet-style)
-3. **Status pills** — replace all status badges with `.ec-pill-status` variants
-4. **Checkout screen** → Entry Screen archetype (Venmo pattern): hero total + numpad + consignor chip + bottom CTA
-5. **Order detail sheet** → Detail Screen archetype (Wallet pattern): header + status pill + item card + metadata card + action links
-6. **Dashboard** → List Screen archetype (Wallet Activity pattern): hero revenue card + segmented control + filter chips + transaction list
-7. **QR handoff** → Confirmation Screen archetype: explicit copy, single alternate action link
-8. **Context menu** for Mark Paid / Void / Delete — replace any existing "more" menus
-9. **Bottom-sheet destructive confirmations** — replace any existing modal dialogs
-10. **Consignor UX pass** — promote chip inline at entry, make editable post-paid, add retroactive assignment
+The `.ec-*` component naming convention was introduced as the design target in the V2 redesign (v128, 2026-04-23). As of v177 (2026-04-28), **two component families have fully migrated:** `.ec-menu-*` (hamburger menu rows + sale identity block) and `.ec-picker-*` (bottom-sheet picker button + list). Everything else uses legacy class names.
 
-### Checkpoint after step 3
+The drift between this doc and the code is intentional going forward — this doc names the *target*; the code ships toward it one family per version.
 
-After the palette/typography/pills are in, stop. Evaluate on phone. If the vibe shift doesn't feel right, reconsider BEFORE doing structural work (steps 4–10). This is cheap insurance against committing hours to a direction that doesn't land.
+## §3.2 Migration roadmap
+
+| Component family | Target name | Current name(s) | Status | Migrates in |
+|---|---|---|---|---|
+| Filled Primary Button | `.ec-btn-primary` | `.action-bar__button--primary`, `.sheet__btn--confirm`, `.entry-screen__confirm`, `.dashboard-action`, `.payment-action--paid`, `.start-sale-button` | 🔴 Pending | v178 |
+| Tinted Secondary Button | `.ec-btn-secondary` | `.action-bar__button--secondary`, `.sheet__btn--secondary`, `.payment-action--new`, `.join-sale-button` | 🔴 Pending | v178 |
+| Destructive Button | `.ec-btn-destructive` | `.sheet__btn--danger`, `.entry-screen__delete`, `.paused-action--end` | 🔴 Pending | v178 |
+| Blue Text Link | `.ec-link-primary` | `.sheet__action-link`, `.qr-action-link`, `.dashboard-tab-link`, `.consignor-list__add`, `.setup-card__action-link` | 🔴 Pending | v178 |
+| Red Text Link | `.ec-link-destructive` | `.sheet__action-link--danger`, `.order-actions__clear`, `.setup-card__action-link--remove` | 🔴 Pending | v178 |
+| Text Input | `.ec-input` | `.consignor-form__input`, `.entry-screen__input`, `.setup-section__input`, `.haggle-input`, `.invoice-discount__input`, `.join-code-input`, `.sheet__input`, `.discount-row__input` | 🔴 Pending | v179 |
+| Inline Field Error | `.ec-field-error` | `.entry-screen__error`, `.setup-section__error`, `.sheet__field-error`, `.join-code-status--error` | 🔴 Pending | v179 |
+| Grouped List Card | `.ec-card` | `.setup-card`, `.payouts__card`, `.consignor-revenue` | 🔴 Pending | v180 |
+| Card Row | `.ec-card__row` | `.setup-card__row` (+ variants), `.payouts__row`, `.consignor-list__item` | 🔴 Pending | v180 |
+| Section Header | `.ec-section-header` | `.setup-section__header`, `.consignor-form__label`, `.edit-sale__label`, `.dashboard-stat__label`, `.consignor-revenue__title` | 🔴 Pending | v180 |
+| Status Pill | `.ec-pill-status--*` | `.dashboard-txn__status--*` (5 variants) | 🔴 Pending | v181 |
+| Inline Chip Selector | `.ec-chip-selector` | `.consignor-chip` | 🔴 Pending | v181 |
+| Color Picker | `.ec-color-picker` / `.ec-color-dot` | `.consignor-form__colors`, `.consignor-color-chip`, `.consignor-form__color-dot` | 🔴 Pending | v181 |
+| Numpad | `.ec-numpad` / `.ec-numpad-key` | `.numpad`, `.numpad__button` | 🔴 Pending | v182 |
+| Hero Number | `.ec-hero-number` | `.running-total__amount`, `.payment-total__amount`, `.qr-hero`, `.dashboard-stat__value`, `.entry-screen__hero` | 🔴 Pending | v182 |
+| Empty State | `.ec-empty-state` | `.dashboard-empty`, `.payouts__empty`, `.item-list__empty` | 🔴 Pending | v182 |
+| Flash Toast | `.ec-flash` | `.flash`, `.flash--success`, `.flash--error` | 🔴 Pending | v182 |
+| Hamburger Menu | `.ec-menu-*` | (target name in use) | 🟢 Migrated | v152 |
+| Picker Button + List | `.ec-picker-*` | (target name in use) | 🟢 Migrated | v149 |
+| Bottom Sheet | `.sheet` (kept as exception) | `.sheet`, `.sheet--detail`, `.sheet--menu` | 🟡 Exception | — |
+| Context Menu (popover) | `.ec-menu-context` | (not yet implemented) | 🔴 Not built | v183 (if/when needed) |
+
+**Token migration (separate from component migration), tracked for v177-followup:**
+- Add to `:root`: `--shadow-sheet`, `--shadow-floating`, `--duration-default`, `--duration-slow`, `--ease-standard`, `--ease-decelerate`, `--ease-accelerate`, `--font-size-title-medium` (28px), `--font-size-display` (48px)
+- Remove from `:root`: `--transition-fast`, `--transition-normal`, dead `--shadow-*` tokens, redundant `--color-primary-light`
+- Apply: replace literal `var(--duration-fast, 150ms)` with `var(--duration-fast)` once `--duration-fast` is a real token
+
+## §3.3 What we removed (anti-patterns)
+
+These patterns shipped at some point and have since been removed. Don't reintroduce.
+
+- **Swipe-to-delete** (removed v168). Required a fading "Swipe left to delete" hint to be discoverable, which violates principle 1.1.8 "Native iOS conventions" and the broader "no hidden gestures" stance. Replaced by Edit Mode (§1.4.I).
+- **Cancel buttons in hamburger menu sheets** (removed v170). Sheet dismiss is universal via swipe-down + tap-backdrop. Confirm Destructive sheets retain their Cancel button — different context.
+- **Close X on sheets** (removed v169). Same reason as Cancel — dismissal is universal. The `.sheet--detail` variant kept a close X for a while; now also dismisses via swipe-down only.
+- **Center-aligned text inputs** (removed v174). Doesn't match Apple Wallet / Venmo / Instagram. Single exception is OTP/code-style input (`.join-code-input`).
+- **Hardcoded hex colors outside `:root`** (last two removed v176). `--color-text-on-danger` and `--color-text-tertiary` replace `#fff` and `#aaa`.
+- **Drift in bottom action bar height** (standardized v174 + v176). Five screens were at 56px buttons + 12px padding; Scan, Dashboard, Payment were at 48px + 8px. All now share `--bottom-action-padding` + `--bottom-action-button-height`.
+- **Mid-screen confirmation modals** (banned from the start, but worth restating). Use Confirm Destructive Sheet (§1.4.H sub-archetype).
+
+## §3.4 Open questions
+
+Things this doc doesn't resolve, listed so future passes can address them:
+
+- Should the `.sheet` base class migrate to `.ec-sheet`, or stay `.sheet` as a deliberate exception? Migration cost is high (referenced in HTML, JS, and CSS); benefit is naming consistency. Default: stay.
+- Should `.flash` migrate to `.ec-flash`, or be deprecated entirely if principle 1.1.6 ends up forbidding it? Currently 1.1.6 carves out an exception; revisit if the exception isn't pulling its weight.
+- Status pill canonical state set: 3 (paid/pending/voided) per old doc, or 5 (paid/open/unpaid/edited/cancelled) per shipping code? Default: 5.
+- When Past Sales / Export ships, does the Picker List pattern handle the export-format choice ("CSV / PDF / Email")? Default: yes.
+- The 28px sheet title and 48px sheet hero amount sit between scale tiers. Promote to tokens (`--font-size-title-medium`, `--font-size-display`) or reconcile to existing tiers? Default: promote to tokens.
 
 ---
 
 ## Revision history
 
-| Date | What changed |
-|------|--------------|
-| 2026-04-23 | Initial V2. Direction shift from Tailwind SaaS palette to iOS-native (Apple Wallet + Venmo + FB Creating Event references). Added consignor rules (§1.6) based on Alissa's field feedback. Added banned patterns (§1.2). Added screen archetype catalog (§1.4). Tokens fully replaced with iOS system values. |
+| Version | What changed |
+|---|---|
+| v177 (2026-04-28) | Major restructure. Rewrote §2.2 component catalog to show target + current name + migration status for every component. Added §1.4.I (Edit Mode), §1.4.J (Bottom Action Bar), §1.4.K (Archive — forward-readiness), §1.4.H sub-archetype (Confirm Destructive). Reconciled internal contradictions (sheet max-height, input border state, status pill count). Added §3 Migration Roadmap with per-version rollout. Documented previously-undocumented patterns (Flash toast, Inline Field Error, Section Header, Setup Card row variants). Documented removed anti-patterns. Listed token gaps. |
+| v128 (2026-04-23) | V2: direction shift to iOS-native palette/typography/archetypes. Tokens fully replaced. Consignor rules added. Banned patterns codified. |

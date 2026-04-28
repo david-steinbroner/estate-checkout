@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v176';
+const APP_VERSION = 'v177';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v177',
+    date: '2026-04-28',
+    changes: [
+      'Internal: design system documentation rewritten to honestly track which components have shipped and which are still on the migration roadmap. No user-visible changes.'
+    ]
+  },
   {
     version: 'v176',
     date: '2026-04-28',
