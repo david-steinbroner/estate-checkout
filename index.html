@@ -94,7 +94,7 @@
       <div class="screen-menu-row">
         <button class="screen-menu-btn" id="setup-menu-btn" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
-      <h1 class="setup-header-bar__title">New Sale</h1>
+      <h1 class="setup-header-bar__title">New Estate Sale</h1>
     </div>
 
     <div class="setup-form">
@@ -150,7 +150,7 @@
       <button type="button" class="setup-dashboard-button" id="setup-dashboard-button" hidden>Dashboard</button>
       <div class="setup-actions__row">
         <button type="button" class="ec-btn ec-btn-secondary" id="join-sale-button">Join Sale</button>
-        <button type="button" class="ec-btn ec-btn-primary" id="start-sale-button">Start Sale</button>
+        <button type="button" class="ec-btn ec-btn-primary" id="start-sale-button">Start Estate Sale</button>
       </div>
     </div>
   </div>
@@ -158,11 +158,11 @@
   <!-- Sale Confirmation Sheet -->
   <div class="overlay" id="sale-confirm-modal">
     <div class="sheet">
-      <p class="sheet__title">Sale Confirmation</p>
+      <p class="sheet__title">Setup Confirmation</p>
       <div class="sale-confirm__summary" id="sale-confirm-summary"></div>
       <p class="sale-confirm__hint">You can always edit these details later from the menu.</p>
       <div class="sheet__buttons">
-        <button type="button" class="ec-btn ec-btn-primary" id="sale-confirm-start">Start Sale</button>
+        <button type="button" class="ec-btn ec-btn-primary" id="sale-confirm-start">Start Estate Sale</button>
         <button type="button" class="ec-btn ec-btn-secondary" id="sale-confirm-back">Continue Setup</button>
       </div>
     </div>
@@ -517,7 +517,7 @@
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5l3.5 3.5L7 16.5 3 17l.5-4z"/></svg>
           </span>
-          <span class="ec-menu-item__label">Edit Sale</span>
+          <span class="ec-menu-item__label">Edit Estate Sale</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
         <li class="ec-menu-item" id="menu-whats-new" tabindex="0" role="button">
@@ -575,7 +575,7 @@
   <!-- Edit Sale Sheet -->
   <div class="overlay" id="edit-sale-modal">
     <div class="sheet sheet--detail">
-      <p class="sheet__title">Edit Sale</p>
+      <p class="sheet__title">Edit Estate Sale</p>
       <div class="edit-sale" id="edit-sale-content"></div>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="edit-sale-done">Done</button>
@@ -684,7 +684,7 @@
         </label>
         <label class="invoice-discount__mode">
           <input type="radio" name="ticket-discount-type" value="newprice">
-          <span class="invoice-discount__mode-label">New Price</span>
+          <span class="invoice-discount__mode-label">Set $</span>
         </label>
       </div>
       <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">

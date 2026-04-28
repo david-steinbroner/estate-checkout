@@ -209,7 +209,16 @@ const KeyboardAvoidance = {
     if (keyboardHeight > 50) {
       // Keyboard is open — shift overlays up (skip Add Item sheet)
       document.querySelectorAll('.overlay.visible').forEach(el => {
-        if (el.id === 'add-item-modal' || el.id === 'consignor-modal' || el.id === 'edit-sale-modal') return;
+        // Skip sheets where lifting causes more harm than good — these are
+        // either tall enough that the input is naturally above the keyboard
+        // (Add Item, Edit Sale, Consignor) or so tall that lifting hides
+        // the title (Haggle, Ticket Discount). User can dismiss the keyboard
+        // to see the rest.
+        if (el.id === 'add-item-modal' ||
+            el.id === 'consignor-modal' ||
+            el.id === 'edit-sale-modal' ||
+            el.id === 'haggle-modal' ||
+            el.id === 'ticket-discount-modal') return;
         el.style.bottom = keyboardHeight + 'px';
       });
     } else {

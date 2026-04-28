@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v184';
+const APP_VERSION = 'v185';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v185',
+    date: '2026-04-28',
+    changes: [
+      'Headers and buttons clarified: "New Sale" → "New Estate Sale", "Sale Confirmation" → "Setup Confirmation", "Start Sale" → "Start Estate Sale", "Edit Sale" (in menu and sheet) → "Edit Estate Sale". The word "sale" was overloaded between the multi-day event and a single transaction; calling the event "Estate Sale" everywhere clears it up.',
+      'Invoice Discount sheet: the "New Price" pill is now "Set $" so it fits on one line.',
+      'Invoice Discount and Adjust Price sheets no longer push up when you tap the input field — the keyboard appears under the sheet instead. Dismiss the keyboard to see the bottom of the sheet if needed.',
+      'Date picker on the Sale Days list: picking a date no longer auto-closes the picker. Tap the checkmark (or Done) to confirm — same as iOS native pickers everywhere else.'
+    ]
+  },
   {
     version: 'v184',
     date: '2026-04-28',

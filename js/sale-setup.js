@@ -300,8 +300,14 @@ const SaleSetup = {
       });
     });
 
+    // Native iOS date picker behavior (v185): listen on `blur` rather than
+    // `change`. Change fires as the user scrolls dates inside the picker,
+    // and re-rendering the list mid-pick destroys the input element the
+    // picker is anchored to — closes the picker prematurely. Blur fires
+    // when the user taps Done (the checkmark) or dismisses, which is the
+    // confirmation moment we actually want.
     this.elements.discountList.querySelectorAll('[data-row-picker]').forEach(input => {
-      input.addEventListener('change', () => {
+      input.addEventListener('blur', () => {
         const idx = parseInt(input.dataset.rowPicker);
         const newDate = input.value;
         if (!newDate) return;
