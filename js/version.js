@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v186';
+const APP_VERSION = 'v187';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v187',
+    date: '2026-04-28',
+    changes: [
+      'Every "Sale" reference (buttons, headers, copy) now reads "Estate Sale" — Join Estate Sale, Share Estate Sale, Resume Estate Sale, End Estate Sale Permanently, Start New Estate Sale, etc. Fixes the bug where the Setup screen was reverting to "Start Sale" after returning from an ended sale.',
+      'End Estate Sale Permanently confirmation: no more live "doesn\'t match" error while typing. The error only appears if you tap End Estate Sale with a mistyped name. The match is now case-insensitive too — "Johnson Estate" matches "johnson estate" matches "JOHNSON ESTATE".'
+    ]
+  },
   {
     version: 'v186',
     date: '2026-04-28',

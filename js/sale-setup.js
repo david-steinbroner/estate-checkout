@@ -493,7 +493,7 @@ const SaleSetup = {
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = 'Start Sale';
+        btn.textContent = 'Start Estate Sale';
       }
     }
 

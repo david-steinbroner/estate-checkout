@@ -198,6 +198,12 @@ const App = {
     // End sale confirmation
     if (this.headerElements.endSaleConfirm) {
       this.headerElements.endSaleConfirm.addEventListener('click', () => {
+        // Validate-on-tap (v187): button is always enabled; mistyped input
+        // surfaces the inline error here, valid input proceeds.
+        if (!this._endSaleNameMatches()) {
+          this._showEndSaleError();
+          return;
+        }
         this.headerElements.endSaleConfirmModal.classList.remove('visible');
         this.endSale();
       });
@@ -984,39 +990,57 @@ const App = {
       input.value = '';
       input.placeholder = saleName;
     }
-    if (confirmBtn) confirmBtn.disabled = true;
+    // Button is always tappable — validation happens on tap, not on input.
+    // Error appears only when the user actually tries to confirm with a
+    // mistyped name (v187). No live error while typing.
+    const error = document.getElementById('end-sale-confirm-error');
+    if (error) {
+      error.hidden = true;
+      error.textContent = '';
+    }
     this.headerElements.endSaleConfirmModal.classList.add('visible');
     setTimeout(() => { if (input) input.focus(); }, 100);
   },
 
   /**
-   * Wire the type-name-to-confirm input on the End Sale modal.
-   * Called once on init.
+   * Validate the typed name against the sale name. Case-insensitive,
+   * trim-tolerant. Returns true if match.
+   */
+  _endSaleNameMatches() {
+    const sale = Storage.getSale();
+    const saleName = sale ? (sale.name || '').trim().toLowerCase() : '';
+    const input = document.getElementById('end-sale-confirm-input');
+    const typed = input ? input.value.trim().toLowerCase() : '';
+    return saleName.length > 0 && typed === saleName;
+  },
+
+  /**
+   * Show the inline error under the End Sale input. Only called from the
+   * confirm-button click handler when the typed name doesn't match.
+   */
+  _showEndSaleError() {
+    const sale = Storage.getSale();
+    const saleName = sale ? sale.name : '';
+    const error = document.getElementById('end-sale-confirm-error');
+    if (!error) return;
+    error.textContent = `Doesn't match — type "${saleName}" to confirm.`;
+    error.hidden = false;
+  },
+
+  /**
+   * Bind the input to clear the error as soon as the user starts typing
+   * again after a failed confirm. No live validation otherwise.
    */
   _bindEndSaleConfirmInput() {
     if (this._endSaleConfirmInputBound) return;
     this._endSaleConfirmInputBound = true;
     const input = document.getElementById('end-sale-confirm-input');
-    const confirmBtn = document.getElementById('end-sale-confirm');
     const error = document.getElementById('end-sale-confirm-error');
-    if (!input || !confirmBtn) return;
+    if (!input || !error) return;
     input.addEventListener('input', () => {
-      const sale = Storage.getSale();
-      const saleName = sale ? sale.name : '';
-      const typed = input.value.trim();
-      const matches = typed === saleName.trim();
-      confirmBtn.disabled = !matches;
-      // Inline error: stay quiet while the field is empty (user hasn't tried
-      // anything yet) and while it matches. Show only when the user has typed
-      // something that doesn't match — case-sensitive, must match exactly.
-      if (error) {
-        if (typed.length > 0 && !matches) {
-          error.textContent = `Doesn't match — type "${saleName}" exactly (case matters).`;
-          error.hidden = false;
-        } else {
-          error.hidden = true;
-          error.textContent = '';
-        }
+      if (!error.hidden) {
+        error.hidden = true;
+        error.textContent = '';
       }
     });
   },
@@ -1388,13 +1412,13 @@ const App = {
     // Menu sheet sale block
     const menuSaleName = document.getElementById('menu-sale-name');
     const menuSaleMeta = document.getElementById('menu-sale-meta');
-    if (menuSaleName) menuSaleName.textContent = sale.name || 'Sale';
+    if (menuSaleName) menuSaleName.textContent = sale.name || 'Estate Sale';
     if (menuSaleMeta) menuSaleMeta.textContent = metaText;
 
     // Dashboard large title block
     const dashTitle = document.getElementById('dashboard-large-title');
     const dashSubtitle = document.getElementById('dashboard-large-subtitle');
-    if (dashTitle) dashTitle.textContent = sale.name || 'Sale';
+    if (dashTitle) dashTitle.textContent = sale.name || 'Estate Sale';
     if (dashSubtitle) dashSubtitle.textContent = metaText;
   },
 
@@ -1572,7 +1596,7 @@ const App = {
     this.headerElements.joinSaleDesc.textContent = hasExistingSale
       ? `You have an active sale. Joining will replace it. Day ${dayNumber}, ${discountText}.`
       : `Day ${dayNumber}, ${discountText}.`;
-    this.headerElements.joinSaleConfirm.textContent = hasExistingSale ? 'Replace & Join' : 'Join Sale';
+    this.headerElements.joinSaleConfirm.textContent = hasExistingSale ? 'Replace & Join' : 'Join Estate Sale';
 
     this.headerElements.joinSaleModal.classList.add('visible');
   },
