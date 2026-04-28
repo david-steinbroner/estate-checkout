@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v191';
+const APP_VERSION = 'v192';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v192',
+    date: '2026-04-28',
+    changes: [
+      'Export Sale Data picker: shows the estate sale\'s name as a subtitle so you can see exactly which sale\'s data you\'re exporting.',
+      'Picker rows are now left-aligned (was inheriting centered text from the sheet container — fine for short labels, weird for "Day 1 · Apr 28" type rows). Fixed across all picker sheets in the app.'
+    ]
+  },
   {
     version: 'v191',
     date: '2026-04-28',

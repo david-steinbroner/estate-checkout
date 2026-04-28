@@ -1690,6 +1690,7 @@ body {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   letter-spacing: -0.01em;
+  text-align: left;
 }
 
 .ec-picker-item__hint {
@@ -1698,6 +1699,7 @@ body {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   line-height: var(--line-height-default);
+  text-align: left;
 }
 
 .ec-picker-item__check {
@@ -3636,25 +3638,44 @@ body {
   width: 100%;
 }
 
-/* === Export selector sheet (v190) — flat title row with a Select All /
-   Deselect All link on the right. Title's normal margin-bottom is moved
-   to the wrapper so the link aligns with the title baseline. */
+/* === Export selector sheet (v190) — title + sale-name subtitle on the
+   left, Select All / Deselect All link on the right. */
 .export-header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-md);
   margin-bottom: var(--sheet-content-gap);
+  text-align: left;
+}
+
+.export-header__titles {
+  flex: 1;
+  min-width: 0;
 }
 
 .export-header .sheet__title {
   margin-bottom: 0;
+  text-align: left;
+}
+
+.export-header__subtitle {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-default);
+}
+
+.export-header__subtitle:empty {
+  display: none;
 }
 
 .export-header .ec-link-primary {
   flex-shrink: 0;
   padding: 0;
   font-size: var(--font-size-base);
+  /* Align link visually with the first line of the title */
+  margin-top: 8px;
 }
 
 .dashboard-stats {

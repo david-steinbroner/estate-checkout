@@ -482,6 +482,12 @@ const App = {
     const list = document.getElementById('export-day-list');
     if (!list) return;
 
+    // Sale-name subtitle so the user knows which sale's data this is.
+    const subtitle = document.getElementById('export-sale-name');
+    if (subtitle) {
+      subtitle.textContent = (sale && sale.name) ? sale.name : '';
+    }
+
     // Per-day invoice counts. Coerce missing saleDay to 1 to match
     // Storage.exportSaleCSV's column-write fallback.
     const countsByDay = {};
