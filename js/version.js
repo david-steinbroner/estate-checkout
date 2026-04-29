@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v201';
+const APP_VERSION = 'v202';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v202',
+    date: '2026-04-29',
+    changes: [
+      'End Estate Sale Permanently on the Paused screen is now centered, matching the Resume button and the inline action row above it.'
+    ]
+  },
   {
     version: 'v201',
     date: '2026-04-29',
