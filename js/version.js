@@ -9,9 +9,26 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v198';
+const APP_VERSION = 'v200';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v200',
+    date: '2026-04-29',
+    changes: [
+      'Fixed: tapping "Mark paid now" on the QR screen and immediately landing on the dashboard sometimes showed the invoice as unpaid. The dashboard\'s background sync was pulling the stale server record before the paid-status update had landed and overwriting the local copy. Local mutations now win until the server catches up.'
+    ]
+  },
+  {
+    version: 'v199',
+    date: '2026-04-29',
+    changes: [
+      'Critical fix: invoices were leaking across estate sales in past-sale archives. Each invoice is now tagged with the sale it belongs to at creation time, and archives, exports, and the dashboard all scope to the right sale strictly. Sequential sales no longer cross-contaminate.',
+      'Related fix: when joining someone else\'s estate sale that already had invoices, those invoices used to silently disappear from the dashboard because their timestamps predated when this device joined. They now show correctly.',
+      'Starting a new estate sale now physically clears the previous sale\'s invoices from this device (the archive snapshot is preserved).',
+      'New: "Clear all past estate sales" link at the bottom of the Past Estate Sales screen — one-shot reset for archives that were polluted before this fix. Type DELETE to confirm. Cloud copies are not touched (use the per-sale Delete for that).'
+    ]
+  },
   {
     version: 'v198',
     date: '2026-04-29',

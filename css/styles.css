@@ -4303,6 +4303,16 @@ button.dashboard-detail__consignor--empty:active {
   margin-top: var(--space-3xl);
 }
 
+/* v199: bottom action zone holding the destructive "Clear all" link.
+   Centered, breathing room above + safe-area-aware bottom padding. */
+.past-sales-footer {
+  flex-shrink: 0;
+  padding: var(--space-lg) var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  justify-content: center;
+}
+
 /* One row per archived sale — full-width tappable .ec-card */
 .past-sale-row {
   display: flex;

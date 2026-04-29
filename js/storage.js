@@ -129,7 +129,13 @@ const Storage = {
   },
 
   /**
-   * Update a specific transaction by ID
+   * Update a specific transaction by ID.
+   *
+   * v200: stamp `_updatedAt` with the current timestamp so the sync layer
+   * can use it as a conflict-resolution baseline. Without this, a local
+   * mutation (e.g. Mark Paid) could be clobbered by an in-flight poll
+   * that reads the still-stale record back from the server before the
+   * PATCH lands.
    */
   updateTransaction(txnId, updates) {
     const transactions = this.getTransactions();
@@ -137,7 +143,11 @@ const Storage = {
 
     if (index === -1) return false;
 
-    transactions[index] = { ...transactions[index], ...updates };
+    transactions[index] = {
+      ...transactions[index],
+      ...updates,
+      _updatedAt: new Date().toISOString()
+    };
     localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify(transactions));
     return true;
   },
@@ -155,6 +165,50 @@ const Storage = {
    */
   clearTransactions() {
     localStorage.removeItem(this.KEYS.TRANSACTIONS);
+  },
+
+  /**
+   * v199: Remove transactions belonging to a specific sale.
+   *
+   * Called from SaleSetup.clearEndedSale (i.e. "Start New Estate Sale") so
+   * the just-ended sale's transactions don't leak into the next sale's
+   * archive. Order matters: the archive snapshot must already have been
+   * taken before this runs (it is — snapshot happens at end-sale, this
+   * runs later when the user starts a fresh sale).
+   *
+   * Matches by saleId primarily; falls back to the legacy timestamp
+   * heuristic for transactions that predate the v199 saleId tagging.
+   */
+  clearTransactionsForSale(sale) {
+    if (!sale) return;
+    const txns = this.getTransactions();
+    const remaining = txns.filter(t => !this.isTransactionForSale(t, sale));
+    localStorage.setItem(this.KEYS.TRANSACTIONS, JSON.stringify(remaining));
+  },
+
+  /**
+   * v199: Does this transaction belong to this sale?
+   *
+   * Primary check: txn.saleId === sale.id (set at creation in v199+).
+   * Fallback: legacy transactions without saleId are matched by timestamp
+   * (txn.timestamp >= sale.createdAt) — same heuristic the dashboard used
+   * before v199. The fallback covers transactions written before the fix
+   * AND any race where the field is missing.
+   */
+  isTransactionForSale(txn, sale) {
+    if (!sale || !txn) return false;
+    if (txn.saleId) return txn.saleId === sale.id;
+    if (!txn.timestamp || !sale.createdAt) return false;
+    return new Date(txn.timestamp).getTime() >= new Date(sale.createdAt).getTime();
+  },
+
+  /**
+   * v199: Return all transactions belonging to a specific sale.
+   * Wraps isTransactionForSale; the canonical "scope to sale" reader.
+   */
+  getTransactionsForSale(sale) {
+    if (!sale) return [];
+    return this.getTransactions().filter(t => this.isTransactionForSale(t, sale));
   },
 
   /**
@@ -312,7 +366,11 @@ const Storage = {
    * Consignor cell, 0 in Consignor Cut, full Final Price in Your Cut.
    */
   exportSaleCSV(daysFilter) {
-    let transactions = this.getTransactions();
+    // v199: scope to the active sale's transactions only — same fix as
+    // archiveCurrentSale. Without this, exports include orphan rows from
+    // prior sales that linger in estate_transactions.
+    const sale = this.getSale();
+    let transactions = sale ? this.getTransactionsForSale(sale) : [];
     // daysFilter contract:
     //   null/undefined → export all transactions
     //   []             → export headers only (no data rows)
@@ -615,7 +673,12 @@ const ArchiveDB = {
     const liveSale = Storage.getSale();
     if (!liveSale) return null;
 
-    const liveTransactions = Storage.getTransactions().filter(t => t.status !== 'open');
+    // v199: scope transactions to THIS sale only — not every transaction
+    // in localStorage. Without this filter, archives bleed across sales
+    // because estate_transactions persists between Start New Sale calls.
+    // Drafts are excluded — they're in-progress, not history.
+    const liveTransactions = Storage.getTransactionsForSale(liveSale)
+      .filter(t => t.status !== 'open');
     const liveConsignors = Storage.getConsignors();
 
     const entry = {
@@ -669,6 +732,25 @@ const ArchiveDB = {
       const tx = db.transaction(this._STORE, 'readwrite');
       const store = tx.objectStore(this._STORE);
       const req = store.delete(archiveId);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  /**
+   * v199: wipe every archive entry on this device.
+   *
+   * Used by the "Clear all past estate sales" affordance — gives users a
+   * one-shot reset for archives polluted by the pre-v199 cross-sale leak.
+   * Does NOT touch the cloud (use the per-sale Delete from the detail
+   * screen for that). Local-only purge.
+   */
+  async deleteAll() {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, 'readwrite');
+      const store = tx.objectStore(this._STORE);
+      const req = store.clear();
       req.onsuccess = () => resolve(true);
       req.onerror = () => reject(req.error);
     });

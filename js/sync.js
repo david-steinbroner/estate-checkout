@@ -190,10 +190,15 @@ const Sync = {
 
   // === Server ↔ client invoice shape mapping ===
 
-  /** Map a server invoice payload into the local Storage transaction shape. */
+  /**
+   * Map a server invoice payload into the local Storage transaction shape.
+   * v199: stamp `saleId` from the server payload so synced invoices are
+   * scopable by sale on the client (mirrors locally-created transactions).
+   */
   serverInvoiceToLocal(srv) {
     return {
       id: srv.id,
+      saleId: srv.saleId,
       customerNumber: srv.customerNumber,
       orderName: srv.orderName,
       items: srv.items || [],
@@ -258,12 +263,34 @@ const Sync = {
       return { count: 0, saleStatusChanged: false, sale: null };
     }
 
-    // Merge invoices
+    // Merge invoices.
+    //
+    // v200: timestamp-based conflict resolution. A local mutation (e.g. Mark
+    // Paid) stamps `_updatedAt` immediately; the corresponding server PATCH
+    // takes ~200–500ms to land. Without this guard, a poll fired between
+    // those two moments would pull the stale server record and clobber the
+    // local update — the user would see "unpaid" on the dashboard despite
+    // having just tapped "Mark paid now."
+    //
+    // Rule: keep whichever side has the newer `_updatedAt`. Once the server
+    // catches up to the PATCH, its `_updatedAt` will exceed the local stamp
+    // and the next poll picks up the server record cleanly.
     const incoming = (result.invoices || []).map(srv => this.serverInvoiceToLocal(srv));
     if (incoming.length > 0) {
       const all = Storage.getTransactions();
       const byId = new Map(all.map(t => [t.id, t]));
-      incoming.forEach(srv => byId.set(srv.id, srv));
+      incoming.forEach(srv => {
+        const local = byId.get(srv.id);
+        if (!local || !local._updatedAt) {
+          byId.set(srv.id, srv);
+          return;
+        }
+        const localT = new Date(local._updatedAt).getTime();
+        const serverT = srv._updatedAt ? new Date(srv._updatedAt).getTime() : 0;
+        if (serverT > localT) byId.set(srv.id, srv);
+        // else: keep the local copy — it has a more recent mutation that
+        // hasn't yet propagated through the server.
+      });
       localStorage.setItem(Storage.KEYS.TRANSACTIONS, JSON.stringify(Array.from(byId.values())));
     }
 

@@ -655,8 +655,19 @@ const SaleSetup = {
     Storage.clearCustomerCounter();
   },
 
-  /** Drop the ended sale from local storage so the user can start a fresh one. */
+  /**
+   * Drop the ended sale from local storage so the user can start a fresh one.
+   *
+   * v199: also purge the just-ended sale's transactions from
+   * estate_transactions. Previously they lingered, causing the next sale's
+   * archive to inherit them. The end-sale archive snapshot has already been
+   * taken by this point (in Checkout.endSale), so it's safe to drop them.
+   */
   clearEndedSale() {
+    const sale = Storage.getSale();
+    if (sale) {
+      Storage.clearTransactionsForSale(sale);
+    }
     Storage.clearSale();
   },
 

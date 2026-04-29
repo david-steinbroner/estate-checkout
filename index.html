@@ -376,6 +376,12 @@
     <div class="past-sales-body" id="past-sales-body">
       <!-- Rendered by PastSales.renderList -->
     </div>
+    <!-- v199: bottom destructive affordance, only visible when archive
+         has at least one entry. One-shot reset for users with archives
+         contaminated by the pre-v199 cross-sale leak. -->
+    <div class="past-sales-footer" id="past-sales-footer" hidden>
+      <button class="ec-link-destructive" id="past-sales-clear-all" type="button">Clear all past estate sales</button>
+    </div>
   </div>
 
   <!-- Past Sale Detail Screen (v193) — read-only review of an archived sale.
@@ -426,6 +432,22 @@
       <button class="ec-btn ec-btn-primary" id="past-sale-export" type="button">Export Estate Sale Data</button>
       <p class="ec-field-error" id="past-sale-export-error" hidden></p>
       <button class="ec-link-destructive" id="past-sale-delete" type="button">Delete this estate sale</button>
+    </div>
+  </div>
+
+  <!-- Clear All Past Estate Sales (v199) — type DELETE to confirm a wipe of
+       this device's local archive. Does not touch cloud copies. -->
+  <div class="overlay" id="clear-past-sales-modal">
+    <div class="sheet">
+      <p class="sheet__title sheet__title--small">Clear all past estate sales?</p>
+      <p class="sheet__text">This permanently removes every archived estate sale from this device. Cloud copies are <strong>not</strong> deleted — anyone with a share code can still reach them. This cannot be undone.</p>
+      <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-md);">Type <strong style="color:var(--color-text)">DELETE</strong> to confirm.</p>
+      <input type="text" class="ec-input" id="clear-past-sales-input" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
+      <p class="ec-field-error" id="clear-past-sales-error" hidden></p>
+      <div class="sheet__buttons">
+        <button class="ec-btn ec-btn-destructive" id="clear-past-sales-confirm">Clear All</button>
+        <button class="ec-btn ec-btn-secondary" id="clear-past-sales-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 

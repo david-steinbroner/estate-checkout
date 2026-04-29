@@ -1170,7 +1170,8 @@ const Checkout = {
     let transaction;
 
     if (this.draftTransactionId) {
-      // Promote existing draft to unpaid
+      // Promote existing draft to unpaid. saleId already stamped at draft
+      // creation; no need to re-tag here.
       Storage.updateTransaction(this.draftTransactionId, {
         status: 'unpaid',
         customerNumber: customerNumber,
@@ -1187,9 +1188,12 @@ const Checkout = {
       Storage.clearDraftTxnId();
       this.draftTransactionId = null;
     } else {
-      // Fallback: create new transaction
+      // Fallback: create new transaction. saleId tag (v199) makes it
+      // possible to scope archives, exports, and dashboard reads to a
+      // specific sale instead of relying on timestamp heuristics.
       transaction = {
         id: Utils.generateId(),
+        saleId: this.sale ? this.sale.id : null,
         timestamp: Utils.getTimestamp(),
         customerNumber: customerNumber,
         orderName: this.orderCustomName || '',
@@ -1306,10 +1310,11 @@ const Checkout = {
         saleDay: this.sale ? Utils.getSaleDay(this.sale.startDate, this.sale) : 1
       });
     } else {
-      // Create new draft
+      // Create new draft — tagged with saleId (v199) so it scopes correctly.
       const customerNumber = Storage.peekNextCustomerNumber();
       const txn = {
         id: Utils.generateId(),
+        saleId: this.sale ? this.sale.id : null,
         timestamp: Utils.getTimestamp(),
         customerNumber: customerNumber,
         orderName: this.orderCustomName || '',

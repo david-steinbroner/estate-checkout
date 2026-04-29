@@ -186,22 +186,18 @@ const Dashboard = {
   },
 
   /**
-   * Get transactions filtered to current sale only
+   * Get transactions filtered to current sale only.
+   *
+   * v199: delegates to Storage.getTransactionsForSale, which uses the
+   * saleId tag (set at creation) and falls back to the timestamp heuristic
+   * for legacy untagged transactions. This fixes a long-standing bug where
+   * invoices joined from another device with original timestamps predating
+   * the local sale.createdAt silently disappeared from the dashboard.
    */
   getTransactionsForCurrentSale() {
     const sale = Storage.getSale();
-    const allTransactions = Storage.getTransactions();
-
     if (!sale) return [];
-
-    // Filter transactions that belong to current sale
-    // Match by sale createdAt timestamp (transactions after sale was created)
-    const saleCreatedAt = new Date(sale.createdAt).getTime();
-
-    return allTransactions.filter(txn => {
-      const txnTime = new Date(txn.timestamp).getTime();
-      return txnTime >= saleCreatedAt;
-    });
+    return Storage.getTransactionsForSale(sale);
   },
 
   /**

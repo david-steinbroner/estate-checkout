@@ -82,6 +82,37 @@ const PastSales = {
         }
       });
     }
+
+    // v199: clear-all-archives wiring. Type "DELETE" to confirm a wipe.
+    const clearAllBtn = document.getElementById('past-sales-clear-all');
+    const clearModal = document.getElementById('clear-past-sales-modal');
+    const clearConfirm = document.getElementById('clear-past-sales-confirm');
+    const clearCancel = document.getElementById('clear-past-sales-cancel');
+    const clearInput = document.getElementById('clear-past-sales-input');
+
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', () => this._openClearAllConfirm());
+    }
+    if (clearConfirm) {
+      clearConfirm.addEventListener('click', () => this._handleClearAllConfirm());
+    }
+    if (clearCancel) {
+      clearCancel.addEventListener('click', () => this._closeClearAllConfirm());
+    }
+    if (clearModal) {
+      clearModal.addEventListener('click', (e) => {
+        if (e.target === clearModal) this._closeClearAllConfirm();
+      });
+    }
+    if (clearInput) {
+      clearInput.addEventListener('input', () => {
+        const err = document.getElementById('clear-past-sales-error');
+        if (err && !err.hidden) {
+          err.hidden = true;
+          err.textContent = '';
+        }
+      });
+    }
   },
 
   /** Render the list screen — called from App.showScreen('past-sales'). */
@@ -95,6 +126,10 @@ const PastSales = {
     } catch (err) {
       console.warn('[past-sales] getAll failed:', err.message);
     }
+
+    // Toggle the bottom "Clear all past estate sales" footer based on count.
+    const footer = document.getElementById('past-sales-footer');
+    if (footer) footer.hidden = entries.length === 0;
 
     if (entries.length === 0) {
       body.innerHTML = `
@@ -360,6 +395,51 @@ const PastSales = {
       const liveSale = Storage.getSale();
       App.showScreen(liveSale ? 'dashboard' : 'setup');
     }
+  },
+
+  // ── Clear-all-archives flow (v199) ──
+
+  _openClearAllConfirm() {
+    const input = document.getElementById('clear-past-sales-input');
+    const error = document.getElementById('clear-past-sales-error');
+    const modal = document.getElementById('clear-past-sales-modal');
+    if (input) input.value = '';
+    if (error) {
+      error.hidden = true;
+      error.textContent = '';
+    }
+    if (modal) modal.classList.add('visible');
+    setTimeout(() => { if (input) input.focus(); }, 100);
+  },
+
+  _closeClearAllConfirm() {
+    const modal = document.getElementById('clear-past-sales-modal');
+    if (modal) modal.classList.remove('visible');
+  },
+
+  async _handleClearAllConfirm() {
+    const input = document.getElementById('clear-past-sales-input');
+    const typed = input ? input.value.trim().toUpperCase() : '';
+    if (typed !== 'DELETE') {
+      const error = document.getElementById('clear-past-sales-error');
+      if (error) {
+        error.textContent = 'Type DELETE (in caps) to confirm.';
+        error.hidden = false;
+      }
+      return;
+    }
+
+    try {
+      await ArchiveDB.deleteAll();
+    } catch (err) {
+      console.warn('[past-sales] clear-all failed:', err.message);
+    }
+
+    this._closeClearAllConfirm();
+
+    // Bounce back to setup or dashboard depending on live-sale state.
+    const sale = Storage.getSale();
+    App.showScreen(sale ? 'dashboard' : 'setup');
   },
 
   // ── Helpers ──
