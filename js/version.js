@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v200';
+const APP_VERSION = 'v201';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v201',
+    date: '2026-04-29',
+    changes: [
+      'Paused screen actions tightened up: View dashboard and Export are now a single inline row with a dot separator (matching the Sale Ended banner). End Estate Sale Permanently sits below on its own with extra breathing room — clearer visual grouping between everyday actions and the destructive one.'
+    ]
+  },
   {
     version: 'v200',
     date: '2026-04-29',

@@ -3157,6 +3157,13 @@ body {
 /* The Resume / Dashboard / End Sale buttons inside .paused-actions are
    .ec-btn / .ec-link-* — see v178 migration. */
 
+/* v201: add a touch of extra breathing room above the destructive so it
+   reads as a separate action zone from the primary + inline secondaries
+   (matches the visual grouping on the Sale Ended banner). */
+.paused-actions .ec-link-destructive {
+  margin-top: var(--space-sm);
+}
+
 /* Sheet option layout (for End Day / End Sale sheet) */
 .sheet__option {
   margin-bottom: var(--space-lg);

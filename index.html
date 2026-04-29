@@ -510,10 +510,18 @@
       <p class="paused-stale__text" id="paused-stale-text">This estate sale started 8 days ago. Resume or end it?</p>
     </div>
 
+    <!-- v201: action layout matches the Sale Ended banner pattern (v197).
+         Two zones: primary button + inline secondaries (qr-action-row), then
+         the destructive on its own line. Labels shortened so the inline row
+         fits one line on iPhone width — full context comes from the screen
+         header above ("Day 1 Complete" / sale name). -->
     <div class="paused-actions">
       <button type="button" class="ec-btn ec-btn-primary" id="paused-resume">Resume Estate Sale</button>
-      <button type="button" class="ec-link-primary" id="paused-dashboard">View Dashboard</button>
-      <button type="button" class="ec-link-primary" id="paused-export">Export Estate Sale Data</button>
+      <div class="qr-action-row">
+        <button type="button" class="ec-link-primary" id="paused-dashboard">View dashboard</button>
+        <span class="qr-action-sep" aria-hidden="true">·</span>
+        <button type="button" class="ec-link-primary" id="paused-export">Export data</button>
+      </div>
       <button type="button" class="ec-link-destructive" id="paused-end-sale">End Estate Sale Permanently</button>
       <p class="ec-field-error" id="paused-export-error" hidden></p>
     </div>
