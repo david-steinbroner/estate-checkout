@@ -17,6 +17,9 @@ const Sync = {
   /** Track per-sale "last successful poll" timestamp (ISO string) for delta sync. */
   _lastSyncBySale: {},
 
+  /** Cloud-deletes that couldn't reach the server when the user purged offline. */
+  _PENDING_DELETES_KEY: 'estate_pending_cloud_deletes',
+
   init() {
     let id = localStorage.getItem('_device_id');
     if (!id) {
@@ -24,6 +27,11 @@ const Sync = {
       localStorage.setItem('_device_id', id);
     }
     this.deviceId = id;
+
+    // Drain queued cloud-deletes silently. Any failures stay in the queue and
+    // retry on the next init. The user is never notified — the local archive
+    // entry is already gone, the cloud copy is the only thing left to clean.
+    this._drainPendingDeletes();
   },
 
   /** Whether a sale is backed by the remote API. New sales are; legacy local-only sales aren't. */
@@ -67,6 +75,80 @@ const Sync = {
   /** Update sale config (consignors changed, discount edited, status flip, etc.). */
   async patchSale(saleId, shareCode, updates) {
     return await this._request('PATCH', '/sales/' + encodeURIComponent(saleId), updates, shareCode);
+  },
+
+  /**
+   * Cascade-delete a sale and its invoices on the backend. v193.
+   *
+   * Returns true on success (incl. 204/404 — both mean the cloud copy is gone),
+   * false on transport failure (queued for later retry).
+   */
+  async deleteSale(saleId, shareCode) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (shareCode) headers['X-Share-Code'] = shareCode;
+    try {
+      const response = await fetch(this.apiBase + '/sales/' + encodeURIComponent(saleId), {
+        method: 'DELETE',
+        headers
+      });
+      // 204: deleted. 404: already gone. Both fine.
+      if (response.status === 204 || response.status === 404) return true;
+      // 401: bad share code — local copy is already removed, no point queuing.
+      if (response.status === 401) {
+        console.warn('[sync] deleteSale auth rejected for sale', saleId);
+        return true;
+      }
+      console.warn('[sync] deleteSale unexpected status', response.status);
+      return false;
+    } catch (err) {
+      console.warn('[sync] deleteSale network failure:', err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Read the pending-cloud-deletes queue from localStorage.
+   * Shape: [{ saleId, shareCode, queuedAt }, ...]
+   */
+  _getPendingDeletes() {
+    try {
+      const raw = localStorage.getItem(this._PENDING_DELETES_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  _setPendingDeletes(queue) {
+    localStorage.setItem(this._PENDING_DELETES_KEY, JSON.stringify(queue));
+  },
+
+  /** Append one entry to the deferred-delete queue. */
+  enqueueDelete(saleId, shareCode) {
+    if (!saleId) return;
+    const queue = this._getPendingDeletes();
+    if (queue.some(e => e.saleId === saleId)) return; // already queued
+    queue.push({ saleId, shareCode: shareCode || null, queuedAt: new Date().toISOString() });
+    this._setPendingDeletes(queue);
+  },
+
+  /**
+   * Best-effort drain. Removes successful entries from the queue; leaves
+   * transport-failed entries for the next init. Silent — no UI surface.
+   */
+  async _drainPendingDeletes() {
+    const queue = this._getPendingDeletes();
+    if (queue.length === 0) return;
+
+    const remaining = [];
+    for (const entry of queue) {
+      const ok = await this.deleteSale(entry.saleId, entry.shareCode);
+      if (!ok) remaining.push(entry);
+    }
+    this._setPendingDeletes(remaining);
+    if (remaining.length < queue.length) {
+      console.log(`[sync] drained ${queue.length - remaining.length} pending cloud-delete(s); ${remaining.length} still queued`);
+    }
   },
 
   // === Invoices ===
@@ -165,6 +247,13 @@ const Sync = {
     try {
       result = await this.listInvoicesSince(sale.id, sale.shareCode, lastSync);
     } catch (err) {
+      // 404 from listInvoices means the sale was deleted on another device.
+      // Surface this as a remote status change so the app can react (alert
+      // the user, stop polling). Other failures are transient — return quietly.
+      if (/→\s*404\b/.test(err.message || '')) {
+        console.warn('[sync] sale appears to have been purged remotely:', sale.id);
+        return { count: 0, saleStatusChanged: true, sale: null, newStatus: 'purged', remoteDeleted: true };
+      }
       console.warn('[sync] pullInvoices failed:', err.message);
       return { count: 0, saleStatusChanged: false, sale: null };
     }

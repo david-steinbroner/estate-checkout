@@ -424,20 +424,269 @@ const Storage = {
    * Build a filesystem-safe filename for the CSV export.
    *   "Johnson Estate - Oak Hill" → "johnson-estate-oak-hill-2026-04-28.csv"
    *   No name set → "estate-sale-2026-04-28.csv"
+   *
+   * v193: accepts an optional saleNameOverride for past-sale exports (where
+   * Storage.getSale() returns null but we still know the archived sale's name).
    */
-  exportFilename() {
-    const sale = this.getSale();
+  exportFilename(saleNameOverride) {
+    let rawName;
+    if (typeof saleNameOverride === 'string') {
+      rawName = saleNameOverride.trim();
+    } else {
+      const sale = this.getSale();
+      rawName = sale && sale.name ? sale.name.trim() : '';
+    }
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const dateStr = `${yyyy}-${mm}-${dd}`;
-    const rawName = sale && sale.name ? sale.name.trim() : '';
     const slug = rawName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     const prefix = slug || 'estate-sale';
     return `${prefix}-${dateStr}.csv`;
+  },
+
+  /**
+   * v193: Build a CSV from an explicit transactions+consignors snapshot rather
+   * than the live storage. Used by past-sale exports — the live storage may be
+   * a different sale (or empty) by the time the user revisits an archive entry.
+   *
+   * Mirrors exportSaleCSV but is pure: no localStorage reads, no migrations.
+   */
+  exportSaleCSVFromSnapshot(transactions, consignors, daysFilter) {
+    let txns = transactions || [];
+    if (Array.isArray(daysFilter)) {
+      txns = txns.filter(t => daysFilter.includes(t.saleDay || 1));
+    }
+    const consignorById = {};
+    (consignors || []).forEach(c => { consignorById[c.id] = c; });
+
+    const headers = [
+      'Day', 'Date', 'Time', 'Invoice #', 'Customer Name',
+      'Item', 'Qty', 'Original Price',
+      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Discount Share',
+      'Final Price',
+      'Consignor', 'Payout %', 'Consignor Cut', 'Your Cut',
+      'Status'
+    ];
+
+    const escape = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const fmt$ = (n) => (Math.round(n * 100) / 100).toFixed(2);
+    const rows = [headers.map(escape).join(',')];
+
+    txns.forEach(txn => {
+      const date = new Date(txn.timestamp);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mn = String(date.getMinutes()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const timeStr = `${hh}:${mn}`;
+
+      const cssStatus = txn.status === 'void'
+        ? (txn.voidReason && /edit/i.test(txn.voidReason) ? 'edited' : 'void')
+        : (txn.status || 'unpaid');
+
+      const subtotal = txn.subtotal || 0;
+      const total = txn.total || subtotal;
+      const ticketDiscountTotal = Math.max(0, subtotal - total);
+
+      (txn.items || []).forEach(item => {
+        const qty = item.quantity || 1;
+        const originalPriceTotal = (item.originalPrice || 0) * qty;
+        const dayDiscountedTotal = (item.dayDiscountedPrice || item.originalPrice || 0) * qty;
+        const finalLineTotal = item.finalPrice || 0;
+        const dayDiscountSavings = originalPriceTotal - dayDiscountedTotal;
+        const haggleSavings = dayDiscountedTotal - finalLineTotal;
+        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketDiscountTotal : 0;
+
+        const consignor = item.consignorId ? consignorById[item.consignorId] : null;
+        let consignorCut = 0;
+        let payoutPctDisplay = '';
+        if (consignor) {
+          if (consignor.payoutType === 'percentage') {
+            consignorCut = (finalLineTotal - itemTicketShare) * (consignor.payoutValue / 100);
+            payoutPctDisplay = consignor.payoutValue;
+          } else {
+            consignorCut = Math.min(finalLineTotal - itemTicketShare, consignor.payoutValue * qty);
+          }
+        }
+        const yourCut = (finalLineTotal - itemTicketShare) - consignorCut;
+
+        rows.push([
+          txn.saleDay || 1, dateStr, timeStr,
+          txn.customerNumber || '', txn.orderName || '',
+          item.description || '', qty,
+          fmt$(item.originalPrice || 0),
+          (txn.discount || 0),
+          fmt$(dayDiscountSavings),
+          fmt$(haggleSavings),
+          fmt$(itemTicketShare),
+          fmt$(finalLineTotal),
+          consignor ? consignor.name : '',
+          payoutPctDisplay,
+          consignor ? fmt$(consignorCut) : '',
+          fmt$(yourCut),
+          cssStatus
+        ].map(escape).join(','));
+      });
+    });
+
+    return rows.join('\r\n');
   }
 };
+
+
+/**
+ * v193 — Past Sales archive (IndexedDB).
+ *
+ * Why IDB and not localStorage: a typical estate sale serializes to ~30–60KB.
+ * 50–100 archived sales ≈ 5MB, which is the localStorage cap. Hitting that cap
+ * during end-sale (the snapshot write) is catastrophic. IDB has practically
+ * unlimited quota on mobile browsers and is async, which keeps the snapshot
+ * off the main thread.
+ *
+ * Schema (one object store):
+ *   archived_sales (keyPath: 'archiveId')
+ *     archiveId   — UUID assigned at archive time (not the sale.id; lets us
+ *                   dedupe if the same sale is somehow archived twice)
+ *     saleId      — the original sale's id, for cloud-purge lookup
+ *     archivedAt  — ISO timestamp, used for sort order
+ *     sale        — frozen snapshot of the sale config
+ *     transactions — frozen snapshot, drafts (status='open') filtered out
+ *     consignors  — frozen snapshot
+ *
+ * All snapshot fields are deep-cloned via structuredClone so subsequent edits
+ * to live storage don't mutate the archive.
+ */
+const ArchiveDB = {
+  _DB_NAME: 'estate_checkout_archive',
+  _DB_VERSION: 1,
+  _STORE: 'archived_sales',
+
+  _open() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(this._DB_NAME, this._DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(this._STORE)) {
+          const store = db.createObjectStore(this._STORE, { keyPath: 'archiveId' });
+          store.createIndex('archivedAt', 'archivedAt');
+          store.createIndex('saleId', 'saleId', { unique: false });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async _tx(mode, fn) {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, mode);
+      const store = tx.objectStore(this._STORE);
+      const result = fn(store);
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  },
+
+  /**
+   * Take a snapshot of the live sale state and append to the archive.
+   * Drafts (status === 'open') are filtered out — they're in-progress,
+   * not history.
+   *
+   * Returns the archived entry on success.
+   */
+  async archiveCurrentSale() {
+    const liveSale = Storage.getSale();
+    if (!liveSale) return null;
+
+    const liveTransactions = Storage.getTransactions().filter(t => t.status !== 'open');
+    const liveConsignors = Storage.getConsignors();
+
+    const entry = {
+      archiveId: (crypto.randomUUID && crypto.randomUUID()) || ('arch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10)),
+      saleId: liveSale.id,
+      archivedAt: new Date().toISOString(),
+      sale: structuredClone(liveSale),
+      transactions: structuredClone(liveTransactions),
+      consignors: structuredClone(liveConsignors)
+    };
+
+    await this._tx('readwrite', (store) => {
+      store.add(entry);
+    });
+
+    return entry;
+  },
+
+  /** Return all archive entries, newest first. */
+  async getAll() {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, 'readonly');
+      const store = tx.objectStore(this._STORE);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const entries = req.result || [];
+        entries.sort((a, b) => (b.archivedAt || '').localeCompare(a.archivedAt || ''));
+        resolve(entries);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  /** Return one archive entry by archiveId, or null. */
+  async get(archiveId) {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, 'readonly');
+      const store = tx.objectStore(this._STORE);
+      const req = store.get(archiveId);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  /** Delete one archive entry by archiveId. */
+  async delete(archiveId) {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, 'readwrite');
+      const store = tx.objectStore(this._STORE);
+      const req = store.delete(archiveId);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  /** Return entry count without loading the rows. Used to hide menu entries. */
+  async count() {
+    const db = await this._open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this._STORE, 'readonly');
+      const store = tx.objectStore(this._STORE);
+      const req = store.count();
+      req.onsuccess = () => resolve(req.result || 0);
+      req.onerror = () => reject(req.error);
+    });
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.ArchiveDB = ArchiveDB;
+}

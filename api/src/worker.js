@@ -8,6 +8,7 @@
  *   POST   /sales                                  — create sale, returns {id, shareCode, ...}
  *   GET    /sales/by-code/:shareCode               — lookup sale config (for join flow)
  *   PATCH  /sales/:saleId                          — update sale config (requires X-Share-Code)
+ *   DELETE /sales/:saleId                          — purge sale + invoices from D1 (requires X-Share-Code)
  *   POST   /sales/:saleId/invoices                 — create invoice (requires X-Share-Code)
  *   GET    /sales/:saleId/invoices?since=<ISO>     — list invoices (requires X-Share-Code)
  *   GET    /invoices/:invoiceId                    — fetch single invoice (public, for ticket.html)
@@ -26,7 +27,7 @@ const ALLOWED_HEADERS = 'Content-Type, X-Share-Code';
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': ALLOWED_HEADERS,
     'Access-Control-Max-Age': '86400'
   };
@@ -192,6 +193,43 @@ async function patchSale(request, env, params) {
   return json(rowToSale(sale));
 }
 
+/**
+ * Cascade-delete a sale and all its invoices.
+ *
+ * Auth: requires X-Share-Code matching the sale's share_code, BUT the endpoint is
+ * idempotent — if the sale doesn't exist (already deleted, or never existed), we
+ * return 204 without checking auth. This matches RFC 7231 §4.3.5 and lets the
+ * client retry safely.
+ *
+ * D1 has no FK CASCADE, so we manually delete invoices first, then the sale row.
+ * `db.batch()` runs the statements in an implicit transaction and rolls back on
+ * any failure. There's still a race window where a concurrent invoice POST could
+ * land between the delete and a future read — accepted for v193 (estate-sale
+ * threat model is non-adversarial; tombstone column is the v2 fix if it bites).
+ *
+ * Logs the delete to `wrangler tail` for forensics — share_code prefix only,
+ * never the full code.
+ */
+async function deleteSale(request, env, params) {
+  const sale = await getSaleById(env, params.saleId);
+  if (!sale) {
+    // Idempotent: nothing to delete is success.
+    return new Response(null, { status: 204, headers: corsHeaders() });
+  }
+
+  const shareCode = request.headers.get('X-Share-Code');
+  if (!shareCode) return json({ error: 'Missing X-Share-Code header' }, 401);
+  if (sale.share_code !== shareCode) return json({ error: 'Invalid share code' }, 401);
+
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM invoices WHERE sale_id = ?').bind(params.saleId),
+    env.DB.prepare('DELETE FROM sales WHERE id = ?').bind(params.saleId)
+  ]);
+
+  console.log(`[deleteSale] purged sale ${params.saleId} (code ${shareCode.slice(0, 2)}****) at ${nowIso()}`);
+  return new Response(null, { status: 204, headers: corsHeaders() });
+}
+
 async function createInvoice(request, env, params) {
   const auth = await authSale(request, env, params.saleId);
   if (auth.error) return auth.error;
@@ -326,6 +364,7 @@ const routes = [
   { method: 'POST',  pattern: /^\/sales$/,                                                handler: createSale },
   { method: 'GET',   pattern: /^\/sales\/by-code\/(?<shareCode>[A-Z0-9]+)$/,             handler: getSaleByCode },
   { method: 'PATCH', pattern: /^\/sales\/(?<saleId>[^/]+)$/,                              handler: patchSale },
+  { method: 'DELETE', pattern: /^\/sales\/(?<saleId>[^/]+)$/,                             handler: deleteSale },
   { method: 'POST',  pattern: /^\/sales\/(?<saleId>[^/]+)\/invoices$/,                    handler: createInvoice },
   { method: 'GET',   pattern: /^\/sales\/(?<saleId>[^/]+)\/invoices$/,                    handler: listInvoices },
   { method: 'GET',   pattern: /^\/invoices\/(?<invoiceId>[^/]+)$/,                        handler: getInvoice },

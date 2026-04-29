@@ -728,11 +728,15 @@ const Checkout = {
       const qty = item.quantity || 1;
       if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
 
-      let dotHtml = '';
+      // v198: always render the consignor slot so descriptions align across
+      // assigned + unassigned items. Slot is filled when a consignor is set,
+      // visually empty otherwise.
+      let dotStyle = 'background: transparent;';
       if (item.consignorId) {
         const c = consignors.find(x => x.id === item.consignorId);
-        if (c) dotHtml = `<span class="item-row__consignor-dot" style="background: ${c.color}"></span>`;
+        if (c) dotStyle = `background: ${c.color};`;
       }
+      const dotHtml = `<span class="item-row__consignor-dot" style="${dotStyle}"></span>`;
 
       return `
         <li class="item-row" data-id="${item.id}">
@@ -920,16 +924,18 @@ const Checkout = {
         const qty = item.quantity || 1;
         const haggleClass = (item.haggleType && item.haggleValue) ? ' item-row--haggled' : '';
 
-        // Consignor dot
-        let consignorDotHtml = '';
+        // Consignor dot — always rendered as a slot so descriptions align
+        // across rows. Filled when assigned, empty (transparent) otherwise.
+        let consignorDotStyle = 'background: transparent;';
+        let consignorDotTitle = '';
         if (item.consignorId) {
           const c = consignors.find(x => x.id === item.consignorId);
           if (c) {
-            consignorDotHtml = `<span class="item-row__consignor-dot" style="background: ${c.color}" title="${Utils.escapeHtml(c.name)}"></span>`;
+            consignorDotStyle = `background: ${c.color};`;
+            consignorDotTitle = ` title="${Utils.escapeHtml(c.name)}"`;
           }
-        } else if (consignors.length > 0) {
-          consignorDotHtml = `<span class="item-row__consignor-dot" style="background: transparent; border: 1px dashed var(--color-border)"></span>`;
         }
+        const consignorDotHtml = `<span class="item-row__consignor-dot" style="${consignorDotStyle}"${consignorDotTitle}></span>`;
 
         // Qty badge (shown when qty > 1)
         const qtyBadge = qty > 1 ? `<span class="item-row__qty-badge">&times;${qty}</span>` : '';
@@ -1070,14 +1076,20 @@ const Checkout = {
   },
 
   /**
-   * End the current sale and return to setup
+   * End the current sale and return to dashboard.
+   *
+   * v193 archives the sale into the IndexedDB Past Sales store BEFORE clearing
+   * any session state, so the snapshot captures the full final state. Drafts
+   * (status='open') are filtered out at archive time. The archive is a frozen
+   * snapshot — never reads from live storage after this point.
    */
-  endSale() {
+  async endSale() {
     // Guard against double execution
     if (this._endingSale) return;
     this._endingSale = true;
 
-    // Delete any open draft
+    // Delete any open draft BEFORE archiving so it doesn't leak into the
+    // snapshot.
     if (this.draftTransactionId) {
       Storage.deleteTransaction(this.draftTransactionId);
       Storage.clearDraftTxnId();
@@ -1104,6 +1116,18 @@ const Checkout = {
     // Mark sale as ended in storage (does NOT clear sale or transactions —
     // user can review past invoices on dashboard). Clears cart + counter only.
     SaleSetup.endSale();
+
+    // Snapshot into Past Sales archive (IDB) AFTER SaleSetup.endSale so
+    // the snapshot captures the ended state (status='ended', endedAt set).
+    // Awaited because the local archive is the user's only record once
+    // `Start New Estate Sale` clears the active sale.
+    if (typeof ArchiveDB !== 'undefined') {
+      try {
+        await ArchiveDB.archiveCurrentSale();
+      } catch (err) {
+        console.warn('[archive] archiveCurrentSale failed:', err.message);
+      }
+    }
 
     // v159: navigate to dashboard (not setup) so the operator can immediately
     // review the just-ended sale's invoices. Dashboard shows a "Sale ended"

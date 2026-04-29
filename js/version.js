@@ -9,9 +9,68 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v192';
+const APP_VERSION = 'v198';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v198',
+    date: '2026-04-29',
+    changes: [
+      'Item descriptions now line up across rows whether or not the item has a consignor — the colored dot always reserves its slot, even when nothing\'s assigned. Looks the same on sales without consignors at all.',
+      'Dashboard transaction detail: the "Assign" button on items with no consignor is now a small person-add icon instead of the word "Assign". Cleaner inline.',
+      'Edit Item: Delete Item button no longer gets clipped by the iOS Safari URL bar at the bottom — added more breathing room to the footer.',
+      'In-sale paused menu: End Estate Sale Permanently no longer requires scrolling to see in full — the sheet expands taller when needed.',
+      'Sale Ended banner: the two secondary actions ("Export" and "View past sales") now fit on the same line with a dot separator, as originally intended in v197.'
+    ]
+  },
+  {
+    version: 'v197',
+    date: '2026-04-29',
+    changes: [
+      'Sale Ended banner takes up less vertical space — Export Estate Sale Data and View Past Estate Sales are now a single inline row separated by a dot, instead of two stacked links.',
+      'When you have no past estate sales yet, only Export shows on its line (no dangling separator).'
+    ]
+  },
+  {
+    version: 'v196',
+    date: '2026-04-29',
+    changes: [
+      'Past Estate Sales card on the Setup screen is now the same height as the Estate Sale Name and Consignors cards above it.',
+      'Fixed: Past Estate Sale Detail showed "No transactions in this estate sale" even when invoices existed. The empty state now correctly hides whenever there\'s data.',
+      '"View Past Estate Sales" link in the Sale Ended banner is now centered, matching the Export link directly above it.'
+    ]
+  },
+  {
+    version: 'v195',
+    date: '2026-04-29',
+    changes: [
+      'Past Estate Sales is now a Setup-screen feature. New tappable card on the New Estate Sale screen — shows the count, drills into your archive. Hidden until you\'ve ended at least one sale.',
+      'Removed Past Estate Sales from the in-sale menu. Mid-sale you\'re ringing up customers, not browsing archives.',
+      'Added a "View Past Estate Sales" link to the Sale Ended banner on the dashboard — quick path from "I just ended this sale" to your archive without going back to Setup.',
+      'The Setup hamburger still has Past Estate Sales as a backup, hidden when there\'s nothing to show.'
+    ]
+  },
+  {
+    version: 'v194',
+    date: '2026-04-29',
+    changes: [
+      'Fixed: Past Estate Sales screens were rendering on top of the New Estate Sale screen (v193 stacking bug). The list and detail layouts no longer leak through.',
+      '"Export Sale Data" buttons everywhere now read "Export Estate Sale Data" — the in-sale menu, the dashboard ended banner, the Paused screen, and the Past Estate Sale Detail screen all match.',
+      '"Past Sales" → "Past Estate Sales" in menus and the list header — consistent with the rest of the app.',
+      'Past sale with no name set now reads "Untitled Estate Sale" instead of the bare default "Estate Sale" (which collided with the generic noun in the rest of the UI).'
+    ]
+  },
+  {
+    version: 'v193',
+    date: '2026-04-29',
+    changes: [
+      'New: Past Sales. Sales you\'ve ended permanently now stick around on this device — open the menu to see the list, tap any past sale to review its invoices, stats, and consignor revenue. The "Past Sales" menu item only appears once you\'ve actually ended at least one sale, in both the in-sale menu and the new-sale Setup menu.',
+      'New: Delete a past sale from the cloud. From any Past Sale\'s detail screen, tap "Delete this estate sale" and type the name to confirm. This wipes the cloud copy (so anyone with the share code can no longer reach it) and removes it from this device.',
+      'Cloud delete is offline-tolerant: if you\'re offline when you delete, the local copy is removed immediately and the cloud cleanup runs silently next time you\'re online — no extra step on your part.',
+      'Past Sales are stored on this device only. If you handed your phone to a tester after ending a sale, they\'ll see your past sales. Delete the ones you don\'t want them to see before handing it over.',
+      'Internal: archive uses IndexedDB instead of the smaller localStorage budget — dozens of past sales fit without bumping into quota limits.'
+    ]
+  },
   {
     version: 'v192',
     date: '2026-04-28',

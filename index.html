@@ -143,6 +143,20 @@
           </div>
         </div>
       </div>
+
+      <!-- Past Estate Sales (v195) — only visible when at least one sale has
+           been ended on this device. Tapping drills into the archive list.
+           v196: wrapped in .ec-card__row so its height matches the other
+           setup cards (Estate Sale Name, Consignors). -->
+      <div class="setup-section" id="setup-past-sales-section" hidden>
+        <div class="ec-card setup-card">
+          <button class="ec-card__row setup-past-sales-row" id="setup-past-sales-card" type="button">
+            <span class="setup-past-sales-card__label">Past Estate Sales</span>
+            <span class="setup-past-sales-card__count" id="setup-past-sales-count">0</span>
+            <svg class="setup-past-sales-card__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Start Sale Footer (V2 §1.4.C paired action pattern) -->
@@ -173,6 +187,13 @@
   <div class="overlay" id="setup-menu-modal">
     <div class="sheet sheet--menu">
       <ul class="ec-menu-list">
+        <li class="ec-menu-item" id="setup-menu-past-sales" tabindex="0" role="button" hidden>
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 5v5l3 2"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Past Estate Sales</span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
         <li class="ec-menu-item" id="setup-menu-whats-new" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 5 5 .5-4 3.5 1.5 5L10 13l-4.5 3L7 11 3 7.5 8 7z"/></svg>
@@ -276,7 +297,18 @@
         <span class="dashboard-ended-banner__hint">Review past invoices below, or start fresh.</span>
       </div>
       <button class="ec-btn ec-btn-primary" id="dashboard-start-new-sale" type="button">Start New Estate Sale</button>
-      <button class="ec-link-primary" id="dashboard-export" type="button">Export Sale Data</button>
+      <!-- v197: secondary actions collapsed to a single inline row with a
+           dot separator (qr-action-row pattern). When the archive is empty,
+           the View Past Estate Sales link + separator both hide and the
+           Export link sits alone on its line. -->
+      <!-- v198: labels shortened to "Export · View past sales" so both fit on
+           one row at iPhone width. The full "Estate Sale" qualifier isn't
+           needed inline — the banner header above already establishes context. -->
+      <div class="qr-action-row dashboard-ended-banner__links">
+        <button class="ec-link-primary" id="dashboard-export" type="button">Export</button>
+        <span class="qr-action-sep" id="dashboard-ended-sep" aria-hidden="true" hidden>·</span>
+        <button class="ec-link-primary" id="dashboard-view-past-sales" type="button" hidden>View past sales</button>
+      </div>
       <p class="ec-field-error" id="dashboard-export-error" hidden></p>
     </div>
 
@@ -331,6 +363,87 @@
     </div>
   </div>
 
+  <!-- Past Sales Screen (v193) — list of archived sales on this device.
+       §1.4.K screen archetype: full screen, back arrow, title, scrollable body. -->
+  <div id="screen-past-sales" class="screen past-sales-screen">
+    <div class="past-sales-header">
+      <button class="past-sales-back" id="past-sales-back" type="button" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="past-sales-header__title">Past Estate Sales</h1>
+      <span class="past-sales-header__spacer" aria-hidden="true"></span>
+    </div>
+    <div class="past-sales-body" id="past-sales-body">
+      <!-- Rendered by PastSales.renderList -->
+    </div>
+  </div>
+
+  <!-- Past Sale Detail Screen (v193) — read-only review of an archived sale.
+       Separate screen (not a flag on Dashboard) because too many Dashboard
+       paths write/mutate; this one is purely a snapshot reader. -->
+  <div id="screen-past-sale-detail" class="screen past-sale-detail-screen">
+    <div class="past-sales-header">
+      <button class="past-sales-back" id="past-sale-detail-back" type="button" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="past-sales-header__title past-sales-header__title--small" id="past-sale-detail-title">Estate Sale</h1>
+      <span class="past-sales-header__spacer" aria-hidden="true"></span>
+    </div>
+    <p class="past-sale-detail__subtitle" id="past-sale-detail-subtitle"></p>
+
+    <div class="dashboard-stats">
+      <div class="ec-card dashboard-stat">
+        <span class="dashboard-stat__value" id="past-sale-stat-invoices">0</span>
+        <span class="ec-section-header">Invoices</span>
+      </div>
+      <div class="ec-card dashboard-stat">
+        <span class="dashboard-stat__value" id="past-sale-stat-revenue">$0.00</span>
+        <span class="ec-section-header">Revenue</span>
+      </div>
+      <div class="ec-card dashboard-stat">
+        <span class="dashboard-stat__value" id="past-sale-stat-avg">$0.00</span>
+        <span class="ec-section-header">Avg</span>
+      </div>
+    </div>
+
+    <div class="ec-card consignor-revenue" id="past-sale-consignor-revenue" hidden>
+      <div class="consignor-revenue__header">
+        <span class="ec-section-header consignor-revenue__title">Revenue by consignor</span>
+      </div>
+      <ul class="consignor-revenue__list" id="past-sale-consignor-revenue-list"></ul>
+    </div>
+
+    <div class="dashboard-list-container">
+      <ul class="dashboard-list" id="past-sale-transactions">
+        <!-- Rendered by PastSales.renderDetail -->
+      </ul>
+      <div class="ec-empty-state" id="past-sale-empty" hidden>
+        <p class="ec-empty-state__heading">No transactions in this estate sale.</p>
+      </div>
+    </div>
+
+    <div class="past-sale-detail__actions">
+      <button class="ec-btn ec-btn-primary" id="past-sale-export" type="button">Export Estate Sale Data</button>
+      <p class="ec-field-error" id="past-sale-export-error" hidden></p>
+      <button class="ec-link-destructive" id="past-sale-delete" type="button">Delete this estate sale</button>
+    </div>
+  </div>
+
+  <!-- Delete Past Sale Confirmation — type the sale name to confirm. -->
+  <div class="overlay" id="delete-past-sale-modal">
+    <div class="sheet">
+      <p class="sheet__title sheet__title--small">Delete this estate sale?</p>
+      <p class="sheet__text">This permanently deletes <strong id="delete-past-sale-name-inline" style="color:var(--color-text)"></strong> from this device and from the cloud. It cannot be undone.</p>
+      <p class="sheet__text" style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-md);">Type <strong id="delete-past-sale-name" style="color:var(--color-text)"></strong> to confirm.</p>
+      <input type="text" class="ec-input" id="delete-past-sale-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:var(--space-md);">
+      <p class="ec-field-error" id="delete-past-sale-error" hidden></p>
+      <div class="sheet__buttons">
+        <button class="ec-btn ec-btn-destructive" id="delete-past-sale-confirm">Delete</button>
+        <button class="ec-btn ec-btn-secondary" id="delete-past-sale-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Consignor Payouts Screen -->
   <div id="screen-payouts" class="screen payouts-screen">
     <div class="screen-menu-row screen-menu-row--floating">
@@ -378,7 +491,7 @@
     <div class="paused-actions">
       <button type="button" class="ec-btn ec-btn-primary" id="paused-resume">Resume Estate Sale</button>
       <button type="button" class="ec-link-primary" id="paused-dashboard">View Dashboard</button>
-      <button type="button" class="ec-link-primary" id="paused-export">Export Sale Data</button>
+      <button type="button" class="ec-link-primary" id="paused-export">Export Estate Sale Data</button>
       <button type="button" class="ec-link-destructive" id="paused-end-sale">End Estate Sale Permanently</button>
       <p class="ec-field-error" id="paused-export-error" hidden></p>
     </div>
@@ -531,7 +644,7 @@
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v11"/><path d="M5 8l5 5 5-5"/><path d="M3 17h14"/></svg>
           </span>
-          <span class="ec-menu-item__label">Export Sale Data</span>
+          <span class="ec-menu-item__label">Export Estate Sale Data</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
         <li class="ec-menu-item" id="menu-whats-new" tabindex="0" role="button">
@@ -928,6 +1041,7 @@
   <script src="/js/payment.js"></script>
   <script src="/js/dashboard.js"></script>
   <script src="/js/payouts.js"></script>
+  <script src="/js/past-sales.js"></script>
   <script src="/js/sale-setup.js"></script>
   <script src="/js/version.js"></script>
   <script src="/js/app.js"></script>

@@ -992,7 +992,9 @@ body {
   flex-direction: column;
   gap: var(--space-sm);
   padding: var(--space-md) var(--space-lg);
-  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  /* v198: bumped bottom padding from --space-md to --space-lg so the second
+     button (Delete Item, in edit mode) clears iOS Safari's bottom URL bar. */
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
   border-top: 1px solid var(--color-divider);
 }
@@ -2096,6 +2098,10 @@ body {
   background: var(--color-bg);
   padding: var(--sheet-top-padding) var(--space-md) var(--space-md);
   text-align: left;
+  /* v198: paused-sale menu has saleblock + 7 nav items + 2 state-action
+     items; the default 80dvh cap clipped the bottom row on smaller phones.
+     Same pattern as the consignor modal override at line 2426. */
+  max-height: 95dvh;
 }
 
 .ec-menu-list {
@@ -3631,11 +3637,12 @@ body {
   line-height: var(--line-height-default);
 }
 
-/* Export link sits centered under the primary CTA — matches the
-   Paused screen's stacked-actions look. */
-.dashboard-ended-banner #dashboard-export {
-  text-align: center;
-  width: 100%;
+/* v197: secondary actions sit in an inline row (qr-action-row pattern)
+   instead of stacked. Tighten the row's gap relative to the QR screen so
+   it reads as a compact follow-up under the primary CTA, not a separate
+   action zone. */
+.dashboard-ended-banner__links {
+  margin-top: var(--space-xs);
 }
 
 /* === Export selector sheet (v190) — title + sale-name subtitle on the
@@ -4108,6 +4115,14 @@ button.dashboard-detail__consignor--empty:active {
   border: 1px dashed var(--color-primary);
 }
 
+/* v198: when the empty Assign button shows just a person-add icon (instead
+   of dashed dot + "Assign" text), size the SVG to match the dot dimensions. */
+.dashboard-detail__consignor-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
 .dashboard-detail__consignor-summary {
   border-top: 1px solid var(--color-border);
   margin-top: var(--space-sm);
@@ -4172,8 +4187,11 @@ button.dashboard-detail__consignor--empty:active {
 }
 
 /* Dashboard empty state — uses .ec-empty-state. The id #dashboard-empty
-   is preserved for the [hidden] toggle semantics. */
-#dashboard-empty[hidden] {
+   is preserved for the [hidden] toggle semantics. .ec-empty-state has
+   display: flex which would otherwise win over the native [hidden] = none.
+   Same workaround for the past-sale-detail empty state (v196). */
+#dashboard-empty[hidden],
+#past-sale-empty[hidden] {
   display: none;
 }
 
@@ -4195,6 +4213,197 @@ button.dashboard-detail__consignor--empty:active {
 }
 
 
+/* === Past Sales (v193) =================================================
+   Two screens share this section — the list (#screen-past-sales) and the
+   detail (#screen-past-sale-detail). Both use the past-sales-header pattern
+   for top-bar chrome (back arrow + title), then diverge on body content.
+   ====================================================================== */
 
+.past-sales-screen,
+.past-sale-detail-screen {
+  background: var(--color-bg);
+}
+
+/* Layout only kicks in when the screen is active — otherwise we'd override
+   the base `.screen { display: none }` rule and the screen would render even
+   when another screen is active (v193 stacking bug, fixed v194). */
+.past-sales-screen.active,
+.past-sale-detail-screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+.past-sales-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
+  flex-shrink: 0;
+}
+
+.past-sales-back {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: calc(var(--space-md) * -1);
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.past-sales-back:active {
+  background: var(--color-tap-highlight);
+}
+
+.past-sales-back svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.past-sales-header__title {
+  flex: 1;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.past-sales-header__title--small {
+  font-size: var(--font-size-xl);
+}
+
+.past-sales-header__spacer {
+  width: 44px;
+  flex-shrink: 0;
+}
+
+/* List body — vertical stack of past-sale rows */
+.past-sales-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-lg) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.past-sales-empty {
+  margin-top: var(--space-3xl);
+}
+
+/* One row per archived sale — full-width tappable .ec-card */
+.past-sale-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-md) var(--space-lg);
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+.past-sale-row:active {
+  background: var(--color-tap-highlight);
+}
+
+.past-sale-row__name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
+}
+
+.past-sale-row__meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-snug);
+}
+
+/* Detail screen — subtitle under the title */
+.past-sale-detail__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 var(--space-lg) var(--space-md);
+  letter-spacing: 0.01em;
+}
+
+.past-sale-detail__subtitle:empty {
+  display: none;
+}
+
+/* Bottom action stack: Export primary + Delete destructive link */
+.past-sale-detail__actions {
+  padding: var(--bottom-action-padding) var(--space-lg);
+  padding-bottom: calc(var(--bottom-action-padding) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: stretch;
+}
+
+.past-sale-detail__actions .ec-link-destructive {
+  align-self: center;
+  margin-top: var(--space-xs);
+}
+
+/* === Setup screen → Past Estate Sales tappable card (v195) ===
+   Wraps .ec-card__row so the height matches the other setup cards. The
+   button-specific overrides reset default <button> chrome and add the
+   tap-highlight + gap. Layout (display:flex, min-height 48px, padding)
+   comes from .ec-card__row. */
+.setup-past-sales-row {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  text-align: left;
+  gap: var(--space-sm);
+}
+
+.setup-past-sales-row:active {
+  background: var(--color-tap-highlight);
+}
+
+.setup-past-sales-card__label {
+  flex: 1;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.setup-past-sales-card__count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.setup-past-sales-card__chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
 
 

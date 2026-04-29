@@ -81,7 +81,14 @@ const App = {
       setupMenuModal: document.getElementById('setup-menu-modal'),
       setupMenuWhatsNew: document.getElementById('setup-menu-whats-new'),
       setupMenuFeedback: document.getElementById('setup-menu-feedback'),
-      setupMenuVersionLabel: document.getElementById('setup-menu-version-label')
+      setupMenuVersionLabel: document.getElementById('setup-menu-version-label'),
+      setupMenuPastSales: document.getElementById('setup-menu-past-sales'),
+      // Past Estate Sales — Setup-screen card (v195) and dashboard-banner link
+      setupPastSalesSection: document.getElementById('setup-past-sales-section'),
+      setupPastSalesCard: document.getElementById('setup-past-sales-card'),
+      setupPastSalesCount: document.getElementById('setup-past-sales-count'),
+      dashboardViewPastSales: document.getElementById('dashboard-view-past-sales'),
+      dashboardEndedSep: document.getElementById('dashboard-ended-sep')
     };
   },
 
@@ -190,6 +197,29 @@ const App = {
       });
     }
 
+    // Past Estate Sales — three entry points (v195):
+    //   1) Setup hamburger row (muscle memory)
+    //   2) Setup screen body card (primary, visible)
+    //   3) Dashboard ended-banner link (post-end-sale shortcut)
+    // The in-sale hamburger entry was removed — mid-sale users don't dig into
+    // archives.
+    if (this.headerElements.setupMenuPastSales) {
+      this.headerElements.setupMenuPastSales.addEventListener('click', () => {
+        this._closeSetupMenu();
+        this.showScreen('past-sales');
+      });
+    }
+    if (this.headerElements.setupPastSalesCard) {
+      this.headerElements.setupPastSalesCard.addEventListener('click', () => {
+        this.showScreen('past-sales');
+      });
+    }
+    if (this.headerElements.dashboardViewPastSales) {
+      this.headerElements.dashboardViewPastSales.addEventListener('click', () => {
+        this.showScreen('past-sales');
+      });
+    }
+
     // Export Sale Data — three entry points share the same flow.
     const menuExport = document.getElementById('menu-export');
     if (menuExport) {
@@ -219,7 +249,10 @@ const App = {
       exportConfirm.addEventListener('click', async () => {
         if (exportConfirm.disabled) return;
         const daysFilter = Array.from(this._exportSelection || []);
-        this._closeExportSheet();
+        // Hide the sheet first (without clearing the export context — _executeExport
+        // needs it). _executeExport will clear the context when it's done.
+        const modal = document.getElementById('export-modal');
+        if (modal) modal.classList.remove('visible');
         await this._executeExport(daysFilter);
       });
     }
@@ -344,6 +377,13 @@ const App = {
     // Setup menu — open/close + items (What's New, Share Feedback)
     if (this.headerElements.setupMenuBtn) {
       this.headerElements.setupMenuBtn.addEventListener('click', () => {
+        // Past Sales row hides when archive is empty.
+        if (this.headerElements.setupMenuPastSales && typeof ArchiveDB !== 'undefined') {
+          this.headerElements.setupMenuPastSales.hidden = true;
+          ArchiveDB.count().then(n => {
+            if (this.headerElements.setupMenuPastSales) this.headerElements.setupMenuPastSales.hidden = n === 0;
+          }).catch(() => {});
+        }
         this.headerElements.setupMenuModal.classList.add('visible');
       });
     }
@@ -415,6 +455,50 @@ const App = {
     }
   },
 
+  /**
+   * Refresh archive-aware UI affordances. Called whenever the user lands on
+   * a screen that surfaces past-sales chrome:
+   *   - Setup screen body card (#setup-past-sales-section)
+   *   - Setup hamburger row (already gated in its open handler)
+   *   - Dashboard ended-banner "View Past Estate Sales" link
+   *
+   * Async; the affordances stay hidden until the count comes back. Cheap
+   * IDB count() call — runs in a few ms.
+   */
+  refreshArchiveAffordances() {
+    if (typeof ArchiveDB === 'undefined') return;
+    // Reset to hidden first so a stale state doesn't flash.
+    if (this.headerElements.setupPastSalesSection) {
+      this.headerElements.setupPastSalesSection.hidden = true;
+    }
+    if (this.headerElements.dashboardViewPastSales) {
+      this.headerElements.dashboardViewPastSales.hidden = true;
+    }
+    if (this.headerElements.dashboardEndedSep) {
+      this.headerElements.dashboardEndedSep.hidden = true;
+    }
+    ArchiveDB.count().then(n => {
+      if (this.headerElements.setupPastSalesSection) {
+        this.headerElements.setupPastSalesSection.hidden = n === 0;
+      }
+      if (this.headerElements.setupPastSalesCount) {
+        this.headerElements.setupPastSalesCount.textContent = String(n);
+      }
+      // Dashboard banner: the View Past Estate Sales link AND the dot
+      // separator both appear only when the sale is ended and there's
+      // at least one archive entry to view. Otherwise Export sits alone.
+      const sale = Storage.getSale();
+      const isEnded = sale && sale.status === 'ended';
+      const showPastLink = isEnded && n > 0;
+      if (this.headerElements.dashboardViewPastSales) {
+        this.headerElements.dashboardViewPastSales.hidden = !showPastLink;
+      }
+      if (this.headerElements.dashboardEndedSep) {
+        this.headerElements.dashboardEndedSep.hidden = !showPastLink;
+      }
+    }).catch(() => {});
+  },
+
   // ── Export Sale Data (v188) ──
 
   /**
@@ -433,23 +517,27 @@ const App = {
   /**
    * Trigger the CSV export flow. v190: validates pre-flight (sale exists,
    * has transactions), pulls fresh from sync to keep counts accurate, then
-   * either opens the day-picker sheet OR (single-day shortcut) goes straight
-   * to share. The errorElementId arg picks which inline error element to
-   * use for the "no transactions" feedback before the sheet opens.
+   * opens the day-picker sheet.
+   *
+   * v193 adds an optional saleContext for past-sale exports:
+   *   undefined / null  → use the live sale + transactions + consignors
+   *                       (today's behavior; pulls from sync first)
+   *   { sale, transactions, consignors }
+   *                     → use the snapshot exactly as given. Does NOT pull
+   *                       from sync (the snapshot is frozen by definition).
    */
-  async exportSaleData(errorElementId) {
-    const sale = Storage.getSale();
+  async exportSaleData(errorElementId, saleContext) {
     const errId = errorElementId || 'menu-export-error';
+    const isPast = !!saleContext;
 
+    const sale = isPast ? saleContext.sale : Storage.getSale();
     if (!sale) {
       this._showFieldError(errId, 'No estate sale yet — start one first.');
       return;
     }
 
-    // Pull fresh from sync BEFORE the sheet opens so per-day counts are
-    // accurate at decision time. v188 pulled before share; that was too late
-    // when the picker shows counts. Fresh-device gap stays closed.
-    if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+    // Sync pull — only for live exports. Past sales are immutable snapshots.
+    if (!isPast && typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
       try {
         await Sync.pullInvoices(sale);
       } catch (err) {
@@ -457,16 +545,17 @@ const App = {
       }
     }
 
-    const transactions = Storage.getTransactions();
+    const transactions = isPast ? (saleContext.transactions || []) : Storage.getTransactions();
     if (transactions.length === 0) {
       this._showFieldError(errId, 'No transactions to export yet.');
       return;
     }
 
-    // Always show the picker, even for single-day sales (v190.1). The
-    // single-day shortcut surprised users — they tapped Export and got
-    // the share sheet with no preview of what was being exported. The
-    // picker is now consistent across all sale shapes.
+    // Stash the context the picker needs — _executeExport reads from this.
+    this._exportContext = isPast
+      ? { sale, transactions, consignors: saleContext.consignors || [] }
+      : null;
+
     this._renderExportSheet(sale, transactions);
     document.getElementById('export-modal').classList.add('visible');
   },
@@ -595,7 +684,9 @@ const App = {
   _updateExportCTA() {
     const btn = document.getElementById('export-confirm');
     if (!btn) return;
-    const transactions = Storage.getTransactions();
+    const transactions = this._exportContext
+      ? this._exportContext.transactions
+      : Storage.getTransactions();
     const selectedCount = transactions.filter(t => this._exportSelection.has(t.saleDay || 1)).length;
     btn.disabled = selectedCount === 0;
     if (selectedCount === 0) {
@@ -610,16 +701,29 @@ const App = {
   _closeExportSheet() {
     const modal = document.getElementById('export-modal');
     if (modal) modal.classList.remove('visible');
+    // If the user dismissed the picker without exporting, drop the past-sale
+    // context so the next live export doesn't pick it up.
+    this._exportContext = null;
   },
 
   /**
    * Generate and share the CSV. daysFilter is null (export all) or an
    * array of selected day numbers. v190: split out from exportSaleData so
-   * the picker confirm and the single-day shortcut can both call it.
+   * the picker confirm can call it. v193: routes through the snapshot CSV
+   * builder when an export context is set (past-sale export).
    */
   async _executeExport(daysFilter) {
-    const csv = Storage.exportSaleCSV(daysFilter);
-    const filename = Storage.exportFilename();
+    const ctx = this._exportContext;
+    let csv, filename;
+    if (ctx) {
+      csv = Storage.exportSaleCSVFromSnapshot(ctx.transactions, ctx.consignors, daysFilter);
+      filename = Storage.exportFilename(ctx.sale ? ctx.sale.name : null);
+    } else {
+      csv = Storage.exportSaleCSV(daysFilter);
+      filename = Storage.exportFilename();
+    }
+    // Clear the context so a subsequent live export doesn't accidentally inherit it.
+    this._exportContext = null;
     const file = new File([csv], filename, { type: 'text/csv' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1332,11 +1436,35 @@ const App = {
         this.showScreen('checkout');
       }
     } else if (newStatus === 'ended') {
-      // Drop the active cart but keep the sale + transactions for review
+      // Snapshot into the local archive so this device gets a Past Sales entry
+      // even though it didn't initiate the end-sale. Fire-and-forget — if IDB
+      // is unavailable, the alert + nav still happen.
+      if (typeof ArchiveDB !== 'undefined') {
+        ArchiveDB.archiveCurrentSale().catch(err =>
+          console.warn('[archive] remote end-sale archive failed:', err.message));
+      }
+      // Drop the active cart but keep the sale + transactions for review.
       Storage.clearCart();
       Storage.clearCustomerCounter();
       alert('This sale was ended on another device. You can still review past invoices on the dashboard.');
       this.showScreen('dashboard');
+    } else if (newStatus === 'purged') {
+      // The sale was deleted from the cloud on another device. Strip the
+      // _synced flag so future polls skip it (otherwise we'd 404-loop), drop
+      // the cart, warn once, send the user to the dashboard for a final read.
+      const local = Storage.getSale();
+      if (local) {
+        local._synced = false;
+        Storage.saveSale(local);
+      }
+      if (this._stopSyncPoll) {
+        this._stopSyncPoll();
+        this._stopSyncPoll = null;
+      }
+      Storage.clearCart();
+      Storage.clearCustomerCounter();
+      alert('This sale was deleted on another device. The local copy is no longer connected to the cloud.');
+      this.showScreen(local ? 'dashboard' : 'setup');
     }
   },
 
@@ -1446,6 +1574,7 @@ const App = {
     Scan.init();
     Payment.init();
     Dashboard.init();
+    if (typeof PastSales !== 'undefined') PastSales.init();
   },
 
   /**
@@ -1529,6 +1658,7 @@ const App = {
         }
       } else if (screenName === 'setup') {
         SaleSetup.resetForm();
+        this.refreshArchiveAffordances();
       } else if (screenName === 'qr') {
         QR.render(data);
       } else if (screenName === 'scan') {
@@ -1538,6 +1668,7 @@ const App = {
       } else if (screenName === 'dashboard') {
         Dashboard.resetFilters();
         Dashboard.render(data);
+        this.refreshArchiveAffordances();
         // Start sync polling — pulls invoices + sale status from other devices
         const sale = Storage.getSale();
         if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
@@ -1557,6 +1688,10 @@ const App = {
             if (result.saleStatusChanged) this._handleRemoteSaleStatusChange(result.newStatus);
           });
         }
+      } else if (screenName === 'past-sales') {
+        if (typeof PastSales !== 'undefined') PastSales.renderList();
+      } else if (screenName === 'past-sale-detail') {
+        if (typeof PastSales !== 'undefined') PastSales.renderDetail(data);
       }
 
     }

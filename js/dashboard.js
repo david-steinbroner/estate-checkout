@@ -456,9 +456,16 @@ const Dashboard = {
   },
 
   /**
-   * Render a single transaction row
+   * Render a single transaction row.
+   *
+   * v193: accepts `opts` to make this reusable from the read-only Past Sale
+   * Detail screen (PastSales.renderDetail).
+   *   opts.readOnly           — suppress action buttons + consignor edit
+   *   opts.consignorsOverride — use this consignor list instead of Storage's
+   *                             (Past Sale Detail reads from a snapshot)
    */
-  renderTransactionRow(txn) {
+  renderTransactionRow(txn, opts) {
+    const options = opts || {};
     const status = txn.status || 'unpaid';
     const defaultLabel = status === 'open' ? 'Order #' : 'Invoice #';
     const orderLabel = Utils.escapeHtml(txn.orderName || (defaultLabel + (txn.customerNumber || '?')));
@@ -489,7 +496,7 @@ const Dashboard = {
           <span class="dashboard-txn__amount">${total}</span>
         </div>
         <div class="dashboard-txn__detail" hidden>
-          ${(() => { try { return this.renderTransactionDetail(txn); } catch (e) { console.error('Failed to render transaction detail:', txn.id, e); return ''; } })()}
+          ${(() => { try { return this.renderTransactionDetail(txn, options); } catch (e) { console.error('Failed to render transaction detail:', txn.id, e); return ''; } })()}
         </div>
       </li>
     `;
@@ -517,14 +524,21 @@ const Dashboard = {
   },
 
   /**
-   * Render transaction detail (expanded view)
+   * Render transaction detail (expanded view).
+   *
+   * v193: opts.readOnly suppresses Mark Paid / Edit / Cancel actions and the
+   * consignor edit affordance. opts.consignorsOverride lets a snapshot-driven
+   * caller pass its own consignors list instead of pulling live storage.
    */
-  renderTransactionDetail(txn) {
+  renderTransactionDetail(txn, opts) {
+    const options = opts || {};
+    const readOnly = !!options.readOnly;
+
     const discountLabel = txn.discount > 0
       ? `Day ${txn.saleDay} — ${txn.discount}% off`
       : 'No discount';
 
-    const consignors = Storage.getConsignors();
+    const consignors = options.consignorsOverride || Storage.getConsignors();
     const consignorTotals = {}; // { id: { name, color, count, total } }
 
     const itemsHtml = (txn.items || []).map(item => {
@@ -536,9 +550,9 @@ const Dashboard = {
       }
 
       // Consignor tag — tappable to reassign (even on paid invoices per V2 §1.6).
-      // Voided transactions are read-only.
+      // Voided and read-only renders show non-interactive tags.
       const isVoid = (txn.status || 'unpaid') === 'void';
-      const editable = !isVoid && consignors.length > 0;
+      const editable = !readOnly && !isVoid && consignors.length > 0;
       let consignorTag = '';
       if (item.consignorId) {
         const c = consignors.find(x => x.id === item.consignorId);
@@ -555,7 +569,9 @@ const Dashboard = {
           consignorTotals[c.id].total += item.finalPrice;
         }
       } else if (editable) {
-        consignorTag = ` <button class="dashboard-detail__consignor dashboard-detail__consignor--empty" data-consignor-edit="${item.id}" type="button" aria-label="Assign consignor"><span class="dashboard-detail__consignor-dot dashboard-detail__consignor-dot--empty"></span>Assign</button>`;
+        // v198: text "Assign" replaced with a person-add icon. The pill
+        // chrome stays for hit area + dashed-empty signal.
+        consignorTag = ` <button class="dashboard-detail__consignor dashboard-detail__consignor--empty" data-consignor-edit="${item.id}" type="button" aria-label="Assign consignor"><svg class="dashboard-detail__consignor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><path d="M2 13a4 4 0 0 1 8 0"/><path d="M13 4v3M14.5 5.5h-3"/></svg></button>`;
       }
 
       const hasHaggle = item.haggleType && item.haggleValue;
@@ -596,11 +612,13 @@ const Dashboard = {
       consignorSummaryHtml = `<div class="dashboard-detail__consignor-summary">${lines}</div>`;
     }
 
-    // Action buttons vary by status
+    // Action buttons vary by status — none in read-only mode.
     const status = txn.status || 'unpaid';
     let actionsHtml = '';
 
-    if (status === 'open') {
+    if (readOnly) {
+      actionsHtml = '';
+    } else if (status === 'open') {
       actionsHtml = `
         <div class="dashboard-detail__actions">
           <button class="dashboard-detail__action" data-action="continue-editing" data-id="${txn.id}">Edit order</button>
