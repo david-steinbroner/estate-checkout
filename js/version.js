@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v209';
+const APP_VERSION = 'v210';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v210',
+    date: '2026-04-30',
+    changes: [
+      'Fixed: bottom action buttons (Start Estate Sale, Resume, Mark Paid, Done, etc.) now sit comfortably above the iOS home indicator when the app is installed to your home screen. Previously they were squished against the bottom edge in standalone PWA mode.'
+    ]
+  },
   {
     version: 'v209',
     date: '2026-04-30',
