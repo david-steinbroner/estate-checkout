@@ -9,9 +9,21 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v208';
+const APP_VERSION = 'v209';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v209',
+    date: '2026-04-30',
+    changes: [
+      'Fixed for real: End Day icon now actually renders. The label was being swapped via .textContent on the whole row, which wiped the icon span. Now targets just the label.',
+      'Edit Estate Sale Details: redesigned to match the Setup screen pattern — every section is a grouped card with the same Day-row and Consignor-row styling. Removing days or consignors uses the standard "Remove → tap minus → tap Remove" flow (same as Setup). Renamed from "Edit Estate Sale" so the entry point is clearer.',
+      'Pencil edit icons removed everywhere. Editable inline values (Order #N, sheet titles) are now blue tappable text — same affordance iOS uses for every editable value in Wallet, Notes, Settings.',
+      'Edit Item: consignor chip now sits above the numpad so it\'s reachable without scrolling past the numpad keys.',
+      'Select Consignor sheet: row alignment fixed. "None" and named consignor rows now align identically — same indent on every row, no more centered-vs-left mismatch.',
+      'Note about the URL pill that appears between the input and the keyboard: that\'s iOS Safari chrome and can\'t be suppressed from the page. It goes away when you install the app to your home screen (tap Safari\'s share button → Add to Home Screen). The standalone PWA has no Safari chrome at all.'
+    ]
+  },
   {
     version: 'v208',
     date: '2026-04-30',

@@ -433,16 +433,10 @@ body {
   gap: var(--space-xs);
 }
 
-.running-total__edit-hint {
-  color: var(--color-text-tertiary);
-  display: inline-flex;
-  align-items: center;
-}
-
-.running-total__edit-hint svg {
-  width: 14px;
-  height: 14px;
-  display: block;
+/* v209: running-total order name is now blue tappable text — no pencil. */
+.running-total__name {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
 }
 
 /* === Hero Number (v182 migration target) ===
@@ -625,17 +619,10 @@ body {
   cursor: pointer;
 }
 
-.edit-icon {
-  color: var(--color-text-secondary);
-  margin-left: var(--space-md);
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.edit-icon svg {
-  width: 18px;
-  height: 18px;
-  display: inline-block;
+/* v209: .edit-icon dropped along with EDIT_ICON_SVG. Sheet titles now use
+   primary color directly to signal tappability. */
+.sheet__title--editable {
+  color: var(--color-primary);
 }
 
 .sheet__title-input {
@@ -707,15 +694,8 @@ body {
   white-space: nowrap;
 }
 
-/* Pencil edit icon on item rows */
-.item-row__edit-icon {
-  flex-shrink: 0;
-  color: var(--color-text-secondary);
-  opacity: 0.5;
-  display: flex;
-  align-items: center;
-  margin-left: var(--space-xs);
-}
+/* v209: .item-row__edit-icon removed. Tap-to-edit on the whole row is the
+   affordance — no inline pencil glyph. */
 
 /* Expandable area below row content */
 .item-row__expand-area {
@@ -1175,77 +1155,45 @@ body {
   margin-bottom: var(--space-lg);
 }
 
-.edit-sale__section {
-  margin-bottom: var(--space-lg);
+/* v209: Edit Estate Sale Details — grouped-card layout, retiring the
+   bespoke .edit-sale__section / __row / __remove patterns. Each section
+   wraps in .ec-card (with eyebrow .ec-section-header outside, like Setup),
+   reuses .discount-row + .consignor-list__item from Setup, and uses Edit
+   Mode (§1.4.I) for batch delete. The .edit-sale__* classes below are
+   for the Details card's split label-value rows only. */
+
+.edit-sale .ec-section-header {
+  display: block;
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
+.edit-sale .ec-section-header:first-child {
+  margin-top: 0;
+}
+
+.edit-sale__split-row {
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.edit-sale__label {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
 
 .edit-sale__value {
   font-size: var(--font-size-base);
-  color: var(--color-text);
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-decoration-color: var(--color-text-secondary);
-  padding: var(--space-sm) 0;
-}
-
-.edit-sale__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.edit-sale__row:last-of-type {
-  border-bottom: none;
-}
-
-.edit-sale__row-label {
-  font-size: var(--font-size-base);
-  color: var(--color-text);
-}
-
-.edit-sale__row-value {
-  font-size: var(--font-size-base);
-  color: var(--color-text);
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-decoration-color: var(--color-text-secondary);
-}
-
-.edit-sale__remove {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-lg);
-  line-height: 1;
-  color: var(--color-danger);
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  margin-left: var(--space-sm);
 }
 
-.edit-sale__remove:active {
-  background: var(--color-danger-light);
-}
-
-.edit-sale__remove--disabled {
-  color: var(--color-disabled);
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-
-.edit-sale__remove--disabled:active {
-  background: none;
+.edit-sale__empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  justify-content: center;
 }
 
 .edit-sale__flash-error {

@@ -573,6 +573,19 @@
           </button>
         </div>
 
+        <!-- Consignor chip (V2 §1.6) — v209: moved ABOVE the numpad so it
+             sits directly above the footer in the body's scroll order. The
+             numpad pushed it out of view when the keyboard was up, with the
+             chip half-obscured behind the entry-screen footer. -->
+        <button class="ec-chip-selector" id="add-item-consignor-btn" type="button" hidden>
+          <span class="ec-chip-selector__dot" id="add-item-consignor-dot"></span>
+          <span class="ec-chip-selector__label">
+            <span class="ec-chip-selector__prefix">Consigned by</span>
+            <span class="ec-chip-selector__name" id="add-item-consignor-name">Select consignor</span>
+          </span>
+          <svg class="ec-chip-selector__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
+        </button>
+
         <!-- Numpad -->
         <div class="ec-numpad" id="numpad">
           <button class="ec-numpad-key" data-value="1">1</button>
@@ -590,16 +603,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M18 9l-6 6M12 9l6 6"/></svg>
           </button>
         </div>
-
-        <!-- Consignor chip (V2 §1.6) -->
-        <button class="ec-chip-selector" id="add-item-consignor-btn" type="button" hidden>
-          <span class="ec-chip-selector__dot" id="add-item-consignor-dot"></span>
-          <span class="ec-chip-selector__label">
-            <span class="ec-chip-selector__prefix">Consigned by</span>
-            <span class="ec-chip-selector__name" id="add-item-consignor-name">Select consignor</span>
-          </span>
-          <svg class="ec-chip-selector__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg>
-        </button>
       </div>
 
       <!-- Sticky footer with primary action -->
@@ -667,7 +670,7 @@
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5l3.5 3.5L7 16.5 3 17l.5-4z"/></svg>
           </span>
-          <span class="ec-menu-item__label">Edit Estate Sale</span>
+          <span class="ec-menu-item__label">Edit Estate Sale Details</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
         <li class="ec-menu-item ec-menu-item--group-start" id="menu-export" tabindex="0" role="button">
@@ -694,7 +697,7 @@
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M7 4v12M13 4v12"/></svg>
           </span>
-          <span class="ec-menu-item__label">End Day</span>
+          <span class="ec-menu-item__label" id="menu-end-day-label">End Day</span>
         </li>
         <li class="ec-menu-item ec-menu-item--danger" id="menu-end-sale" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
@@ -823,7 +826,7 @@
   <!-- Edit Sale Sheet -->
   <div class="overlay" id="edit-sale-modal">
     <div class="sheet sheet--detail">
-      <p class="sheet__title">Edit Estate Sale</p>
+      <p class="sheet__title">Edit Estate Sale Details</p>
       <div class="edit-sale" id="edit-sale-content"></div>
       <div class="sheet__buttons">
         <button class="ec-btn ec-btn-primary" id="edit-sale-done">Done</button>
@@ -995,7 +998,7 @@
 
   <!-- Consignor Picker Sheet -->
   <div class="overlay" id="consignor-picker-modal">
-    <div class="sheet">
+    <div class="sheet sheet--detail">
       <p class="sheet__title">Select Consignor</p>
       <ul class="consignor-picker__list" id="consignor-picker-list"></ul>
     </div>

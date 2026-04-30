@@ -3,7 +3,11 @@
  * Handles number pad input, item list, and running total
  */
 
-const EDIT_ICON_SVG = '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+// v209: dropped EDIT_ICON_SVG. The tilted-pencil icon read as
+// off-baseline next to text and didn't fit the iOS-styled aesthetic.
+// Editable inline values now signal tappability via primary-color text
+// — same convention iOS uses in Wallet, Notes, Settings (no decoration
+// beyond a color cue).
 
 const Checkout = {
   // Current price being entered (stored as string for display)
@@ -698,12 +702,13 @@ const Checkout = {
     const name = this.orderCustomName || `Order #${num}`;
     const count = this.items.length;
     const escapedName = Utils.escapeHtml(name);
-    const pencil = `<span class="running-total__edit-hint">${EDIT_ICON_SVG}</span>`;
+    // v209: blue tappable name signals editability — no pencil glyph.
+    const nameEl = `<span class="running-total__name">${escapedName}</span>`;
     if (count === 0) {
-      this.elements.runningTotalInfo.innerHTML = `${escapedName} ${pencil}`;
+      this.elements.runningTotalInfo.innerHTML = nameEl;
     } else {
       const itemText = count === 1 ? '1 item' : `${count} items`;
-      this.elements.runningTotalInfo.innerHTML = `${escapedName} · ${itemText} ${pencil}`;
+      this.elements.runningTotalInfo.innerHTML = `${nameEl} · ${itemText}`;
     }
   },
 
@@ -899,7 +904,8 @@ const Checkout = {
   renderItemSheet() {
     const num = this.currentOrderNumber || Storage.peekNextCustomerNumber();
     const titleText = this.orderCustomName || `Order #${num}`;
-    this.elements.itemSheetTitle.innerHTML = `${Utils.escapeHtml(titleText)} <span class="edit-icon">${EDIT_ICON_SVG}</span>`;
+    // v209: title itself is the affordance — set in primary color, no pencil.
+    this.elements.itemSheetTitle.innerHTML = Utils.escapeHtml(titleText);
     const totalQty = this.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
     const lineCount = this.items.length;
     const subtitle = totalQty > lineCount
@@ -955,7 +961,6 @@ const Checkout = {
               <div class="item-row__prices">
                 ${this.renderItemPrices(item)}
               </div>
-              <span class="item-row__edit-icon">${EDIT_ICON_SVG}</span>
             </div>
           </li>
         `;
@@ -1641,7 +1646,11 @@ const Checkout = {
     const list = document.getElementById('consignor-picker-list');
     const consignors = Storage.getConsignors();
 
+    // v209: each row reserves a dot slot so all names align at the same
+    // x-coordinate. The "None" row uses an invisible placeholder (visibility:
+    // hidden via inline style) instead of omitting the element entirely.
     let html = `<li class="consignor-picker__item${!currentId ? ' consignor-picker__item--selected' : ''}" data-consignor-pick="">
+      <span class="consignor-picker__dot" style="visibility: hidden"></span>
       <span class="consignor-picker__name">None</span>
       ${!currentId ? '<span class="consignor-picker__check">✓</span>' : ''}
     </li>`;

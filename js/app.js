@@ -232,6 +232,7 @@ const App = {
       menuScan: document.getElementById('menu-scan'),
       menuShare: document.getElementById('menu-share'),
       menuEndDay: document.getElementById('menu-end-day'),
+      menuEndDayLabel: document.getElementById('menu-end-day-label'),
       menuEndSale: document.getElementById('menu-end-sale'),
       menuAppGuide: document.getElementById('menu-app-guide'),
       menuVersionLabel: document.getElementById('menu-version-label'),
@@ -615,8 +616,11 @@ const App = {
     if (!this.headerElements.menuModal) return;
     // Toggle End Day / Resume Day based on sale status
     const sale = Storage.getSale();
-    if (this.headerElements.menuEndDay) {
-      this.headerElements.menuEndDay.textContent = (sale && sale.status === 'paused') ? 'Resume Day' : 'End Day';
+    // v209: target the label span, not the <li>. Setting textContent on
+    // the <li> wiped the icon span every time the menu opened — that's why
+    // End Day kept appearing iconless after v207/v208.
+    if (this.headerElements.menuEndDayLabel) {
+      this.headerElements.menuEndDayLabel.textContent = (sale && sale.status === 'paused') ? 'Resume Day' : 'End Day';
     }
     // Show Consignor Payouts only if consignors exist
     if (this.headerElements.menuPayouts) {
@@ -966,6 +970,11 @@ const App = {
     const sale = Storage.getSale();
     if (!sale) return;
     this._editSaleEditing = false;
+    // v209: reset Edit Mode state on each open
+    this._editScheduleMode = false;
+    this._armedDay = null;
+    this._editConsignorsMode = false;
+    this._armedConsignor = null;
     this._updateEditSaleDoneBtn();
     this.renderEditSale(sale);
     this.headerElements.editSaleModal.classList.add('visible');
@@ -1027,64 +1036,122 @@ const App = {
   /**
    * Render the edit sale sheet content
    */
+  /**
+   * Render the Edit Estate Sale Details sheet.
+   *
+   * v209: rebuilt to mirror the Setup screen's grouped-card layout. Each
+   * section is an eyebrow `.ec-section-header` above an `.ec-card`, with
+   * input rows inside the card and action rows (`.ec-card__row--action`)
+   * at the bottom. Discount Schedule reuses the `.discount-row` styling
+   * from Setup; Consignors reuses `.consignor-list__item`. The bespoke
+   * `.edit-sale__section` / `.edit-sale__row` patterns are retired.
+   *
+   * The `×`-per-row delete affordance is replaced with the standard Edit
+   * Mode pattern (matching Setup §1.4.I): a "Remove" link sits next to
+   * "+ Add Day" / "+ Add Consignor"; tapping enters batch-delete mode.
+   */
   renderEditSale(sale) {
     const currentDay = Utils.getSaleDay(sale.startDate, sale);
     const discounts = sale.discounts || {};
     const days = Object.keys(discounts).map(Number).sort((a, b) => a - b);
+    const consignors = sale.consignors || [];
 
     let html = '';
 
-    // Sale Name
-    html += `<div class="edit-sale__section">
-      <div class="ec-section-header">Sale Name</div>
-      <div class="edit-sale__value" id="edit-sale-name">${Utils.escapeHtml(sale.name)}</div>
-    </div>`;
+    // Details card (Sale Name + Current Day — both tap-to-edit)
+    html += `
+      <span class="ec-section-header">Details</span>
+      <div class="ec-card setup-card">
+        <div class="ec-card__row edit-sale__split-row">
+          <span class="edit-sale__label">Sale Name</span>
+          <span class="edit-sale__value" id="edit-sale-name">${Utils.escapeHtml(sale.name)}</span>
+        </div>
+        <div class="ec-card__row edit-sale__split-row">
+          <span class="edit-sale__label">Current Day</span>
+          <span class="edit-sale__value" id="edit-sale-day">Day ${currentDay}</span>
+        </div>
+      </div>
+    `;
 
-    // Current Day (dropdown)
-    html += `<div class="edit-sale__section">
-      <div class="ec-section-header">Current Day</div>
-      <div class="edit-sale__value" id="edit-sale-day">Day ${currentDay}</div>
-    </div>`;
-
-    // Discount Schedule
-    html += `<div class="edit-sale__section">
-      <div class="consignor-section__header">
-        <div class="ec-section-header">Discount Schedule</div>
-        <button class="ec-link-primary" id="edit-sale-add-day">+ Add Day</button>
-      </div>`;
+    // Discount Schedule — reuse .discount-row pattern from Setup. Edit Mode
+    // is driven by the _editScheduleMode flag; armed-row state via _armedDay.
+    const editingSchedule = this._editScheduleMode;
+    const armedDay = this._armedDay;
+    let scheduleRows = '';
     days.forEach(d => {
       const isCompleted = d <= currentDay;
-      const removeClass = isCompleted ? 'edit-sale__remove edit-sale__remove--disabled' : 'edit-sale__remove';
-      html += `<div class="edit-sale__row">
-        <span class="edit-sale__row-label">Day ${d}</span>
-        <span class="edit-sale__row-value" data-edit-discount="${d}">${discounts[d]}%</span>
-        <button class="${removeClass}" data-remove-day="${d}" ${isCompleted ? 'aria-disabled="true"' : ''}>&times;</button>
-      </div>`;
+      const armed = editingSchedule && armedDay === d;
+      const handleHtml = (editingSchedule && !isCompleted)
+        ? `<button class="row-edit-handle" data-arm-day="${d}" type="button" aria-label="Remove Day ${d}"></button>`
+        : (editingSchedule
+            ? `<span class="row-edit-handle row-edit-handle--disabled" aria-hidden="true"></span>`
+            : '');
+      const rightHtml = armed
+        ? `<button class="row-edit-confirm" data-confirm-day="${d}" type="button">Remove</button>`
+        : `<span class="discount-row__value" data-edit-discount="${d}">${discounts[d]}%</span>`;
+      scheduleRows += `
+        <div class="discount-row" data-day-index="${d}">
+          <div class="discount-row__content">
+            ${handleHtml}
+            <span class="discount-row__label">Day ${d}</span>
+            <div class="discount-row__right">${rightHtml}</div>
+          </div>
+        </div>
+      `;
     });
-    html += `</div>`;
+    const scheduleEditingClass = editingSchedule ? ' discount-list--editing' : '';
+    const removeScheduleHidden = days.filter(d => d > currentDay).length === 0 ? 'hidden' : '';
+    html += `
+      <span class="ec-section-header">Discount Schedule</span>
+      <div class="ec-card setup-card">
+        <div class="discount-list${scheduleEditingClass}">${scheduleRows}</div>
+        <div class="ec-card__row ec-card__row--action ec-card__row--split">
+          <button class="ec-link-primary" id="edit-sale-add-day" type="button">+ Add Day</button>
+          <button class="ec-link-destructive" id="edit-sale-schedule-edit" type="button" ${removeScheduleHidden}>${editingSchedule ? 'Done' : 'Remove'}</button>
+        </div>
+      </div>
+    `;
 
-    // Consignors section
-    const consignors = sale.consignors || [];
-    html += `<div class="edit-sale__section">
-      <div class="consignor-section__header">
-        <div class="ec-section-header">Consignors</div>
-        <button class="ec-link-primary" id="edit-sale-add-consignor">+ Add</button>
-      </div>`;
+    // Consignors — reuse .consignor-list__item rows + Edit Mode pattern.
+    const editingConsignors = this._editConsignorsMode;
+    const armedConsignor = this._armedConsignor;
+    let consignorRows = '';
     if (consignors.length === 0) {
-      html += `<div style="font-size: var(--font-size-sm); color: var(--color-text-secondary); padding: var(--space-sm) 0;">No consignors added</div>`;
+      consignorRows = `<div class="ec-card__row edit-sale__empty">No consignors added</div>`;
     } else {
       consignors.forEach(c => {
         const payoutLabel = c.payoutType === 'percentage'
           ? `${c.payoutValue}% to consignor`
           : `$${c.payoutValue} fee per item`;
-        html += `<div class="consignor-list__item" data-consignor-id="${c.id}">
-          <span class="consignor-list__dot" style="background: ${c.color}"></span>
-          <span class="consignor-list__name">${Utils.escapeHtml(c.name)}</span>
-          <span class="consignor-list__payout">${payoutLabel}</span>
-        </div>`;
+        const armed = editingConsignors && armedConsignor === c.id;
+        const handleHtml = editingConsignors
+          ? `<button class="row-edit-handle" data-arm-consignor="${c.id}" type="button" aria-label="Remove ${Utils.escapeHtml(c.name)}"></button>`
+          : '';
+        const rightHtml = armed
+          ? `<button class="row-edit-confirm" data-confirm-consignor="${c.id}" type="button">Remove</button>`
+          : `<span class="consignor-list__payout">${payoutLabel}</span>`;
+        consignorRows += `
+          <div class="consignor-list__item" data-consignor-id="${c.id}">
+            ${handleHtml}
+            <span class="consignor-list__dot" style="background: ${c.color}"></span>
+            <span class="consignor-list__name">${Utils.escapeHtml(c.name)}</span>
+            ${rightHtml}
+          </div>
+        `;
       });
     }
-    html += `</div>`;
+    const consignorEditingClass = editingConsignors ? ' consignor-list--editing' : '';
+    const removeConsignorsHidden = consignors.length === 0 ? 'hidden' : '';
+    html += `
+      <span class="ec-section-header">Consignors</span>
+      <div class="ec-card setup-card">
+        <div class="consignor-list${consignorEditingClass}">${consignorRows}</div>
+        <div class="ec-card__row ec-card__row--action ec-card__row--split">
+          <button class="ec-link-primary" id="edit-sale-add-consignor" type="button">+ Add Consignor</button>
+          <button class="ec-link-destructive" id="edit-sale-consignors-edit" type="button" ${removeConsignorsHidden}>${editingConsignors ? 'Done' : 'Remove'}</button>
+        </div>
+      </div>
+    `;
 
     this.headerElements.editSaleContent.innerHTML = html;
     this._setEditSaleEditing(false);
@@ -1152,61 +1219,71 @@ const App = {
       });
     }
 
-    // Discount percentage tap to edit
-    content.querySelectorAll('[data-edit-discount]').forEach(el => {
-      el.addEventListener('click', () => {
-        const day = parseInt(el.dataset.editDiscount);
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'ec-input';
-        input.value = sale.discounts[day] || 0;
-        input.min = 0;
-        input.max = 100;
-        input.style.width = '80px';
-        input.style.textAlign = 'right';
-        el.replaceWith(input);
-        input.focus({ preventScroll: true });
-        this._setEditSaleEditing(true);
-        const save = () => {
-          const val = parseInt(input.value);
-          if (!isNaN(val) && val >= 0 && val <= 100) {
-            sale.discounts[day] = val;
-          }
-          this._persistEditSale(sale);
-          this._setEditSaleEditing(false);
-          this.renderEditSale(sale);
-        };
-        input.addEventListener('blur', save);
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+    // Discount percentage tap to edit (only when NOT in edit mode)
+    if (!this._editScheduleMode) {
+      content.querySelectorAll('[data-edit-discount]').forEach(el => {
+        el.addEventListener('click', () => {
+          const day = parseInt(el.dataset.editDiscount);
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.className = 'ec-input ec-input--compact';
+          input.value = sale.discounts[day] || 0;
+          input.min = 0;
+          input.max = 100;
+          el.replaceWith(input);
+          input.focus({ preventScroll: true });
+          input.select();
+          this._setEditSaleEditing(true);
+          const save = () => {
+            const val = parseInt(input.value);
+            if (!isNaN(val) && val >= 0 && val <= 100) {
+              sale.discounts[day] = val;
+            }
+            this._persistEditSale(sale);
+            this._setEditSaleEditing(false);
+            this.renderEditSale(sale);
+          };
+          input.addEventListener('blur', save);
+          input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+        });
+      });
+    }
+
+    // Schedule Edit Mode toggle (Remove ↔ Done)
+    const scheduleEditBtn = content.querySelector('#edit-sale-schedule-edit');
+    if (scheduleEditBtn) {
+      scheduleEditBtn.addEventListener('click', () => {
+        this._editScheduleMode = !this._editScheduleMode;
+        this._armedDay = null;
+        this.renderEditSale(sale);
+      });
+    }
+
+    // Schedule arm/confirm (Edit Mode batch-delete pattern)
+    content.querySelectorAll('[data-arm-day]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const d = parseInt(btn.dataset.armDay);
+        this._armedDay = (this._armedDay === d) ? null : d;
+        this.renderEditSale(sale);
       });
     });
-
-    // Remove day buttons
-    content.querySelectorAll('[data-remove-day]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const day = parseInt(btn.dataset.removeDay);
-        const currentDay = Utils.getSaleDay(sale.startDate, sale);
-
-        if (day <= currentDay) {
-          this._showEditSaleFlash("Can't remove a completed day");
-          return;
-        }
-
-        // Delete the day and renumber sequentially
+    content.querySelectorAll('[data-confirm-day]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const day = parseInt(btn.dataset.confirmDay);
         delete sale.discounts[day];
+        // Renumber so day keys stay 1..N consecutive
         const remaining = Object.keys(sale.discounts).map(Number).sort((a, b) => a - b);
         const newDiscounts = {};
-        remaining.forEach((oldKey, i) => {
-          newDiscounts[i + 1] = sale.discounts[oldKey];
-        });
+        remaining.forEach((oldKey, i) => { newDiscounts[i + 1] = sale.discounts[oldKey]; });
         sale.discounts = newDiscounts;
-
-        // Clamp dayOverride if needed
         const maxDay = remaining.length;
-        if (sale.dayOverride && sale.dayOverride > maxDay) {
-          sale.dayOverride = maxDay;
-        }
+        if (sale.dayOverride && sale.dayOverride > maxDay) sale.dayOverride = maxDay;
+
+        this._armedDay = null;
+        // Auto-exit edit mode if no removable days remain
+        const currentDay = Utils.getSaleDay(sale.startDate, sale);
+        const removable = Object.keys(sale.discounts).map(Number).filter(d => d > currentDay);
+        if (removable.length === 0) this._editScheduleMode = false;
 
         this._persistEditSale(sale);
         this.renderEditSale(sale);
@@ -1220,12 +1297,49 @@ const App = {
         const days = Object.keys(sale.discounts).map(Number);
         const nextDay = days.length > 0 ? Math.max(...days) + 1 : 1;
         const lastDiscount = days.length > 0 ? sale.discounts[Math.max(...days)] : 0;
-        // Default new day to last discount + 25, capped at 100
         sale.discounts[nextDay] = Math.min(100, lastDiscount + 25);
         this._persistEditSale(sale);
         this.renderEditSale(sale);
       });
     }
+
+    // Consignors Edit Mode toggle
+    const consignorsEditBtn = content.querySelector('#edit-sale-consignors-edit');
+    if (consignorsEditBtn) {
+      consignorsEditBtn.addEventListener('click', () => {
+        this._editConsignorsMode = !this._editConsignorsMode;
+        this._armedConsignor = null;
+        this.renderEditSale(sale);
+      });
+    }
+
+    // Consignor arm/confirm
+    content.querySelectorAll('[data-arm-consignor]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.armConsignor;
+        this._armedConsignor = (this._armedConsignor === id) ? null : id;
+        this.renderEditSale(sale);
+      });
+    });
+    content.querySelectorAll('[data-confirm-consignor]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.confirmConsignor;
+        Storage.deleteConsignor(id);
+        if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+          const fresh = Storage.getSale();
+          Sync.patchSale(fresh.id, fresh.shareCode, { consignors: fresh.consignors || [] })
+            .catch(err => console.warn('[sync] edit-sale remove consignor failed:', err.message));
+        }
+        // Sale object is local, but Storage.deleteConsignor mutated storage —
+        // re-read for the next render.
+        sale.consignors = (Storage.getSale() || sale).consignors || [];
+        this._armedConsignor = null;
+        if (sale.consignors.length === 0) this._editConsignorsMode = false;
+        this.renderEditSale(sale);
+      });
+    });
 
     // Consignor: Add button
     const addConsignorBtn = content.querySelector('#edit-sale-add-consignor');
@@ -1233,14 +1347,16 @@ const App = {
       addConsignorBtn.addEventListener('click', () => this.openConsignorSheet(null));
     }
 
-    // Consignor: Tap to edit
-    content.querySelectorAll('[data-consignor-id]').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.dataset.consignorId;
-        const consignor = (sale.consignors || []).find(c => c.id === id);
-        if (consignor) this.openConsignorSheet(consignor);
+    // Consignor: tap row to edit (only when NOT in edit mode)
+    if (!this._editConsignorsMode) {
+      content.querySelectorAll('[data-consignor-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.consignorId;
+          const consignor = (sale.consignors || []).find(c => c.id === id);
+          if (consignor) this.openConsignorSheet(consignor);
+        });
       });
-    });
+    }
   },
 
   // ── Consignor Sheet ──
