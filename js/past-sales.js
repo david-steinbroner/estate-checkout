@@ -22,20 +22,31 @@ const PastSales = {
   expandedTransactionId: null,
 
   init() {
+    // v203: in-screen back arrows defer to browser history when there's
+    // something to pop (so back arrow + browser back / iOS swipe-back do the
+    // same thing). Falls back to a hard-coded target on cold-load deep links
+    // where there's no in-app history yet.
     const backList = document.getElementById('past-sales-back');
     if (backList) {
       backList.addEventListener('click', () => {
-        // Past Sales is reached from the menu, never inline. Just send the
-        // user back to the dashboard (if a sale's running) or the setup screen.
-        // Don't use _previousScreen — it would loop after a list ↔ detail trip.
-        const sale = Storage.getSale();
-        App.showScreen(sale ? 'dashboard' : 'setup');
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          const sale = Storage.getSale();
+          App.showScreen(sale ? 'dashboard' : 'setup');
+        }
       });
     }
 
     const backDetail = document.getElementById('past-sale-detail-back');
     if (backDetail) {
-      backDetail.addEventListener('click', () => App.showScreen('past-sales'));
+      backDetail.addEventListener('click', () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          App.showScreen('past-sales');
+        }
+      });
     }
 
     const exportBtn = document.getElementById('past-sale-export');
@@ -182,8 +193,10 @@ const PastSales = {
     this.expandedTransactionId = null;
 
     if (!entry) {
-      // Race: archive entry no longer exists. Bounce back to list.
-      App.showScreen('past-sales');
+      // Race: archive entry no longer exists (e.g. deleted on another flow,
+      // or cold-load on a stale deep link). Bounce back to list with replace
+      // so the bogus hash isn't preserved in history.
+      App.showScreen('past-sales', null, { replace: true });
       return;
     }
 
@@ -389,11 +402,14 @@ const PastSales = {
     let remaining = 0;
     try { remaining = await ArchiveDB.count(); } catch (_) {}
 
+    // v203: replace, not push — we deleted the entry the current URL points
+    // to, so we shouldn't leave a back-walks-to-deleted-detail entry in
+    // history (which would 404 and bounce again, infinite loop risk).
     if (remaining > 0) {
-      App.showScreen('past-sales');
+      App.showScreen('past-sales', null, { replace: true });
     } else {
       const liveSale = Storage.getSale();
-      App.showScreen(liveSale ? 'dashboard' : 'setup');
+      App.showScreen(liveSale ? 'dashboard' : 'setup', null, { replace: true });
     }
   },
 
@@ -437,9 +453,10 @@ const PastSales = {
 
     this._closeClearAllConfirm();
 
-    // Bounce back to setup or dashboard depending on live-sale state.
+    // v203: replace — every archive entry's URL is now invalid; don't leave
+    // them in the back-stack.
     const sale = Storage.getSale();
-    App.showScreen(sale ? 'dashboard' : 'setup');
+    App.showScreen(sale ? 'dashboard' : 'setup', null, { replace: true });
   },
 
   // ── Helpers ──

@@ -19,10 +19,198 @@ const App = {
     this.bindHeaderEvents();
     this._bindPayoutTypePicker();
     this._bindEndSaleConfirmInput();
+    // v203: hash routing — listen for browser back / iOS swipe-from-edge.
+    window.addEventListener('popstate', this._onPopState.bind(this));
     this.initModules();
     this.route();
 
 },
+
+  // === v203 Hash Routing ===
+
+  /** Screens that get a stable URL fragment. Transient screens (qr/scan/payment)
+   *  hold in-memory state that doesn't survive a reload, so they don't get URLs. */
+  _HASH_ROUTES: ['setup', 'checkout', 'dashboard', 'paused', 'payouts', 'past-sales', 'past-sale-detail'],
+
+  /** Routes whose URL carries a required id segment (e.g. #/past-sales/<archiveId>). */
+  _ID_ROUTES: ['past-sale-detail'],
+
+  /** Transient screens — no hash representation. iOS swipe-back from these
+   *  bounces to the underlying screen via a synthetic history entry. */
+  _TRANSIENT_SCREENS: ['qr', 'scan', 'payment'],
+
+  /** Tracks the most recently shown hash so we can restore it after a
+   *  modal-close-on-back gesture (modals don't get history entries; closing
+   *  one in response to popstate consumes the back without navigating). */
+  _currentHash: null,
+
+  /**
+   * Parse `location.hash` into `{ screen, id } | null`.
+   * Hash format: `#/<screen>` or `#/<screen>/<id>`.
+   */
+  _parseHash(hash) {
+    if (!hash || !hash.startsWith('#/')) return null;
+    const parts = hash.slice(2).split('/').filter(Boolean);
+    if (parts.length === 0) return null;
+    const screen = parts[0];
+    const id = parts.length > 1 ? parts.slice(1).join('/') : null;
+    if (!this._HASH_ROUTES.includes(screen)) return null;
+    if (this._ID_ROUTES.includes(screen) && !id) return null;
+    return { screen, id };
+  },
+
+  /**
+   * Build a hash for a screen + optional data. Returns null for screens that
+   * don't get URLs (transient) or for malformed inputs.
+   * Only id-bearing routes reflect `data` into the URL — other call sites
+   * can pass `data` as opaque payload without polluting the hash.
+   */
+  _buildHash(screen, data) {
+    if (!this._HASH_ROUTES.includes(screen)) return null;
+    if (this._ID_ROUTES.includes(screen)) {
+      if (typeof data === 'string' && data) return `#/${screen}/${data}`;
+      return null;
+    }
+    return `#/${screen}`;
+  },
+
+  /**
+   * Is this hash target valid for the current sale state? Used to gate
+   * cold-load deep links (e.g. `#/checkout` requires an active sale).
+   */
+  _isHashTargetValid(parsed) {
+    if (!parsed) return false;
+    const sale = Storage.getSale();
+    const status = sale ? (sale.status || 'active') : null;
+    switch (parsed.screen) {
+      case 'setup': return true;
+      case 'checkout': return !!sale && status === 'active';
+      case 'paused': return !!sale && status === 'paused';
+      case 'dashboard': return !!sale;
+      case 'payouts': return !!sale && Array.isArray(sale.consignors) && sale.consignors.length > 0;
+      case 'past-sales': return true;
+      case 'past-sale-detail': return true; // PastSales.renderDetail validates the archiveId
+      default: return false;
+    }
+  },
+
+  /** What `App.route()` would pick if there were no hash. */
+  _defaultRoute() {
+    const sale = Storage.getSale();
+    if (!sale) return { screen: 'setup', id: null };
+    const status = sale.status || 'active';
+    if (status === 'paused') return { screen: 'paused', id: null };
+    if (status === 'ended') return { screen: 'dashboard', id: null };
+    return { screen: 'checkout', id: null };
+  },
+
+  /**
+   * popstate listener. Fires for browser back/forward and iOS swipe gestures.
+   *
+   * Order of operations:
+   *   1. If any modal is visible, close it and re-push the current hash so
+   *      the back gesture is consumed by the modal close — not propagated to
+   *      a screen change.
+   *   2. If the popped state has `transient` set, route back to the underlying
+   *      screen (we entered a QR/Scan/Payment screen and the user is going back).
+   *   3. Otherwise, parse the new hash and route to it.
+   */
+  _onPopState(event) {
+    if (this._closeAllModals()) {
+      // The back gesture consumed the modal close. Re-push the screen's hash
+      // so the back-stack stays consistent (the popped entry was the
+      // pre-modal state — we want to stay on the current screen).
+      if (this._currentHash) {
+        history.pushState(null, '', this._currentHash);
+      }
+      return;
+    }
+
+    if (event.state && event.state.transient) {
+      // We just popped the synthetic state pushed when we navigated to a
+      // transient screen. Bounce back to the underlying default screen.
+      const target = this._defaultRoute();
+      this.showScreen(target.screen, target.id, { fromPopstate: true });
+      return;
+    }
+
+    const parsed = this._parseHash(location.hash);
+    if (parsed && this._isHashTargetValid(parsed)) {
+      this.showScreen(parsed.screen, parsed.id, { fromPopstate: true });
+      return;
+    }
+
+    // Hash is empty, malformed, or invalid for current state — fall back.
+    const target = this._defaultRoute();
+    const targetHash = this._buildHash(target.screen, target.id) || '';
+    if (targetHash && targetHash !== location.hash) {
+      history.replaceState(null, '', targetHash);
+    }
+    this.showScreen(target.screen, target.id, { fromPopstate: true });
+  },
+
+  /**
+   * Sync the URL hash to the screen we just navigated to. Called by showScreen
+   * for non-popstate navigation. Skips push for transient screens (synthetic
+   * state instead) and for redundant pushes (current hash already matches).
+   */
+  _syncHashToScreen(screenName, data, replace) {
+    if (this._TRANSIENT_SCREENS.includes(screenName)) {
+      // Push a synthetic state so iOS swipe-back has something to pop. The
+      // actual hash doesn't change — the user remains "on" the underlying
+      // screen as far as URLs are concerned.
+      history.pushState({ transient: screenName }, '');
+      return;
+    }
+    const newHash = this._buildHash(screenName, data);
+    if (!newHash) return;
+    if (newHash === location.hash && !replace) return; // skip redundant
+    if (replace) {
+      history.replaceState(null, '', newHash);
+    } else {
+      history.pushState(null, '', newHash);
+    }
+    this._currentHash = newHash;
+  },
+
+  /**
+   * Close every visible modal/sheet. Returns true if any were closed.
+   * Used by popstate to consume the back gesture as a modal-close.
+   *
+   * Edit-Sale modal has a blur-trap (closeEditSale refuses to close mid-edit
+   * to give the user a chance to confirm); we honor it by blurring active
+   * input first before forcing the close — same behavior the user gets from
+   * tapping outside while editing.
+   */
+  _closeAllModals() {
+    let closed = false;
+    const modalIds = [
+      'header-menu-modal', 'setup-menu-modal', 'end-sale-confirm-modal',
+      'share-sale-modal', 'join-sale-modal', 'join-instruction-modal',
+      'edit-sale-modal', 'delete-past-sale-modal', 'clear-past-sales-modal',
+      'cancel-confirm-modal', 'export-modal', 'version-history-modal',
+      'add-item-modal', 'haggle-modal', 'ticket-discount-modal',
+      'consignor-picker-modal', 'consignor-modal', 'consignor-color-picker-modal',
+      'payout-type-picker-modal', 'speech-confirm-modal', 'speech-fail-modal',
+      'mic-guide-modal', 'speech-permission-modal', 'item-sheet-backdrop',
+      'sale-confirm-modal', 'clear-modal', 'dashboard-filter-modal'
+    ];
+    for (const id of modalIds) {
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('visible')) {
+        // Edit-Sale's blur-trap: blur first, then close.
+        if (id === 'edit-sale-modal' && this._editSaleEditing) {
+          if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
+          this._editSaleEditing = false;
+        }
+        el.classList.remove('visible');
+        closed = true;
+      }
+    }
+    return closed;
+  },
 
   // Pending join data (from URL parameter, awaiting user confirmation)
   pendingJoinData: null,
@@ -1428,12 +1616,15 @@ const App = {
    */
   _handleRemoteSaleStatusChange(newStatus) {
     console.log('[sync] remote sale status changed →', newStatus);
+    // v203: remote-driven navigations use replaceState so two devices
+    // ping-ponging end-day/resume don't pollute the back stack with entries
+    // the user never navigated to themselves.
     if (newStatus === 'paused') {
-      this.showScreen('paused');
+      this.showScreen('paused', null, { replace: true });
     } else if (newStatus === 'active') {
       // Someone resumed; if we were on the paused screen, go back to checkout.
       if (this.currentScreen === 'paused') {
-        this.showScreen('checkout');
+        this.showScreen('checkout', null, { replace: true });
       }
     } else if (newStatus === 'ended') {
       // Snapshot into the local archive so this device gets a Past Sales entry
@@ -1447,7 +1638,7 @@ const App = {
       Storage.clearCart();
       Storage.clearCustomerCounter();
       alert('This sale was ended on another device. You can still review past invoices on the dashboard.');
-      this.showScreen('dashboard');
+      this.showScreen('dashboard', null, { replace: true });
     } else if (newStatus === 'purged') {
       // The sale was deleted from the cloud on another device. Strip the
       // _synced flag so future polls skip it (otherwise we'd 404-loop), drop
@@ -1464,7 +1655,7 @@ const App = {
       Storage.clearCart();
       Storage.clearCustomerCounter();
       alert('This sale was deleted on another device. The local copy is no longer connected to the cloud.');
-      this.showScreen(local ? 'dashboard' : 'setup');
+      this.showScreen(local ? 'dashboard' : 'setup', null, { replace: true });
     }
   },
 
@@ -1578,7 +1769,16 @@ const App = {
   },
 
   /**
-   * Route to appropriate screen based on app state
+   * Route to appropriate screen based on app state.
+   *
+   * v203 — Resolution order:
+   *   1. `?join=<data>` query param wins (onboarding flow takes precedence over
+   *      hash routing). The handler eventually calls cleanJoinUrl + showScreen.
+   *   2. `location.hash` is parsed and validated against current state. Valid
+   *      hash → show that screen. Invalid hash (e.g. #/checkout with no sale)
+   *      → fall back to the default route. Either way, we use replaceState so
+   *      the cold-load URL is canonicalized without polluting history.
+   *   3. No hash → use the default route based on sale status.
    */
   route() {
     // Check for join parameter first
@@ -1589,31 +1789,32 @@ const App = {
       return;
     }
 
-    const sale = Storage.getSale();
-
-    if (!sale) {
-      this.showScreen('setup');
-      return;
-    }
-
-    const status = sale.status || 'active';
-
-    if (status === 'paused') {
-      this.showScreen('paused');
-    } else if (status === 'active') {
-      this.showScreen('checkout');
-    } else if (status === 'ended') {
-      // Sale ended — review past invoices on dashboard; banner offers Start New Sale
-      this.showScreen('dashboard');
-    } else {
-      this.showScreen('setup');
-    }
+    const parsed = this._parseHash(window.location.hash);
+    const target = (parsed && this._isHashTargetValid(parsed))
+      ? parsed
+      : this._defaultRoute();
+    this.showScreen(target.screen, target.id, { replace: true });
   },
 
   /**
-   * Switch to a different screen
+   * Switch to a different screen.
+   *
+   * v203 signature: `showScreen(screenName, data, opts)` where `opts` is:
+   *   { fromPopstate?: boolean, replace?: boolean }
+   *
+   *   fromPopstate — set by the popstate listener. Skips the hash sync (we're
+   *     already navigating via the browser) and skips the _previousScreen
+   *     write (popstate IS going back; we shouldn't record the popped-from
+   *     screen as "previous").
+   *   replace — use history.replaceState instead of pushState. Used by:
+   *     remote sync handlers (avoid polluting history with another device's
+   *     activity), the join flow, fallback bounces, and cold-load init.
    */
-  showScreen(screenName, data) {
+  showScreen(screenName, data, opts) {
+    const options = opts || {};
+    const fromPopstate = !!options.fromPopstate;
+    const replace = !!options.replace;
+
     // Cleanup before leaving current screen
     if (this.currentScreen === 'scan') {
       try { Scan.stop(); } catch (e) { /* safe — scanner may not have started */ }
@@ -1624,9 +1825,11 @@ const App = {
       this._stopSyncPoll = null;
     }
 
-    // Track previous screen so back-style buttons (e.g. scan-back) can
-    // return the user to where they came from instead of a hardcoded target.
-    if (this.currentScreen && this.currentScreen !== screenName) {
+    // Track previous screen so transient-screen back buttons (Scan, Payment)
+    // can return the user to where they came from. NOT updated on popstate —
+    // popstate IS going back, so the popped-from screen shouldn't become the
+    // new "previous."
+    if (!fromPopstate && this.currentScreen && this.currentScreen !== screenName) {
       this._previousScreen = this.currentScreen;
     }
 
@@ -1694,6 +1897,12 @@ const App = {
         if (typeof PastSales !== 'undefined') PastSales.renderDetail(data);
       }
 
+    }
+
+    // v203: sync URL hash to the screen we just navigated to. Skipped on
+    // popstate (browser already updated the URL).
+    if (!fromPopstate) {
+      this._syncHashToScreen(screenName, data, replace);
     }
   },
 
@@ -2166,7 +2375,10 @@ const App = {
    * Clean the ?join= parameter from the URL
    */
   cleanJoinUrl() {
-    window.history.replaceState({}, '', window.location.pathname);
+    // v203: preserve the hash. Earlier this stripped both the ?join= query
+    // AND the fragment, which broke hash routing for any flow where a hash
+    // happened to be present at join time.
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash);
   },
 
   /**

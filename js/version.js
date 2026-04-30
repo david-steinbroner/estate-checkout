@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v202';
+const APP_VERSION = 'v203';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v203',
+    date: '2026-04-30',
+    changes: [
+      'Browser back button now walks back through screens instead of exiting the app. Same for iOS swipe-from-edge gesture in Safari.',
+      'Refresh keeps you on the screen you were on. Past Estate Sale Detail, Past Estate Sales list, dashboard, paused — all stable across refresh.',
+      'Closing a sheet via back button (or swipe-back) now closes the sheet without leaving the screen — feels right.',
+      'Internal: the URL fragment now reflects the active screen. Bookmarkable, shareable, predictable.'
+    ]
+  },
   {
     version: 'v202',
     date: '2026-04-29',

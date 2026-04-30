@@ -98,7 +98,11 @@ const SaleSetup = {
 
     // Dashboard button
     this.elements.dashboardButton.addEventListener('click', () => {
-      App.showScreen('dashboard', 'setup');
+      // v203: dropped the dead `'setup'` second arg. The dashboard route
+      // ignores opaque data; it was never read. With hash routing, the
+      // router whitelists id-bearing routes (only past-sale-detail) so
+      // stray strings don't churn into the URL.
+      App.showScreen('dashboard');
     });
 
     // Add consignor button on setup
