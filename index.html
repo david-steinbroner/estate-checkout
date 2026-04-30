@@ -194,11 +194,11 @@
           <span class="ec-menu-item__label">Past Estate Sales</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
-        <li class="ec-menu-item" id="setup-menu-whats-new" tabindex="0" role="button">
+        <li class="ec-menu-item" id="setup-menu-app-guide" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 5 5 .5-4 3.5 1.5 5L10 13l-4.5 3L7 11 3 7.5 8 7z"/></svg>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 14v.01"/><path d="M10 11c0-1.5 2-1.7 2-3.5a2 2 0 0 0-4 0"/></svg>
           </span>
-          <span class="ec-menu-item__label">What's New</span>
+          <span class="ec-menu-item__label">App Guide</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
         <li class="ec-menu-item" id="setup-menu-feedback" tabindex="0" role="button">
@@ -677,11 +677,11 @@
           <span class="ec-menu-item__label">Export Estate Sale Data</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
-        <li class="ec-menu-item" id="menu-whats-new" tabindex="0" role="button">
+        <li class="ec-menu-item" id="menu-app-guide" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 5 5 .5-4 3.5 1.5 5L10 13l-4.5 3L7 11 3 7.5 8 7z"/></svg>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 14v.01"/><path d="M10 11c0-1.5 2-1.7 2-3.5a2 2 0 0 0-4 0"/></svg>
           </span>
-          <span class="ec-menu-item__label">What's New</span>
+          <span class="ec-menu-item__label">App Guide</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
       </ul>
@@ -708,11 +708,100 @@
     </div>
   </div>
 
-  <!-- Version History Sheet -->
-  <div class="overlay" id="version-history-modal">
+  <!-- App Guide (v204) — replaces What's New. Three accordion sections of
+       short FAQs covering setup, daily operations, and wrapping up. Uses
+       native <details>/<summary> for the disclosure behavior — no JS. -->
+  <div class="overlay" id="app-guide-modal">
     <div class="sheet">
-      <p class="sheet__title">What's New</p>
-      <div class="version-history" id="version-history-content"></div>
+      <p class="sheet__title">App Guide</p>
+      <div class="app-guide">
+        <details class="app-guide__section" open>
+          <summary class="app-guide__heading">Getting started</summary>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">What is Estate Checkout for?</h4>
+            <p class="app-guide__a">Estate Checkout helps you run an estate sale on your phone. It tracks every invoice, handles discount schedules across multiple days, splits revenue with consignors, and gives every customer a QR code as their ticket. Works offline — you won't lose track if Wi-Fi drops.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I start a new estate sale?</h4>
+            <p class="app-guide__a">On the New Estate Sale screen, give your sale a name (the address works well — "Johnson Estate – Oak Hill"), set up your sale days (today is Day 1 by default; tap <strong>+ Add Day</strong> to extend), add a discount per day if you want one, add any consignors who have items in the sale, then tap <strong>Start Estate Sale</strong>.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I invite someone to help me run the sale?</h4>
+            <p class="app-guide__a">Once your sale is started, open the menu and tap <strong>Share Estate Sale</strong>. You'll see a 6-digit code and a QR code. Have your helper open the same app on their phone, tap <strong>Join Estate Sale</strong>, and either scan the QR or type in the 6 digits. Both phones now show the same dashboard, the same invoices, in real time.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I join someone else's estate sale?</h4>
+            <p class="app-guide__a">On the New Estate Sale screen, tap <strong>Join Estate Sale</strong> (the blue button next to Start). Either scan the QR code on the organizer's phone, or type in the 6-digit code. Once you're in, you ring up customers just like the organizer can — every invoice you create shows up on their phone too.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">What are consignors?</h4>
+            <p class="app-guide__a">Consignors are people whose items are in your estate sale and who get paid a share of what those items sell for. Add them on the New Estate Sale screen. For each one, set their payout — either a <strong>percentage</strong> (consignor gets 70%, you keep 30%) or a <strong>flat fee per item</strong> ($5 per item, you keep the rest). When you're ringing up an item, tap the "Consigned by" chip to assign that consignor. The <strong>Consignor Payouts</strong> page shows exactly how much each one is owed.</p>
+          </div>
+        </details>
+
+        <details class="app-guide__section">
+          <summary class="app-guide__heading">Running the sale</summary>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I add or remove sale days?</h4>
+            <p class="app-guide__a">On the New Estate Sale screen, in the <strong>Estate Sale Days</strong> section, tap <strong>+ Add Day</strong> to extend the sale. New days default to no discount — tap any day's discount value to change it (a typical pattern is Day 1 full price, Day 2 25% off, Day 3 50% off). Tap a day's date to move it (handy for weekend-only sales with a gap). To remove a day, tap <strong>Remove</strong> at the bottom of the section, tap the red minus next to the day, then tap <strong>Remove</strong> again to confirm.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">What does the dashboard show me?</h4>
+            <p class="app-guide__a">The dashboard is your live view of the estate sale: total invoices, total revenue, average invoice size, plus a row for every invoice with its status — Paid, Unpaid, Open. Tap any invoice to see its items and actions: Mark as Paid, Edit, See Invoice, Cancel. Use the filter pill to scope by status, and the sort pill to flip newest/oldest. The <strong>Revenue by Consignor</strong> card shows you at a glance who's selling what.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I create an invoice?</h4>
+            <p class="app-guide__a">On the checkout screen, tap <strong>Add Item</strong>, type a description (or hold the mic and say it), enter the price on the keypad, set the quantity if it's not 1, optionally tag a consignor, then tap <strong>Add Item</strong>. Repeat for everything the customer wants. When you're done, tap <strong>Create Invoice</strong> — the customer gets a QR code as their ticket.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do QR codes work as customer tickets?</h4>
+            <p class="app-guide__a">After you tap Create Invoice, a big QR code appears. The customer scans it with their phone's camera — no app needed — and the link is their ticket. They can pull up their order details and total whenever they want. They pay you in cash (or however), you mark it Paid on the dashboard, and they're set.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I scan a ticket someone shows me?</h4>
+            <p class="app-guide__a">Open the menu and tap <strong>Scan Invoice</strong>. Point your camera at the customer's QR code. The app pulls up that invoice instantly, so you can mark it Paid, edit items, or just look at what's on it — useful when someone wandered around for an hour, came back, and you need to find their order quickly.</p>
+          </div>
+        </details>
+
+        <details class="app-guide__section">
+          <summary class="app-guide__heading">Wrapping up &amp; history</summary>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I end a day and resume tomorrow?</h4>
+            <p class="app-guide__a">At the end of the day, open the menu and tap <strong>End Day</strong>. The app pauses — no new invoices can be added — and shows you the day's stats. The next morning, open the app and tap <strong>Resume Estate Sale</strong>. You're now on Day 2 (or whatever the calendar says) with that day's discount applied. The app figures out which day you're on automatically based on the date.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I export the sale's data?</h4>
+            <p class="app-guide__a">Open the menu and tap <strong>Export Estate Sale Data</strong>. A picker appears showing each day of the sale with its invoice count. Pick the days you want included, tap <strong>Export</strong>, and the iOS share sheet opens — drop the CSV into Mail, Files, AirDrop, anywhere. The file has every line item with original price, day discount, haggle, consignor split, and your cut. Open it in Excel, Numbers, or Google Sheets.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I end the estate sale for good?</h4>
+            <p class="app-guide__a">When the sale is fully over, open the menu and tap <strong>End Estate Sale Permanently</strong>. You'll have to type the sale's name to confirm. The sale moves to <strong>Past Estate Sales</strong> where you can review it anytime, and you're free to start a fresh sale.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I review or re-export an old sale?</h4>
+            <p class="app-guide__a">Past sales you've ended live in <strong>Past Estate Sales</strong> — there's a card on the New Estate Sale screen once you have at least one (and the same option in the menu). Tap any past sale to review its invoices, stats, and consignor revenue. You can export its data the same way you'd export a live sale.</p>
+          </div>
+
+          <div class="app-guide__item">
+            <h4 class="app-guide__q">How do I delete a past sale?</h4>
+            <p class="app-guide__a">Open the past sale, scroll to the bottom of the detail screen, and tap <strong>Delete this estate sale</strong>. Type the sale's name to confirm. This removes it from this device AND from the cloud — anyone who had the share code can no longer reach it. To wipe all past sales from this device at once, scroll to the bottom of the Past Estate Sales list and tap <strong>Clear all past estate sales</strong> — type DELETE to confirm. (That option only clears your device; cloud copies of those sales aren't touched.)</p>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 

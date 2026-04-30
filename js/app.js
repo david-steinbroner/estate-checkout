@@ -188,7 +188,7 @@ const App = {
       'header-menu-modal', 'setup-menu-modal', 'end-sale-confirm-modal',
       'share-sale-modal', 'join-sale-modal', 'join-instruction-modal',
       'edit-sale-modal', 'delete-past-sale-modal', 'clear-past-sales-modal',
-      'cancel-confirm-modal', 'export-modal', 'version-history-modal',
+      'cancel-confirm-modal', 'export-modal', 'app-guide-modal',
       'add-item-modal', 'haggle-modal', 'ticket-discount-modal',
       'consignor-picker-modal', 'consignor-modal', 'consignor-color-picker-modal',
       'payout-type-picker-modal', 'speech-confirm-modal', 'speech-fail-modal',
@@ -233,10 +233,9 @@ const App = {
       menuShare: document.getElementById('menu-share'),
       menuEndDay: document.getElementById('menu-end-day'),
       menuEndSale: document.getElementById('menu-end-sale'),
-      menuWhatsNew: document.getElementById('menu-whats-new'),
+      menuAppGuide: document.getElementById('menu-app-guide'),
       menuVersionLabel: document.getElementById('menu-version-label'),
-      versionHistoryModal: document.getElementById('version-history-modal'),
-      versionHistoryContent: document.getElementById('version-history-content'),
+      appGuideModal: document.getElementById('app-guide-modal'),
       // End sale confirmation
       endSaleConfirmModal: document.getElementById('end-sale-confirm-modal'),
       endSaleConfirm: document.getElementById('end-sale-confirm'),
@@ -267,7 +266,7 @@ const App = {
       // Setup menu
       setupMenuBtn: document.getElementById('setup-menu-btn'),
       setupMenuModal: document.getElementById('setup-menu-modal'),
-      setupMenuWhatsNew: document.getElementById('setup-menu-whats-new'),
+      setupMenuAppGuide: document.getElementById('setup-menu-app-guide'),
       setupMenuFeedback: document.getElementById('setup-menu-feedback'),
       setupMenuVersionLabel: document.getElementById('setup-menu-version-label'),
       setupMenuPastSales: document.getElementById('setup-menu-past-sales'),
@@ -376,12 +375,14 @@ const App = {
       });
     }
 
-    // Version / What's New
-    this._initVersionHistory();
-    if (this.headerElements.menuWhatsNew) {
-      this.headerElements.menuWhatsNew.addEventListener('click', () => {
+    // App Guide (v204) — replaces What's New. Static FAQ content; no
+    // per-version history rendering anymore (version-history data lives
+    // in js/version.js as the engineering changelog only).
+    this._initVersionLabel();
+    if (this.headerElements.menuAppGuide) {
+      this.headerElements.menuAppGuide.addEventListener('click', () => {
         this.closeMenu();
-        this.openVersionHistory();
+        this.openAppGuide();
       });
     }
 
@@ -452,9 +453,9 @@ const App = {
         if (e.target === exportModal) this._closeExportSheet();
       });
     }
-    if (this.headerElements.versionHistoryModal) {
-      this.headerElements.versionHistoryModal.addEventListener('click', (e) => {
-        if (e.target === this.headerElements.versionHistoryModal) this.closeVersionHistory();
+    if (this.headerElements.appGuideModal) {
+      this.headerElements.appGuideModal.addEventListener('click', (e) => {
+        if (e.target === this.headerElements.appGuideModal) this.closeAppGuide();
       });
     }
 
@@ -582,10 +583,10 @@ const App = {
         }
       });
     }
-    if (this.headerElements.setupMenuWhatsNew) {
-      this.headerElements.setupMenuWhatsNew.addEventListener('click', () => {
+    if (this.headerElements.setupMenuAppGuide) {
+      this.headerElements.setupMenuAppGuide.addEventListener('click', () => {
         this._closeSetupMenu();
-        this.openVersionHistory();
+        this.openAppGuide();
       });
     }
     if (this.headerElements.setupMenuFeedback) {
@@ -1463,38 +1464,27 @@ const App = {
     if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
   },
 
-  _initVersionHistory() {
-    // Populate version label in menu
+  /**
+   * Populate the version label at the bottom of the menu sheet. v204:
+   * the per-version history content is no longer rendered into the UI —
+   * VERSION_HISTORY in js/version.js stays as the engineering changelog
+   * but the user-facing surface is now the App Guide (static FAQs).
+   */
+  _initVersionLabel() {
     if (this.headerElements.menuVersionLabel && typeof APP_VERSION !== 'undefined') {
       this.headerElements.menuVersionLabel.textContent = `Version ${APP_VERSION}`;
     }
-    // Render version history content
-    if (this.headerElements.versionHistoryContent && typeof VERSION_HISTORY !== 'undefined') {
-      const html = VERSION_HISTORY.map((entry) => {
-        const changesHtml = entry.changes.map((c) => `<li>${c}</li>`).join('');
-        return `
-          <div class="version-history__entry">
-            <p class="version-history__header">
-              <span class="version-history__version">${entry.version}</span>
-              <span class="version-history__date">${entry.date}</span>
-            </p>
-            <ul class="version-history__list">${changesHtml}</ul>
-          </div>
-        `;
-      }).join('');
-      this.headerElements.versionHistoryContent.innerHTML = html;
+  },
+
+  openAppGuide() {
+    if (this.headerElements.appGuideModal) {
+      this.headerElements.appGuideModal.classList.add('visible');
     }
   },
 
-  openVersionHistory() {
-    if (this.headerElements.versionHistoryModal) {
-      this.headerElements.versionHistoryModal.classList.add('visible');
-    }
-  },
-
-  closeVersionHistory() {
-    if (this.headerElements.versionHistoryModal) {
-      this.headerElements.versionHistoryModal.classList.remove('visible');
+  closeAppGuide() {
+    if (this.headerElements.appGuideModal) {
+      this.headerElements.appGuideModal.classList.remove('visible');
     }
   },
 

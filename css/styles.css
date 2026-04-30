@@ -2199,61 +2199,88 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* === Version History sheet === */
-.version-history {
-  max-height: 60dvh;
+/* === App Guide sheet (v204 — replaces What's New) ===
+   Three accordion sections of FAQ content. Uses native <details>/<summary>
+   for disclosure — no JS. Each item is a question heading + answer paragraph. */
+.app-guide {
+  max-height: 65dvh;
   overflow-y: auto;
   margin-bottom: var(--space-lg);
   padding-right: var(--space-xs);
   text-align: left;
 }
 
-.version-history__entry {
-  padding: var(--space-lg) 0;
+.app-guide__section {
   border-bottom: 1px solid var(--color-divider);
 }
 
-.version-history__entry:last-child {
+.app-guide__section:last-child {
   border-bottom: none;
 }
 
-.version-history__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--space-sm);
-}
-
-.version-history__version {
-  font-size: var(--font-size-body);
+.app-guide__heading {
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
-}
-
-.version-history__date {
-  font-size: var(--font-size-footnote);
-  color: var(--color-text-secondary);
-}
-
-.version-history__list {
+  letter-spacing: -0.01em;
+  padding: var(--space-md) 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   list-style: none;
-  padding: 0;
+  position: relative;
+  padding-right: var(--space-xl);
+}
+
+/* Hide the default disclosure triangle on Safari (iOS) */
+.app-guide__heading::-webkit-details-marker {
+  display: none;
+}
+
+/* Custom chevron — rotates when section opens */
+.app-guide__heading::after {
+  content: '';
+  position: absolute;
+  right: var(--space-sm);
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--color-text-secondary);
+  border-bottom: 1.5px solid var(--color-text-secondary);
+  transform: translateY(-75%) rotate(45deg);
+  transition: transform var(--duration-fast, 150ms) ease;
+}
+
+.app-guide__section[open] .app-guide__heading::after {
+  transform: translateY(-25%) rotate(-135deg);
+}
+
+.app-guide__item {
+  padding: var(--space-sm) 0 var(--space-md);
+}
+
+.app-guide__item:last-child {
+  padding-bottom: var(--space-md);
+}
+
+.app-guide__q {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.005em;
+  margin: 0 0 var(--space-xs);
+  line-height: var(--line-height-tight);
+}
+
+.app-guide__a {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-default);
   margin: 0;
 }
 
-.version-history__list li {
-  font-size: var(--font-size-body);
+.app-guide__a strong {
   color: var(--color-text);
-  line-height: var(--line-height-default);
-  padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
-  position: relative;
-}
-
-.version-history__list li::before {
-  content: '•';
-  position: absolute;
-  left: var(--space-xs);
-  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
 }
 
 .sheet__text {

@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v203';
+const APP_VERSION = 'v204';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v204',
+    date: '2026-04-30',
+    changes: [
+      'New: App Guide replaces What\'s New in the menu. Short FAQs in three accordion sections — Getting started, Running the sale, Wrapping up & history. Covers what the app is, how to start a sale, how to invite or join helpers, what consignors do, days, dashboard, invoices, QR tickets, scanning, ending/resuming days, exporting, ending the sale permanently, and deleting past sales.'
+    ]
+  },
   {
     version: 'v203',
     date: '2026-04-30',
