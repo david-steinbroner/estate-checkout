@@ -13,6 +13,10 @@ const App = {
    * Initialize the application
    */
   init() {
+    // v212: capture beforeinstallprompt as early as possible — needs to be
+    // attached before the browser fires it on page load. SW registration and
+    // module init can happen after.
+    this._initInstallFlow();
     this.registerServiceWorker();
     if (typeof Sync !== 'undefined') Sync.init();
     this.cacheHeaderElements();
@@ -23,8 +27,181 @@ const App = {
     window.addEventListener('popstate', this._onPopState.bind(this));
     this.initModules();
     this.route();
-
+    // After everything's wired, refresh install affordances so the
+    // notification dot + row visibility reflect current state.
+    this._refreshInstallAffordances();
 },
+
+  // === v212: PWA install + update flow ===
+
+  _INSTALL_SEEN_KEY: 'estate_install_seen',
+
+  /** Captured browser-fired beforeinstallprompt event (Chromium only). */
+  _beforeInstallPromptEvent: null,
+
+  _initInstallFlow() {
+    // Capture the install prompt event so we can fire it later from our
+    // menu row. Only Chromium-based browsers (Android Chrome, desktop
+    // Chrome/Edge) emit this. Safari has no equivalent — we fall back
+    // to instructions.
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this._beforeInstallPromptEvent = e;
+      this._refreshInstallAffordances();
+    });
+
+    // When the user installs, persist the "seen" flag and refresh UI.
+    window.addEventListener('appinstalled', () => {
+      this._markInstallSeen();
+      this._beforeInstallPromptEvent = null;
+      this._refreshInstallAffordances();
+    });
+
+    // If we're already standalone, the install entry isn't relevant —
+    // mark seen so the bubble is gone forever.
+    if (this._isStandalone()) {
+      this._markInstallSeen();
+    }
+  },
+
+  _isStandalone() {
+    return window.navigator.standalone === true
+      || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  },
+
+  _isIOSSafari() {
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    return isIOS && isSafari;
+  },
+
+  _markInstallSeen() {
+    try { localStorage.setItem(this._INSTALL_SEEN_KEY, '1'); } catch (e) {}
+  },
+
+  _isInstallSeen() {
+    try { return localStorage.getItem(this._INSTALL_SEEN_KEY) === '1'; }
+    catch (e) { return false; }
+  },
+
+  /**
+   * Refresh visibility of install rows + notification dots based on:
+   *   - Whether the app is already installed (standalone) — hide rows
+   *   - Whether the install path has been seen (flag set) — hide dots
+   *
+   * Called on init, on appinstalled, and after the user taps the install row.
+   */
+  _refreshInstallAffordances() {
+    const standalone = this._isStandalone();
+    const seen = standalone || this._isInstallSeen();
+
+    ['menu-add-to-home', 'setup-menu-add-to-home'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.hidden = standalone;
+    });
+
+    ['menu-add-to-home-badge', 'setup-menu-add-to-home-badge'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.hidden = seen;
+    });
+
+    document.querySelectorAll('.screen-menu-btn').forEach(btn => {
+      btn.classList.toggle('has-notification', !seen);
+    });
+  },
+
+  /**
+   * User tapped "Add to Home Screen". Branches by platform:
+   *   - Native install prompt available (Chromium) → fire it directly
+   *   - iOS Safari → open the instructions modal with iOS-specific steps
+   *   - Anything else → open the modal with generic copy
+   *
+   * Marks the seen flag regardless of outcome so the notification dot
+   * vanishes after one tap.
+   */
+  _handleAddToHomeScreen() {
+    this._markInstallSeen();
+    this._refreshInstallAffordances();
+
+    if (this._beforeInstallPromptEvent) {
+      const evt = this._beforeInstallPromptEvent;
+      evt.prompt();
+      evt.userChoice.then(() => { this._beforeInstallPromptEvent = null; });
+      return;
+    }
+
+    this._openInstallInstructions();
+  },
+
+  _openInstallInstructions() {
+    const modal = document.getElementById('install-instructions-modal');
+    const content = document.getElementById('install-instructions-content');
+    if (!modal || !content) return;
+
+    if (this._isIOSSafari()) {
+      // SVG mirrors iOS Safari's actual share button glyph (square with
+      // up-arrow). Inline so it sits in the same line as the step text.
+      const shareIcon = '<span class="install-share-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 5l3-3 3 3"/><path d="M3 8v5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8"/></svg></span>';
+      content.innerHTML = `
+        <ol class="install-steps">
+          <li>Tap the ${shareIcon} <strong>Share</strong> button at the bottom of Safari.</li>
+          <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+          <li>Tap <strong>Add</strong> in the top-right.</li>
+        </ol>
+        <p class="sheet__text">Then open the new icon on your home screen — that's the full app experience.</p>
+      `;
+    } else {
+      content.innerHTML = `
+        <p class="sheet__text">Use your browser's menu to add this site to your home screen or desktop. Look for <strong>Install app</strong>, <strong>Add to Home Screen</strong>, or a similar option.</p>
+      `;
+    }
+
+    modal.classList.add('visible');
+  },
+
+  _closeInstallInstructions() {
+    const modal = document.getElementById('install-instructions-modal');
+    if (modal) modal.classList.remove('visible');
+  },
+
+  /**
+   * User tapped "Check for Updates". Forces a service-worker fetch + label
+   * flip for feedback. If a new SW activates, the existing controllerchange
+   * handler reloads the page automatically. Otherwise we briefly flip the
+   * row label to "✓ Up to date (vXXX)".
+   */
+  async _handleCheckForUpdates(labelEl) {
+    if (!labelEl) return;
+    const original = labelEl.textContent;
+    labelEl.textContent = 'Checking…';
+
+    if (!('serviceWorker' in navigator)) {
+      labelEl.textContent = 'Updates not supported';
+      setTimeout(() => { labelEl.textContent = original; }, 2000);
+      return;
+    }
+
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        labelEl.textContent = 'Updates not supported';
+        setTimeout(() => { labelEl.textContent = original; }, 2000);
+        return;
+      }
+      await reg.update();
+      // If a new SW activates, controllerchange fires and reloads. Wait a
+      // beat; if no reload happens, we're already current.
+      setTimeout(() => {
+        const versionLabel = (typeof APP_VERSION !== 'undefined') ? ` (${APP_VERSION})` : '';
+        labelEl.textContent = `✓ Up to date${versionLabel}`;
+        setTimeout(() => { labelEl.textContent = original; }, 2000);
+      }, 1200);
+    } catch (err) {
+      console.warn('[updates] check failed:', err.message);
+      labelEl.textContent = original;
+    }
+  },
 
   // === v203 Hash Routing ===
 
@@ -188,7 +365,7 @@ const App = {
       'header-menu-modal', 'setup-menu-modal', 'end-sale-confirm-modal',
       'share-sale-modal', 'join-sale-modal', 'join-instruction-modal',
       'edit-sale-modal', 'delete-past-sale-modal', 'clear-past-sales-modal',
-      'cancel-confirm-modal', 'export-modal', 'app-guide-modal',
+      'cancel-confirm-modal', 'export-modal', 'app-guide-modal', 'install-instructions-modal',
       'add-item-modal', 'haggle-modal', 'ticket-discount-modal',
       'consignor-picker-modal', 'consignor-modal', 'consignor-color-picker-modal',
       'payout-type-picker-modal', 'speech-confirm-modal', 'speech-fail-modal',
@@ -391,6 +568,39 @@ const App = {
       this.headerElements.menuAppGuide.addEventListener('click', () => {
         this.closeMenu();
         this.openAppGuide();
+      });
+    }
+
+    // v212: Add to Home Screen + Check for Updates (both menus)
+    const wireInstall = (rowId) => {
+      const el = document.getElementById(rowId);
+      if (!el) return;
+      el.addEventListener('click', () => {
+        // Close whichever menu the row lives in.
+        if (rowId.startsWith('setup-')) this._closeSetupMenu();
+        else this.closeMenu();
+        this._handleAddToHomeScreen();
+      });
+    };
+    wireInstall('menu-add-to-home');
+    wireInstall('setup-menu-add-to-home');
+
+    const wireCheckUpdates = (rowId, labelId) => {
+      const el = document.getElementById(rowId);
+      const labelEl = document.getElementById(labelId);
+      if (!el || !labelEl) return;
+      el.addEventListener('click', () => this._handleCheckForUpdates(labelEl));
+    };
+    wireCheckUpdates('menu-check-updates', 'menu-check-updates-label');
+    wireCheckUpdates('setup-menu-check-updates', 'setup-menu-check-updates-label');
+
+    // Install instructions modal — Got It + backdrop dismiss
+    const installDone = document.getElementById('install-instructions-done');
+    const installModal = document.getElementById('install-instructions-modal');
+    if (installDone) installDone.addEventListener('click', () => this._closeInstallInstructions());
+    if (installModal) {
+      installModal.addEventListener('click', (e) => {
+        if (e.target === installModal) this._closeInstallInstructions();
       });
     }
 

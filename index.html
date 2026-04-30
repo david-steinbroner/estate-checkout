@@ -201,6 +201,20 @@
           <span class="ec-menu-item__label">App Guide</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
+        <li class="ec-menu-item" id="setup-menu-add-to-home" tabindex="0" role="button" hidden>
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="10" height="16" rx="2"/><path d="M10 8v5"/><path d="M7.5 10.5h5"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Add to Home Screen</span>
+          <span class="ec-menu-item__badge notification-dot" id="setup-menu-add-to-home-badge" hidden></span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="setup-menu-check-updates" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a7 7 0 0 1 12-5l2 2"/><path d="M17 4v3h-3"/><path d="M17 10a7 7 0 0 1-12 5l-2-2"/><path d="M3 16v-3h3"/></svg>
+          </span>
+          <span class="ec-menu-item__label" id="setup-menu-check-updates-label">Check for Updates</span>
+        </li>
         <li class="ec-menu-item" id="setup-menu-feedback" tabindex="0" role="button">
           <span class="ec-menu-item__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8l-4 3v-3H5a2 2 0 0 1-2-2z"/></svg>
@@ -694,6 +708,20 @@
           <span class="ec-menu-item__label">App Guide</span>
           <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
         </li>
+        <li class="ec-menu-item" id="menu-add-to-home" tabindex="0" role="button" hidden>
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="10" height="16" rx="2"/><path d="M10 8v5"/><path d="M7.5 10.5h5"/></svg>
+          </span>
+          <span class="ec-menu-item__label">Add to Home Screen</span>
+          <span class="ec-menu-item__badge notification-dot" id="menu-add-to-home-badge" hidden></span>
+          <svg class="ec-menu-item__chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+        </li>
+        <li class="ec-menu-item" id="menu-check-updates" tabindex="0" role="button">
+          <span class="ec-menu-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a7 7 0 0 1 12-5l2 2"/><path d="M17 4v3h-3"/><path d="M17 10a7 7 0 0 1-12 5l-2-2"/><path d="M3 16v-3h3"/></svg>
+          </span>
+          <span class="ec-menu-item__label" id="menu-check-updates-label">Check for Updates</span>
+        </li>
       </ul>
 
       <p class="ec-field-error" id="menu-export-error" hidden></p>
@@ -715,6 +743,22 @@
       </ul>
 
       <p class="sheet__version" id="menu-version-label"></p>
+    </div>
+  </div>
+
+  <!-- Install instructions modal (v212). Content rendered platform-aware:
+       iOS Safari users see step-by-step Share-button instructions; other
+       browsers without a native install prompt see generic guidance.
+       Android Chrome / Chromium users skip this modal entirely — we fire
+       the captured beforeinstallprompt event directly. -->
+  <div class="overlay" id="install-instructions-modal">
+    <div class="sheet sheet--detail">
+      <p class="sheet__title">Add to Home Screen</p>
+      <p class="sheet__text">Open this app on your home screen — no Safari bar at the top, faster, works offline.</p>
+      <div class="install-instructions" id="install-instructions-content"></div>
+      <div class="sheet__buttons">
+        <button class="ec-btn ec-btn-primary" id="install-instructions-done">Got It</button>
+      </div>
     </div>
   </div>
 

@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v211';
+const APP_VERSION = 'v212';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v212',
+    date: '2026-04-30',
+    changes: [
+      'New: Add to Home Screen menu entry. Walks you through installing the app on your phone\'s home screen — once installed, it opens like a real app (no Safari bar, faster, works offline).',
+      'On Android Chrome and similar browsers, tapping the entry pops the native install dialog directly. On iOS Safari, you get simple step-by-step instructions with a picture of the Share button. The entry hides itself once you\'ve installed.',
+      'New: Check for Updates menu entry. Tap it any time to make sure you have the latest version — if there\'s an update, the app refreshes immediately. If you\'re already current, the row briefly confirms.',
+      'A small red dot appears on the menu button (and on the Add to Home Screen entry) until you\'ve tapped that entry once — so you don\'t miss it. Once tapped (or already installed), the dot vanishes.'
+    ]
+  },
   {
     version: 'v211',
     date: '2026-04-30',
