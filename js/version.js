@@ -9,9 +9,18 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v210';
+const APP_VERSION = 'v211';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v211',
+    date: '2026-04-30',
+    changes: [
+      'Invoice Adjustment: tapping the input now shifts the sheet up just enough to show what you\'re typing — no more guessing behind the keyboard. The previous fix went too far in keeping the sheet anchored.',
+      'Sales started without consignors now have entry points to add them later, without inventing new flows. The "Consigned by" chip on Add Item is always visible — when no consignors exist, tapping it opens the same Add Consignor sheet you\'d use during Setup. Once you save one, the chip becomes the consignor picker.',
+      'Same idea in the in-sale menu: when there are no consignors yet, "Consignor Payouts" is replaced by "Add Consignor" in the same slot. Tap it → standard Add Consignor flow. After you add one, the slot reverts to "Consignor Payouts".'
+    ]
+  },
   {
     version: 'v210',
     date: '2026-04-30',

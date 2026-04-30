@@ -229,6 +229,7 @@ const App = {
       menuModal: document.getElementById('header-menu-modal'),
       menuDashboard: document.getElementById('menu-dashboard'),
       menuPayouts: document.getElementById('menu-payouts'),
+      menuAddConsignor: document.getElementById('menu-add-consignor'),
       menuScan: document.getElementById('menu-scan'),
       menuShare: document.getElementById('menu-share'),
       menuEndDay: document.getElementById('menu-end-day'),
@@ -315,6 +316,12 @@ const App = {
       this.headerElements.menuPayouts.addEventListener('click', () => {
         this.closeMenu();
         this.showScreen('payouts');
+      });
+    }
+    if (this.headerElements.menuAddConsignor) {
+      this.headerElements.menuAddConsignor.addEventListener('click', () => {
+        this.closeMenu();
+        this.openConsignorSheet(null);
       });
     }
     if (this.headerElements.menuScan) {
@@ -622,10 +629,15 @@ const App = {
     if (this.headerElements.menuEndDayLabel) {
       this.headerElements.menuEndDayLabel.textContent = (sale && sale.status === 'paused') ? 'Resume Day' : 'End Day';
     }
-    // Show Consignor Payouts only if consignors exist
+    // Show Consignor Payouts when consignors exist; otherwise show
+    // "Add Consignor" in the same slot — same flow as Setup, just from
+    // the in-sale menu (v211). Reuses App.openConsignorSheet(null).
+    const hasConsignors = sale && sale.consignors && sale.consignors.length > 0;
     if (this.headerElements.menuPayouts) {
-      const hasConsignors = sale && sale.consignors && sale.consignors.length > 0;
       this.headerElements.menuPayouts.hidden = !hasConsignors;
+    }
+    if (this.headerElements.menuAddConsignor) {
+      this.headerElements.menuAddConsignor.hidden = hasConsignors;
     }
     this.headerElements.menuModal.classList.add('visible');
   },
@@ -1555,6 +1567,12 @@ const App = {
 
     document.getElementById('consignor-modal').classList.remove('visible');
     if (sale) this.renderEditSale(sale);
+    // v211: if Add Item is open under the consignor sheet, refresh the chip
+    // so its label flips from "Add a consignor" → "Select consignor".
+    const addItem = document.getElementById('add-item-modal');
+    if (addItem && addItem.classList.contains('visible') && typeof Checkout !== 'undefined') {
+      Checkout._updateAddItemConsignorDisplay();
+    }
     if (this.currentScreen === 'setup') SaleSetup.renderConsignorList();
   },
 

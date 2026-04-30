@@ -227,9 +227,17 @@ const Checkout = {
         }
       });
     }
-    // Consignor selector in Add Item sheet
+    // Consignor selector in Add Item sheet. v211: when no consignors exist
+    // on the sale, the chip becomes an Add Consignor entry point — tapping
+    // it opens the same Add Consignor sheet used during Setup. Once a
+    // consignor's saved, the chip behavior reverts to picker.
     if (this.elements.addItemConsignorBtn) {
       this.elements.addItemConsignorBtn.addEventListener('click', () => {
+        const consignors = Storage.getConsignors();
+        if (consignors.length === 0) {
+          App.openConsignorSheet(null);
+          return;
+        }
         this.openConsignorPicker(this.addItemConsignorId, (id) => {
           this.addItemConsignorId = id;
           this._updateAddItemConsignorDisplay();
@@ -339,7 +347,7 @@ const Checkout = {
         radio.addEventListener('change', () => {
           this.elements.ticketDiscountInput.value = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus({ preventScroll: true });
+          this.elements.ticketDiscountInput.focus();
         });
       });
       // Mode chip switches just reset the input + refresh the preview.
@@ -347,7 +355,7 @@ const Checkout = {
         radio.addEventListener('change', () => {
           this.elements.ticketDiscountInput.value = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus({ preventScroll: true });
+          this.elements.ticketDiscountInput.focus();
         });
       });
     }
@@ -467,8 +475,10 @@ const Checkout = {
 
     // Show consignor row only if consignors exist
     const consignors = Storage.getConsignors();
+    // v211: chip always visible. When no consignors exist, the chip itself
+    // is the entry point to add the first one — same flow as Setup.
     if (this.elements.addItemConsignorRow) {
-      this.elements.addItemConsignorRow.hidden = consignors.length === 0;
+      this.elements.addItemConsignorRow.hidden = false;
     }
     // Keep last-used consignor if it still exists, else reset
     if (this.addItemConsignorId && !consignors.find(c => c.id === this.addItemConsignorId)) {
@@ -528,8 +538,10 @@ const Checkout = {
 
     // Show consignor row only if consignors exist
     const consignors = Storage.getConsignors();
+    // v211: chip always visible. When no consignors exist, the chip itself
+    // is the entry point to add the first one — same flow as Setup.
     if (this.elements.addItemConsignorRow) {
-      this.elements.addItemConsignorRow.hidden = consignors.length === 0;
+      this.elements.addItemConsignorRow.hidden = false;
     }
     this._updateAddItemConsignorDisplay();
 
@@ -1381,7 +1393,7 @@ const Checkout = {
 
     this.updateHagglePreview();
     this.elements.haggleModal.classList.add('visible');
-    this.elements.haggleInput.focus({ preventScroll: true });
+    this.elements.haggleInput.focus();
   },
 
   /**
@@ -1486,7 +1498,11 @@ const Checkout = {
 
     this._refreshAdjustmentSheet();
     this.elements.ticketDiscountModal.classList.add('visible');
-    this.elements.ticketDiscountInput.focus({ preventScroll: true });
+    // v211: no preventScroll. With sheet at lvh (full height), iOS's auto-
+    // scroll-into-view runs only when needed and only as far as needed —
+    // it's the right amount of movement to bring the input above the
+    // keyboard without the v206 over-shrink behavior we were avoiding.
+    this.elements.ticketDiscountInput.focus();
   },
 
   /**
@@ -1617,7 +1633,14 @@ const Checkout = {
   },
 
   /**
-   * Update the consignor display in the Add Item sheet
+   * Update the consignor display in the Add Item sheet.
+   *
+   * Three states (v211):
+   *   1. Item has consignor \u2192 dot in consignor's color, name shown
+   *   2. Sale has consignors but item has none \u2192 empty dot, "Select consignor"
+   *   3. Sale has zero consignors \u2192 empty dot, "Add a consignor" (the chip
+   *      becomes an entry point to the Add Consignor sheet \u2014 see the click
+   *      handler in bindEvents)
    */
   _updateAddItemConsignorDisplay() {
     if (!this.elements.addItemConsignorDot || !this.elements.addItemConsignorName) return;
@@ -1626,14 +1649,17 @@ const Checkout = {
       const c = consignors.find(x => x.id === this.addItemConsignorId);
       if (c) {
         this.elements.addItemConsignorDot.style.background = c.color;
-        this.elements.addItemConsignorDot.textContent = '\u00A0'; // non-empty to show
+        this.elements.addItemConsignorDot.textContent = '\u00A0';
         this.elements.addItemConsignorName.textContent = c.name;
         return;
       }
     }
     this.elements.addItemConsignorDot.style.background = '';
     this.elements.addItemConsignorDot.textContent = '';
-    this.elements.addItemConsignorName.textContent = 'Select consignor';
+    const hasAny = Storage.getConsignors().length > 0;
+    this.elements.addItemConsignorName.textContent = hasAny
+      ? 'Select consignor'
+      : 'Add a consignor';
   },
 
   /**
