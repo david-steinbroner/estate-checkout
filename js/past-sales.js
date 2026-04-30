@@ -347,7 +347,7 @@ const PastSales = {
     }
 
     modal.classList.add('visible');
-    setTimeout(() => { if (input) input.focus(); }, 100);
+    setTimeout(() => { if (input) input.focus({ preventScroll: true }); }, 100);
   },
 
   _closeDeleteConfirm() {
@@ -425,7 +425,7 @@ const PastSales = {
       error.textContent = '';
     }
     if (modal) modal.classList.add('visible');
-    setTimeout(() => { if (input) input.focus(); }, 100);
+    setTimeout(() => { if (input) input.focus({ preventScroll: true }); }, 100);
   },
 
   _closeClearAllConfirm() {

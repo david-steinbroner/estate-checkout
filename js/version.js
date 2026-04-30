@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v207';
+const APP_VERSION = 'v208';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v208',
+    date: '2026-04-30',
+    changes: [
+      'Fixed for real: the keyboard no longer pushes the Invoice Adjustment sheet (or any other sheet with an input) up off-screen. The v206 attempt used a viewport meta directive that doesn\'t exist on iOS Safari at all — it was a no-op on iPhone. Now uses `lvh` for sheet sizing plus a focus option that suppresses iOS\'s auto-scroll-to-input behavior.',
+      'End Day pause icon now actually renders — the previous v207 attempt used SVG rectangles with a stroke-only style, which drew as nearly-invisible thin outlines. Replaced with proper stroke paths.'
+    ]
+  },
   {
     version: 'v207',
     date: '2026-04-30',

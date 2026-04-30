@@ -335,7 +335,7 @@ const Checkout = {
         radio.addEventListener('change', () => {
           this.elements.ticketDiscountInput.value = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus();
+          this.elements.ticketDiscountInput.focus({ preventScroll: true });
         });
       });
       // Mode chip switches just reset the input + refresh the preview.
@@ -343,7 +343,7 @@ const Checkout = {
         radio.addEventListener('change', () => {
           this.elements.ticketDiscountInput.value = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus();
+          this.elements.ticketDiscountInput.focus({ preventScroll: true });
         });
       });
     }
@@ -481,7 +481,7 @@ const Checkout = {
 
     // Focus description field so keyboard appears
     setTimeout(() => {
-      if (this.elements.addItemDesc) this.elements.addItemDesc.focus();
+      if (this.elements.addItemDesc) this.elements.addItemDesc.focus({ preventScroll: true });
     }, 50);
   },
 
@@ -540,7 +540,7 @@ const Checkout = {
 
     // Focus description
     setTimeout(() => {
-      if (this.elements.addItemDesc) this.elements.addItemDesc.focus();
+      if (this.elements.addItemDesc) this.elements.addItemDesc.focus({ preventScroll: true });
     }, 50);
   },
 
@@ -1019,7 +1019,7 @@ const Checkout = {
 
     titleEl.textContent = '';
     titleEl.appendChild(input);
-    input.focus();
+    input.focus({ preventScroll: true });
 
     const finish = () => {
       this.orderCustomName = input.value.trim();
@@ -1258,7 +1258,7 @@ const Checkout = {
 
     descEl.textContent = '';
     descEl.appendChild(input);
-    input.focus();
+    input.focus({ preventScroll: true });
 
     const finish = () => {
       const newDesc = input.value.trim();
@@ -1376,7 +1376,7 @@ const Checkout = {
 
     this.updateHagglePreview();
     this.elements.haggleModal.classList.add('visible');
-    this.elements.haggleInput.focus();
+    this.elements.haggleInput.focus({ preventScroll: true });
   },
 
   /**
@@ -1481,7 +1481,7 @@ const Checkout = {
 
     this._refreshAdjustmentSheet();
     this.elements.ticketDiscountModal.classList.add('visible');
-    this.elements.ticketDiscountInput.focus();
+    this.elements.ticketDiscountInput.focus({ preventScroll: true });
   },
 
   /**

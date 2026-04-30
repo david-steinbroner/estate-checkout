@@ -1987,10 +1987,17 @@ body {
   padding: var(--space-2xl);
   padding-top: var(--sheet-top-padding);
   padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
-  /* dvh (dynamic viewport height) accounts for the iOS Safari URL bar.
-     vh measures the full window even when chrome is visible — so a 80vh
-     sheet would extend below the visible area on Safari. dvh adjusts. */
-  max-height: 80dvh;
+  /* v208: changed dvh → lvh.
+     dvh tracks the visual viewport — which SHRINKS when the iOS keyboard
+     appears, causing the sheet to shrink and re-anchor above the keyboard
+     (the v206 "interactive-widget=overlays-content" fix did nothing on iOS;
+     that meta value is Chrome-Android only).
+     lvh tracks the LARGEST possible viewport (URL bar hidden, no keyboard)
+     and never shrinks. Combined with focus({preventScroll: true}) on input
+     focus, the keyboard now overlays the sheet's bottom portion instead of
+     pushing the whole sheet up. User dismisses the keyboard to reach the
+     bottom buttons. */
+  max-height: 80lvh;
   overflow-y: auto;
   text-align: center;
   animation: sheet-slide-up 0.2s ease-out;
@@ -2468,10 +2475,12 @@ body {
 }
 
 /* Edit Consignor mode has 4 sections + Save + Delete buttons; the default
-   80dvh sheet cap can hide Delete behind the fold on shorter phones. Bump
-   to 90dvh so the full content fits without scrolling on most devices. */
+   80lvh sheet cap can hide Delete behind the fold on shorter phones. Bump
+   to 90lvh so the full content fits without scrolling on most devices.
+   v208: lvh (not dvh) for the same reason as the .sheet base — has inputs
+   that summon the keyboard. */
 #consignor-modal .sheet {
-  max-height: 90dvh;
+  max-height: 90lvh;
 }
 
 .edit-sale__section .ec-section-header {

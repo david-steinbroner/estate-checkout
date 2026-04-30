@@ -1107,7 +1107,7 @@ const App = {
         input.value = sale.name;
         input.maxLength = 50;
         nameEl.replaceWith(input);
-        input.focus();
+        input.focus({ preventScroll: true });
         this._setEditSaleEditing(true);
         const save = () => {
           const val = input.value.trim();
@@ -1137,7 +1137,7 @@ const App = {
           select.appendChild(opt);
         });
         dayEl.replaceWith(select);
-        select.focus();
+        select.focus({ preventScroll: true });
         this._setEditSaleEditing(true);
         select.addEventListener('change', () => {
           sale.dayOverride = parseInt(select.value);
@@ -1165,7 +1165,7 @@ const App = {
         input.style.width = '80px';
         input.style.textAlign = 'right';
         el.replaceWith(input);
-        input.focus();
+        input.focus({ preventScroll: true });
         this._setEditSaleEditing(true);
         const save = () => {
           const val = parseInt(input.value);
@@ -1552,7 +1552,7 @@ const App = {
       error.textContent = '';
     }
     this.headerElements.endSaleConfirmModal.classList.add('visible');
-    setTimeout(() => { if (input) input.focus(); }, 100);
+    setTimeout(() => { if (input) input.focus({ preventScroll: true }); }, 100);
   },
 
   /**
@@ -2354,7 +2354,7 @@ const App = {
       this._showJoinCodeStatus("That code isn't active. Check with the organizer.", true);
       if (this.headerElements.joinCodeInput) {
         this.headerElements.joinCodeInput.value = '';
-        this.headerElements.joinCodeInput.focus();
+        this.headerElements.joinCodeInput.focus({ preventScroll: true });
       }
     } finally {
       this._joinCodeInFlight = false;
