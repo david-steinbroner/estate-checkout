@@ -9,9 +9,16 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v206';
+const APP_VERSION = 'v207';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v207',
+    date: '2026-04-30',
+    changes: [
+      'End Day in the menu now has a proper pause icon (||) — the previous arrow icon was too thin to read alongside the others.'
+    ]
+  },
   {
     version: 'v206',
     date: '2026-04-30',
