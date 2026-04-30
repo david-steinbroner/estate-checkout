@@ -35,6 +35,7 @@ const App = {
   // === v212: PWA install + update flow ===
 
   _INSTALL_SEEN_KEY: 'estate_install_seen',
+  _WAS_INSTALLED_KEY: 'estate_was_installed',
 
   /** Captured browser-fired beforeinstallprompt event (Chromium only). */
   _beforeInstallPromptEvent: null,
@@ -53,14 +54,27 @@ const App = {
     // When the user installs, persist the "seen" flag and refresh UI.
     window.addEventListener('appinstalled', () => {
       this._markInstallSeen();
+      try { localStorage.setItem(this._WAS_INSTALLED_KEY, '1'); } catch (e) {}
       this._beforeInstallPromptEvent = null;
       this._refreshInstallAffordances();
     });
 
-    // If we're already standalone, the install entry isn't relevant —
-    // mark seen so the bubble is gone forever.
+    // Standalone vs uninstall detection (v213).
+    //   - Standalone now → mark seen + remember we were installed.
+    //   - Not standalone now BUT was previously installed → user uninstalled.
+    //     Clear the seen flag so the notification dot returns and the install
+    //     entry pulls them back in. Without this, a user who uninstalls would
+    //     never get re-prompted to reinstall.
     if (this._isStandalone()) {
       this._markInstallSeen();
+      try { localStorage.setItem(this._WAS_INSTALLED_KEY, '1'); } catch (e) {}
+    } else {
+      try {
+        if (localStorage.getItem(this._WAS_INSTALLED_KEY) === '1') {
+          localStorage.removeItem(this._INSTALL_SEEN_KEY);
+          localStorage.removeItem(this._WAS_INSTALLED_KEY);
+        }
+      } catch (e) {}
     }
   },
 
@@ -70,10 +84,37 @@ const App = {
   },
 
   _isIOSSafari() {
+    return this._detectBrowser() === 'safari' && this._detectPlatform() === 'ios';
+  },
+
+  /**
+   * Identify the user's browser. Order matters because most browsers also
+   * advertise "Safari" in the UA (the WebKit engine identifier).
+   */
+  _detectBrowser() {
     const ua = navigator.userAgent || '';
-    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
-    return isIOS && isSafari;
+    if (/EdgiOS|Edg\//.test(ua)) return 'edge';
+    if (/OPR\/|Opera\//.test(ua)) return 'opera';
+    if (/SamsungBrowser/.test(ua)) return 'samsung';
+    if (/CriOS|Chrome\//.test(ua)) return 'chrome';
+    if (/FxiOS|Firefox\//.test(ua)) return 'firefox';
+    if (/Safari\//.test(ua)) return 'safari';
+    return 'other';
+  },
+
+  /**
+   * Identify the user's platform. iPadOS 13+ pretends to be macOS in the UA
+   * but exposes touch — handle that case so iPad users get iOS instructions.
+   */
+  _detectPlatform() {
+    const ua = navigator.userAgent || '';
+    if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+    if (/Mac/.test(ua) && navigator.maxTouchPoints > 1) return 'ios';
+    if (/Android/.test(ua)) return 'android';
+    if (/Mac/.test(ua)) return 'mac';
+    if (/Windows/.test(ua)) return 'windows';
+    if (/Linux/.test(ua)) return 'linux';
+    return 'other';
   },
 
   _markInstallSeen() {
@@ -139,25 +180,181 @@ const App = {
     const content = document.getElementById('install-instructions-content');
     if (!modal || !content) return;
 
-    if (this._isIOSSafari()) {
-      // SVG mirrors iOS Safari's actual share button glyph (square with
-      // up-arrow). Inline so it sits in the same line as the step text.
-      const shareIcon = '<span class="install-share-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 5l3-3 3 3"/><path d="M3 8v5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8"/></svg></span>';
-      content.innerHTML = `
-        <ol class="install-steps">
-          <li>Tap the ${shareIcon} <strong>Share</strong> button at the bottom of Safari.</li>
-          <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
-          <li>Tap <strong>Add</strong> in the top-right.</li>
-        </ol>
-        <p class="sheet__text">Then open the new icon on your home screen — that's the full app experience.</p>
-      `;
-    } else {
-      content.innerHTML = `
-        <p class="sheet__text">Use your browser's menu to add this site to your home screen or desktop. Look for <strong>Install app</strong>, <strong>Add to Home Screen</strong>, or a similar option.</p>
-      `;
+    const data = this._getInstallInstructions();
+    let html = '';
+    if (data.heading) {
+      html += `<p class="sheet__text">${data.heading}</p>`;
     }
+    if (data.steps && data.steps.length > 0) {
+      html += `<ol class="install-steps">${data.steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+    }
+    if (data.footer) {
+      html += `<p class="sheet__text">${data.footer}</p>`;
+    }
+    content.innerHTML = html;
 
     modal.classList.add('visible');
+  },
+
+  /**
+   * Browser/platform-aware install instructions. Returns
+   *   { heading: string, steps: string[], footer: string }
+   * so the renderer can build the modal contents from a single data shape.
+   *
+   * Intentionally specific — non-technical users don't want generic "use
+   * your browser's menu" copy when we know the browser. Each branch names
+   * the actual menu item or button to look for.
+   */
+  _getInstallInstructions() {
+    const browser = this._detectBrowser();
+    const platform = this._detectPlatform();
+    const shareIcon = '<span class="install-share-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8"/><path d="M5 5l3-3 3 3"/><path d="M3 8v5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8"/></svg></span>';
+
+    // iOS Safari (iPhone, iPad)
+    if (platform === 'ios' && browser === 'safari') {
+      return {
+        heading: 'Open this app on your home screen — no Safari bar at the top, faster, works offline.',
+        steps: [
+          `Tap the ${shareIcon} <strong>Share</strong> button at the bottom of Safari.`,
+          `Scroll down and tap <strong>Add to Home Screen</strong>.`,
+          `Tap <strong>Add</strong> in the top-right.`
+        ],
+        footer: `Then open the new icon on your home screen — that's the full app experience.`
+      };
+    }
+
+    // iOS but a non-Safari browser — Chrome / Firefox / Edge on iPhone are
+    // all Safari engine wrappers, but only Safari can actually install a
+    // PWA on iOS. Send the user to Safari.
+    if (platform === 'ios') {
+      return {
+        heading: 'On iPhone, only Safari can add this app to your home screen.',
+        steps: [
+          `Open <strong>Safari</strong> (the blue compass icon).`,
+          `Go to this same page in Safari.`,
+          `Tap the ${shareIcon} <strong>Share</strong> button → <strong>Add to Home Screen</strong>.`
+        ],
+        footer: ''
+      };
+    }
+
+    // Android — most browsers support installing
+    if (platform === 'android') {
+      if (browser === 'chrome' || browser === 'samsung') {
+        return {
+          heading: 'Add this app to your home screen — opens like a real app, no browser bar.',
+          steps: [
+            `Tap the three-dots menu (top-right of Chrome).`,
+            `Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.`,
+            `Tap <strong>Install</strong>.`
+          ],
+          footer: `Then open the new icon on your home screen.`
+        };
+      }
+      if (browser === 'firefox') {
+        return {
+          heading: 'Add this app to your home screen.',
+          steps: [
+            `Tap the three-dots menu (bottom-right of Firefox).`,
+            `Tap <strong>Install</strong>.`
+          ],
+          footer: ''
+        };
+      }
+      if (browser === 'edge') {
+        return {
+          heading: 'Add this app to your home screen.',
+          steps: [
+            `Tap the menu (bottom-right of Edge).`,
+            `Tap <strong>Apps</strong> → <strong>Install this site as an app</strong>.`,
+            `Tap <strong>Install</strong>.`
+          ],
+          footer: ''
+        };
+      }
+      if (browser === 'opera') {
+        return {
+          heading: 'Add this app to your home screen.',
+          steps: [
+            `Tap the Opera menu.`,
+            `Tap <strong>Add to Home screen</strong>.`
+          ],
+          footer: ''
+        };
+      }
+      return {
+        heading: 'Add this app to your home screen via your browser\'s menu.',
+        steps: [
+          `Open your browser's menu.`,
+          `Look for <strong>Add to Home screen</strong> or <strong>Install app</strong>.`,
+          `Confirm the install.`
+        ],
+        footer: ''
+      };
+    }
+
+    // Desktop browsers
+    if (browser === 'chrome') {
+      return {
+        heading: 'Install this app on your computer — opens in its own window, no browser bar.',
+        steps: [
+          `Look for the install icon in the address bar (a small computer with a download arrow on the right side).`,
+          `Or click the three-dots menu (top-right) → <strong>Install Estate Checkout</strong>.`,
+          `Click <strong>Install</strong>.`
+        ],
+        footer: ''
+      };
+    }
+    if (browser === 'edge') {
+      return {
+        heading: 'Install this app on your computer.',
+        steps: [
+          `Click the three-dots menu (top-right of Edge).`,
+          `Click <strong>Apps</strong> → <strong>Install this site as an app</strong>.`,
+          `Click <strong>Install</strong>.`
+        ],
+        footer: ''
+      };
+    }
+    if (browser === 'opera') {
+      return {
+        heading: 'Install this app on your computer.',
+        steps: [
+          `Look for the install icon in the address bar.`,
+          `Or open the Opera menu → <strong>Install Estate Checkout</strong>.`,
+          `Click <strong>Install</strong>.`
+        ],
+        footer: ''
+      };
+    }
+    if (browser === 'safari' && platform === 'mac') {
+      return {
+        heading: 'Add this app to your Dock (requires macOS Sonoma or later).',
+        steps: [
+          `Click the <strong>File</strong> menu in Safari.`,
+          `Click <strong>Add to Dock…</strong>.`,
+          `Click <strong>Add</strong>.`
+        ],
+        footer: 'On older macOS versions, this option isn\'t available. Try Chrome or Edge instead.'
+      };
+    }
+    if (browser === 'firefox') {
+      return {
+        heading: 'Firefox on desktop doesn\'t support installing this site as an app.',
+        steps: [],
+        footer: 'For the full app experience, open this page in Chrome, Edge, or Safari.'
+      };
+    }
+
+    // Generic fallback
+    return {
+      heading: 'Install this app on your device.',
+      steps: [
+        `Open your browser's menu.`,
+        `Look for <strong>Install app</strong>, <strong>Add to Home Screen</strong>, or similar.`
+      ],
+      footer: ''
+    };
   },
 
   _closeInstallInstructions() {

@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v212';
+const APP_VERSION = 'v213';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v213',
+    date: '2026-04-30',
+    changes: [
+      'Add to Home Screen instructions are now browser-aware. iPhone Safari users get Safari-specific steps with the Share button icon. Chrome on Android, Chrome on desktop, Edge, Firefox, Opera, Samsung Internet, and Mac Safari each get their own steps naming the actual menu item or button to look for. No more generic "use your browser\'s menu" copy when we know the browser.',
+      'If you uninstall the app from your home screen, the install entry and notification dot reappear next time you open the site in a browser — so you can put it back. Previously the prompt was hidden permanently after first tap, even if you uninstalled.'
+    ]
+  },
   {
     version: 'v212',
     date: '2026-04-30',
