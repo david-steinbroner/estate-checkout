@@ -9,9 +9,20 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v205';
+const APP_VERSION = 'v206';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v206',
+    date: '2026-04-30',
+    changes: [
+      'New: Invoice Adjustment replaces Adjust Price / Invoice Discount. Now supports discounts AND surcharges — % or $, in either direction, plus the option to override with a Set Total.',
+      'Pick a type first (Discount, Surcharge, or Set Total), then mode (% or $) for the first two. Preview shows the signed adjustment and the new total.',
+      'Fixed: tapping into an input on the Invoice Adjustment sheet no longer pushes the sheet up off-screen. The keyboard now overlays the bottom of the sheet — dismiss it to reach the buttons below.',
+      'Fixed: double-tapping anywhere in the app no longer zooms in. Pull-to-refresh still works as before.',
+      'Existing invoice discounts are migrated automatically when read; nothing changes for sales already in progress.'
+    ]
+  },
   {
     version: 'v205',
     date: '2026-04-30',

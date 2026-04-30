@@ -641,13 +641,32 @@ const Dashboard = {
     }
     // void (edited/cancelled): no actions
 
-    // Invoice discount line
+    // Invoice adjustment line (v206 — was discount-only)
     let ticketDiscountHtml = '';
     if (txn.ticketDiscount && txn.ticketDiscount.value) {
-      const tdLabel = txn.ticketDiscount.type === 'percent'
-        ? `${txn.ticketDiscount.value}% off`
-        : `${Utils.formatCurrency(txn.ticketDiscount.value)} off`;
-      ticketDiscountHtml = `<div class="dashboard-detail__discount">Invoice discount: ${tdLabel}</div>`;
+      const adj = txn.ticketDiscount;
+      const v = adj.value;
+      let label = '';
+      if (adj.type === 'discount') {
+        label = adj.mode === 'percent'
+          ? `Invoice discount: ${v}% off`
+          : `Invoice discount: ${Utils.formatCurrency(v)} off`;
+      } else if (adj.type === 'surcharge') {
+        label = adj.mode === 'percent'
+          ? `Invoice surcharge: +${v}%`
+          : `Invoice surcharge: +${Utils.formatCurrency(v)}`;
+      } else if (adj.type === 'set') {
+        label = `Invoice total set to ${Utils.formatCurrency(v)}`;
+      } else if (adj.type === 'percent') {
+        // Legacy shape — should be migrated by Storage.getTransactions but
+        // render defensively.
+        label = `Invoice discount: ${v}% off`;
+      } else if (adj.type === 'dollar') {
+        label = `Invoice discount: ${Utils.formatCurrency(v)} off`;
+      } else if (adj.type === 'newprice') {
+        label = `Invoice total set to ${Utils.formatCurrency(v)}`;
+      }
+      if (label) ticketDiscountHtml = `<div class="dashboard-detail__discount">${label}</div>`;
     }
 
     return `

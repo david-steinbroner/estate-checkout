@@ -330,13 +330,19 @@ const Checkout = {
         if (e.target === this.elements.ticketDiscountModal) this.closeTicketDiscountSheet();
       });
       this.elements.ticketDiscountInput.addEventListener('input', () => this.updateTicketDiscountPreview());
-      document.querySelectorAll('input[name="ticket-discount-type"]').forEach(radio => {
+      // v206: type chip switches reveal/hide the mode chips and reset the input.
+      document.querySelectorAll('input[name="ticket-adj-type"]').forEach(radio => {
         radio.addEventListener('change', () => {
           this.elements.ticketDiscountInput.value = '';
-          const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
-          this.elements.ticketDiscountInput.placeholder =
-            type === 'percent' ? 'Percentage' : type === 'dollar' ? 'Amount' : 'New Price';
-          this.updateTicketDiscountPreview();
+          this._refreshAdjustmentSheet();
+          this.elements.ticketDiscountInput.focus();
+        });
+      });
+      // Mode chip switches just reset the input + refresh the preview.
+      document.querySelectorAll('input[name="ticket-adj-mode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          this.elements.ticketDiscountInput.value = '';
+          this._refreshAdjustmentSheet();
           this.elements.ticketDiscountInput.focus();
         });
       });
@@ -1447,59 +1453,104 @@ const Checkout = {
   // ── Invoice Discount Sheet ──
 
   /**
-   * Open the invoice discount sheet
+   * Open the Invoice Adjustment sheet (v206 — was Invoice Discount).
+   *
+   * Pre-fills both the type chip (Discount/Surcharge/Set Total) AND the mode
+   * chip (% / $) from the existing adjustment. For "set" type, hides the
+   * mode row entirely. The Remove button shows only when an adjustment is
+   * already on the cart.
    */
   openTicketDiscountSheet() {
-    const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
-    this.elements.ticketDiscountSubtotal.textContent = Utils.formatCurrency(subtotal);
-
-    // Pre-fill if invoice discount exists
-    if (this.ticketDiscount && this.ticketDiscount.value) {
-      document.querySelector(`input[name="ticket-discount-type"][value="${this.ticketDiscount.type}"]`).checked = true;
-      this.elements.ticketDiscountInput.value = this.ticketDiscount.value;
+    const adj = this.ticketDiscount;
+    if (adj && adj.value) {
+      const type = adj.type === 'discount' || adj.type === 'surcharge' || adj.type === 'set'
+        ? adj.type
+        : 'discount';
+      document.querySelector(`input[name="ticket-adj-type"][value="${type}"]`).checked = true;
+      const mode = adj.mode === 'percent' || adj.mode === 'dollar' ? adj.mode : 'percent';
+      const modeRadio = document.querySelector(`input[name="ticket-adj-mode"][value="${mode}"]`);
+      if (modeRadio) modeRadio.checked = true;
+      this.elements.ticketDiscountInput.value = adj.value;
       this.elements.ticketDiscountRemove.hidden = false;
     } else {
-      document.querySelector('input[name="ticket-discount-type"][value="percent"]').checked = true;
+      document.querySelector('input[name="ticket-adj-type"][value="discount"]').checked = true;
+      document.querySelector('input[name="ticket-adj-mode"][value="percent"]').checked = true;
       this.elements.ticketDiscountInput.value = '';
       this.elements.ticketDiscountRemove.hidden = true;
     }
 
-    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
-    this.elements.ticketDiscountInput.placeholder =
-      type === 'percent' ? 'Percentage' : type === 'dollar' ? 'Amount' : 'New Price';
-
-    this.updateTicketDiscountPreview();
+    this._refreshAdjustmentSheet();
     this.elements.ticketDiscountModal.classList.add('visible');
     this.elements.ticketDiscountInput.focus();
   },
 
   /**
-   * Update invoice discount preview
+   * Refresh the sheet's chip-state-driven UI: hide/show the mode row based on
+   * type, set the input placeholder for the current type+mode, and recompute
+   * the preview. Called on open and on every chip change.
+   */
+  _refreshAdjustmentSheet() {
+    const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
+    const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
+    const modeRow = document.getElementById('ticket-adj-modes');
+    if (modeRow) modeRow.hidden = (type === 'set');
+
+    if (type === 'set') {
+      this.elements.ticketDiscountInput.placeholder = 'New total';
+    } else if (mode === 'percent') {
+      this.elements.ticketDiscountInput.placeholder = 'Percentage';
+    } else {
+      this.elements.ticketDiscountInput.placeholder = 'Amount';
+    }
+    this.updateTicketDiscountPreview();
+  },
+
+  /**
+   * Live-recompute the preview (Subtotal · Adjustment · New Total).
+   *
+   * v206: the Adjustment line is signed — a discount shows "−$X.XX" and
+   * a surcharge shows "+$X.XX". Set Total shows the delta from subtotal
+   * (positive or negative) or hides if no change.
    */
   updateTicketDiscountPreview() {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
-    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+    const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
+    const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
     const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
 
-    const newTotal = Utils.applyTicketDiscount(subtotal, { type, value: rawValue });
-    const savings = subtotal - newTotal;
+    const newTotal = Utils.applyTicketDiscount(subtotal, {
+      type,
+      mode: type === 'set' ? null : mode,
+      value: rawValue
+    });
+    const delta = subtotal - newTotal;
 
     this.elements.ticketDiscountSubtotal.textContent = Utils.formatCurrency(subtotal);
     this.elements.ticketDiscountNewTotal.textContent = Utils.formatCurrency(newTotal);
 
-    if (savings > 0) {
+    const labelEl = document.getElementById('ticket-discount-savings-label');
+    if (Math.abs(delta) > 0.005) {
       this.elements.ticketDiscountSavingsRow.hidden = false;
-      this.elements.ticketDiscountSavings.textContent = '−' + Utils.formatCurrency(savings);
+      const sign = delta > 0 ? '−' : '+';
+      this.elements.ticketDiscountSavings.textContent = sign + Utils.formatCurrency(Math.abs(delta));
+      if (labelEl) {
+        labelEl.textContent = type === 'discount' ? 'Discount'
+          : type === 'surcharge' ? 'Surcharge'
+          : 'Adjustment';
+      }
     } else {
       this.elements.ticketDiscountSavingsRow.hidden = true;
     }
   },
 
   /**
-   * Apply the invoice discount
+   * Apply the invoice adjustment (v206).
+   * Validation differs by type: discount caps at 100% / subtotal; surcharge
+   * has no upper cap; set total accepts any positive value.
    */
   applyTicketDiscount() {
-    const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
+    const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
+    const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
     const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
 
     if (!rawValue) {
@@ -1509,21 +1560,22 @@ const Checkout = {
 
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
 
-    if (type === 'percent' && rawValue > 100) {
-      this._showFieldError('ticket-discount-error', 'Percentage cannot exceed 100%');
+    if (type === 'discount' && mode === 'percent' && rawValue > 100) {
+      this._showFieldError('ticket-discount-error', 'Discount cannot exceed 100%');
       return;
     }
-    if (type === 'dollar' && rawValue > subtotal) {
+    if (type === 'discount' && mode === 'dollar' && rawValue > subtotal) {
       this._showFieldError('ticket-discount-error', 'Discount exceeds subtotal');
       return;
     }
-    if (type === 'newprice' && rawValue > subtotal) {
-      this._showFieldError('ticket-discount-error', 'New price exceeds subtotal');
-      return;
-    }
+    // 'set' and 'surcharge' have no upper cap — operator's call.
 
     this.checkEditDirty();
-    this.ticketDiscount = { type, value: rawValue };
+    this.ticketDiscount = {
+      type,
+      mode: type === 'set' ? null : mode,
+      value: rawValue
+    };
     this.saveCart();
     this.saveDraftTransaction();
     this.transactionSaved = false;
@@ -1532,7 +1584,7 @@ const Checkout = {
   },
 
   /**
-   * Remove the invoice discount
+   * Remove the invoice adjustment.
    */
   removeTicketDiscount() {
     this.checkEditDirty();
@@ -1545,7 +1597,7 @@ const Checkout = {
   },
 
   /**
-   * Close the invoice discount sheet
+   * Close the invoice adjustment sheet
    */
   closeTicketDiscountSheet() {
     this.elements.ticketDiscountModal.classList.remove('visible');

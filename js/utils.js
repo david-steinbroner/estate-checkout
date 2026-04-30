@@ -131,16 +131,37 @@ const Utils = {
    * @param {object|null} ticketDiscount - { type: 'percent'|'dollar', value: number }
    * @returns {number} Total after invoice discount
    */
+  /**
+   * Apply an invoice-level adjustment to a subtotal.
+   *
+   * v206: name kept (call sites still use applyTicketDiscount) but semantics
+   * extended — now handles BOTH the old shape (`{type:'percent'|'dollar'|'newprice', value}`)
+   * AND the new shape (`{type:'discount'|'surcharge'|'set', mode:'percent'|'dollar'|null, value}`).
+   * The forgiving handling means callers don't have to migrate — but
+   * Storage.getTransactions and Storage.getCart migrate on read so most
+   * records are already in the new shape by the time this runs.
+   */
   applyTicketDiscount(subtotal, ticketDiscount) {
     if (!ticketDiscount || !ticketDiscount.type || !ticketDiscount.value) return subtotal;
+    const v = ticketDiscount.value;
+    const t = ticketDiscount.type;
+    const mode = ticketDiscount.mode;
 
-    if (ticketDiscount.type === 'dollar') {
-      return Math.max(0, subtotal - ticketDiscount.value);
-    } else if (ticketDiscount.type === 'percent') {
-      return Math.max(0, subtotal * (1 - ticketDiscount.value / 100));
-    } else if (ticketDiscount.type === 'newprice') {
-      return Math.max(0, Math.min(subtotal, ticketDiscount.value));
+    // Legacy shape (pre-v206) — treat percent/dollar as discount, newprice as set.
+    if (t === 'dollar')   return Math.max(0, subtotal - v);
+    if (t === 'percent')  return Math.max(0, subtotal * (1 - v / 100));
+    if (t === 'newprice') return Math.max(0, v);
+
+    // New shape (v206+).
+    if (t === 'discount') {
+      if (mode === 'percent') return Math.max(0, subtotal * (1 - v / 100));
+      if (mode === 'dollar')  return Math.max(0, subtotal - v);
     }
+    if (t === 'surcharge') {
+      if (mode === 'percent') return subtotal * (1 + v / 100);
+      if (mode === 'dollar')  return subtotal + v;
+    }
+    if (t === 'set') return Math.max(0, v);
 
     return subtotal;
   },
@@ -179,76 +200,10 @@ const Utils = {
   }
 };
 
-/**
- * KeyboardAvoidance — keeps .overlay sheets visible above the iOS keyboard.
- *
- * Uses the visualViewport API to detect when the keyboard shrinks the viewport,
- * then shifts all visible .overlay elements up so sheets anchor above the keyboard.
- * Attach once at startup; listeners self-manage based on overlay visibility.
- */
-const KeyboardAvoidance = {
-  _listening: false,
-  _layoutHeight: 0,
-
-  init() {
-    if (!window.visualViewport) return;
-    this._layoutHeight = window.innerHeight;
-
-    this._onResize = this._update.bind(this);
-    this._onScroll = this._update.bind(this);
-
-    // Observe all .overlay elements for class changes to detect visible/hidden
-    this._observer = new MutationObserver(() => this._checkOverlays());
-    document.querySelectorAll('.overlay').forEach(el => {
-      this._observer.observe(el, { attributes: true, attributeFilter: ['class'] });
-    });
-  },
-
-  _checkOverlays() {
-    const hasVisible = document.querySelector('.overlay.visible') !== null;
-    if (hasVisible && !this._listening) {
-      this._layoutHeight = window.innerHeight;
-      window.visualViewport.addEventListener('resize', this._onResize);
-      window.visualViewport.addEventListener('scroll', this._onScroll);
-      this._listening = true;
-      this._update();
-    } else if (!hasVisible && this._listening) {
-      window.visualViewport.removeEventListener('resize', this._onResize);
-      window.visualViewport.removeEventListener('scroll', this._onScroll);
-      this._listening = false;
-      this._reset();
-    }
-  },
-
-  _update() {
-    const vv = window.visualViewport;
-    const keyboardHeight = this._layoutHeight - vv.height - vv.offsetTop;
-    if (keyboardHeight > 50) {
-      // Keyboard is open — shift overlays up (skip Add Item sheet)
-      document.querySelectorAll('.overlay.visible').forEach(el => {
-        // Skip sheets where lifting causes more harm than good — these are
-        // either tall enough that the input is naturally above the keyboard
-        // (Add Item, Edit Sale, Consignor) or so tall that lifting hides
-        // the title (Haggle, Ticket Discount). User can dismiss the keyboard
-        // to see the rest.
-        if (el.id === 'add-item-modal' ||
-            el.id === 'consignor-modal' ||
-            el.id === 'edit-sale-modal' ||
-            el.id === 'haggle-modal' ||
-            el.id === 'ticket-discount-modal') return;
-        el.style.bottom = keyboardHeight + 'px';
-      });
-    } else {
-      this._reset();
-    }
-  },
-
-  _reset() {
-    document.querySelectorAll('.overlay').forEach(el => {
-      el.style.bottom = '';
-    });
-  }
-};
-
-// Auto-initialize
-KeyboardAvoidance.init();
+// v206: KeyboardAvoidance removed. The previous implementation used the
+// visualViewport API to lift sheets above the iOS keyboard, but the v185
+// fix was incomplete and recently regressed (the Invoice Adjustment sheet
+// was being pushed up). v206 replaces the JS approach with a viewport meta
+// directive (`interactive-widget=overlays-content`), which prevents the
+// visual viewport from shrinking when the keyboard appears. The keyboard
+// overlays the sheet's bottom; user dismisses it to see/tap buttons below.

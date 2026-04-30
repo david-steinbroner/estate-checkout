@@ -223,6 +223,11 @@ body {
   /* Rebalances line breaks to avoid orphans (single hanging word at the end
      of a paragraph). Modern Safari/Chrome only — older browsers no-op. */
   text-wrap: pretty;
+  /* v206: blocks iOS Safari double-tap-to-zoom across the whole app and also
+     drops the legacy 300ms tap delay. Doesn't affect pull-to-refresh (that's
+     overscroll-behavior, not touch-action) or pinch-to-zoom (already off via
+     viewport meta). Single-tap and long-press behaviors are preserved. */
+  touch-action: manipulation;
 }
 
 /* === Shared Header === */

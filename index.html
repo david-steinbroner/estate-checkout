@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, interactive-widget=overlays-content">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#2563eb">
@@ -81,7 +81,7 @@
       <div class="qr-action-row">
         <button type="button" class="ec-link-primary" id="qr-edit">Edit invoice</button>
         <span class="qr-action-sep" aria-hidden="true">·</span>
-        <button type="button" class="ec-link-primary" id="qr-discount">Adjust price</button>
+        <button type="button" class="ec-link-primary" id="qr-discount">Adjustment</button>
         <span class="qr-action-sep" aria-hidden="true">·</span>
         <button type="button" class="ec-link-primary" id="qr-new">New order</button>
       </div>
@@ -917,22 +917,36 @@
     </div>
   </div>
 
-  <!-- Invoice Discount Sheet -->
+  <!-- Invoice Adjustment Sheet (v206 — was Invoice Discount).
+       Three type chips (Discount / Surcharge / Set Total). For Discount and
+       Surcharge, two mode chips (% / $) appear below. For Set Total, the
+       mode row is hidden (no sub-mode needed). The amount input is always
+       a positive magnitude; sign comes from the type. -->
   <div class="overlay" id="ticket-discount-modal">
     <div class="sheet sheet--detail invoice-discount-sheet">
-      <p class="sheet__title">Invoice Discount</p>
-      <div class="invoice-discount__modes">
+      <p class="sheet__title">Invoice Adjustment</p>
+      <div class="invoice-discount__modes" id="ticket-adj-types">
         <label class="invoice-discount__mode">
-          <input type="radio" name="ticket-discount-type" value="percent" checked>
-          <span class="invoice-discount__mode-label">% off</span>
+          <input type="radio" name="ticket-adj-type" value="discount" checked>
+          <span class="invoice-discount__mode-label">Discount</span>
         </label>
         <label class="invoice-discount__mode">
-          <input type="radio" name="ticket-discount-type" value="dollar">
-          <span class="invoice-discount__mode-label">$ off</span>
+          <input type="radio" name="ticket-adj-type" value="surcharge">
+          <span class="invoice-discount__mode-label">Surcharge</span>
         </label>
         <label class="invoice-discount__mode">
-          <input type="radio" name="ticket-discount-type" value="newprice">
-          <span class="invoice-discount__mode-label">Set $</span>
+          <input type="radio" name="ticket-adj-type" value="set">
+          <span class="invoice-discount__mode-label">Set Total</span>
+        </label>
+      </div>
+      <div class="invoice-discount__modes" id="ticket-adj-modes">
+        <label class="invoice-discount__mode">
+          <input type="radio" name="ticket-adj-mode" value="percent" checked>
+          <span class="invoice-discount__mode-label">%</span>
+        </label>
+        <label class="invoice-discount__mode">
+          <input type="radio" name="ticket-adj-mode" value="dollar">
+          <span class="invoice-discount__mode-label">$</span>
         </label>
       </div>
       <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
@@ -943,7 +957,7 @@
           <span id="ticket-discount-subtotal">$0.00</span>
         </div>
         <div class="invoice-discount__line invoice-discount__line--discount" id="ticket-discount-savings-row" hidden>
-          <span>Discount</span>
+          <span id="ticket-discount-savings-label">Adjustment</span>
           <span id="ticket-discount-savings">−$0.00</span>
         </div>
         <div class="invoice-discount__line invoice-discount__line--total">
@@ -952,8 +966,8 @@
         </div>
       </div>
       <div class="sheet__buttons">
-        <button class="ec-btn ec-btn-primary" id="ticket-discount-apply">Apply Discount</button>
-        <button class="ec-btn ec-btn-destructive ec-btn-destructive--outline" id="ticket-discount-remove" hidden>Remove Discount</button>
+        <button class="ec-btn ec-btn-primary" id="ticket-discount-apply">Apply Adjustment</button>
+        <button class="ec-btn ec-btn-destructive ec-btn-destructive--outline" id="ticket-discount-remove" hidden>Remove Adjustment</button>
         <button class="ec-btn ec-btn-secondary" id="ticket-discount-cancel">Cancel</button>
       </div>
     </div>

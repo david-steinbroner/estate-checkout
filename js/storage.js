@@ -85,7 +85,7 @@ const Storage = {
 
     return {
       items: parsed.items || [],
-      ticketDiscount: parsed.ticketDiscount || null
+      ticketDiscount: this._migrateTicketDiscount(parsed.ticketDiscount)
     };
   },
 
@@ -123,9 +123,25 @@ const Storage = {
       voidedAt: txn.voidedAt || null,
       reopenedFrom: txn.reopenedFrom || null,
       orderName: txn.orderName || '',
-      ticketDiscount: txn.ticketDiscount || null,
+      ticketDiscount: this._migrateTicketDiscount(txn.ticketDiscount),
       subtotal: txn.subtotal || txn.total
     }));
+  },
+
+  /**
+   * v206: migrate the legacy ticketDiscount shape (`{type:'percent'|'dollar'|'newprice', value}`)
+   * to the v206 shape (`{type:'discount'|'surcharge'|'set', mode, value}`).
+   * Idempotent — already-new records pass through unchanged. Pure transform;
+   * doesn't write back. Storage.exportSaleCSV and dashboard read paths get
+   * the new shape automatically.
+   */
+  _migrateTicketDiscount(td) {
+    if (!td) return null;
+    if (td.type === 'discount' || td.type === 'surcharge' || td.type === 'set') return td;
+    if (td.type === 'percent')  return { type: 'discount', mode: 'percent', value: td.value };
+    if (td.type === 'dollar')   return { type: 'discount', mode: 'dollar',  value: td.value };
+    if (td.type === 'newprice') return { type: 'set',      mode: null,      value: td.value };
+    return td;
   },
 
   /**
@@ -387,7 +403,7 @@ const Storage = {
     const headers = [
       'Day', 'Date', 'Time', 'Invoice #', 'Customer Name',
       'Item', 'Qty', 'Original Price',
-      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Discount Share',
+      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Adjustment Share',
       'Final Price',
       'Consignor', 'Payout %', 'Consignor Cut', 'Your Cut',
       'Status'
@@ -425,7 +441,10 @@ const Storage = {
       // proportional to its finalPrice / subtotal.
       const subtotal = txn.subtotal || 0;
       const total = txn.total || subtotal;
-      const ticketDiscountTotal = Math.max(0, subtotal - total);
+      // v206: signed — positive when discount, negative when surcharge.
+      // The per-item share carries the same sign so consignor/owner cuts
+      // get the right adjustment direction.
+      const ticketAdjustmentTotal = subtotal - total;
 
       (txn.items || []).forEach(item => {
         const qty = item.quantity || 1;
@@ -434,7 +453,7 @@ const Storage = {
         const finalLineTotal = item.finalPrice || 0;
         const dayDiscountSavings = originalPriceTotal - dayDiscountedTotal;
         const haggleSavings = dayDiscountedTotal - finalLineTotal;
-        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketDiscountTotal : 0;
+        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketAdjustmentTotal : 0;
 
         // Consignor lookup (orphaned IDs render as no-consignor per v187 audit, A)
         const consignor = item.consignorId ? consignorById[item.consignorId] : null;
@@ -525,7 +544,7 @@ const Storage = {
     const headers = [
       'Day', 'Date', 'Time', 'Invoice #', 'Customer Name',
       'Item', 'Qty', 'Original Price',
-      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Discount Share',
+      'Day Discount %', 'Day Discount $', 'Haggle $', 'Invoice Adjustment Share',
       'Final Price',
       'Consignor', 'Payout %', 'Consignor Cut', 'Your Cut',
       'Status'
@@ -559,7 +578,10 @@ const Storage = {
 
       const subtotal = txn.subtotal || 0;
       const total = txn.total || subtotal;
-      const ticketDiscountTotal = Math.max(0, subtotal - total);
+      // v206: signed — positive when discount, negative when surcharge.
+      // The per-item share carries the same sign so consignor/owner cuts
+      // get the right adjustment direction.
+      const ticketAdjustmentTotal = subtotal - total;
 
       (txn.items || []).forEach(item => {
         const qty = item.quantity || 1;
@@ -568,7 +590,7 @@ const Storage = {
         const finalLineTotal = item.finalPrice || 0;
         const dayDiscountSavings = originalPriceTotal - dayDiscountedTotal;
         const haggleSavings = dayDiscountedTotal - finalLineTotal;
-        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketDiscountTotal : 0;
+        const itemTicketShare = subtotal > 0 ? (finalLineTotal / subtotal) * ticketAdjustmentTotal : 0;
 
         const consignor = item.consignorId ? consignorById[item.consignorId] : null;
         let consignorCut = 0;
