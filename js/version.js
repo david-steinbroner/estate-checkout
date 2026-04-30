@@ -9,9 +9,17 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v204';
+const APP_VERSION = 'v205';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v205',
+    date: '2026-04-30',
+    changes: [
+      'In-sale menu reordered: Scan Invoice moves up to second position (right after Dashboard) — it\'s a frequent mid-sale action when a customer comes back with their ticket.',
+      'Subtle visual rhythm in the menu — three intent clusters (review the sale, change settings, data + help) read as separate groups via a small breathing gap between them.'
+    ]
+  },
   {
     version: 'v204',
     date: '2026-04-30',

@@ -2133,6 +2133,15 @@ body {
   border-bottom: none;
 }
 
+/* v205: very-light group separator inside the menu list. Keeps the single
+   card visual intact (no hard split) but adds a small breathing gap above
+   group-leading items so the eye reads three intent clusters: Info / Config
+   / Data & Help. The existing inter-row line above the gap becomes the
+   group break visually — no extra divider color needed. */
+.ec-menu-item--group-start {
+  padding-top: calc(var(--space-md) + var(--space-xs));
+}
+
 .ec-menu-item:active {
   background: var(--color-bg-hover);
 }
