@@ -1,6 +1,16 @@
 # DESIGN SYSTEM — Estate Checkout
 
-**Status:** **Migration complete + token gaps closed (v184).** As of v184 every component family in the catalog has been renamed to canonical `.ec-*` naming, with three documented exceptions (`.sheet` itself — too entangled to rename cheaply; `.consignor-color-chip` — already a `.ec-picker-button` modifier; `.join-code-status` — informational status, not a pure field-error). Tokens fully cleaned up: dead tokens removed, all magic numbers tokenized (28px sheet titles → `--font-size-title-medium`, 48px sheet hero amounts → `--font-size-display`), all hardcoded shadows tokenized (`--shadow-button`, `--shadow-card` added). The Flash toast was removed entirely — it violated principles 1.1.6 (success modals) and 1.5 (errors as popups); replaced by live state updates and inline `.ec-field-error` messages.
+**Status:** **Migration complete + token gaps closed (v184).** Updated through **v213**. As of v184 every component family in the catalog has been renamed to canonical `.ec-*` naming, with three documented exceptions (`.sheet` itself — too entangled to rename cheaply; `.consignor-color-chip` — already a `.ec-picker-button` modifier; `.join-code-status` — informational status, not a pure field-error). Tokens fully cleaned up: dead tokens removed, all magic numbers tokenized (28px sheet titles → `--font-size-title-medium`, 48px sheet hero amounts → `--font-size-display`), all hardcoded shadows tokenized (`--shadow-button`, `--shadow-card` added). The Flash toast was removed entirely — it violated principles 1.1.6 (success modals) and 1.5 (errors as popups); replaced by live state updates and inline `.ec-field-error` messages.
+
+**Notable patterns added v185–v213** (not yet rebuilt as full §2.2 entries — referenced from §1.3 catalog):
+- **Past Estate Sales** — archetype K (was forward-looking, now shipped). See §1.4.K.
+- **Invoice Adjustment chips** (v206) — two pill rows: Type (Discount / Surcharge / Set Total) + Mode (% / $). Mode row hides when Type is Set Total. Uses existing `.invoice-discount__modes` styling.
+- **Notification Dot** (v212) — 8px red badge with surface-color ring on the menu button + the install row. One localStorage flag (`estate_install_seen`) drives both. Self-clears on tap of the install row OR detection of `display-mode: standalone`. Re-appears if the flag is cleared (e.g., the v213 was-installed-now-uninstalled detection).
+- **Blue tappable text for inline edits** (v209) — replaces pencil edit-icon glyph everywhere. Editable values are signaled via `--color-primary` text + `--font-weight-medium`, not a glyph. Matches iOS Wallet / Settings convention. Affects: running-total Order #N, item-sheet title, Edit Estate Sale Details rows.
+- **Hash routing** (v203) — every meaningful screen has a `#/screen[/<id>]` URL. Browser back walks history; refresh is screen-stable; URLs are bookmarkable. Modals don't get history entries; popstate closes any visible modal first before navigating. Implementation in `App.showScreen(name, data, opts)` with `{fromPopstate, replace}` options.
+- **PWA install affordance** (v212–v213) — browser-aware "Add to Home Screen" menu entry with platform-specific instructions sheet (10 variants: iOS Safari, iOS non-Safari, Android Chrome/Samsung/Firefox/Edge/Opera, desktop Chrome/Edge/Opera, Mac Safari, generic). Captures `beforeinstallprompt` for one-tap install on Chromium browsers; falls back to instructions otherwise.
+- **Sheet sizing: lvh** (v208) — sheets use `max-height: 80lvh` (not `dvh`). `lvh` doesn't shrink under the iOS keyboard; combined with letting natural focus auto-scroll run, the keyboard overlays the sheet's bottom and iOS scrolls just enough to expose the focused input.
+- **Safe-area activation** (v210) — viewport meta has `viewport-fit=cover` so `env(safe-area-inset-bottom)` returns the actual home-indicator inset in standalone PWA mode. All bottom action containers already used the env() function; this just made it work.
 
 **Direction:** iOS-native. Primary reference: Apple Wallet. Secondary: Venmo (amount entry). Tertiary: Facebook Creating Event (multi-step forms).
 
@@ -101,6 +111,9 @@ For every product need, the named pattern to use. Components are defined in §2.
 | Settings / menu | **iOS grouped list** (Menu Sheet) | Apple Settings app |
 | Batch-delete rows | **Edit Mode** (toggle + minus + confirm) | iOS Mail Edit |
 | Inline field validation | **Inline Field Error** | iOS Settings |
+| One-shot onboarding nudge | **Notification Dot** | iOS Settings/App Store update badge |
+| Multi-direction value adjustment (discount + surcharge + override) | **Type chips + Mode chips** (two pill rows) | Splitwise expense type/split |
+| Inline tap-to-edit value | **Blue tappable text** (no icon) | iOS Wallet, Settings |
 
 ## §1.4 Screen archetypes
 
@@ -192,7 +205,7 @@ Estate Checkout has 11 screen archetypes. Every screen in the app must fit one.
 - **Title-to-content gap:** `--sheet-content-gap` (24px) on `.sheet__title`; `--sheet-content-gap-tight` (16px) on `.sheet__title--small` for terse confirms.
 - **Buttons:** stack vertically inside `.sheet__buttons`, full-width, gap `--space-md`. The base button height is `--height-button` (48px); sheet-button-stacked CTAs match.
 - **Dismiss:** swipe-down handle, tap-backdrop. **No close X** on standard sheets. The v3 `.sheet--detail` variant (left-aligned dense content) also dismisses via swipe-down — the close X was removed in v169.
-- **Max height:** 80dvh (dynamic viewport height accounts for the iOS Safari URL bar).
+- **Max height:** 80lvh (large viewport height — does NOT shrink when the iOS keyboard appears, which prevents the v206 regression where the sheet was being pushed up off-screen). The earlier dvh approach tracked the visual viewport, which iOS shrinks for the keyboard. Combined with letting iOS's natural focus-scroll-into-view run (no `preventScroll: true` on sheet inputs), the keyboard overlays the bottom of the sheet and iOS scrolls just enough to expose the focused input. User dismisses the keyboard to reach the bottom buttons.
 
 #### Sub-archetype: Confirm Destructive Sheet
 
@@ -231,18 +244,23 @@ Every screen with a fixed CTA at the bottom uses one shape:
 
 **Don't ad-hoc the bar height per screen.** Setup, Checkout, Dashboard, Scan, Paused, Payment all use the same vertical shape so the user's thumb lands in the same place across screens. (v174 standardized 5 of 6; v176 caught Payment.)
 
-### K. Archive / Past Data Screen *(forward-looking)*
+### K. Archive / Past Data Screen
 
-For features that haven't shipped yet but are on the roadmap (export sale data, past sales, account history):
+Used by Past Estate Sales (v193) — both the list and detail surfaces. Past Estate Sale Detail is intentionally a separate screen rather than a flag on Dashboard, because Dashboard has too many mutation paths to safely render in a read-only mode.
 
-- **Top:** screen title (big bold) + back arrow (left)
-- **Body:** Grouped List Cards. Each row: primary label, secondary metadata, trailing chevron or value.
-- **Tap a row:** drill into Detail Screen archetype (B) for that record.
-- **Top-right:** "..." context menu for bulk actions (export selected, delete archived).
-- **Empty state** when no records exist (Empty State archetype, F).
-- **No bottom-anchored CTA** — actions on archived data are non-additive.
+**List shape (`#screen-past-sales`):**
+- **Top:** back arrow (left), screen title "Past Estate Sales" (large bold), spacer (right).
+- **Body:** vertical stack of `.past-sale-row` cards (full-width tappable buttons). Each card shows the sale name, date range + day count, and invoice count + revenue.
+- **Footer:** destructive "Clear all past estate sales" link (only when count > 0). Tap → type-the-word `DELETE` confirmation sheet → wipes every IDB archive entry on this device. Cloud copies are NOT touched.
+- **Empty state** when no archives — Empty State archetype (F).
 
-The closest existing implementation is the Payouts screen, which mixes List + Detail. When Past Sales / Export ships, the patterns above are the target.
+**Detail shape (`#screen-past-sale-detail`):**
+- **Top:** back arrow (left), sale name (large bold), spacer (right). Date-range subtitle below.
+- **Body:** stat row (Invoices · Revenue · Avg) + Revenue by Consignor card + read-only transaction list (reuses `Dashboard.renderTransactionRow` with `{readOnly: true, consignorsOverride}`).
+- **Bottom:** "Export Estate Sale Data" (primary green) + "Delete this estate sale" (destructive link). Reuses the v190 export picker scoped to the snapshot.
+- Invoice rows are tappable to expand inline (accordion) but have no Mark Paid / Edit / Cancel actions — read-only.
+
+**Cloud purge confirmation:** type-the-name pattern (same as End Estate Sale Permanently). Soft-fail on offline → enqueues to `localStorage.estate_pending_cloud_deletes` for next-online drain.
 
 ## §1.5 Interaction rules
 

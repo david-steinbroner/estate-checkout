@@ -2,7 +2,7 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
-**Current priority:** v0.1 feature-complete (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking all shipped). Next: end-to-end testing on mobile Chrome and Safari, then field test.
+**Current priority:** v0.1 feature-complete through v213 (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking, Past Estate Sales archive, cloud purge, Invoice Adjustment with surcharges, hash routing for back-button, App Guide, Add to Home Screen affordance, browser-aware install instructions, viewport-fit safe-area). Next: end-to-end testing on mobile Chrome and Safari, then field test.
 
 > **Roadmap alignment:** The version structure below matches PRODUCT_STRATEGY.md §11. All items beyond v0.1 are hypotheses that will be validated by field test feedback. See PRODUCT_STRATEGY.md for the strategic rationale behind each version.
 
@@ -13,14 +13,16 @@
 Scope is driven entirely by what we learn in field tests. These are likely candidates, not commitments:
 
 - [ ] **SHARED tag on the originating device.** v174 fixed the false-positive (SHARED was flipping just on opening the Share Sale sheet). Currently SHARED only shows on devices that joined someone else's sale. To show SHARED on the originator when another device actually joins, we need a backend signal — e.g., increment a `device_count` column on each `/sales/by-code/:code` lookup, then poll it from the originator and flip the chip when count > 1.
+- [ ] **Exit Sale.** Workers who joined a shared sale via Share Estate Sale can back out to the Setup screen on their device WITHOUT ending the sale for everyone. The cloud copy stays intact, other devices keep working, the leaving worker just loses local access until they rejoin with the share code. Currently the only way for a joiner to "leave" is End Estate Sale Permanently (destructive for everyone) or wiping localStorage.
+- [ ] **First-launch walkthrough.** A 3-step guide that fires automatically on first app open, before any sale is created. Currently App Guide (v204) covers the same content but is opt-in via menu. For non-tech operators (40-70), surfacing it once on first launch could reduce time-to-first-sale.
 - [ ] One-person checkout flow shortcut (skip QR, mark paid directly from checkout)
-- [ ] Export sale data as CSV
 - [ ] Dashboard search by customer number
 - [ ] Dashboard date range filtering
 - [ ] Larger QR codes or alternative handoff method for large carts (50+ items)
 - [ ] Worker discount limits (maxDiscountPercent — enforce max haggle authority per worker; placeholder already in data model)
 - [ ] Undo last transaction (not just last item)
 - [ ] Combined multi-device reporting (merge transaction data from shared sale across devices)
+- [ ] Bulk export across multiple past sales (currently per-sale only)
 
 **Moved to v0.1 (completed 2026-03-04):**
 - ~~Per-item manual discount override for haggling~~ → Item-level haggle discounts (new price / $ off / % off)
@@ -31,6 +33,22 @@ Scope is driven entirely by what we learn in field tests. These are likely candi
 **Moved to v0.1 (completed 2026-03-06):**
 - ~~Consignor/seller tagging~~ → Full consignor system: data model, management UI, item tagging, colored dots throughout, Consignor Payouts screen with payout breakdown
 - ~~Vendor payout reporting~~ → Consignor Payouts screen covers this for estate sales
+
+**Moved to v0.1 (completed 2026-04-28 to 2026-05-02, v167–v213):**
+- ~~Export sale data as CSV~~ → Per-sale export via native share sheet with day picker (v188+, v190 added picker, v206 added signed Adjustment column, surcharge-aware CSV math)
+- ~~Past Estate Sales~~ → Local IndexedDB archive of every ended sale; review invoices/stats/consignor revenue; per-sale cloud purge with type-the-name confirm; "Clear all past estate sales" reset (v193, v199 fixed cross-sale data leak with saleId tagging)
+- ~~Invoice Adjustment (surcharges)~~ → Was discount-only "Adjust Price"; now Discount/Surcharge/Set Total with % or $ for each, signed preview, signed CSV column (v206)
+- ~~App Guide~~ → Replaces What's New menu entry; three-section accordion of FAQs covering setup, daily ops, wrap-up (v204)
+- ~~Browser back button + URL routing~~ → Hash routing means refresh stays on current screen, browser back walks screens, screens are bookmarkable; modal-back closes the modal (v203)
+- ~~Add to Home Screen entry~~ → Browser-aware install instructions (iOS Safari, Android Chrome with native prompt, Edge, Firefox, Opera, Mac Safari, generic fallback). Notification dot on menu button + install row until tapped. Auto-reappears if user uninstalls. (v212–v213)
+- ~~Check for Updates entry~~ → Manual `registration.update()` trigger with inline label feedback ("Checking…" → "✓ Up to date"). Complements existing auto-update on visibility change (v212)
+- ~~Critical: invoice cross-sale leak~~ → Pre-v199, every ended sale's archive inherited transactions from previous sales (no saleId scoping; clearTransactions never called between sales). Fixed with saleId tagging at creation, sale-scoped reads everywhere, post-archive purge of just-ended-sale's transactions. (v199)
+- ~~Critical: Mark Paid race condition~~ → Tap Mark Paid → navigate to dashboard → first poll returned stale server record and clobbered local "paid" state. Fixed with timestamp-based merge precedence (`_updatedAt` stamped on every local mutation). (v200)
+- ~~iOS keyboard pushup on sheets~~ → Sheet was using `dvh` which shrinks under keyboard. Switched to `lvh` + drop `preventScroll: true` on inputs in mid/bottom of sheets so iOS auto-scroll exposes the input naturally. (v206/v208/v211)
+- ~~iOS double-tap zoom~~ → `touch-action: manipulation` on body. Doesn't affect pull-to-refresh or pinch-zoom. (v206)
+- ~~Edit Estate Sale Details redesign~~ → Bespoke `.edit-sale__row` retired; rebuilt to mirror Setup's grouped-card layout (.ec-card + .discount-row + .consignor-list__item + Edit Mode for batch delete). (v209)
+- ~~Pencil edit-icon removed everywhere~~ → Replaced with iOS-native blue tappable text affordance for editable inline values. (v209)
+- ~~PWA standalone polish~~ → `viewport-fit=cover` activates `env(safe-area-inset-bottom)` so bottom action bars clear the iOS home indicator in standalone mode. (v210)
 
 ## v0.3 — Adjacent Segments: Vintage Markets & Multi-Vendor Sales
 
