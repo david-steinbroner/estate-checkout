@@ -2,7 +2,7 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
-**Current priority:** v0.1 feature-complete through v213 (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking, Past Estate Sales archive, cloud purge, Invoice Adjustment with surcharges, hash routing for back-button, App Guide, Add to Home Screen affordance, browser-aware install instructions, viewport-fit safe-area). Next: end-to-end testing on mobile Chrome and Safari, then field test.
+**Current priority:** v0.1 feature-complete through v214 (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking, Past Estate Sales archive, cloud purge, Invoice Adjustment with surcharges, hash routing for back-button, App Guide, Add to Home Screen affordance, browser-aware install instructions, viewport-fit safe-area, v213 field-test fixes — QR-screen adjustment apply, caption-pattern price display, amount-display sheet inputs, keyboard-pushup fix). Next: end-to-end testing on mobile Chrome and Safari, then field test.
 
 > **Roadmap alignment:** The version structure below matches PRODUCT_STRATEGY.md §11. All items beyond v0.1 are hypotheses that will be validated by field test feedback. See PRODUCT_STRATEGY.md for the strategic rationale behind each version.
 
@@ -33,6 +33,14 @@ Scope is driven entirely by what we learn in field tests. These are likely candi
 **Moved to v0.1 (completed 2026-03-06):**
 - ~~Consignor/seller tagging~~ → Full consignor system: data model, management UI, item tagging, colored dots throughout, Consignor Payouts screen with payout breakdown
 - ~~Vendor payout reporting~~ → Consignor Payouts screen covers this for estate sales
+
+**Moved to v0.1 (completed 2026-05-04, v214 — v213 field-test fixes):**
+- ~~Worker accidentally adds an invoice discount and can't remove it~~ → Adjustment sheet's Remove button was already wired in v206; v214 also fixed the QR-screen apply path so the adjustment actually changes the total instead of silently no-op'ing (the v206 sheet refactor renamed the radio names; the QR-screen monkey-patch hadn't kept up). Removed the monkey-patch in favor of a one-shot onAdjustmentChanged hook so there's only one apply/remove implementation.
+- ~~Customer-scanned ticket mislabels new-shape discounts~~ → payment.js was reading the legacy `type === 'percent'` check; a 5% discount displayed as "$5.00 off" on the customer's phone. Now uses shared Utils.formatTicketDiscountLabel — same source of truth as QR + dashboard.
+- ~~Adjustment sheet jumps under the keyboard, clipping Apply/Remove~~ → ticketDiscountInput.focus() now uses {preventScroll: true} like every other sheet. Same latent bug fixed on the haggle sheet input.
+- ~~Wide bordered amount input feels overweight, doesn't match design system~~ → New .amount-display class on adjustment + haggle sheets. Borderless giant centered number, mirrors Add Item / Venmo / Cash App. The number IS the input.
+- ~~Strikethrough comparison is hard to parse on multi-qty rows~~ → Caption pattern replaces strikethrough across cart, order-review sheet, QR screen, dashboard detail, payment screen, and customer's saved ticket. Final price stays the hero; per-unit + "was $X" sit underneath in caption weight via Utils.formatItemPriceCaption. Voided-transaction strikethrough kept (semantically meaningful).
+- ~~Stale corrupt {type: undefined} ticketDiscount records can leak into storage~~ → Storage._migrateTicketDiscount now drops corrupt shapes on read. Pre-fix stale localStorage auto-heals.
 
 **Moved to v0.1 (completed 2026-04-28 to 2026-05-02, v167–v213):**
 - ~~Export sale data as CSV~~ → Per-sale export via native share sheet with day picker (v188+, v190 added picker, v206 added signed Adjustment column, surcharge-aware CSV math)
@@ -121,8 +129,13 @@ These were previously on the roadmap but removed because they conflict with our 
 ---
 
 ## Field Testing Notes
-_To be filled in after first real estate sale test._
 
-| Date | Tester | Feedback | Priority |
-|------|--------|----------|----------|
-| — | — | — | — |
+| Date | Tester | Feedback | Resolution |
+|------|--------|----------|------------|
+| 2026-05-04 | v213 walkthrough | Worker accidentally adds invoice discount and can't see how to remove it | Capability already existed (v206 Remove button); discoverability gap remains — re-label entry point as "Adjustment" once one is applied. v214 also fixed the underlying QR-screen apply bug so removing actually does something. |
+| 2026-05-04 | v213 walkthrough | Strikethrough comparison on multi-qty rows is visually confusing ("Chair x4 $12 → $36" reads ambiguously) | v214 caption pattern: final price is the hero, per-unit + "was $X" sit underneath in caption weight. |
+| 2026-05-04 | v213 walkthrough | Adjustment sheet jumps under the keyboard, clipping Apply/Remove behind the suggestion bar | v214: restored {preventScroll: true} on focus to match every other sheet. |
+| 2026-05-04 | v213 walkthrough | Wide bordered adjustment input feels overweight, doesn't match other numerical inputs | v214 amount-display class — giant centered borderless number, mirrors Add Item / Venmo / Cash App. |
+| 2026-05-04 | v213 walkthrough | Applied 5% discount but invoice still showed $1.00 strikethrough next to $1.00 — adjustment didn't take | v214 critical fix: QR-screen monkey-patch in qr.js was reading stale ticket-discount-type radio names (renamed in v206), saving {type: undefined, value: N} which silently no-op'd. Replaced with onAdjustmentChanged hook so canonical apply/remove is the only path. |
+| — (still open) | v213 walkthrough — unaddressed in v214 | "Employees usually hand the slip to the customer, not the register person — QR scan workflow may not match how sales actually run" | Mark Paid is already on the QR screen (one-person flow works), but v0.2 "skip QR shortcut from checkout" would shorten this further. Validate need in field test. |
+| — (still open) | v213 walkthrough — unaddressed in v214 | Speech-to-text on Chrome iOS: previous "couldn't understand / go somewhere quiet" errors | Believed resolved via v0.1 silent-retry + recognition-recreate (BACKLOG known-issues row marked Resolved 2026-03-06). Validate again in field test against current build. |
