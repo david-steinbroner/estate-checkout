@@ -959,7 +959,12 @@
           <span class="haggle-option__label">% off</span>
         </label>
       </div>
-      <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="haggle-input" placeholder="0.00" autocomplete="off">
+      <!-- v214: amount-display pattern. The number IS the input — same as
+           Add Item, same as Venmo / Cash App. The visible <input> stays for
+           iOS keyboard summoning but is styled with no border, big bold,
+           centered, transparent — so the value reads as a giant hero
+           number, not a form field. -->
+      <input type="text" inputmode="decimal" class="amount-display" id="haggle-input" placeholder="0" autocomplete="off">
       <p class="ec-field-error" id="haggle-error" hidden></p>
       <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
       <div class="sheet__buttons">
@@ -1002,7 +1007,9 @@
           <span class="invoice-discount__mode-label">$</span>
         </label>
       </div>
-      <input type="text" inputmode="decimal" class="ec-input ec-input--amount" id="ticket-discount-input" placeholder="Percentage" autocomplete="off">
+      <!-- v214: amount-display pattern (see haggle sheet above). Same
+           giant centered number that doubles as the input. -->
+      <input type="text" inputmode="decimal" class="amount-display" id="ticket-discount-input" placeholder="0" autocomplete="off">
       <p class="ec-field-error" id="ticket-discount-error" hidden></p>
       <div class="invoice-discount__preview" id="ticket-discount-preview">
         <div class="invoice-discount__line">

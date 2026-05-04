@@ -747,9 +747,9 @@ const Checkout = {
     const html = this.items.map((item, index) => {
       const hasDesc = item.description && item.description.trim().length > 0;
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
-      let descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
+      const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
       const qty = item.quantity || 1;
-      if (qty > 1) descText += ` <span class="item-row__qty">x${qty}</span>`;
+      const qtyBadge = qty > 1 ? `<span class="item-row__qty">× ${qty}</span>` : '';
 
       // v198: always render the consignor slot so descriptions align across
       // assigned + unassigned items. Slot is filled when a consignor is set,
@@ -761,13 +761,15 @@ const Checkout = {
       }
       const dotHtml = `<span class="item-row__consignor-dot" style="${dotStyle}"></span>`;
 
+      const caption = Utils.formatItemPriceCaption(item);
+      const captionHtml = caption ? `<span class="item-row__caption">${Utils.escapeHtml(caption)}</span>` : '';
+
       return `
         <li class="item-row" data-id="${item.id}">
           ${dotHtml}
-          <span class="${descClass}">${descText}</span>
-          <div class="item-row__prices">
-            ${this.renderItemPrices(item)}
-          </div>
+          <span class="${descClass}">${descText}${qtyBadge}</span>
+          <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+          ${captionHtml}
         </li>
       `;
     }).join('');
@@ -779,30 +781,16 @@ const Checkout = {
   },
 
   /**
-   * Render price display for an item with stacking discount display
-   * Shows: original → day discount → haggle (if applicable)
+   * v214: kept as a thin wrapper for any caller that still expects the
+   * "prices column" string. New surfaces should call Utils.formatItemPriceCaption
+   * directly and place the caption underneath the final price as a separate
+   * row, not stack everything inline. The stacked-strikethrough display this
+   * function produced was retired.
    */
   renderItemPrices(item) {
-    const hasHaggle = item.haggleType && item.haggleValue;
-    const hasDayDiscount = item.dayDiscount > 0;
-
-    if (hasHaggle) {
-      // Show full stacking: ~~original~~ ~~day-discounted~~ final
-      return `
-        <span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>
-        ${hasDayDiscount ? `<span class="item-row__day-price">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>` : ''}
-        <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
-      `;
-    } else if (hasDayDiscount) {
-      // Day discount only: ~~original~~ final
-      return `
-        <span class="item-row__original">${Utils.formatCurrency(item.originalPrice)}</span>
-        <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
-      `;
-    } else {
-      // No discounts
-      return `<span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>`;
-    }
+    const caption = Utils.formatItemPriceCaption(item);
+    const captionHtml = caption ? `<span class="item-row__caption">${Utils.escapeHtml(caption)}</span>` : '';
+    return `<span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>${captionHtml}`;
   },
 
   /**
@@ -964,15 +952,19 @@ const Checkout = {
         // Qty badge (shown when qty > 1)
         const qtyBadge = qty > 1 ? `<span class="item-row__qty-badge">&times;${qty}</span>` : '';
 
+        // v214: caption pattern — final price hero, breakdown underneath in
+        // caption weight. No more inline strikethrough.
+        const caption = Utils.formatItemPriceCaption(item);
+        const captionHtml = caption ? `<span class="item-row__caption">${Utils.escapeHtml(caption)}</span>` : '';
+
         return `
           <li class="item-row${haggleClass}" data-id="${item.id}">
             <div class="item-row__content" data-row-edit="${idx}">
               ${consignorDotHtml}
               <span class="${descClass}">${descText}</span>
               ${qtyBadge}
-              <div class="item-row__prices">
-                ${this.renderItemPrices(item)}
-              </div>
+              <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+              ${captionHtml}
             </div>
           </li>
         `;
@@ -1393,7 +1385,9 @@ const Checkout = {
 
     this.updateHagglePreview();
     this.elements.haggleModal.classList.add('visible');
-    this.elements.haggleInput.focus();
+    // v214: matches the adjustment-sheet fix. Same iOS auto-scroll-into-view
+    // behavior was latent here — visible on shorter phones with the keyboard up.
+    this.elements.haggleInput.focus({ preventScroll: true });
   },
 
   /**
@@ -1498,11 +1492,14 @@ const Checkout = {
 
     this._refreshAdjustmentSheet();
     this.elements.ticketDiscountModal.classList.add('visible');
-    // v211: no preventScroll. With sheet at lvh (full height), iOS's auto-
-    // scroll-into-view runs only when needed and only as far as needed —
-    // it's the right amount of movement to bring the input above the
-    // keyboard without the v206 over-shrink behavior we were avoiding.
-    this.elements.ticketDiscountInput.focus();
+    // v214: preventScroll back. The v211 theory ("let iOS auto-scroll the
+    // input into view") looked fine on long content but on this sheet the
+    // input sits high enough that auto-scroll shoves the entire sheet
+    // upward to the top of the viewport — clipping the Apply / Remove
+    // buttons under the keyboard suggestion bar (Image 3 in the v213
+    // field report). Every other sheet in the app uses preventScroll for
+    // exactly this reason; we just missed this one.
+    this.elements.ticketDiscountInput.focus({ preventScroll: true });
   },
 
   /**
@@ -1600,7 +1597,7 @@ const Checkout = {
     this.saveCart();
     this.saveDraftTransaction();
     this.transactionSaved = false;
-    this.closeTicketDiscountSheet();
+    this._fireAdjustmentHookAndClose();
     this.render();
   },
 
@@ -1613,15 +1610,31 @@ const Checkout = {
     this.saveCart();
     this.saveDraftTransaction();
     this.transactionSaved = false;
-    this.closeTicketDiscountSheet();
+    this._fireAdjustmentHookAndClose();
     this.render();
   },
 
   /**
-   * Close the invoice adjustment sheet
+   * Pull the one-shot onAdjustmentChanged hook off the object, close the
+   * sheet, then fire the hook. Order matters: clearing first prevents a
+   * subsequent unrelated open of the sheet (e.g. from Checkout cart) from
+   * accidentally re-firing a stale hook left by the QR screen.
+   */
+  _fireAdjustmentHookAndClose() {
+    const hook = this.onAdjustmentChanged;
+    this.onAdjustmentChanged = null;
+    this.closeTicketDiscountSheet();
+    if (typeof hook === 'function') hook();
+  },
+
+  /**
+   * Close the invoice adjustment sheet. Drops any pending hook so a
+   * cancelled-out attempt from the QR screen doesn't leak into the next
+   * sheet open from a different surface.
    */
   closeTicketDiscountSheet() {
     this.elements.ticketDiscountModal.classList.remove('visible');
+    this.onAdjustmentChanged = null;
   },
 
   /**

@@ -141,7 +141,12 @@ const Storage = {
     if (td.type === 'percent')  return { type: 'discount', mode: 'percent', value: td.value };
     if (td.type === 'dollar')   return { type: 'discount', mode: 'dollar',  value: td.value };
     if (td.type === 'newprice') return { type: 'set',      mode: null,      value: td.value };
-    return td;
+    // v214: corrupt shape (type missing/unknown but value present). The
+    // pre-v214 QR-screen apply path could write `{type: undefined, value}`
+    // when the radio-button names drifted out of sync after the v206 sheet
+    // refactor. Drop it on read so stale local records don't keep showing
+    // a phantom discount that doesn't actually apply.
+    return null;
   },
 
   /**

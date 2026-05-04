@@ -116,10 +116,8 @@
       letter-spacing: 0.01em;
     }
 
-    .ticket__discount-original {
-      text-decoration: line-through;
-      color: var(--color-text-tertiary);
-    }
+    /* v214: .ticket__discount-original retired — adjustment label now
+       stands alone in caption weight, no strikethrough subtotal next to it. */
 
     /* Items card */
     .ticket__items-card {
@@ -146,6 +144,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap; /* v214: caption wraps to its own line */
       gap: var(--space-md);
       padding: var(--space-md) var(--space-lg);
       border-bottom: 1px solid var(--color-divider);
@@ -175,11 +174,14 @@
       flex-shrink: 0;
     }
 
-    .ticket__item-original {
-      text-decoration: line-through;
-      color: var(--color-text-tertiary);
-      font-weight: 400;
-      margin-right: var(--space-xs);
+    /* v214: .ticket__item-original retired — caption pattern instead. */
+    .ticket__item-caption {
+      flex-basis: 100%;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
     }
 
     /* QR card — for payment worker to scan from customer's phone */
@@ -287,6 +289,40 @@
         }
       }
 
+      // v214: caption + adjustment-label helpers (mirror of Utils equivalents
+      // in the main app — duplicated because ticket.html is a standalone page
+      // with no module loader). Same item shape as payment.js's scanned data.
+      function formatItemPriceCaption(item) {
+        const qty = item.qty || 1;
+        const finalLine = item.final || 0;
+        const original = item.orig || 0;
+        const finalUnit = qty > 0 ? finalLine / qty : finalLine;
+        const discounted = !!(item.haggle && item.haggle.value) ||
+          (original > 0 && finalUnit < original);
+
+        const parts = [];
+        if (qty > 1) parts.push(`× ${qty} at ${formatCurrency(finalUnit)} each`);
+        else if (discounted) parts.push(`was ${formatCurrency(original)}`);
+
+        if (qty > 1 && discounted) parts.push(`was ${formatCurrency(original)} each`);
+
+        return parts.length ? parts.join(' · ') : null;
+      }
+
+      function formatTicketDiscountLabel(adj) {
+        if (!adj || !adj.value) return null;
+        const v = adj.value;
+        const t = adj.type;
+        const m = adj.mode;
+        if (t === 'discount')  return m === 'percent' ? `Invoice discount: ${v}% off` : `Invoice discount: ${formatCurrency(v)} off`;
+        if (t === 'surcharge') return m === 'percent' ? `Invoice surcharge: +${v}%`   : `Invoice surcharge: +${formatCurrency(v)}`;
+        if (t === 'set')       return `Invoice total set to ${formatCurrency(v)}`;
+        if (t === 'percent')   return `Invoice discount: ${v}% off`;
+        if (t === 'dollar')    return `Invoice discount: ${formatCurrency(v)} off`;
+        if (t === 'newprice')  return `Invoice total set to ${formatCurrency(v)}`;
+        return null;
+      }
+
       function renderError(msg) {
         ticketEl.innerHTML = `
           <div class="ticket__error">
@@ -373,44 +409,35 @@
         const discountLabel = data.discount > 0 ? `${data.discount}% off` : '';
         const saleInfo = [saleName, dayLabel, discountLabel].filter(Boolean).join(' · ');
 
+        // v214: caption pattern. Description + qty inline; final price as
+        // hero on the right; per-unit / "was $X" caption on its own row
+        // beneath. Strikethrough comparison retired.
         const itemsHtml = data.items.map(item => {
-          const desc = item.desc || 'Item';
-          const hasHaggle = item.haggle && item.haggle.value;
-          const hasDayDiscount = item.day !== undefined && item.orig !== item.day;
-
-          let priceHtml;
-          if (hasHaggle) {
-            priceHtml = `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>`;
-            if (hasDayDiscount) {
-              priceHtml += `<span class="ticket__item-original">${formatCurrency(item.day)}</span>`;
-            }
-            priceHtml += formatCurrency(item.final);
-          } else if (item.orig !== item.final) {
-            priceHtml = `<span class="ticket__item-original">${formatCurrency(item.orig)}</span>${formatCurrency(item.final)}`;
-          } else {
-            priceHtml = formatCurrency(item.final);
-          }
+          const qty = item.qty || 1;
+          const desc = (item.desc || 'Item') + (qty > 1 ? ` × ${qty}` : '');
+          const caption = formatItemPriceCaption(item);
+          const captionHtml = caption ? `<span class="ticket__item-caption">${escapeHtml(caption)}</span>` : '';
 
           return `
             <li class="ticket__item">
               <span class="ticket__item-desc">${escapeHtml(desc)}</span>
-              <span class="ticket__item-price">${priceHtml}</span>
+              <span class="ticket__item-price">${formatCurrency(item.final)}</span>
+              ${captionHtml}
             </li>
           `;
         }).join('');
 
         const timeStr = formatTime(data.ts);
 
+        // v214: invoice adjustment shown as caption-weight label, no
+        // strikethrough on the subtotal. Reads both the v206+ shape and
+        // the legacy shape.
         let discountLineHtml = '';
-        if (data.ticketDiscount && data.ticketDiscount.value) {
-          const subtotal = data.subtotal || data.total;
-          const tdLabel = data.ticketDiscount.type === 'percent'
-            ? `${data.ticketDiscount.value}% off`
-            : `${formatCurrency(data.ticketDiscount.value)} off`;
+        const tdLabel = formatTicketDiscountLabel(data.ticketDiscount);
+        if (tdLabel) {
           discountLineHtml = `
             <div class="ticket__discount-line">
               <span class="ticket__discount-label">${escapeHtml(tdLabel)}</span>
-              <span class="ticket__discount-original">${formatCurrency(subtotal)}</span>
             </div>
           `;
         }

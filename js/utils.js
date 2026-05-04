@@ -167,6 +167,76 @@ const Utils = {
   },
 
   /**
+   * Format an invoice-level adjustment as human-readable labels.
+   * Single source of truth — used by qr.js, payment.js, dashboard.js so the
+   * label never drifts out of sync with the data shape. Handles both the
+   * legacy shape (pre-v206) and the current `{type, mode, value}` shape.
+   *
+   * Returns { short, long }. `short` is for tight contexts (captions, chips);
+   * `long` is for descriptive lines on detail/dashboard views.
+   * Returns null when the adjustment is empty/invalid.
+   */
+  formatTicketDiscountLabel(adj) {
+    if (!adj || !adj.value) return null;
+    const v = adj.value;
+    const t = adj.type;
+    const mode = adj.mode;
+
+    // Current shape (v206+).
+    if (t === 'discount') {
+      if (mode === 'percent') return { short: `${v}% off`,                       long: `Invoice discount: ${v}% off` };
+      if (mode === 'dollar')  return { short: `${this.formatCurrency(v)} off`,   long: `Invoice discount: ${this.formatCurrency(v)} off` };
+    }
+    if (t === 'surcharge') {
+      if (mode === 'percent') return { short: `+${v}% surcharge`,                 long: `Invoice surcharge: +${v}%` };
+      if (mode === 'dollar')  return { short: `+${this.formatCurrency(v)} surcharge`, long: `Invoice surcharge: +${this.formatCurrency(v)}` };
+    }
+    if (t === 'set') return { short: `Total set to ${this.formatCurrency(v)}`, long: `Invoice total set to ${this.formatCurrency(v)}` };
+
+    // Legacy shape (pre-v206) — render defensively in case migration didn't run.
+    if (t === 'percent')  return { short: `${v}% off`,                     long: `Invoice discount: ${v}% off` };
+    if (t === 'dollar')   return { short: `${this.formatCurrency(v)} off`, long: `Invoice discount: ${this.formatCurrency(v)} off` };
+    if (t === 'newprice') return { short: `Total set to ${this.formatCurrency(v)}`, long: `Invoice total set to ${this.formatCurrency(v)}` };
+
+    return null;
+  },
+
+  /**
+   * Build the caption line that sits underneath an item's final price on
+   * cart, QR, dashboard, payment, and saved-ticket surfaces.
+   *
+   * v214: replaces strikethrough comparison text. Mirrors the Apple Wallet
+   * / Venmo pattern — final amount is the hero, breakdown is caption-weight
+   * underneath. Per-unit + "was $X" combine into one line; null when there's
+   * nothing extra to say (single unit, no discount).
+   *
+   * Reads both unified and legacy item shapes:
+   *   { quantity, originalPrice, dayDiscountedPrice, finalPrice, haggleType, haggleValue }
+   *   { qty, orig, day, final, haggle: {type, value} }   ← payment/ticket scan shape
+   */
+  formatItemPriceCaption(item) {
+    const qty = item.quantity || item.qty || 1;
+    const finalLine = item.finalPrice !== undefined ? item.finalPrice : (item.final || 0);
+    const original = item.originalPrice !== undefined ? item.originalPrice : (item.orig || 0);
+    const hasHaggle = (item.haggleType && item.haggleValue) || (item.haggle && item.haggle.value);
+    const dayDiscountPct = item.dayDiscount;
+    const dayDiscountedUnit = item.dayDiscountedPrice !== undefined
+      ? item.dayDiscountedPrice
+      : (item.day !== undefined ? item.day : original);
+    const finalUnit = qty > 0 ? finalLine / qty : finalLine;
+    const hasDayDiscount = dayDiscountPct > 0 || (original > 0 && dayDiscountedUnit < original);
+    const discounted = hasHaggle || hasDayDiscount || finalUnit < original;
+
+    const parts = [];
+    if (qty > 1) parts.push(`× ${qty} at ${this.formatCurrency(finalUnit)} each`);
+    else if (discounted) parts.push(`was ${this.formatCurrency(original)}`);
+
+    if (qty > 1 && discounted) parts.push(`was ${this.formatCurrency(original)} each`);
+
+    return parts.length ? parts.join(' · ') : null;
+  },
+
+  /**
    * Format ISO timestamp to time string (e.g., "10:42 AM")
    */
   formatTime(isoTimestamp) {

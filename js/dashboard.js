@@ -539,11 +539,7 @@ const Dashboard = {
 
     const itemsHtml = (txn.items || []).map(item => {
       const qty = item.quantity || 1;
-      let desc = item.description || 'Item';
-      if (qty > 1) {
-        const unitPrice = item.finalPrice / qty;
-        desc += ` x${qty} @${Utils.formatCurrency(unitPrice)}`;
-      }
+      const desc = (item.description || 'Item') + (qty > 1 ? ` × ${qty}` : '');
 
       // Consignor tag — tappable to reassign (even on paid invoices per V2 §1.6).
       // Voided and read-only renders show non-interactive tags.
@@ -570,26 +566,16 @@ const Dashboard = {
         consignorTag = ` <button class="dashboard-detail__consignor dashboard-detail__consignor--empty" data-consignor-edit="${item.id}" type="button" aria-label="Assign consignor"><svg class="dashboard-detail__consignor-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><path d="M2 13a4 4 0 0 1 8 0"/><path d="M13 4v3M14.5 5.5h-3"/></svg></button>`;
       }
 
-      const hasHaggle = item.haggleType && item.haggleValue;
-      const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
-
-      let priceHtml;
-      if (hasHaggle) {
-        priceHtml = `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>`;
-        if (hasDayDiscount && item.dayDiscountedPrice !== undefined) {
-          priceHtml += `<span class="dashboard-detail__original">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>`;
-        }
-        priceHtml += Utils.formatCurrency(item.finalPrice);
-      } else if (item.originalPrice !== item.finalPrice) {
-        priceHtml = `<span class="dashboard-detail__original">${Utils.formatCurrency(item.originalPrice)}</span>${Utils.formatCurrency(item.finalPrice)}`;
-      } else {
-        priceHtml = Utils.formatCurrency(item.finalPrice);
-      }
+      // v214: caption pattern. Final line price is the hero on the right;
+      // breakdown (per-unit, was-X) sits underneath in caption weight.
+      const caption = Utils.formatItemPriceCaption(item);
+      const captionHtml = caption ? `<span class="dashboard-detail__caption">${Utils.escapeHtml(caption)}</span>` : '';
 
       return `
         <li class="dashboard-detail__item">
           <span class="dashboard-detail__desc">${Utils.escapeHtml(desc)}${consignorTag}</span>
-          <span class="dashboard-detail__price">${priceHtml}</span>
+          <span class="dashboard-detail__price">${Utils.formatCurrency(item.finalPrice)}</span>
+          ${captionHtml}
         </li>
       `;
     }).join('');
@@ -641,32 +627,12 @@ const Dashboard = {
     }
     // void (edited/cancelled): no actions
 
-    // Invoice adjustment line (v206 — was discount-only)
+    // Invoice adjustment line (v214: shared label helper — same source of
+    // truth as QR + payment screens so labels can't drift)
     let ticketDiscountHtml = '';
-    if (txn.ticketDiscount && txn.ticketDiscount.value) {
-      const adj = txn.ticketDiscount;
-      const v = adj.value;
-      let label = '';
-      if (adj.type === 'discount') {
-        label = adj.mode === 'percent'
-          ? `Invoice discount: ${v}% off`
-          : `Invoice discount: ${Utils.formatCurrency(v)} off`;
-      } else if (adj.type === 'surcharge') {
-        label = adj.mode === 'percent'
-          ? `Invoice surcharge: +${v}%`
-          : `Invoice surcharge: +${Utils.formatCurrency(v)}`;
-      } else if (adj.type === 'set') {
-        label = `Invoice total set to ${Utils.formatCurrency(v)}`;
-      } else if (adj.type === 'percent') {
-        // Legacy shape — should be migrated by Storage.getTransactions but
-        // render defensively.
-        label = `Invoice discount: ${v}% off`;
-      } else if (adj.type === 'dollar') {
-        label = `Invoice discount: ${Utils.formatCurrency(v)} off`;
-      } else if (adj.type === 'newprice') {
-        label = `Invoice total set to ${Utils.formatCurrency(v)}`;
-      }
-      if (label) ticketDiscountHtml = `<div class="dashboard-detail__discount">${label}</div>`;
+    const adjLabel = Utils.formatTicketDiscountLabel(txn.ticketDiscount);
+    if (adjLabel) {
+      ticketDiscountHtml = `<div class="dashboard-detail__discount">${Utils.escapeHtml(adjLabel.long)}</div>`;
     }
 
     return `

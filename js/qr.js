@@ -172,14 +172,16 @@ const QR = {
     // Render item summary and total first (these should always work)
     this.renderItemSummary(transaction);
 
-    // Show invoice discount in total if present
-    if (transaction.ticketDiscount && transaction.ticketDiscount.value) {
-      const subtotal = transaction.subtotal || transaction.total;
-      const discountLabel = transaction.ticketDiscount.type === 'percent'
-        ? `${transaction.ticketDiscount.value}% off`
-        : `${Utils.formatCurrency(transaction.ticketDiscount.value)} off`;
+    // v214: caption pattern. Final total stays the hero; the adjustment
+    // label sits underneath as caption-weight text. No strikethrough on
+    // the total — Apple Wallet / Venmo / Cash App show one number, not a
+    // before/after. Original subtotal is still discoverable in the QR
+    // payload and on the customer's saved ticket detail view.
+    const adjLabel = Utils.formatTicketDiscountLabel(transaction.ticketDiscount);
+    if (adjLabel) {
       this.elements.qrTotal.innerHTML =
-        `<span style="text-decoration:line-through;color:#999;font-size:0.85em;margin-right:4px">${Utils.formatCurrency(subtotal)}</span>${Utils.formatCurrency(transaction.total)}`;
+        `<span class="qr-total__amount-value">${Utils.formatCurrency(transaction.total)}</span>` +
+        `<span class="qr-total__caption">${Utils.escapeHtml(adjLabel.long)}</span>`;
     } else {
       this.elements.qrTotal.textContent = Utils.formatCurrency(transaction.total);
     }
@@ -223,8 +225,18 @@ const QR = {
   },
 
   /**
-   * Apply or edit invoice discount from QR screen without reopening the transaction
-   * Opens the invoice discount sheet, then updates the transaction in-place
+   * Apply or edit invoice discount from QR screen without reopening the
+   * transaction. Opens the canonical adjustment sheet, then re-syncs the
+   * transaction once Checkout commits the change via its onAdjustmentChanged
+   * hook.
+   *
+   * v214: this used to monkey-patch Checkout.applyTicketDiscount/remove and
+   * read the wrong radio-button names (`ticket-discount-type` predates the
+   * v206 sheet refactor that renamed them to `ticket-adj-type`/`ticket-adj-mode`).
+   * The patch silently saved `{type: undefined, value: N}`, which then bypassed
+   * Utils.applyTicketDiscount's type check — so the discount displayed but
+   * never applied. Replaced with a one-shot callback hook so there's exactly
+   * one apply/remove implementation in the codebase.
    */
   applyTicketDiscountFromQR() {
     const txn = this.transaction;
@@ -234,12 +246,9 @@ const QR = {
     Checkout.items = txn.items.map(item => ({ ...item }));
     Checkout.ticketDiscount = txn.ticketDiscount || null;
 
-    // Stash original callbacks so we can intercept apply/remove
-    const origApply = Checkout.applyTicketDiscount.bind(Checkout);
-    const origRemove = Checkout.removeTicketDiscount.bind(Checkout);
+    Checkout.onAdjustmentChanged = () => {
+      Checkout.onAdjustmentChanged = null;
 
-    const afterUpdate = () => {
-      // Recalculate transaction totals
       const subtotal = Checkout.items.reduce((sum, item) => sum + item.finalPrice, 0);
       const total = Utils.applyTicketDiscount(subtotal, Checkout.ticketDiscount);
 
@@ -247,76 +256,49 @@ const QR = {
       txn.subtotal = subtotal;
       txn.total = total;
 
-      // Update in storage
       Storage.updateTransaction(txn.id, {
         ticketDiscount: txn.ticketDiscount,
         subtotal: txn.subtotal,
         total: txn.total
       });
 
-      // Update lastTransaction reference
+      // Push to backend if synced
+      const sale = Storage.getSale();
+      if (typeof Sync !== 'undefined' && Sync.isSynced(sale)) {
+        Sync.patchInvoice(sale.id, sale.shareCode, txn.id, {
+          ticketDiscount: txn.ticketDiscount,
+          subtotal: txn.subtotal,
+          total: txn.total
+        }).catch(err => console.warn('[sync] adjustment patch failed:', err.message));
+      }
+
       Checkout.lastTransaction = txn;
-
-      // Re-render QR screen with updated data
       this.render(txn);
-
-      // Restore original methods
-      Checkout.applyTicketDiscount = origApply;
-      Checkout.removeTicketDiscount = origRemove;
     };
 
-    // Monkey-patch apply/remove to intercept and update QR
-    Checkout.applyTicketDiscount = function() {
-      const type = document.querySelector('input[name="ticket-discount-type"]:checked')?.value;
-      const rawValue = parseFloat(Checkout.elements.ticketDiscountInput.value) || 0;
-      if (!rawValue) { Checkout._showFieldError('ticket-discount-error', 'Enter a value'); return; }
-
-      Checkout.ticketDiscount = { type, value: rawValue };
-      Checkout.closeTicketDiscountSheet();
-      afterUpdate();
-    };
-
-    Checkout.removeTicketDiscount = function() {
-      Checkout.ticketDiscount = null;
-      Checkout.closeTicketDiscountSheet();
-      afterUpdate();
-    };
-
-    // Open the sheet
     Checkout.openTicketDiscountSheet();
   },
 
   /**
    * Render item summary list
+   *
+   * v214: caption pattern. Final per-line price is the hero on the right;
+   * a smaller caption underneath shows per-unit and "was $X" when
+   * applicable. No inline strikethrough — see Utils.formatItemPriceCaption.
    */
   renderItemSummary(transaction) {
     const html = transaction.items.map(item => {
       const qty = item.quantity || 1;
-      let desc = item.description || 'Item';
-      if (qty > 1) {
-        const unitPrice = item.finalPrice / qty;
-        desc += ` x${qty} @${Utils.formatCurrency(unitPrice)}`;
-      }
-      const hasHaggle = item.haggleType && item.haggleValue;
-      const hasDayDiscount = (item.dayDiscount || item.discount || 0) > 0;
-
-      let priceHtml;
-      if (hasHaggle) {
-        priceHtml = `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>`;
-        if (hasDayDiscount && item.dayDiscountedPrice !== undefined) {
-          priceHtml += `<span class="qr-item__original">${Utils.formatCurrency(item.dayDiscountedPrice)}</span>`;
-        }
-        priceHtml += Utils.formatCurrency(item.finalPrice);
-      } else if (hasDayDiscount) {
-        priceHtml = `<span class="qr-item__original">${Utils.formatCurrency(item.originalPrice)}</span>${Utils.formatCurrency(item.finalPrice)}`;
-      } else {
-        priceHtml = Utils.formatCurrency(item.finalPrice);
-      }
+      const desc = (item.description || 'Item') + (qty > 1 ? ` × ${qty}` : '');
+      const caption = Utils.formatItemPriceCaption(item);
+      const captionHtml = caption ? `<span class="qr-item__caption">${Utils.escapeHtml(caption)}</span>` : '';
+      const priceHtml = Utils.formatCurrency(item.finalPrice);
 
       return `
         <li class="qr-item">
           <span class="qr-item__desc">${Utils.escapeHtml(desc)}</span>
           <span class="qr-item__price">${priceHtml}</span>
+          ${captionHtml}
         </li>
       `;
     }).join('');

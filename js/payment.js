@@ -70,15 +70,17 @@ const Payment = {
     // Render items
     this.renderItems(data.items);
 
-    // Render total with invoice discount if present
-    if (data.ticketDiscount && data.ticketDiscount.value) {
-      const subtotal = data.subtotal || data.total;
-      const discountLabel = data.ticketDiscount.type === 'percent'
-        ? `${data.ticketDiscount.value}% off`
-        : `${Utils.formatCurrency(data.ticketDiscount.value)} off`;
+    // v214: caption pattern matches QR + cart. Final total is the hero;
+    // adjustment label sits underneath in caption weight. The previous
+    // path read `data.ticketDiscount.type === 'percent'` which silently
+    // mislabelled v206-shape adjustments (e.g. a 5% discount displayed as
+    // "$5.00 off"). Now uses Utils.formatTicketDiscountLabel which handles
+    // both shapes correctly.
+    const adjLabel = Utils.formatTicketDiscountLabel(data.ticketDiscount);
+    if (adjLabel) {
       this.elements.total.innerHTML =
-        `<span style="text-decoration:line-through;color:#999;font-size:0.85em;margin-right:4px">${Utils.formatCurrency(subtotal)}</span>${Utils.formatCurrency(data.total)}` +
-        `<br><span style="font-size:0.75em;color:#666">Invoice discount: ${discountLabel}</span>`;
+        `<span class="payment-total__amount-value">${Utils.formatCurrency(data.total)}</span>` +
+        `<span class="payment-total__caption">${Utils.escapeHtml(adjLabel.long)}</span>`;
     } else {
       this.elements.total.textContent = Utils.formatCurrency(data.total);
     }
@@ -90,30 +92,24 @@ const Payment = {
 
   /**
    * Render item list
+   *
+   * v214: caption pattern. The scanned-ticket item shape uses short keys
+   * (qty/orig/day/final/haggle); Utils.formatItemPriceCaption reads both
+   * that shape and the cart shape so the same helper drives every surface.
    */
   renderItems(items) {
     const html = items.map(item => {
-      const desc = item.desc || 'Item';
-      const hasHaggle = item.haggle && item.haggle.value;
-      const hasDayDiscount = item.day !== undefined && item.orig !== item.day;
-
-      let priceHtml;
-      if (hasHaggle) {
-        priceHtml = `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>`;
-        if (hasDayDiscount) {
-          priceHtml += `<span class="payment-item__original">${Utils.formatCurrency(item.day)}</span>`;
-        }
-        priceHtml += Utils.formatCurrency(item.final);
-      } else if (item.orig !== item.final) {
-        priceHtml = `<span class="payment-item__original">${Utils.formatCurrency(item.orig)}</span>${Utils.formatCurrency(item.final)}`;
-      } else {
-        priceHtml = Utils.formatCurrency(item.final);
-      }
+      const qty = item.qty || 1;
+      const desc = (item.desc || 'Item') + (qty > 1 ? ` × ${qty}` : '');
+      const caption = Utils.formatItemPriceCaption(item);
+      const captionHtml = caption ? `<span class="payment-item__caption">${Utils.escapeHtml(caption)}</span>` : '';
+      const priceHtml = Utils.formatCurrency(item.final);
 
       return `
         <li class="payment-item">
           <span class="payment-item__desc">${Utils.escapeHtml(desc)}</span>
           <span class="payment-item__price">${priceHtml}</span>
+          ${captionHtml}
         </li>
       `;
     }).join('');

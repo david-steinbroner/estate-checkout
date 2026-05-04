@@ -9,9 +9,20 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v213';
+const APP_VERSION = 'v214';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v214',
+    date: '2026-05-04',
+    changes: [
+      'Fixed: applying an Invoice Adjustment from the QR/handoff screen now actually changes the total. Previously a 5% discount on a $1.00 invoice would still show $1.00 — the adjustment looked applied but never reduced the total. (The Invoice Adjustment button on the checkout screen always worked.)',
+      'Fixed: the Invoice Adjustment sheet no longer jumps up under the keyboard, clipping the Apply / Remove buttons behind the keyboard suggestion bar. Same fix on the Adjust Price (haggle) sheet.',
+      'Cleaner price display everywhere. Strikethrough comparison prices retired across the cart, QR screen, dashboard, payment screen, and the customer\'s saved ticket. The final price stays the hero number; per-unit price and "was $X" sit underneath in a small caption — easier to read, especially on multi-quantity rows like "Chair × 4" where the old strikethrough was confusing.',
+      'Adjustment and haggle sheets: the value input is now a giant centered number with no border (matching Add Item). Tap it and the keyboard appears just like before — the number itself is the input.',
+      'Customer-scanned tickets now show invoice discounts/surcharges with the correct label. A 5% discount used to display as "$5.00 off" on the customer\'s phone. Now reads "Invoice discount: 5% off".'
+    ]
+  },
   {
     version: 'v213',
     date: '2026-04-30',
