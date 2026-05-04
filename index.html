@@ -555,6 +555,17 @@
         <span class="entry-screen__topbar-spacer" aria-hidden="true"></span>
       </div>
 
+      <!-- v215: listening indicator. The mic button itself is at the
+           bottom-right and gets covered by the user's finger while
+           held — so feedback that it's actually listening was invisible
+           ("am I pressing the right button?"). This pill sits at the top
+           of the sheet, with a pulsing dot and the live caption "Listening…",
+           so the user gets clear feedback while their finger is on the mic. -->
+      <div class="speech-indicator" id="speech-indicator" hidden aria-live="polite">
+        <span class="speech-indicator__dot"></span>
+        <span class="speech-indicator__label">Listening…</span>
+      </div>
+
       <!-- Body (scrollable) -->
       <div class="entry-screen__body">
         <!-- Hero: current item's price (updates live from numpad) -->
@@ -940,40 +951,10 @@
     </div>
   </div>
 
-  <!-- Haggle Discount Sheet -->
-  <div class="overlay" id="haggle-modal">
-    <div class="sheet">
-      <p class="sheet__title" id="haggle-title">Adjust Price</p>
-      <p class="sheet__text" id="haggle-breakdown">Lamp — $20.00 → $15.00</p>
-      <div class="haggle-options">
-        <label class="haggle-option">
-          <input type="radio" name="haggle-type" value="newprice" checked>
-          <span class="haggle-option__label">New price</span>
-        </label>
-        <label class="haggle-option">
-          <input type="radio" name="haggle-type" value="dollar">
-          <span class="haggle-option__label">$ off</span>
-        </label>
-        <label class="haggle-option">
-          <input type="radio" name="haggle-type" value="percent">
-          <span class="haggle-option__label">% off</span>
-        </label>
-      </div>
-      <!-- v214: amount-display pattern. The number IS the input — same as
-           Add Item, same as Venmo / Cash App. The visible <input> stays for
-           iOS keyboard summoning but is styled with no border, big bold,
-           centered, transparent — so the value reads as a giant hero
-           number, not a form field. -->
-      <input type="text" inputmode="decimal" class="amount-display" id="haggle-input" placeholder="0" autocomplete="off">
-      <p class="ec-field-error" id="haggle-error" hidden></p>
-      <p class="haggle-preview" id="haggle-preview">New price: $0.00</p>
-      <div class="sheet__buttons">
-        <button class="ec-btn ec-btn-primary" id="haggle-apply">Apply</button>
-        <button class="ec-btn ec-btn-destructive ec-btn-destructive--outline" id="haggle-remove" hidden>Remove Discount</button>
-        <button class="ec-btn ec-btn-secondary" id="haggle-cancel">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <!-- v215: Haggle Discount Sheet markup deleted. The per-item adjustment
+       sheet was orphaned — `openHaggleSheet()` had no remaining callers
+       after the v206 item-edit refactor. Per-item price overrides now
+       happen by editing the item directly (Add Item sheet in edit mode). -->
 
   <!-- Invoice Adjustment Sheet (v206 — was Invoice Discount).
        Three type chips (Discount / Surcharge / Set Total). For Discount and
@@ -1007,10 +988,35 @@
           <span class="invoice-discount__mode-label">$</span>
         </label>
       </div>
-      <!-- v214: amount-display pattern (see haggle sheet above). Same
-           giant centered number that doubles as the input. -->
-      <input type="text" inputmode="decimal" class="amount-display" id="ticket-discount-input" placeholder="0" autocomplete="off">
-      <p class="ec-field-error" id="ticket-discount-error" hidden></p>
+      <!-- v215: in-sheet numpad replaces the amount-display input. The
+           previous iOS-keyboard pattern hid the entry behind the
+           keyboard suggestion bar, and a borderless full-width number
+           field didn't match the rest of the design system. The numpad
+           mirrors Add Item's pattern — hero number top, 3×4 keypad
+           below — and avoids the iOS keyboard entirely so there's no
+           keyboard-pushup problem to manage. -->
+      <div class="ec-hero-number ec-hero-number--centered" id="ticket-discount-display">0</div>
+      <p class="ec-field-error ec-field-error--centered" id="ticket-discount-error" hidden></p>
+      <div class="ec-numpad" id="ticket-discount-numpad">
+        <button class="ec-numpad-key" data-value="1" type="button">1</button>
+        <button class="ec-numpad-key" data-value="2" type="button">2</button>
+        <button class="ec-numpad-key" data-value="3" type="button">3</button>
+        <button class="ec-numpad-key" data-value="4" type="button">4</button>
+        <button class="ec-numpad-key" data-value="5" type="button">5</button>
+        <button class="ec-numpad-key" data-value="6" type="button">6</button>
+        <button class="ec-numpad-key" data-value="7" type="button">7</button>
+        <button class="ec-numpad-key" data-value="8" type="button">8</button>
+        <button class="ec-numpad-key" data-value="9" type="button">9</button>
+        <button class="ec-numpad-key" data-value="." type="button">.</button>
+        <button class="ec-numpad-key" data-value="0" type="button">0</button>
+        <button class="ec-numpad-key ec-numpad-key--backspace" data-value="backspace" type="button" aria-label="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+            <line x1="18" y1="9" x2="12" y2="15"/>
+            <line x1="12" y1="9" x2="18" y2="15"/>
+          </svg>
+        </button>
+      </div>
       <div class="invoice-discount__preview" id="ticket-discount-preview">
         <div class="invoice-discount__line">
           <span>Subtotal</span>
@@ -1199,24 +1205,19 @@
     </div>
   </div>
 
-  <!-- Voice Input Guide Sheet (shown once on first mic use after permission) -->
-  <div class="overlay" id="mic-guide-modal">
-    <div class="sheet">
-      <p class="sheet__title">How to Use Voice Input</p>
-      <p class="sheet__text">Press and hold the 🎤 Speak button while you say a price. Try something like "twenty five dollars" or "chair twelve dollars" to include a description. Release when you're done.</p>
-      <div class="sheet__buttons">
-        <button class="ec-btn ec-btn-primary" id="mic-guide-btn">Got It</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Speech Permission Sheet -->
+  <!-- v215: Combined voice intro + permission sheet. Replaces the prior
+       two-modal flow (separate "How to Use Voice Input" + "Allow
+       Microphone" sheets) — the second one fired right after the first,
+       both stating roughly the same thing, and the wordy how-to copy
+       overwhelmed first-time users. Now: one short intro that warns
+       about the iOS system prompt, then taps through to it. After
+       permission grant, no second modal. -->
   <div class="overlay" id="speech-permission-modal">
     <div class="sheet">
-      <p class="sheet__title" id="speech-permission-title">Voice Input</p>
-      <p class="sheet__text" id="speech-permission-body">Voice input needs microphone access to work.</p>
+      <p class="sheet__title" id="speech-permission-title">Talk instead of type</p>
+      <p class="sheet__text" id="speech-permission-body">Hold the mic and say something like "lamp twelve dollars". Tap Continue and your phone will ask for microphone access.</p>
       <div class="sheet__buttons">
-        <button class="ec-btn ec-btn-primary" id="speech-permission-allow">Allow Microphone</button>
+        <button class="ec-btn ec-btn-primary" id="speech-permission-allow">Continue</button>
         <button class="ec-btn ec-btn-secondary" id="speech-permission-dismiss">Use Number Pad Instead</button>
       </div>
     </div>

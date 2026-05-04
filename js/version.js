@@ -9,9 +9,22 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v214';
+const APP_VERSION = 'v215';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v215',
+    date: '2026-05-04',
+    changes: [
+      'Invoice Adjustment sheet uses an in-sheet number pad instead of the iOS keyboard. Same look as Add Item — big number on top, keypad below. The keyboard-pushup problems and the "input hidden behind the keyboard" issue are gone entirely because there\'s no system keyboard involved.',
+      'Cleaner item rows. Single items with only a sale-wide day discount no longer carry a noisy "was $X" caption — the day discount is already shown at the top of the screen. Multi-quantity rows now show just "$X each" underneath, no extra clutter. Per-item haggled overrides keep a "Marked from $X" caption so they\'re still distinguishable.',
+      'Multi-quantity badge spacing fixed (was rendering as "Read× 5" jammed together; now reads "Read × 5").',
+      'Voice input setup simplified. Two back-to-back modals collapsed into one short prompt that explains how voice works AND warns that your phone is about to ask for microphone access. Less to read, no surprise system prompt.',
+      'Voice input gets a "Listening…" pill at the top of the Add Item sheet so you can see it\'s actually recording — even while your finger covers the mic button.',
+      'Voice input now understands quantities spoken as words. "two lamps for $20" correctly parses as 2 lamps at $20 (was being saved as a single item called "two lamps").',
+      'Removed dead code: the standalone per-item Haggle sheet had no remaining entry points after a past refactor — about 200 lines of HTML/CSS/JS deleted. Per-item price overrides happen by editing the item directly.'
+    ]
+  },
   {
     version: 'v214',
     date: '2026-05-04',

@@ -462,48 +462,11 @@ body {
   margin-bottom: var(--space-xl);
 }
 
-/* === Amount Display Input (v214) ===
-   The number IS the input — same pattern as Venmo / Cash App / our own
-   Add Item screen. Used in the Haggle and Invoice Adjustment sheets where
-   we need an iOS numeric keyboard but don't want the input to read as a
-   form field. No border, no background, big bold centered numerals. The
-   element is still a real <input>, so iOS pops the keyboard on focus
-   without us having to fake it.
-
-   Replaces .ec-input--amount in the haggle and adjustment sheets — that
-   class created a full-width pill that felt overweight next to the type
-   chips above it, and didn't match the design language of Add Item's
-   numeric entry.
-*/
-.amount-display {
-  display: block;
-  width: 100%;
-  border: none;
-  background: transparent;
-  outline: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding: var(--space-sm) 0;
-  margin-bottom: var(--space-lg);
-  font-family: var(--font-family-number);
-  font-size: var(--font-size-price);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  line-height: var(--line-height-tight);
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  caret-color: var(--color-primary);
-}
-.amount-display::placeholder {
-  color: var(--color-text-tertiary);
-}
-/* Keep iOS from auto-zooming when focused — font-size is already well
-   above the 16px threshold, but be defensive. */
-.amount-display:focus {
-  font-size: var(--font-size-price);
-}
+/* v215: .amount-display retired. The Invoice Adjustment + Haggle sheets
+   moved to a custom in-sheet numpad (same pattern as Add Item) instead
+   of an iOS-keyboard input — that fully eliminates the keyboard-pushup
+   class of bugs and gives the sheet the same visual language as Add
+   Item. The Haggle sheet itself was also retired (dead code). */
 
 
 /* === Item List (inline preview — shows last 2-3 items) === */
@@ -731,6 +694,10 @@ body {
 .item-row__qty {
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
+  /* v215: small left margin defends against future markup tightening.
+     The current cart row also injects an &nbsp; before the badge to
+     guarantee separation when the parent has white-space: nowrap. */
+  margin-left: 2px;
 }
 
 /* Qty badge pill (shown in collapsed row when qty > 1) */
@@ -741,6 +708,7 @@ body {
   background: var(--color-bg-hover);
   border-radius: 10px;
   padding: 1px 6px;
+  margin-left: var(--space-xs); /* v215: separates badge from description */
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -964,6 +932,46 @@ body {
 @keyframes mic-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* === Speech Listening Indicator (v215) ===
+   Sits at the top of the Add Item entry screen body, visible while the
+   user holds the mic button. Solves "my finger covers the mic, I can't
+   tell if it's actually listening" — a pulsing red dot + "Listening…"
+   label provides clear, unobscured feedback. Hidden by default; speech.js
+   toggles `hidden` based on recognition state. */
+.speech-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0 auto var(--space-md);
+  background: var(--color-bg-hover);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  width: max-content;
+  max-width: 100%;
+}
+.speech-indicator[hidden] { display: none; }
+
+.speech-indicator__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  animation: speech-indicator-pulse 1s ease-in-out infinite;
+}
+
+.speech-indicator__label {
+  letter-spacing: -0.01em;
+}
+
+@keyframes speech-indicator-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
 }
 
 /* Qty row */
@@ -1836,49 +1844,22 @@ body {
   color: var(--color-danger);
 }
 
-/* === Haggle & Invoice Discount Sheets === */
-.haggle-options {
-  display: flex;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+/* === Invoice Adjustment Sheet ===
+   v215: haggle-* styles removed alongside the dead haggle markup. The
+   adjustment sheet uses .invoice-discount__* classes below + the shared
+   .ec-numpad pattern from Add Item.
+
+   The hero number ("0", or the typed magnitude) sits between the chips
+   and the numpad. Tighten its margins so the sheet fits on shorter
+   phones without scrolling. */
+#ticket-discount-modal .ec-hero-number {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
-.haggle-option {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-base);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.haggle-option:has(input:checked) {
-  border-color: var(--color-primary);
-  background: var(--color-primary-tint);
-}
-
-.haggle-option input[type="radio"] {
-  display: none;
-}
-
-.haggle-option__label {
-  font-weight: var(--font-weight-medium);
-}
-
-/* v214: .amount-display already has its own bottom margin baked in. The
-   prior #haggle-modal .ec-input--amount margin override is no longer
-   needed. */
-
-.haggle-preview {
-  text-align: center;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
+/* Numpad inside the adjustment sheet — same .ec-numpad rules apply,
+   just give it a little breathing room above the preview card. */
+#ticket-discount-numpad {
   margin-bottom: var(--space-lg);
 }
 
@@ -1913,9 +1894,8 @@ body {
   display: none;
 }
 
-/* v214: .amount-display already has its own bottom margin baked in. The
-   prior #ticket-discount-modal .ec-input--amount margin override is no
-   longer needed. */
+/* v215: prior #ticket-discount-modal .ec-input--amount override removed
+   alongside .amount-display retirement. */
 
 .invoice-discount__preview {
   background: var(--color-bg);

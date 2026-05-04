@@ -240,9 +240,10 @@ const Speech = {
       permissionTitle: document.getElementById('speech-permission-title'),
       permissionBody: document.getElementById('speech-permission-body'),
       permissionAllowBtn: document.getElementById('speech-permission-allow'),
-      permissionDismissBtn: document.getElementById('speech-permission-dismiss'),
-      micGuideModal: document.getElementById('mic-guide-modal'),
-      micGuideBtn: document.getElementById('mic-guide-btn')
+      permissionDismissBtn: document.getElementById('speech-permission-dismiss')
+      // v215: micGuideModal/micGuideBtn removed — the standalone "How to Use
+      // Voice Input" sheet was folded into the (now combined) intro+permission
+      // modal so first-time users see one short prompt, not two.
     };
   },
 
@@ -302,19 +303,7 @@ const Speech = {
       });
     }
 
-    // Mic guide sheet dismiss
-    if (this.elements.micGuideBtn) {
-      this.elements.micGuideBtn.addEventListener('click', () => {
-        this.hideMicGuide();
-      });
-    }
-    if (this.elements.micGuideModal) {
-      this.elements.micGuideModal.addEventListener('click', (e) => {
-        if (e.target === this.elements.micGuideModal) {
-          this.hideMicGuide();
-        }
-      });
-    }
+    // v215: standalone mic-guide listeners removed alongside the modal.
 
     // Add Item sheet mic button — hold-to-speak
     if (this.elements.addItemMic) {
@@ -381,11 +370,10 @@ const Speech = {
     this.ensureRecognition();
     if (!this.recognition || this.isListening) return;
 
-    // Show guide sheet on first mic use after permission grant (one-time)
-    if (!localStorage.getItem(this.MIC_TOOLTIP_KEY)) {
-      this.showMicGuide();
-      return; // Don't start recognition — user reads guide first, then presses again
-    }
+    // v215: post-permission mic-guide modal removed — usage instructions
+    // now live in the combined intro/permission sheet that fires before
+    // permission, so by the time we reach this point the user has already
+    // seen the how-to copy. No second modal.
 
     // Track button press time for quick-tap detection
     this.buttonPressTime = Date.now();
@@ -486,12 +474,17 @@ const Speech = {
   },
 
   /**
-   * Update mic button UI state
+   * Update mic button UI state.
+   *
+   * v215: also toggles the top-of-sheet listening indicator so the user
+   * gets visible feedback even while their finger covers the mic button.
    */
   updateMicUI(isListening) {
     if (this.elements.addItemMic) {
       this.elements.addItemMic.classList.toggle('listening', isListening);
     }
+    const indicator = document.getElementById('speech-indicator');
+    if (indicator) indicator.hidden = !isListening;
   },
 
   /**
@@ -743,17 +736,34 @@ const Speech = {
   },
 
   /**
-   * Extract a leading quantity number from a description string
-   * e.g., "3 bandanas" → { qty: 3, description: "bandanas" }
+   * Extract a leading quantity number from a description string.
+   * v215: now handles English number words ("two lamps") in addition to
+   * digits ("2 lamps"), and strips trailing connectives like "for" / "at"
+   * so phrases like "two lamps for $20" parse as qty=2, desc="lamps".
+   *
+   *   "3 bandanas"          → { qty: 3, description: "bandanas" }
+   *   "two lamps for"       → { qty: 2, description: "lamps" }
+   *   "five patches at"     → { qty: 5, description: "patches" }
    */
   extractLeadingQty(desc) {
-    const match = desc.match(/^(\d+)\s+(.+)$/);
-    if (match) {
-      const qty = parseInt(match[1]);
+    const stripTrailingConnective = (s) => s.replace(/\s+(for|at)$/i, '').trim();
+
+    const digitMatch = desc.match(/^(\d+)\s+(.+)$/);
+    if (digitMatch) {
+      const qty = parseInt(digitMatch[1]);
       if (qty >= 2 && qty <= 99) {
-        return { qty, description: match[2] };
+        return { qty, description: stripTrailingConnective(digitMatch[2]) };
       }
     }
+
+    const wordMatch = desc.match(/^(\S+)\s+(.+)$/);
+    if (wordMatch) {
+      const wordVal = this.numberWords[wordMatch[1].toLowerCase()];
+      if (wordVal !== undefined && wordVal >= 2 && wordVal <= 99 && Number.isInteger(wordVal)) {
+        return { qty: wordVal, description: stripTrailingConnective(wordMatch[2]) };
+      }
+    }
+
     return { qty: 1, description: desc };
   },
 
@@ -1186,26 +1196,7 @@ const Speech = {
     this.elements.failModal.classList.add('visible');
   },
 
-  /**
-   * Show mic guide sheet (one-time, on first mic use after permission grant)
-   */
-  showMicGuide() {
-    if (!this.elements.micGuideModal) return;
-    this.elements.micGuideModal.classList.add('visible');
-  },
-
-  /**
-   * Hide mic guide sheet and mark as seen (only sets flag if actually visible)
-   */
-  hideMicGuide() {
-    if (!this.elements.micGuideModal) return;
-
-    const wasVisible = this.elements.micGuideModal.classList.contains('visible');
-    this.elements.micGuideModal.classList.remove('visible');
-
-    // Only mark as seen if the guide was actually displayed
-    if (wasVisible) {
-      localStorage.setItem(this.MIC_TOOLTIP_KEY, '1');
-    }
-  }
+  // v215: showMicGuide / hideMicGuide removed alongside the standalone
+  // mic-guide modal. The MIC_TOOLTIP_KEY localStorage entry is no longer
+  // read or written; old values harmlessly persist.
 };

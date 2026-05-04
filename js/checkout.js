@@ -63,8 +63,11 @@ const Checkout = {
   // Edit mode: index into this.items[] when editing, null when adding
   editingItemIndex: null,
 
-  // Haggle sheet state — which item is being haggled
-  haggleItemId: null,
+  // v215: invoice-adjustment numpad input buffer (string, mirrors priceInput).
+  // The adjustment sheet now uses a custom in-sheet numpad instead of an iOS
+  // keyboard input — same pattern as Add Item — so we keep the typed value
+  // here as it's tapped in.
+  adjustmentInput: '',
 
   // DOM element references
   elements: {},
@@ -122,18 +125,12 @@ const Checkout = {
       addItemConsignorDot: document.getElementById('add-item-consignor-dot'),
       addItemConsignorName: document.getElementById('add-item-consignor-name'),
       numpad: document.getElementById('numpad'),
-      // Haggle sheet
-      haggleModal: document.getElementById('haggle-modal'),
-      haggleTitle: document.getElementById('haggle-title'),
-      haggleBreakdown: document.getElementById('haggle-breakdown'),
-      haggleInput: document.getElementById('haggle-input'),
-      hagglePreview: document.getElementById('haggle-preview'),
-      haggleApply: document.getElementById('haggle-apply'),
-      haggleRemove: document.getElementById('haggle-remove'),
-      haggleCancel: document.getElementById('haggle-cancel'),
-      // Invoice discount sheet
+      // v215: haggle-sheet element refs deleted alongside the dead haggle markup.
+      // Invoice adjustment sheet (v215: numpad-driven; ticketDiscountInput
+      // is now a hero-number display element, not a text input)
       ticketDiscountModal: document.getElementById('ticket-discount-modal'),
-      ticketDiscountInput: document.getElementById('ticket-discount-input'),
+      ticketDiscountDisplay: document.getElementById('ticket-discount-display'),
+      ticketDiscountNumpad: document.getElementById('ticket-discount-numpad'),
       ticketDiscountApply: document.getElementById('ticket-discount-apply'),
       ticketDiscountRemove: document.getElementById('ticket-discount-remove'),
       ticketDiscountCancel: document.getElementById('ticket-discount-cancel'),
@@ -306,28 +303,9 @@ const Checkout = {
       });
     }
 
-    // Haggle sheet events
-    if (this.elements.haggleApply) {
-      this.elements.haggleApply.addEventListener('click', () => this.applyHaggle());
-    }
-    if (this.elements.haggleRemove) {
-      this.elements.haggleRemove.addEventListener('click', () => this.removeHaggle());
-    }
-    if (this.elements.haggleCancel) {
-      this.elements.haggleCancel.addEventListener('click', () => this.closeHaggleSheet());
-    }
-    if (this.elements.haggleModal) {
-      this.elements.haggleModal.addEventListener('click', (e) => {
-        if (e.target === this.elements.haggleModal) this.closeHaggleSheet();
-      });
-      // Live preview on input/type change
-      this.elements.haggleInput.addEventListener('input', () => this.updateHagglePreview());
-      document.querySelectorAll('input[name="haggle-type"]').forEach(radio => {
-        radio.addEventListener('change', () => this.updateHagglePreview());
-      });
-    }
+    // v215: haggle sheet events removed alongside the dead haggle markup.
 
-    // Invoice discount sheet events
+    // Invoice adjustment sheet events
     if (this.elements.ticketDiscountApply) {
       this.elements.ticketDiscountApply.addEventListener('click', () => this.applyTicketDiscount());
     }
@@ -341,24 +319,68 @@ const Checkout = {
       this.elements.ticketDiscountModal.addEventListener('click', (e) => {
         if (e.target === this.elements.ticketDiscountModal) this.closeTicketDiscountSheet();
       });
-      this.elements.ticketDiscountInput.addEventListener('input', () => this.updateTicketDiscountPreview());
-      // v206: type chip switches reveal/hide the mode chips and reset the input.
+      // v215: numpad replaces the iOS-keyboard input. Each tap mutates
+      // adjustmentInput and refreshes the preview live.
+      if (this.elements.ticketDiscountNumpad) {
+        this.elements.ticketDiscountNumpad.addEventListener('click', (e) => {
+          const button = e.target.closest('.ec-numpad-key');
+          if (!button) return;
+          this.handleAdjustmentNumpadInput(button.dataset.value);
+        });
+      }
+      // Type chip switches reveal/hide the mode chips and reset the input.
       document.querySelectorAll('input[name="ticket-adj-type"]').forEach(radio => {
         radio.addEventListener('change', () => {
-          this.elements.ticketDiscountInput.value = '';
+          this.adjustmentInput = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus();
         });
       });
       // Mode chip switches just reset the input + refresh the preview.
       document.querySelectorAll('input[name="ticket-adj-mode"]').forEach(radio => {
         radio.addEventListener('change', () => {
-          this.elements.ticketDiscountInput.value = '';
+          this.adjustmentInput = '';
           this._refreshAdjustmentSheet();
-          this.elements.ticketDiscountInput.focus();
         });
       });
     }
+  },
+
+  /**
+   * v215: numpad input handler for the invoice-adjustment sheet. Mirrors
+   * handleNumpadInput (Add Item) but writes to adjustmentInput instead of
+   * priceInput, and refreshes the adjustment preview after each tap so the
+   * Subtotal / Adjustment / New Total lines update live.
+   */
+  handleAdjustmentNumpadInput(value) {
+    if (value === 'backspace') {
+      this.adjustmentInput = this.adjustmentInput.slice(0, -1);
+    } else if (value === '.') {
+      if (!this.adjustmentInput.includes('.')) {
+        this.adjustmentInput += value;
+      }
+    } else {
+      // Prevent more than 2 decimal places
+      const parts = this.adjustmentInput.split('.');
+      if (parts.length === 2 && parts[1].length >= 2) return;
+      // Prevent leading zeros (except for "0.")
+      if (this.adjustmentInput === '0' && value !== '.') {
+        this.adjustmentInput = value;
+      } else {
+        this.adjustmentInput += value;
+      }
+    }
+    this._renderAdjustmentDisplay();
+    this.updateTicketDiscountPreview();
+  },
+
+  /**
+   * v215: update the adjustment hero number from adjustmentInput. "0" when
+   * empty; the raw typed value otherwise (don't apply formatCurrency since
+   * the unit is contextual — % vs $ — and the input is a positive magnitude).
+   */
+  _renderAdjustmentDisplay() {
+    if (!this.elements.ticketDiscountDisplay) return;
+    this.elements.ticketDiscountDisplay.textContent = this.adjustmentInput || '0';
   },
 
   /**
@@ -749,7 +771,10 @@ const Checkout = {
       const descClass = hasDesc ? 'item-row__desc' : 'item-row__desc item-row__desc--empty';
       const descText = hasDesc ? Utils.escapeHtml(item.description) : 'No description';
       const qty = item.quantity || 1;
-      const qtyBadge = qty > 1 ? `<span class="item-row__qty">× ${qty}</span>` : '';
+      // v215: leading space + nbsp keeps "Read × 5" from rendering as
+      // "Read× 5" when descText abuts the qty span (the parent has
+      // white-space: nowrap so a regular space at the boundary collapses).
+      const qtyBadge = qty > 1 ? `&nbsp;<span class="item-row__qty">× ${qty}</span>` : '';
 
       // v198: always render the consignor slot so descriptions align across
       // assigned + unassigned items. Slot is filled when a consignor is set,
@@ -1350,118 +1375,16 @@ const Checkout = {
     }
   },
 
-  // ── Haggle Sheet ──
+  // v215: Haggle sheet removed. openHaggleSheet/applyHaggle/removeHaggle/
+  // closeHaggleSheet/updateHagglePreview were orphaned — no UI surface
+  // called openHaggleSheet after the v206 item-edit refactor. Per-item
+  // price overrides now happen by editing the item directly in the Add
+  // Item sheet (which can update originalPrice). Utils.applyHaggle is
+  // still used for items that retain legacy haggleType/haggleValue from
+  // before the rip-out — those are honored on render but no new ones
+  // are created.
 
-  /**
-   * Open the haggle sheet for a specific item
-   */
-  openHaggleSheet(itemId) {
-    const item = this.items.find(i => i.id === itemId);
-    if (!item) return;
-
-    this.closeItemSheet();
-    this.haggleItemId = itemId;
-
-    // Set title and breakdown
-    const desc = item.description || 'Item';
-    const hasDayDiscount = item.dayDiscount > 0;
-    let breakdown = `${Utils.escapeHtml(desc)} — ${Utils.formatCurrency(item.originalPrice)}`;
-    if (hasDayDiscount) {
-      breakdown += ` → ${Utils.formatCurrency(item.dayDiscountedPrice)} (${item.dayDiscount}% day discount)`;
-    }
-    this.elements.haggleTitle.textContent = 'Adjust Price';
-    this.elements.haggleBreakdown.innerHTML = breakdown;
-
-    // Pre-fill if item already has a haggle
-    if (item.haggleType && item.haggleValue) {
-      document.querySelector(`input[name="haggle-type"][value="${item.haggleType}"]`).checked = true;
-      this.elements.haggleInput.value = item.haggleValue;
-      this.elements.haggleRemove.hidden = false;
-    } else {
-      document.querySelector('input[name="haggle-type"][value="newprice"]').checked = true;
-      this.elements.haggleInput.value = '';
-      this.elements.haggleRemove.hidden = true;
-    }
-
-    this.updateHagglePreview();
-    this.elements.haggleModal.classList.add('visible');
-    // v214: matches the adjustment-sheet fix. Same iOS auto-scroll-into-view
-    // behavior was latent here — visible on shorter phones with the keyboard up.
-    this.elements.haggleInput.focus({ preventScroll: true });
-  },
-
-  /**
-   * Update haggle preview based on current input
-   */
-  updateHagglePreview() {
-    const item = this.items.find(i => i.id === this.haggleItemId);
-    if (!item) return;
-
-    const type = document.querySelector('input[name="haggle-type"]:checked')?.value;
-    const rawValue = parseFloat(this.elements.haggleInput.value) || 0;
-
-    const newFinal = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
-    this.elements.hagglePreview.textContent = `New price: ${Utils.formatCurrency(newFinal)}`;
-  },
-
-  /**
-   * Apply the haggle discount to the item
-   */
-  applyHaggle() {
-    const item = this.items.find(i => i.id === this.haggleItemId);
-    if (!item) return;
-
-    const type = document.querySelector('input[name="haggle-type"]:checked')?.value;
-    const rawValue = parseFloat(this.elements.haggleInput.value) || 0;
-
-    if (!rawValue) {
-      this._showFieldError('haggle-error', 'Enter a value');
-      return;
-    }
-
-    this.checkEditDirty();
-    item.haggleType = type;
-    item.haggleValue = rawValue;
-    const unitPrice = Utils.applyHaggle(item.dayDiscountedPrice, type, rawValue);
-    item.finalPrice = unitPrice * (item.quantity || 1);
-
-    this.saveCart();
-    this.saveDraftTransaction();
-    this.transactionSaved = false;
-    this.closeHaggleSheet();
-    this.render();
-  },
-
-  /**
-   * Remove haggle discount from the current item
-   */
-  removeHaggle() {
-    const item = this.items.find(i => i.id === this.haggleItemId);
-    if (!item) return;
-
-    this.checkEditDirty();
-    item.haggleType = null;
-    item.haggleValue = null;
-    item.finalPrice = item.dayDiscountedPrice * (item.quantity || 1);
-
-    this.saveCart();
-    this.saveDraftTransaction();
-    this.transactionSaved = false;
-    this.closeHaggleSheet();
-    this.render();
-  },
-
-  /**
-   * Close the haggle sheet
-   */
-  closeHaggleSheet() {
-    this.haggleItemId = null;
-    this.elements.haggleModal.classList.remove('visible');
-    // Reopen item sheet (was closed when haggle opened)
-    if (this.items.length > 0) this.openItemSheet();
-  },
-
-  // ── Invoice Discount Sheet ──
+  // ── Invoice Adjustment Sheet ──
 
   /**
    * Open the Invoice Adjustment sheet (v206 — was Invoice Discount).
@@ -1481,45 +1404,35 @@ const Checkout = {
       const mode = adj.mode === 'percent' || adj.mode === 'dollar' ? adj.mode : 'percent';
       const modeRadio = document.querySelector(`input[name="ticket-adj-mode"][value="${mode}"]`);
       if (modeRadio) modeRadio.checked = true;
-      this.elements.ticketDiscountInput.value = adj.value;
+      this.adjustmentInput = String(adj.value);
       this.elements.ticketDiscountRemove.hidden = false;
     } else {
       document.querySelector('input[name="ticket-adj-type"][value="discount"]').checked = true;
       document.querySelector('input[name="ticket-adj-mode"][value="percent"]').checked = true;
-      this.elements.ticketDiscountInput.value = '';
+      this.adjustmentInput = '';
       this.elements.ticketDiscountRemove.hidden = true;
     }
 
+    this._renderAdjustmentDisplay();
     this._refreshAdjustmentSheet();
     this.elements.ticketDiscountModal.classList.add('visible');
-    // v214: preventScroll back. The v211 theory ("let iOS auto-scroll the
-    // input into view") looked fine on long content but on this sheet the
-    // input sits high enough that auto-scroll shoves the entire sheet
-    // upward to the top of the viewport — clipping the Apply / Remove
-    // buttons under the keyboard suggestion bar (Image 3 in the v213
-    // field report). Every other sheet in the app uses preventScroll for
-    // exactly this reason; we just missed this one.
-    this.elements.ticketDiscountInput.focus({ preventScroll: true });
+    // v215: no .focus() call — the sheet uses an in-sheet numpad now,
+    // not an iOS keyboard input. The previous keyboard-pushup symptoms
+    // (v211 / v214) are entirely gone with this approach.
   },
 
   /**
    * Refresh the sheet's chip-state-driven UI: hide/show the mode row based on
-   * type, set the input placeholder for the current type+mode, and recompute
-   * the preview. Called on open and on every chip change.
+   * type and recompute the preview. Called on open and on every chip change.
+   *
+   * v215: input placeholder logic removed — there's no <input> anymore;
+   * the hero number ("0") communicates emptiness, and the chip selection
+   * communicates the unit (% vs $) directly.
    */
   _refreshAdjustmentSheet() {
     const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
-    const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
     const modeRow = document.getElementById('ticket-adj-modes');
     if (modeRow) modeRow.hidden = (type === 'set');
-
-    if (type === 'set') {
-      this.elements.ticketDiscountInput.placeholder = 'New total';
-    } else if (mode === 'percent') {
-      this.elements.ticketDiscountInput.placeholder = 'Percentage';
-    } else {
-      this.elements.ticketDiscountInput.placeholder = 'Amount';
-    }
     this.updateTicketDiscountPreview();
   },
 
@@ -1534,7 +1447,7 @@ const Checkout = {
     const subtotal = this.items.reduce((sum, item) => sum + item.finalPrice, 0);
     const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
     const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
-    const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
+    const rawValue = parseFloat(this.adjustmentInput) || 0;
 
     const newTotal = Utils.applyTicketDiscount(subtotal, {
       type,
@@ -1569,7 +1482,7 @@ const Checkout = {
   applyTicketDiscount() {
     const type = document.querySelector('input[name="ticket-adj-type"]:checked')?.value || 'discount';
     const mode = document.querySelector('input[name="ticket-adj-mode"]:checked')?.value || 'percent';
-    const rawValue = parseFloat(this.elements.ticketDiscountInput.value) || 0;
+    const rawValue = parseFloat(this.adjustmentInput) || 0;
 
     if (!rawValue) {
       this._showFieldError('ticket-discount-error', 'Enter a value');

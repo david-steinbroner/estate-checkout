@@ -202,38 +202,38 @@ const Utils = {
   },
 
   /**
-   * Build the caption line that sits underneath an item's final price on
-   * cart, QR, dashboard, payment, and saved-ticket surfaces.
+   * Build the caption line that sits underneath an item's final price.
    *
-   * v214: replaces strikethrough comparison text. Mirrors the Apple Wallet
-   * / Venmo pattern — final amount is the hero, breakdown is caption-weight
-   * underneath. Per-unit + "was $X" combine into one line; null when there's
-   * nothing extra to say (single unit, no discount).
+   * v215: stripped to the minimum. The day discount is shown globally at
+   * the top of the screen ("Day 1 · 5% off" pill) and on the customer's
+   * saved ticket header — repeating it on every row was noise. Now the
+   * caption only fires for two cases that aren't communicated elsewhere:
+   *
+   *   1. multi-qty: per-unit price ("$0.95 each") so the worker can
+   *      sanity-check 5 × $0.95 = $4.75 at a glance
+   *   2. per-item haggle override: "Marked from $X" so it's clear this
+   *      item deviates from the day's pricing
+   *
+   * Single-unit items with only a sale-wide day discount get NO caption.
    *
    * Reads both unified and legacy item shapes:
-   *   { quantity, originalPrice, dayDiscountedPrice, finalPrice, haggleType, haggleValue }
-   *   { qty, orig, day, final, haggle: {type, value} }   ← payment/ticket scan shape
+   *   { quantity, originalPrice, finalPrice, haggleType, haggleValue }
+   *   { qty, orig, final, haggle: {type, value} }   ← payment/ticket scan shape
    */
   formatItemPriceCaption(item) {
     const qty = item.quantity || item.qty || 1;
     const finalLine = item.finalPrice !== undefined ? item.finalPrice : (item.final || 0);
     const original = item.originalPrice !== undefined ? item.originalPrice : (item.orig || 0);
     const hasHaggle = (item.haggleType && item.haggleValue) || (item.haggle && item.haggle.value);
-    const dayDiscountPct = item.dayDiscount;
-    const dayDiscountedUnit = item.dayDiscountedPrice !== undefined
-      ? item.dayDiscountedPrice
-      : (item.day !== undefined ? item.day : original);
     const finalUnit = qty > 0 ? finalLine / qty : finalLine;
-    const hasDayDiscount = dayDiscountPct > 0 || (original > 0 && dayDiscountedUnit < original);
-    const discounted = hasHaggle || hasDayDiscount || finalUnit < original;
 
-    const parts = [];
-    if (qty > 1) parts.push(`× ${qty} at ${this.formatCurrency(finalUnit)} each`);
-    else if (discounted) parts.push(`was ${this.formatCurrency(original)}`);
-
-    if (qty > 1 && discounted) parts.push(`was ${this.formatCurrency(original)} each`);
-
-    return parts.length ? parts.join(' · ') : null;
+    if (qty > 1) {
+      return `${this.formatCurrency(finalUnit)} each`;
+    }
+    if (hasHaggle && original > 0) {
+      return `Marked from ${this.formatCurrency(original)}`;
+    }
+    return null;
   },
 
   /**
