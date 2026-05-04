@@ -9,9 +9,19 @@
  * surface inside the app.
  */
 
-const APP_VERSION = 'v215';
+const APP_VERSION = 'v216';
 
 const VERSION_HISTORY = [
+  {
+    version: 'v216',
+    date: '2026-05-04',
+    changes: [
+      'Invoice Adjustment sheet now opens taller so Apply Adjustment, Remove Adjustment, and Cancel are visible without scrolling on smaller phones.',
+      'Order title in the order-review sheet (e.g. "Order #2") is blue again — signals it\'s tappable to rename. The blue color was being overridden by a later CSS rule.',
+      'Day discount info added back to item rows. Workers were getting confused seeing "$0.95 each" when they typed $1, so the line now reads "$0.95 each · 5% off" (multi-qty) or "5% off · was $1.00" (single qty). The global "Day 1 · 5% off" pill at the top stays as the day-number reference.',
+      'Order-review sheet tightened. Item rows are now flat with thin dividers (no more heavy gray cards), each row has a small ›  chevron signaling it opens for edit, and "Clear all items" sits unobtrusively in the bottom-right instead of floating alone on the left.'
+    ]
+  },
   {
     version: 'v215',
     date: '2026-05-04',

@@ -204,21 +204,26 @@ const Utils = {
   /**
    * Build the caption line that sits underneath an item's final price.
    *
-   * v215: stripped to the minimum. The day discount is shown globally at
-   * the top of the screen ("Day 1 · 5% off" pill) and on the customer's
-   * saved ticket header — repeating it on every row was noise. Now the
-   * caption only fires for two cases that aren't communicated elsewhere:
+   * v216: day discount info is back. The v215 strip ("it's already at the
+   * top of the screen") was wrong — when a worker sees Fog × 3 at $0.95
+   * each but typed $1, they need the WHY at the line level, not pulled
+   * from a small global pill. The "Day 1 · 5% off" header is now
+   * complemented (not replaced) by per-line context.
    *
-   *   1. multi-qty: per-unit price ("$0.95 each") so the worker can
-   *      sanity-check 5 × $0.95 = $4.75 at a glance
-   *   2. per-item haggle override: "Marked from $X" so it's clear this
-   *      item deviates from the day's pricing
+   * Cases:
+   *   - per-item haggle override:        "Marked from $X.XX"
+   *   - multi-qty + day discount:        "$0.95 each · 5% off"
+   *   - multi-qty, no discount:          "$X.XX each"
+   *   - single-qty + day discount:       "5% off · was $1.00"
+   *   - single-qty, no discount:         null
    *
-   * Single-unit items with only a sale-wide day discount get NO caption.
+   * The day-discount mention is the percent only ("5% off"), not "Day 1
+   * · 5% off" — the day-number is already in the global pill, and the
+   * percent is the load-bearing info ("oh, that's why $0.95 not $1").
    *
    * Reads both unified and legacy item shapes:
-   *   { quantity, originalPrice, finalPrice, haggleType, haggleValue }
-   *   { qty, orig, final, haggle: {type, value} }   ← payment/ticket scan shape
+   *   { quantity, originalPrice, dayDiscountedPrice, dayDiscount, finalPrice, haggleType, haggleValue }
+   *   { qty, orig, day, final, haggle: {type, value} }   ← payment/ticket scan shape
    */
   formatItemPriceCaption(item) {
     const qty = item.quantity || item.qty || 1;
@@ -227,12 +232,31 @@ const Utils = {
     const hasHaggle = (item.haggleType && item.haggleValue) || (item.haggle && item.haggle.value);
     const finalUnit = qty > 0 ? finalLine / qty : finalLine;
 
-    if (qty > 1) {
-      return `${this.formatCurrency(finalUnit)} each`;
-    }
+    // Haggle wins — it's a per-item override, more specific than the day
+    // discount. Surface that fact instead of the day percentage.
     if (hasHaggle && original > 0) {
       return `Marked from ${this.formatCurrency(original)}`;
     }
+
+    // Day discount detection works against both shapes:
+    //   - dayDiscount on cart items is the explicit percent
+    //   - day vs orig on scanned-ticket items lets us infer one
+    let dayPct = item.dayDiscount;
+    if (!dayPct && item.day !== undefined && item.orig && item.day < item.orig) {
+      dayPct = Math.round(((item.orig - item.day) / item.orig) * 100);
+    }
+    const hasDayDiscount = dayPct > 0;
+    const discountTag = hasDayDiscount ? `${dayPct}% off` : null;
+
+    if (qty > 1) {
+      const eachLabel = `${this.formatCurrency(finalUnit)} each`;
+      return discountTag ? `${eachLabel} · ${discountTag}` : eachLabel;
+    }
+
+    if (discountTag) {
+      return `${discountTag} · was ${this.formatCurrency(original)}`;
+    }
+
     return null;
   },
 

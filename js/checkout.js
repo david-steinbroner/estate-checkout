@@ -982,6 +982,9 @@ const Checkout = {
         const caption = Utils.formatItemPriceCaption(item);
         const captionHtml = caption ? `<span class="item-row__caption">${Utils.escapeHtml(caption)}</span>` : '';
 
+        // v216: chevron sits between final price and caption so it
+        // stays on the same flex line as the price (caption has
+        // flex-basis: 100% and wraps to its own line).
         return `
           <li class="item-row${haggleClass}" data-id="${item.id}">
             <div class="item-row__content" data-row-edit="${idx}">
@@ -989,6 +992,7 @@ const Checkout = {
               <span class="${descClass}">${descText}</span>
               ${qtyBadge}
               <span class="item-row__final">${Utils.formatCurrency(item.finalPrice)}</span>
+              <span class="item-row__chevron" aria-hidden="true">›</span>
               ${captionHtml}
             </div>
           </li>

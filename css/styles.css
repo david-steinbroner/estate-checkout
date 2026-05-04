@@ -628,13 +628,15 @@ body {
 }
 
 
-.sheet__title--editable {
-  cursor: pointer;
-}
-
 /* v209: .edit-icon dropped along with EDIT_ICON_SVG. Sheet titles now use
-   primary color directly to signal tappability. */
-.sheet__title--editable {
+   primary color directly to signal tappability.
+   v216: chained selector (.sheet__title.sheet__title--editable) bumps
+   specificity so this color wins against the .sheet__title base rule
+   that appears later in the stylesheet — the previous single-class form
+   was being overridden in source order, leaving the title rendered in
+   --color-text and removing the only "tap to rename" affordance. */
+.sheet__title.sheet__title--editable {
+  cursor: pointer;
   color: var(--color-primary);
 }
 
@@ -657,30 +659,46 @@ body {
   margin-bottom: var(--space-md);
 }
 
+/* v216: order-review item list flattened. Previously each row had a
+   gray-card background with rounded corners and a gap between cards —
+   formal and heavy for what's usually a short list, with lots of empty
+   space when there's only one item. Now: flat rows with thin dividers,
+   like the dashboard transaction detail. The sheet auto-shrinks to its
+   content because rows are denser. */
 .sheet__item-list {
   list-style: none;
   max-height: 60dvh;
   overflow-y: auto;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
 }
 
 .sheet__item-list .item-row {
   min-height: var(--height-touch-min);
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
-  border-bottom: none;
-}
-
-.sheet__item-list .item-row__content {
-  padding: var(--space-md);
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .sheet__item-list .item-row:last-child {
   border-bottom: none;
+}
+
+.sheet__item-list .item-row__content {
+  padding: var(--space-md) 0;
+}
+
+/* Tap-to-edit chevron — signals each row opens the Edit Item sheet.
+   Lives as a real .item-row__chevron span (rendered by checkout.js
+   renderItemSheet) so it sits on the first flex line next to the
+   price, not below the caption (which has flex-basis: 100%). */
+.sheet__item-list .item-row__chevron {
+  color: var(--color-text-tertiary);
+  font-size: 22px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  margin-left: var(--space-xs);
+  flex-shrink: 0;
 }
 
 .item-row__content {
@@ -1863,6 +1881,14 @@ body {
   margin-bottom: var(--space-lg);
 }
 
+/* v216: bump the sheet cap from the 80lvh default to 95lvh so the chips
+   + hero + numpad + preview + Apply / Remove / Cancel all fit without
+   scrolling on smaller phones. Same approach used by #consignor-modal
+   for the same reason (lots of stacked content). */
+#ticket-discount-modal .sheet {
+  max-height: 95lvh;
+}
+
 /* Invoice Discount sheet uses the .sheet--detail variant for left-align. */
 
 .invoice-discount__modes {
@@ -2063,13 +2089,16 @@ body {
   display: none;
 }
 
+/* v216: order-review sheet actions. Used to be a stacked column with
+   "Clear all items" left-aligned and floating — felt isolated. Now a
+   right-aligned row so destructive actions sit unobtrusively in the
+   bottom-right (familiar "Delete" affordance pattern from iOS apps). */
 .sheet__actions {
-  margin-top: var(--space-lg);
+  margin-top: var(--space-md);
   padding-top: var(--space-md);
-  border-top: 1px solid var(--color-divider);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  justify-content: flex-end;
+  gap: var(--space-md);
 }
 
 .sheet__actions[hidden] {
