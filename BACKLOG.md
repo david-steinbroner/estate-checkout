@@ -2,7 +2,39 @@
 
 **Purpose:** Park ideas, feature requests, and future work here so they don't creep into the current version. Claude Code should add items here when out-of-scope requests come up.
 
-**Current priority:** v0.1 feature-complete through v214 (discounts, multi-worker, multi-day, checkout UX overhaul, consignor tracking, Past Estate Sales archive, cloud purge, Invoice Adjustment with surcharges, hash routing for back-button, App Guide, Add to Home Screen affordance, browser-aware install instructions, viewport-fit safe-area, v213 field-test fixes — QR-screen adjustment apply, caption-pattern price display, amount-display sheet inputs, keyboard-pushup fix). Next: end-to-end testing on mobile Chrome and Safari, then field test.
+**Current priority:** v0.1 feature-complete through v216. v214 shipped the v213 field-test fixes (QR-screen adjustment apply bug, caption-pattern price display, keyboard-pushup fix). v215 replaced the iOS-keyboard adjustment input with an in-sheet numpad, simplified captions, merged the two voice modals, added a listening indicator, fixed multi-qty parsing in speech, and deleted the dead haggle code. v216 bumped the adjustment sheet height, restored the blue tappable order title, expanded captions to include day-discount info, and flattened the order-review sheet row layout. Next: **manual verification of v215+v216 on mobile (see Pending Verification below)**, then field test.
+
+---
+
+## Pending Verification (next session)
+
+User force-updated to v214 and verified those fixes. v215 and v216 shipped after, **untested by user**. Run the checklist below before any new field-test work.
+
+**v215 (commit `fa09e53`):**
+- [ ] Adjustment sheet uses an in-sheet numpad (no iOS keyboard). Hero number top, 3×4 keypad below. Backspace works.
+- [ ] Apply / Remove / Cancel buttons all visible without scrolling (this overlaps with v216 height fix; verify under v216).
+- [ ] Multi-qty rows show "Read × 5" with proper space (not "Read× 5").
+- [ ] Voice intro: ONE modal fires before iOS permission prompt (not two), short copy, "Continue" button.
+- [ ] Voice listening indicator (red pulsing dot + "Listening…" pill) appears at top of Add Item sheet while mic is held.
+- [ ] Speech parses "two lamps for $20" as qty=2, description="lamps", price=$20 (not a single item called "two lamps").
+- [ ] Per-item Haggle sheet is gone (no orphan UI surfacing it). Existing legacy haggled items still render correctly.
+
+**v216 (commit `07eee7c`):**
+- [ ] Adjustment sheet opens taller — Apply/Remove/Cancel visible without scroll on iPhone-sized viewports.
+- [ ] Order title in the order-review sheet ("Order #2") renders in **blue** — clearly tappable to rename.
+- [ ] Captions include day discount info:
+  - Single-qty + day discount: caption reads `5% off · was $1.00`
+  - Multi-qty + day discount: caption reads `$0.95 each · 5% off`
+  - Multi-qty no discount: caption reads `$X.XX each`
+  - Per-item haggled override: caption reads `Marked from $X.XX`
+  - Single-qty no discount: no caption
+- [ ] Order-review sheet item rows are **flat** with thin dividers (no gray-card backgrounds, no inter-row gap).
+- [ ] Each row in the order-review sheet has a small `›` chevron after the price.
+- [ ] "Clear all items" sits in the **bottom-right** of the sheet, not floating left-aligned.
+
+**If anything fails:** screenshot, file under Field Testing Notes table, decide whether to fix before field test or defer.
+
+---
 
 > **Roadmap alignment:** The version structure below matches PRODUCT_STRATEGY.md §11. All items beyond v0.1 are hypotheses that will be validated by field test feedback. See PRODUCT_STRATEGY.md for the strategic rationale behind each version.
 
@@ -33,6 +65,21 @@ Scope is driven entirely by what we learn in field tests. These are likely candi
 **Moved to v0.1 (completed 2026-03-06):**
 - ~~Consignor/seller tagging~~ → Full consignor system: data model, management UI, item tagging, colored dots throughout, Consignor Payouts screen with payout breakdown
 - ~~Vendor payout reporting~~ → Consignor Payouts screen covers this for estate sales
+
+**Moved to v0.1 (completed 2026-05-04, v216 — order-review polish + adjustment height + day-discount captions):**
+- ~~Adjustment sheet too short on iPhone — buttons hidden below the fold~~ → max-height bumped 80lvh → 95lvh, matching the same pattern #consignor-modal already used.
+- ~~Order title in the order-review sheet lost its tappable affordance~~ → CSS specificity bug; `.sheet__title.sheet__title--editable` (chained) now beats the later `.sheet__title { color: --color-text }` rule that was overriding it in source order.
+- ~~Workers confused seeing "$0.95 each" when they typed $1 (no per-row signal of why)~~ → `Utils.formatItemPriceCaption` re-expanded to include day-discount mention. Format: `5% off · was $1.00` (single-qty), `$0.95 each · 5% off` (multi-qty). Day NUMBER stays in the global pill only — the percent is the load-bearing info per-row.
+- ~~Order-review sheet feels formless / lots of empty space~~ → Option A applied: per-row gray-card background + inter-row gap dropped, replaced with flat rows + thin dividers. Each row has a `›` chevron signaling "tap to edit". "Clear all items" right-aligned in the bottom-right.
+
+**Moved to v0.1 (completed 2026-05-04, v215 — in-sheet numpad + speech UX + dead-code removal):**
+- ~~Invoice Adjustment input hidden behind iOS keyboard~~ → in-sheet numpad replaces the keyboard input. Same pattern as Add Item — hero number on top, 3×4 keypad below. Eliminates the keyboard-pushup class of bugs entirely (no system keyboard involved).
+- ~~Borderless full-width amount input doesn't match the rest of the design system~~ → numpad pattern matches Add Item exactly. `.amount-display` class retired.
+- ~~Two back-to-back voice modals overwhelm first-time users~~ → mic-guide modal + permission modal collapsed into one short pre-permission intro that warns about the iOS system prompt. Less to read, no surprise.
+- ~~Mic button covered by user's finger when held — no feedback that it's recording~~ → "Listening…" pill (red pulsing dot + label) at the top of the Add Item sheet. Visible while finger is on the button.
+- ~~Speech parses "two lamps for $20" as a single item called "two lamps"~~ → `extractLeadingQty` now handles English number words ("two") and trailing connectives ("for", "at"). Parses correctly as qty=2, desc="lamps", price=$20.
+- ~~Multi-qty badge spacing collapses ("Read× 5")~~ → `&nbsp;` injection + `margin-left: var(--space-xs)` on the badge.
+- ~~Dead Haggle sheet code (~200 lines)~~ → HTML, CSS, JS handlers, openHaggleSheet/applyHaggle/removeHaggle/closeHaggleSheet/updateHagglePreview deleted. `openHaggleSheet` had no remaining callers after the v206 item-edit refactor. `Utils.applyHaggle` retained for legacy items still carrying haggleType/haggleValue.
 
 **Moved to v0.1 (completed 2026-05-04, v214 — v213 field-test fixes):**
 - ~~Worker accidentally adds an invoice discount and can't remove it~~ → Adjustment sheet's Remove button was already wired in v206; v214 also fixed the QR-screen apply path so the adjustment actually changes the total instead of silently no-op'ing (the v206 sheet refactor renamed the radio names; the QR-screen monkey-patch hadn't kept up). Removed the monkey-patch in favor of a one-shot onAdjustmentChanged hook so there's only one apply/remove implementation.
