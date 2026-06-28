@@ -2,6 +2,8 @@
 
 **Read this file at the start of EVERY session. No exceptions.**
 
+(Code-quality standards live in ../engineering-standards.md — this file covers the PM+Claude brainstorming protocol only.)
+
 ---
 
 ## 1. WHO YOU ARE

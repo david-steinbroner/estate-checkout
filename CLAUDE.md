@@ -1,5 +1,7 @@
 # CLAUDE.md — Estate Checkout
 
+Standards: inherits ../engineering-standards.md. Overrides & project-specifics below.
+
 **Read this file at the start of EVERY session. No exceptions.**
 
 The umbrella `/Users/davidsteinbroner/Projects/CLAUDE.md` also applies; this file extends and overrides where they differ.
@@ -45,11 +47,7 @@ A feature is DONE when:
 
 ### General
 - Simple, readable code over clever code. Always.
-- Functions do ONE thing
-- Descriptive variable/function names (no abbreviations except obvious ones like `qty`, `idx`)
-- Comments explain WHY, not WHAT
-- No dead code. No commented-out code blocks left behind.
-- Console.log debugging must be removed before marking done
+- (One-thing functions, descriptive names, WHY-not-WHAT comments, no dead/commented-out code, no leftover console.log — all inherited from the baseline.)
 
 ### Tech Stack (DO NOT DEVIATE)
 - **Frontend:** HTML, CSS, vanilla JavaScript. No frameworks. No React. No Vue. No build tools.
@@ -94,18 +92,15 @@ A feature is DONE when:
 ```
 
 ### Service Worker Convention
-- Cache name format: `estate-checkout-vNN` (e.g., `estate-checkout-v48`)
-- Bump the version number in `sw.js` with every code change to bust the cache
-- All JS, CSS, HTML, and external libraries are listed in `ASSETS_TO_CACHE`
+- Cache name format: `estate-checkout-vNN` (e.g., `estate-checkout-v48`) — the project-specific shape of the baseline cache-version bump.
+- All JS, CSS, HTML, and external libraries are listed in `ASSETS_TO_CACHE`.
 
 ### CSS Rules
 - **Read DESIGN_SYSTEM.md before making ANY CSS changes.** That document is the authoritative spec for all visual decisions.
 - Mobile-first. Default styles ARE the mobile styles.
-- No CSS frameworks. No Tailwind. No Bootstrap.
-- **Minimum 48px height for anything tappable. No exceptions.**
+- **Minimum 48px height for anything tappable. No exceptions.** (Stricter than the baseline's ≥48px floor — this is a hard rule, no exceptions.)
 - High contrast text. Minimum 14px font size for body text, 16px for buttons.
 - Number pad buttons: 48px x 48px (same as all interactive elements)
-- **Every** color, font-size, spacing, and radius value must use a CSS custom property from `:root`. No hardcoded values.
 - Max 1 stylesheet file
 - When adding new styles, use existing component patterns from DESIGN_SYSTEM.md §2. Do not create one-off styles.
 
